@@ -1,0 +1,2 @@
+{SERVICENAME DMXExternalControl}
+{RQFILE COMMONRQs.txt}
