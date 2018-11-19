@@ -1,0 +1,69 @@
+package PackageCommonXE4;
+
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$ENDIF IMPLICITBUILDING}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcl,
+  tee,
+  designide,
+  vclx,
+  dbrtl,
+  dbexpress,
+  DbxCommonDriver,
+  xmlrtl,
+  vclactnband,
+  VclSmp,
+  vcldb,
+  inet,
+  IndySystem,
+  IndyCore;
+
+contains
+  GraphicButton in 'GraphicButton.pas',
+  FormDataAware in 'FormDataAware.pas' {frmDataAware},
+  GlassControls in 'GlassControls.pas',
+  diagram in 'diagram.pas',
+  WMPLib_TLB in 'WMPLib_TLB.pas',
+  K3XLib_TLB in 'K3XLib_TLB.pas',
+  better_Sockets in 'better_Sockets.pas',
+  MSTSCLib_TLB in 'MSTSCLib_TLB.pas',
+  DXDraws in 'DXDraws.pas',
+  DXReg in 'DXReg.pas',
+  FrameHostPanel in 'FrameHostPanel.pas',
+  ActiveWinamp_TLB in 'ActiveWinamp_TLB.pas',
+  AnalogTrackBar in 'AnalogTrackBar.pas',
+  SpeechLib_TLB in 'SpeechLib_TLB.pas',
+  CommandListView in 'CommandListView.pas',
+  ColorButton in 'ColorButton.pas',
+  FormBase in 'FormBase.pas' {frmBase},
+  FrameBase in 'FrameBase.pas' {frmFrameBase: TFrame},
+  FormReg in 'FormReg.pas';
+
+//  dbadvgridreg in 'tmspck\dbadvgridreg.pas';
+
+end.

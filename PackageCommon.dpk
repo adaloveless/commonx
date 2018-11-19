@@ -1,0 +1,58 @@
+package PackageCommon;
+
+{$R *.res}
+{$R 'K3XLib_TLB.dcr'}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$DEFINITIONINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$ENDIF IMPLICITBUILDING}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcl,
+  tee,
+  vcljpg,
+  designide,
+  PackageCommon2007,
+  tmsd2007,
+  adortl,
+  dbrtl,
+  bdertl,
+  vclx,
+  xmlrtl,
+  vclactnband,
+  vcldb,
+  VclSmp,
+  DbxCommonDriver,
+  dbexpress,
+  DbxClientDriver,
+  DbxReadOnlyMetaData,
+  DbxDynalinkDriver;
+
+contains
+  LoadChart in 'LoadChart.pas',
+  pnggraphic in 'pnggraphic.pas',
+  ColorButton in 'ColorButton.pas',
+  BetterListView in 'BetterListView.pas';
+
+end.

@@ -1,0 +1,104 @@
+package PackageCommon2009;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcl,
+  tee,
+  designide,
+  vclx,
+  dbrtl,
+  dbexpress,
+  DbxCommonDriver,
+  xmlrtl,
+  vclactnband,
+  VclSmp;
+
+contains
+  AppWebUpdater in 'WebBrowser\AppWebUpdater.pas',
+  Browse4Folder in 'WebBrowser\Browse4Folder.pas',
+  DirMonitor in 'WebBrowser\DirMonitor.pas',
+  EditDesigner in 'WebBrowser\EditDesigner.pas',
+  Edithost in 'WebBrowser\Edithost.pas',
+  EmbeddedWB in 'WebBrowser\EmbeddedWB.pas',
+  EwbAcc in 'WebBrowser\EwbAcc.pas',
+  EwbCore in 'WebBrowser\EwbCore.pas',
+  EwbDDE in 'WebBrowser\EwbDDE.pas',
+  EwbEditors in 'WebBrowser\EwbEditors.pas',
+  EwbReg in 'WebBrowser\EwbReg.pas',
+  EwbTools in 'WebBrowser\EwbTools.pas',
+  ExportFavorites in 'WebBrowser\ExportFavorites.pas',
+  FavMenu in 'WebBrowser\FavMenu.pas',
+  FavoritesListView in 'WebBrowser\FavoritesListView.pas',
+  FavoritesPopup in 'WebBrowser\FavoritesPopup.pas',
+  FavoritesTree in 'WebBrowser\FavoritesTree.pas',
+  FileExtAssociate in 'WebBrowser\FileExtAssociate.pas',
+  HighLightHTML in 'WebBrowser\HighLightHTML.pas',
+  HighLightRichSyntax in 'WebBrowser\HighLightRichSyntax.pas',
+  HighLightXML in 'WebBrowser\HighLightXML.pas',
+  HistoryListView in 'WebBrowser\HistoryListView.pas',
+  HistoryMenu in 'WebBrowser\HistoryMenu.pas',
+  IEAddress in 'WebBrowser\IEAddress.pas',
+  IECache in 'WebBrowser\IECache.pas',
+  IEConst in 'WebBrowser\IEConst.pas',
+  IEDownload in 'WebBrowser\IEDownload.pas',
+  IEGuid in 'WebBrowser\IEGuid.pas',
+  IEParser in 'WebBrowser\IEParser.pas',
+  IETravelLog in 'WebBrowser\IETravelLog.pas',
+  ImportFavorites in 'WebBrowser\ImportFavorites.pas',
+  LibXmlComps in 'WebBrowser\LibXmlComps.pas',
+  LibXmlParser in 'WebBrowser\LibXmlParser.pas',
+  LinkLabel in 'WebBrowser\LinkLabel.pas',
+  LinksBar in 'WebBrowser\LinksBar.pas',
+  MenuContext in 'WebBrowser\MenuContext.pas',
+  Mshtml_Ewb in 'WebBrowser\Mshtml_Ewb.pas',
+  RichEditBrowser in 'WebBrowser\RichEditBrowser.pas',
+  SecurityManager in 'WebBrowser\SecurityManager.pas',
+  SendMail_For_Ewb in 'WebBrowser\SendMail_For_Ewb.pas',
+  SHDocVw_EWB in 'WebBrowser\SHDocVw_EWB.pas',
+  UI_Less in 'WebBrowser\UI_Less.pas',
+  UrlHistory in 'WebBrowser\UrlHistory.pas',
+  PGrafixReg in '..\powerdraw3\Source\PGrafixReg.pas',
+  pngextra in 'pngextra.pas',
+  GIFImage in 'GIFImage.pas',
+  pnggraphic in 'pnggraphic.pas',
+  pngzlib in 'pngzlib.pas',
+  FormBase in 'FormBase.pas' {frmBase},
+  FormReg in 'FormReg.pas',
+  GraphicButton in 'GraphicButton.pas',
+  FormDataAware in 'FormDataAware.pas' {frmDataAware},
+  GlassControls in 'GlassControls.pas',
+  diagram in 'diagram.pas',
+  WMPLib_TLB in 'WMPLib_TLB.pas',
+  K3XLib_TLB in 'K3XLib_TLB.pas',
+  better_Sockets in 'better_Sockets.pas',
+  MSTSCLib_TLB in 'MSTSCLib_TLB.pas',
+  DXDraws in 'DXDraws.pas',
+  DXReg in 'DXReg.pas';
+
+//  dbadvgridreg in 'tmspck\dbadvgridreg.pas';
+
+end.

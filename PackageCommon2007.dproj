@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{3228c7e5-dbc2-4603-b155-6bfbac9500c7}</ProjectGuid>
+    <MainSource>PackageCommon2007.dpk</MainSource>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>PackageCommon2007.bpl</DCC_DependencyCheckOutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_BplOutput>.</DCC_BplOutput>
+    <DCC_Define>RELEASE</DCC_Define>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_BplOutput>.</DCC_BplOutput>
+    <DCC_UnitSearchPath>$(DELPHI)\Lib\Debug;$(DELPHI)\source\ToolsAPI;g:\delphi\common\;g:\delphi\common\webbrowser;g:\delphi\common\tmspck</DCC_UnitSearchPath>
+    <DCC_ResourcePath>$(DELPHI)\Lib\Debug;$(DELPHI)\source\ToolsAPI;g:\delphi\common\;g:\delphi\common\webbrowser;g:\delphi\common\tmspck</DCC_ResourcePath>
+    <DCC_ObjPath>$(DELPHI)\Lib\Debug;$(DELPHI)\source\ToolsAPI;g:\delphi\common\;g:\delphi\common\webbrowser;g:\delphi\common\tmspck</DCC_ObjPath>
+    <DCC_IncludePath>$(DELPHI)\Lib\Debug;$(DELPHI)\source\ToolsAPI;g:\delphi\common\;g:\delphi\common\webbrowser;g:\delphi\common\tmspck</DCC_IncludePath>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType>Package</Borland.ProjectType>
+    <BorlandProject>
+<BorlandProject><Delphi.Personality><Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><Package_Options><Package_Options Name="ImplicitBuild">False</Package_Options><Package_Options Name="DesigntimeOnly">False</Package_Options><Package_Options Name="RuntimeOnly">False</Package_Options></Package_Options><VersionInfo><VersionInfo Name="IncludeVerInfo">True</VersionInfo><VersionInfo Name="AutoIncBuild">False</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">0</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">0</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1033</VersionInfo><VersionInfo Name="CodePage">1252</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Source><Source Name="MainSource">PackageCommon2007.dpk</Source></Source><Excluded_Packages>
+      
+      
+      <Excluded_Packages Name="$(BDS)\bin\dcloffice2k100.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclofficexp100.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+    </Excluded_Packages></Delphi.Personality></BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+  <ItemGroup>
+    <DelphiCompile Include="PackageCommon2007.dpk">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <DCCReference Include="$(SystemRoot)\system32\dbexpress.dcp" />
+    <DCCReference Include="$(SystemRoot)\system32\dbrtl.dcp" />
+    <DCCReference Include="$(SystemRoot)\system32\DbxCommonDriver.dcp" />
+    <DCCReference Include="$(SystemRoot)\system32\designide.dcp" />
+    <DCCReference Include="$(SystemRoot)\system32\p" />
+    <DCCReference Include="$(SystemRoot)\system32\rtl.dcp" />
+    <DCCReference Include="$(SystemRoot)\system32\tee.dcp" />
+    <DCCReference Include="$(SystemRoot)\system32\tmsd2007.dcp" />
+    <DCCReference Include="$(SystemRoot)\system32\vcl.dcp" />
+    <DCCReference Include="$(SystemRoot)\system32\vcljpg.dcp" />
+    <DCCReference Include="$(SystemRoot)\system32\vclx.dcp" />
+    <DCCReference Include="..\powerdraw3\source\PGrafixReg.dcr" />
+    <DCCReference Include="..\powerdraw3\source\PGrafixReg.dcr" />
+    <DCCReference Include="..\powerdraw3\Source\PGrafixReg.pas" />
+    <DCCReference Include="better_Sockets.pas" />
+    <DCCReference Include="diagram.pas" />
+    <DCCReference Include="FormBase.pas">
+      <Form>frmBase</Form>
+    </DCCReference>
+    <DCCReference Include="FormDataAware.pas">
+      <Form>frmDataAware</Form>
+    </DCCReference>
+    <DCCReference Include="FormReg.pas" />
+    <DCCReference Include="GIFImage.pas" />
+    <DCCReference Include="GlassControls.pas" />
+    <DCCReference Include="GraphicButton.pas" />
+    <DCCReference Include="K3XLib_TLB.dcr" />
+    <DCCReference Include="K3XLib_TLB.dcr" />
+    <DCCReference Include="K3XLib_TLB.pas" />
+    <DCCReference Include="pngextra.pas" />
+    <DCCReference Include="pngimage.pas" />
+    <DCCReference Include="pnglang.pas" />
+    <DCCReference Include="pngzlib.pas" />
+    <DCCReference Include="ShockwaveFlashObjects_TLB.dcr" />
+    <DCCReference Include="ShockwaveFlashObjects_TLB.dcr" />
+    <DCCReference Include="ShockwaveFlashObjects_TLB.pas" />
+    <DCCReference Include="WebBrowser\AppWebUpdater.pas" />
+    <DCCReference Include="WebBrowser\Browse4Folder.pas" />
+    <DCCReference Include="WebBrowser\DirMonitor.pas" />
+    <DCCReference Include="WebBrowser\EditDesigner.pas" />
+    <DCCReference Include="WebBrowser\Edithost.pas" />
+    <DCCReference Include="WebBrowser\EmbeddedWB.pas" />
+    <DCCReference Include="WebBrowser\EwbAcc.pas" />
+    <DCCReference Include="WebBrowser\EwbCore.pas" />
+    <DCCReference Include="WebBrowser\EwbDDE.pas" />
+    <DCCReference Include="WebBrowser\EwbEditors.pas" />
+    <DCCReference Include="WebBrowser\EwbReg.pas" />
+    <DCCReference Include="WebBrowser\EwbTools.pas" />
+    <DCCReference Include="WebBrowser\ExportFavorites.pas" />
+    <DCCReference Include="WebBrowser\FavMenu.pas" />
+    <DCCReference Include="WebBrowser\FavoritesListView.pas" />
+    <DCCReference Include="WebBrowser\FavoritesPopup.pas" />
+    <DCCReference Include="WebBrowser\FavoritesTree.pas" />
+    <DCCReference Include="WebBrowser\FileExtAssociate.pas" />
+    <DCCReference Include="WebBrowser\HighLightHTML.pas" />
+    <DCCReference Include="WebBrowser\HighLightRichSyntax.pas" />
+    <DCCReference Include="WebBrowser\HighLightXML.pas" />
+    <DCCReference Include="WebBrowser\HistoryListView.pas" />
+    <DCCReference Include="WebBrowser\HistoryMenu.pas" />
+    <DCCReference Include="WebBrowser\IEAddress.pas" />
+    <DCCReference Include="WebBrowser\IECache.pas" />
+    <DCCReference Include="WebBrowser\IEConst.pas" />
+    <DCCReference Include="WebBrowser\IEDownload.pas" />
+    <DCCReference Include="WebBrowser\IEGuid.pas" />
+    <DCCReference Include="WebBrowser\IEParser.pas" />
+    <DCCReference Include="WebBrowser\IETravelLog.pas" />
+    <DCCReference Include="WebBrowser\ImportFavorites.pas" />
+    <DCCReference Include="WebBrowser\LibXmlComps.pas" />
+    <DCCReference Include="WebBrowser\LibXmlParser.pas" />
+    <DCCReference Include="WebBrowser\LinkLabel.pas" />
+    <DCCReference Include="WebBrowser\LinksBar.pas" />
+    <DCCReference Include="WebBrowser\MenuContext.pas" />
+    <DCCReference Include="WebBrowser\Mshtml_Ewb.pas" />
+    <DCCReference Include="WebBrowser\RichEditBrowser.pas" />
+    <DCCReference Include="WebBrowser\SecurityManager.pas" />
+    <DCCReference Include="WebBrowser\SendMail_For_Ewb.pas" />
+    <DCCReference Include="WebBrowser\SHDocVw_EWB.pas" />
+    <DCCReference Include="WebBrowser\UI_Less.pas" />
+    <DCCReference Include="WebBrowser\UrlHistory.pas" />
+    <DCCReference Include="WMPLib_TLB.dcr" />
+    <DCCReference Include="WMPLib_TLB.dcr" />
+    <DCCReference Include="WMPLib_TLB.pas" />
+  </ItemGroup>
+</Project>
