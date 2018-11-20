@@ -1,0 +1,32 @@
+inherited FrameDebug: TFrameDebug
+  Size.Width = 598.000000000000000000
+  Size.Height = 408.000000000000000000
+  object StringGrid1: TStringGrid
+    Align = Client
+    CanFocus = True
+    ClipChildren = True
+    Size.Width = 598.000000000000000000
+    Size.Height = 408.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    RowHeight = 21.000000000000000000
+    Viewport.Width = 598.000000000000000000
+    Viewport.Height = 408.000000000000000000
+    object StringColumn1: TStringColumn
+      Header = 'ID'
+    end
+    object StringColumn2: TStringColumn
+      Header = 'Name'
+      Size.Width = 250.000000000000000000
+    end
+    object StringColumn3: TStringColumn
+      Header = 'Status'
+      Size.Width = 600.000000000000000000
+    end
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    Left = 320
+    Top = 152
+  end
+end

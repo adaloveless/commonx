@@ -1,0 +1,19 @@
+object fmxBase: TfmxBase
+  Left = 0
+  Top = 0
+  Caption = 'Form3'
+  ClientHeight = 277
+  ClientWidth = 265
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop, iPhone, iPad]
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  DesignerMasterStyle = 0
+  object tmCommandWatch: TTimer
+    Interval = 100
+    OnTimer = tmCommandWatchTimer
+    Left = 120
+    Top = 128
+  end
+end

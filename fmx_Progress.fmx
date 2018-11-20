@@ -1,0 +1,74 @@
+object fmxProgress: TfmxProgress
+  Left = 0
+  Top = 0
+  BorderStyle = Single
+  Caption = 'Form2'
+  ClientHeight = 415
+  ClientWidth = 552
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop, iPhone, iPad]
+  DesignerMasterStyle = 0
+  object tmModalTest: TTimer
+    Interval = 100
+    OnTimer = tmModalTestTimer
+    Left = 376
+    Top = 192
+  end
+  object moveme: TPanel
+    Align = Contents
+    Size.Width = 552.000000000000000000
+    Size.Height = 415.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    object panFill: TPanel
+      Align = Client
+      Size.Width = 552.000000000000000000
+      Size.Height = 342.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 2
+    end
+    object panProgTop: TPanel
+      Align = Top
+      Size.Width = 552.000000000000000000
+      Size.Height = 73.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      object ProgressBar1: TProgressBar
+        Align = Top
+        Orientation = Horizontal
+        Margins.Left = 7.000000000000000000
+        Margins.Top = 7.000000000000000000
+        Margins.Right = 7.000000000000000000
+        Margins.Bottom = 7.000000000000000000
+        Position.X = 80.000000000000000000
+        Position.Y = 30.000000000000000000
+        Size.Width = 465.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        Value = 50.000000000000000000
+      end
+      object Label1: TLabel
+        Align = Top
+        AutoSize = True
+        Margins.Left = 7.000000000000000000
+        Margins.Top = 7.000000000000000000
+        Margins.Right = 7.000000000000000000
+        Position.X = 80.000000000000000000
+        Position.Y = 7.000000000000000000
+        Size.Width = 465.000000000000000000
+        Size.Height = 16.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.WordWrap = False
+        Text = 'Label1'
+      end
+      object aniind: TAniIndicator
+        Align = MostLeft
+        Enabled = True
+        Size.Width = 73.000000000000000000
+        Size.Height = 73.000000000000000000
+        Size.PlatformDefault = False
+      end
+    end
+  end
+end
