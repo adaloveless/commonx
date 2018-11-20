@@ -1,0 +1,22 @@
+object frmDataAwareLinkable: TfrmDataAwareLinkable
+  Left = 0
+  Top = 0
+  Caption = 'frmDataAwareLinkable'
+  ClientHeight = 204
+  ClientWidth = 304
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  Scaled = False
+  OnPaint = FormPaint
+  OnResize = FormResize
+  NewMode = False
+  PixelsPerInch = 96
+  TextHeight = 13
+  GlassFrame.Bottom = 40
+  GlassFrame.Enabled = True
+end

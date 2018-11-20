@@ -1,0 +1,2 @@
+inherited framWizardPage: TframWizardPage
+end
