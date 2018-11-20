@@ -1,4 +1,50 @@
-// Oroginal Source: http://www.ibrtses.com/delphi/binarytree.html
+unit BTree;
+//About this unit
+//This unit contains a heavily modified "AVL" Binary tree.
+//It is "heavily" modified in that it is, in fact, not strictly
+//a binary tree anymore.
+//
+//In a traditional binary tree each node has a left and a right node.
+//The Left node contains the next lower index entry in the index
+//The right node contains the next greater index entry
+//Duplicate index values are not allowed.
+//
+//However, in this tree contains actually 3 NODES
+//- Left as above
+//- Right as above
+//- and Center: which contains a LINKED LIST of items with duplicate key entries.
+//The order of the items in the center list is arbitrary and not guaranteed to
+//remain constant as the sorting of these nodes is technically undefined
+//
+//Search time remains log(n) as long as the tree contains unique values
+//however, in the case of duplicate keys, it will be log(n)+number of duplicates on a particular node
+//
+//By using a linked list, duplicate items can be removed and added with basically
+//just a couple of memory writes
+//
+//Iterate() works just as you would expect.
+//In a traditional AVL Binary Tree, you would walk the left node, current node, then right node
+//In this modified tree, Iterate() walks left, center, then right
+//
+//This tree is pointer-perfect, in that you can guarantee that pointers/objects
+//you add to it follow their nodes when sorted, and nodes are never copied by value
+//Many college-book examples are not pointer perfect due to one of the complex
+//rotations that comes up occasionally.
+//
+//This Tree is ALSO GENERIC, but the nodes in the tree should inherit from
+//  TBTreeItem
+//
+//If you want to sort objects that are not inherited from TBtreeitem
+//Then you can just attach the TBtreeItem as a member/field to an object.
+//You can also use this method to create multiple sorting mechanisms for
+//a single set of objects by creating mutiple linkages.
+//
+//I implemented a similar technique in the linked_list.pas unit for generic linked lists.
+
+
+
+
+// Original Source: http://www.ibrtses.com/delphi/binarytree.html
 //
 // Taken from Nicklaus Wirth :
 // Algorithmen und Datenstrukturen ( in Pascal )
@@ -9,8 +55,13 @@
 // pgiacomo@tiscalinet.it
 // 19/05/2000
 //
+// Enhanced further by Jason Nelson
+// published 2018/11/19
+// jasonrobertnelson@gmail.com
+//
+//
 
-unit BTree;
+
 {$DEFINE POINTER_PERFECT}
 {x$DEFINE EXTRA_CHECKS}
 interface
