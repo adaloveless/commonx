@@ -180,6 +180,8 @@ type
     FStep: ni;
     FAutoTextSize: boolean;
     FAnimate: boolean;
+    FColorPrism: TNativeFloatColor;
+    FDrawIndirectStyle: boolean;
     function GetStuckDown: boolean;
     procedure SetStuckDown(const Value: boolean);
     function GetDown: boolean;
@@ -219,6 +221,7 @@ type
     property Down: boolean read GetDown write SetDown;
     property ColorWhenLit: TNativeFloatColor read FcolorwhenLit write FColorWhenlit;
     property ColorWhenNotLit: TNativeFloatColor read FcolorwhenNotLit write FColorWhenNotlit;
+    property ColorPrism: TNativeFloatColor read FColorPrism write FColorPrism;
     property Charwidth: single read FCharWidth write SEtCharWidth;
     property CharHeight: single read FCharheight write SetCharHeight;
     property TArgetCharwidth: single read FTArgetCharWidth write SetTargetCharWidth;
@@ -230,7 +233,7 @@ type
     property AutoTextSize: boolean read FAutoTextSize write FAutoTextSize;
     procedure CalcTextSize;
     property Animate: boolean read FAnimate write SetAnimate;
-
+    property DrawIndirectStyle: boolean read FDrawIndirectStyle write FDrawIndirectStyle;
   end;
 
 
@@ -4040,54 +4043,139 @@ var
   x,y: ni;
   a,b,c,d,e: single;
   l,t,w,h: single;
+  cp, cL, c1,c2,c3,c4: TGiantColor;
 const
   margin = 5;
 begin
   inherited;
+  l := self.Left;
+  w := self.width;
+  t := self.Top;
+  h := self.Height;
+
+  if l+w < 0 then exit;
+  if t+h < 0 then exit;
+  if l > FDX.Width then exit;
+  if t > FDX.Height then exit;
+
   if AutoTextSize  then
     calctextsize;
   //no implementation requred
   FDX.SetTexture(-1);
 
 
-  l := self.Left;
-  w := self.width;
-  t := self.Top;
-  h := self.Height;
 
-  if down then begin
-      FDX.Rectangle_Fill(l, t, l+w, t+h, clWhite, 0.3*Colorwhenlit.a);
-      FDX.Rectangle_Fill(l+margin, t+margin, l+w, t+h, ColorWhenLit.ToColor, 0.3*Colorwhenlit.a);
-      FDX.Rectangle_Fill(l, t, l + w, t+h, ColorWhenLit.ToColor, 0.6*Colorwhenlit.a);
-      //progress
-      if StepCount > 0 then begin
-        a := self.Left;
-        b := self.top;
-        c := self.Left + (Width * (Step/StepCount));
-        d := self.TOp +self.Height;
-        e := self.Left + self.Width;
-        FDX.Rectangle_Fill(a,b,e,d, ColorWhenLit.ToColor, ColorWhenLit.ToColor, clBlack, clBlack, 0.6*Colorwhenlit.a);
-        FDX.Rectangle_Fill(a,b,c,d, clWhite, clWhite, ColorWhenLit.ToColor, ColorWhenLit.ToColor, 0.6*Colorwhenlit.a);
-      end;
-      if FMouseIsOver then
-        FDX.Rectangle_Fill(l, t, l+w, t+h, clWhite, 0.3);
+  if DrawIndirectStyle then begin
+    if down then begin
+        cL := Colorwhenlit;
+        cP := ColorPrism;
 
+        c2.FromColor(clWhite);
+        c2.a := 0.1;
+        c3.FromColor(clBlack);
+
+        c1 := ColorBlend(c2,c3,0.1);
+        c4 := ColorBlend(c3,cp,0.50);
+
+        FDX.alphaop := aoStandard;
+        FDX.Rectangle_Fill(l, t, l+w, t+h, cp, cp.a);
+        FDX.alphaop := aoAdd;
+        FDX.Rectangle_Fill(l, t, l+w, t+h, c2.ToColorAdditiveMultiplyAlpha,clBlack, clBlack, clBlack);
+        FDX.alphaop := aoStandard;
+        FDX.Rectangle_Fill(l+margin, t+margin, l+w-margin, t+h-margin, clBlack, cp.a);
+        FDX.alphaop := aoAdd;
+        FDX.Rectangle_Fill(l+margin, t+margin, l+w-margin, t+h-margin, cL.ToColorAdditiveMultiplyAlpha);
+
+//        FDX.Rectangle_Fill(l, t, l+w, t+h, clWhite, 0.3*Colorwhennotlit.a);
+//        FDX.Rectangle_Fill(l+margin, t+margin, l+w, t+h, ColorWhennotLit.ToColor, 0.3*Colorwhennotlit.a);
+//        FDX.Rectangle_Fill(l, t, l+w, t+h, ColorWhennotLit.ToColor, 0.6*Colorwhennotlit.a);
+
+        if StepCount > 0 then begin
+          a := l;
+          b := t;
+          c := l + (w * (Step/StepCount));
+          d := t+h;
+          e := l+w;
+          FDX.Rectangle_Fill(a,b,e,d, Colorwhennotlit.ToColor, Colorwhennotlit.ToColor, clBlack, clBlack, 0.6*Colorwhenlit.a);
+          FDX.Rectangle_Fill(a,b,c,d, clWhite, clWhite, Colorwhennotlit.ToColor, Colorwhennotlit.ToColor, 0.6*Colorwhenlit.a);
+        end;
+
+        if FMouseIsOver then
+          FDX.Rectangle_Fill(l+margin, t+margin, l+w-margin, t+h-margin, cL.ToColorAdditiveMultiplyAlpha, cL.ToColorAdditiveMultiplyAlpha);
+
+    end else begin
+        cL := Colorwhennotlit;
+        cP := ColorPrism;
+
+        c2.FromColor(clWhite);
+        c2.a := 0.1;
+        c3.FromColor(clBlack);
+
+        c1 := ColorBlend(c2,c3,0.1);
+        c4 := ColorBlend(c3,cp,0.50);
+
+        FDX.alphaop := aoStandard;
+        FDX.Rectangle_Fill(l, t, l+w, t+h, cp, cp.a);
+        FDX.alphaop := aoAdd;
+        FDX.Rectangle_Fill(l, t, l+w, t+h, c2.ToColorAdditiveMultiplyAlpha,clBlack, clBlack, clBlack);
+        FDX.alphaop := aoStandard;
+        FDX.Rectangle_Fill(l+margin, t+margin, l+w-margin, t+h-margin, clBlack, cp.a);
+        FDX.alphaop := aoAdd;
+        FDX.Rectangle_Fill(l+margin, t+margin, l+w-margin, t+h-margin, clBlack, clBlack, cL.ToColorAdditiveMultiplyAlpha, cL.ToColorAdditiveMultiplyAlpha);
+
+//        FDX.Rectangle_Fill(l, t, l+w, t+h, clWhite, 0.3*Colorwhennotlit.a);
+//        FDX.Rectangle_Fill(l+margin, t+margin, l+w, t+h, ColorWhennotLit.ToColor, 0.3*Colorwhennotlit.a);
+//        FDX.Rectangle_Fill(l, t, l+w, t+h, ColorWhennotLit.ToColor, 0.6*Colorwhennotlit.a);
+
+        if StepCount > 0 then begin
+          a := l;
+          b := t;
+          c := l + (w * (Step/StepCount));
+          d := t+h;
+          e := l+w;
+          FDX.Rectangle_Fill(a,b,e,d, Colorwhennotlit.ToColor, Colorwhennotlit.ToColor, clBlack, clBlack, 0.6*Colorwhenlit.a);
+          FDX.Rectangle_Fill(a,b,c,d, clWhite, clWhite, Colorwhennotlit.ToColor, Colorwhennotlit.ToColor, 0.6*Colorwhenlit.a);
+        end;
+
+        if FMouseIsOver then
+          FDX.Rectangle_Fill(l+margin, t+margin, l+w-margin, t+h-margin, clBlack, clBlack, cL.ToColorAdditiveMultiplyAlpha, cL.ToColorAdditiveMultiplyAlpha);
+
+    end;
   end else begin
-      FDX.Rectangle_Fill(l, t, l+w, t+h, clWhite, 0.3*Colorwhennotlit.a);
-      FDX.Rectangle_Fill(l+margin, t+margin, l+w, t+h, ColorWhennotLit.ToColor, 0.3*Colorwhennotlit.a);
-      FDX.Rectangle_Fill(l, t, l+w, t+h, ColorWhennotLit.ToColor, 0.6*Colorwhennotlit.a);
-      if StepCount > 0 then begin
-        a := l;
-        b := t;
-        c := l + (w * (Step/StepCount));
-        d := t+h;
-        e := l+w;
-        FDX.Rectangle_Fill(a,b,e,d, Colorwhennotlit.ToColor, Colorwhennotlit.ToColor, clBlack, clBlack, 0.6*Colorwhenlit.a);
-        FDX.Rectangle_Fill(a,b,c,d, clWhite, clWhite, Colorwhennotlit.ToColor, Colorwhennotlit.ToColor, 0.6*Colorwhenlit.a);
-      end;
+    if down then begin
+        FDX.Rectangle_Fill(l, t, l+w, t+h, clWhite, 0.3*Colorwhenlit.a);
+        FDX.Rectangle_Fill(l+margin, t+margin, l+w, t+h, ColorWhenLit.ToColor, 0.3*Colorwhenlit.a);
+        FDX.Rectangle_Fill(l, t, l + w, t+h, ColorWhenLit.ToColor, 0.6*Colorwhenlit.a);
+        //progress
+        if StepCount > 0 then begin
+          a := self.Left;
+          b := self.top;
+          c := self.Left + (Width * (Step/StepCount));
+          d := self.TOp +self.Height;
+          e := self.Left + self.Width;
+          FDX.Rectangle_Fill(a,b,e,d, ColorWhenLit.ToColor, ColorWhenLit.ToColor, clBlack, clBlack, 0.6*Colorwhenlit.a);
+          FDX.Rectangle_Fill(a,b,c,d, clWhite, clWhite, ColorWhenLit.ToColor, ColorWhenLit.ToColor, 0.6*Colorwhenlit.a);
+        end;
+        if FMouseIsOver then
+          FDX.Rectangle_Fill(l, t, l+w, t+h, clWhite, 0.3);
 
-      if FMouseIsOver then
-        FDX.Rectangle_Fill(l,t,l+w, t+h, clWhite, 0.3*Colorwhennotlit.a);
+    end else begin
+        FDX.Rectangle_Fill(l, t, l+w, t+h, clWhite, 0.3*Colorwhennotlit.a);
+        FDX.Rectangle_Fill(l+margin, t+margin, l+w, t+h, ColorWhennotLit.ToColor, 0.3*Colorwhennotlit.a);
+        FDX.Rectangle_Fill(l, t, l+w, t+h, ColorWhennotLit.ToColor, 0.6*Colorwhennotlit.a);
+        if StepCount > 0 then begin
+          a := l;
+          b := t;
+          c := l + (w * (Step/StepCount));
+          d := t+h;
+          e := l+w;
+          FDX.Rectangle_Fill(a,b,e,d, Colorwhennotlit.ToColor, Colorwhennotlit.ToColor, clBlack, clBlack, 0.6*Colorwhenlit.a);
+          FDX.Rectangle_Fill(a,b,c,d, clWhite, clWhite, Colorwhennotlit.ToColor, Colorwhennotlit.ToColor, 0.6*Colorwhenlit.a);
+        end;
+
+        if FMouseIsOver then
+          FDX.Rectangle_Fill(l,t,l+w, t+h, clWhite, 0.3*Colorwhennotlit.a);
+    end;
   end;
 
   if Animate then
@@ -4238,13 +4326,19 @@ end;
 procedure TDXButton.Init;
 begin
   inherited;
+  FDrawIndirectStyle := true;
+  FColorPrism.r := 0.3;
+  FColorPrism.g := 0.3;
+  FColorPrism.b := 0.3;
+  FColorPrism.a := 0.3;
+
   FColorWhenLit.g := 1.0;
   FcolorWhenLit.a := 0.8;
 
   FColorWhenNotLit.r := 1.0;
   FColorWhenNotLit.g := 1.0;
-  FColorWhenNotLit.b := 1.0;
-  FcolorWhenNotLit.a := 0.2;
+  FColorWhenNotLit.b := 0.0;
+  FcolorWhenNotLit.a := 0.6;
   CharWidth := 16;
   CharHeight := 16;
 

@@ -68,6 +68,8 @@ type
     class operator Multiply(var a: TGiantColor; b: nativefloat): TGiantColor;inline;
 
     function ToColor: TColor;
+    function ToColorWithAlpha: TColor;
+    function ToColorAdditiveMultiplyAlpha: TColor;
     procedure FromColor(c: TColor);
 
 {$IFDEF FMX}
@@ -634,19 +636,34 @@ function TGiantColor.ToColor: TColor;
 var
   rr,gg,bb: integer;
 begin
-  rr := round(r * 255);
-  gg := round(g * 255);
-  bb := round(b * 255);
-  if rr > 255 then rr := 255;
-  if gg > 255 then gg := 255;
-  if bb > 255 then bb := 255;
-  if rr < 0 then rr := 0;
-  if gg < 0 then gg := 0;
-  if bb < 0 then bb := 0;
+  rr := clamp(round(r * 255),0,255);
+  gg := clamp(round(g * 255),0,255);
+  bb := clamp(round(b * 255),0,255);
 
+  result := (rr)+((gg) shl 8)+(((bb) shl 16));
+end;
 
+function TGiantColor.ToColorAdditiveMultiplyAlpha: TColor;
+var
+  rr,gg,bb: integer;
+begin
 
-  result := (rr)+((gg)*256)+(((bb) * 65536));
+  rr := clamp(round((r*a) * 255),0,255);
+  gg := clamp(round((g*a) * 255),0,255);
+  bb := clamp(round((b*a) * 255),0,255);
+
+  result := (rr)+((gg) shl 8)+(((bb) shl 16));
+end;
+
+function TGiantColor.ToColorWithAlpha: TColor;
+var
+  rr,gg,bb,aa: integer;
+begin
+  aa := clamp(round(a * 255),0,255);
+  rr := clamp(round(r * 255),0,255);
+  gg := clamp(round(g * 255),0,255);
+  bb := clamp(round(b * 255),0,255);
+  result := (rr)+((gg) shl 8)+(((bb) shl 16))+(aa shl 24);
 end;
 
 class operator TGiantColor.Explicit(var a: TGiantColor): byte;
