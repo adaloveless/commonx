@@ -10,7 +10,7 @@ unit SimpleMail;
 interface
 
 uses
-  typex, IDSMTP, IDMESSAGE, IDEmailAddress, sysutils, simplewinsock, sockets, stringx, scktcomp, classes, textsocket, applicationparams;
+  typex, IDSMTP, IDMESSAGE, IDEmailAddress, sysutils, simplewinsock, better_sockets2, stringx, scktcomp, classes, textsocket, applicationparams;
 
 type
   TCellCarrier = (ccTMobile, ccVirgin, ccCingular, ccSprint, ccVerizon, ccNextel, ccUsCellular, ccSunCom, ccPowerTel, ccAtt, ccAlltel, ccMetroPCS);

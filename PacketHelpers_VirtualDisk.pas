@@ -37,6 +37,7 @@ var
   p: pointer;
   ptd: pointer;
 begin
+  ptd := nil;
   p := nil;
   try
     p := packet.SeqReadBytes(i);

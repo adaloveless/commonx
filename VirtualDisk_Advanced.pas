@@ -1731,7 +1731,7 @@ begin
     end;
 
     // check that the blocks physical addresses are all sane
-    for t := 0 to ta.FileCount-1 do begin
+    for u := 0 to ta.FileCount-1 do begin
       fp := @ta.FPs[t];
       if ta.FPs[t].FileID >= 0 then begin
         PS := FPayloadStreams[ta.FPs[t].FileID];
@@ -1742,9 +1742,9 @@ begin
     // check that the block does not overlap other blocks
     if not vat.VerifyGapSingle(idx, violations) then
     begin
-      LogRepair(t,'GAP ERROR! @idx=' + inttohex(idx, 0) +
+      LogRepair(idx,'GAP ERROR! @idx=' + inttohex(idx, 0) +
         ' will force reconstitution.');
-      ta := @Self.vat.table[t];
+      ta := @Self.vat.table[idx];
       //ForceReconstitution(ta);
       vat.MarkTableEntryDirtyByPtr(ta);
     end;
@@ -1983,14 +1983,16 @@ begin
     {$IFDEF ENABLE_DEEP_CHECKS_IN_BRING_ONLINE}
       DeepCheck(idx);
     {$ENDIF}
+
+    if tmSince > 50 then
+      ZoneLog(idx,tmSince.tostring+' ms. bring online '+inttohex(idx,1)+ta.DebugString);
+
   finally
     //savevat(false);
 {$IFDEF ALLOW_DRIVE_SKIPPING}
     AllowDriveSkipping := true;
 {$ENDIF}
     tmSince := gettimesince(tmOntime);
-    if tmSince > 50 then
-      ZoneLog(idx,tmSince.tostring+' ms. bring online '+inttohex(idx,1)+ta.DebugString);
     UnlockLock(l);
 
   end;
@@ -4535,7 +4537,7 @@ begin
 {$ENDIF}
 
   try
-    if not enable then exit;
+    if not enable then exit(TRepResult.repNothingToDo);
 
     //VOLATILE read because seeking this pointer should not change at any time
     // the disk is running
@@ -7548,7 +7550,7 @@ end;
 procedure TVirtualDisk_Advanced.SyncAwayAllBuffers;
 begin
   FRaidsByBlock.Iterate(
-    procedure(ABTreeItem: TBTreeItem)
+    procedure([unsafe] ABTreeItem: TBTreeItem)
     var
       tmp: TRaidTreeItem_byBlock;
     begin
@@ -11555,7 +11557,7 @@ begin
         c.pin := pin;
         c.archivename := archivename;
         setlength(dyn,  ARC_ZONE_SIZE_IN_BYTES);
-        c.pointer := @dyn[0];
+        c.pointer := dyn;
         c.resources.SetResourceUsage('SourceFetch', 0.25);
         c.start;
         while not c.WaitFor(4000) do
@@ -11726,7 +11728,7 @@ begin
           c.zidx := zidx;
           c.pin := d.sourcearchivepinid;
           c.archivename := d.sourcearchive;
-          c.pointer := @self.data[zidx shl ARC_ZONE_BYTE_SHIFT and  ARC_ZONE_BYTE_ALIGN_MASK];
+          //not needed, pointer is actually output array c.pointer := @self.data[zidx shl ARC_ZONE_BYTE_SHIFT and  ARC_ZONE_BYTE_ALIGN_MASK];
           FsourceFetchCommands[zidx mod ARC_ZONES_PER_BIG_BLOCK] := c;
           c.resources.SetResourceUsage('SourceFetch', 0.25);
           c.resources.SetResourceUsage('SourceFetch'+inttostr(zidx mod CONCURRENT_SOURCE_ARCHIVER_CONNECTIONS), 1.0);

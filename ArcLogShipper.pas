@@ -2340,7 +2340,7 @@ begin
           //send revised data along with original logid
           status := 'PUSH  ' +zidx.tohexstring+' '+fromid.tostring+'->'+this_logid.tostring;
           Debug.Log(status);
-          client.LogThis_ASync(archive, fromid, this_logid, startblock, ARC_ZONE_SIZE_IN_BLOCKS, @temp[0]);
+          client.LogThis_ASync(archive, fromid, this_logid, startblock, ARC_ZONE_SIZE_IN_BLOCKS, temp);
           Step := 8;
           success := client.LogThis_Response;
         end;

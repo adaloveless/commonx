@@ -40,8 +40,8 @@ type
     procedure SetBeyond(const Value: int64);
     procedure SetEnding(const Value: int64);
   public
-    function Compare(const ACompareTo:TBTreeItem):ni; override;
-    procedure Copy(const ACopyTo:TBTreeItem); override;
+    function Compare(const [unsafe] ACompareTo:TBTreeItem):ni; override;
+    procedure Copy(const [unsafe] ACopyTo:TBTreeItem); override;
 
     property Start: int64 read FStart write FStart;
     property Ending: int64 read GetEnding write SetEnding;
@@ -251,7 +251,7 @@ begin
     result.Start := -1;
     result.length := 0;
     FGaps.Iterate(
-      procedure(ABTreeItem:TBTreeItem; var ANeedStop:boolean)
+      procedure([unsafe] ABTreeItem:TBTreeItem; var ANeedStop:boolean)
       var
         tmp: TRegion;
       begin
@@ -286,7 +286,7 @@ begin
     result.Start := -1;
     result.length := 0;
     FGaps.Iterate(
-      procedure(ABTreeItem:TBTreeItem; var ANeedStop:boolean)
+      procedure([unsafe] ABTreeItem:TBTreeItem; var ANeedStop:boolean)
       begin
         if less_than > 0 then begin
           if (TRegion(abtreeitem).Start < less_than) and  (TRegion(abtreeitem).Length >= minimum_size) then begin
@@ -443,7 +443,7 @@ begin
   sl := TStringlist.create;
   try
     tree.Iterate(
-      procedure (itm: TBtreeItem)//; anonymous
+      procedure ([unsafe] itm: TBtreeItem)//; anonymous
       begin
         sl.add(TRegion(itm).DebugString);
       end
@@ -552,7 +552,7 @@ begin
   try
     res := 0;
     FGaps.Iterate(
-      procedure(ABTreeItem:TBTreeItem; var ANeedStop:boolean)
+      procedure([unsafe] ABTreeItem:TBTreeItem; var ANeedStop:boolean)
       var
         tmp: TRegion;
       begin
@@ -614,7 +614,7 @@ end;
 
 { TRegion }
 
-function TRegion.Compare(const ACompareTo: TBTreeItem): ni;
+function TRegion.Compare(const [unsafe] ACompareTo: TBTreeItem): ni;
 var
   a,b: TRegion;
 begin
@@ -629,7 +629,7 @@ begin
     result := 0;
 end;
 
-procedure TRegion.Copy(const ACopyTo: TBTreeItem);
+procedure TRegion.Copy(const [unsafe] ACopyTo: TBTreeItem);
 var
   b: TRegion;
 begin
@@ -691,7 +691,7 @@ begin
   prev := nil;
 
   Iterate(
-    procedure(ABTreeItem:TBTreeItem)
+    procedure([unsafe] ABTreeItem:TBTreeItem)
     var
       tmp: TRegion;
     begin

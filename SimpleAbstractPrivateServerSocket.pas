@@ -15,8 +15,8 @@ type
     function DoWaitForData(timeout: cardinal): boolean;override;
   public
     socket: TBetterCustomIPClient;//<----------------------------------------------
-    function Connect: boolean; override;
-    procedure Disconnect; override;
+    function DoConnect: boolean; override;
+    procedure DoDisconnect; override;
     function GetConnected: boolean;override;
     function DoReadData(buffer: pbyte; length: integer): integer;override;
     function DoSendData(buffer: pbyte; length: integer): integer;override;
@@ -28,12 +28,12 @@ implementation
 
 { TSimpleAbstractPrivateServerSocket }
 
-function TSimpleAbstractPrivateServerSocket.Connect: boolean;
+function TSimpleAbstractPrivateServerSocket.DoConnect: boolean;
 begin
   raise ESimpleAbstractPrivateServerSocketException.create(classname+' represents a server socket, so calling Connect is irrelevant.');
 end;
 
-procedure TSimpleAbstractPrivateServerSocket.Disconnect;
+procedure TSimpleAbstractPrivateServerSocket.DoDisconnect;
 begin
   inherited;
   socket.close;
