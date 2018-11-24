@@ -1,5 +1,4 @@
 package PackageCommonRX_Forms;
-
 {$R *.res}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
@@ -43,7 +42,6 @@ requires
 
 contains
   FormBase in 'FormBase.pas' {frmBase},
-  FormDataAware in 'FormDataAware.pas' {frmDataAware},
   FormReg in 'FormReg.pas';
 
 end.
