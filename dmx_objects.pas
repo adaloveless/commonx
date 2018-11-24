@@ -124,7 +124,7 @@ uses
   graphics,
 {$ENDIF}
   debug, stringx,
-  web.win.sockets, tickcount;
+  sockfix, tickcount;
 
 const
   ANG_SEARCH = 0.25;
@@ -743,7 +743,7 @@ type
     FRemote: boolean;
     sect: _RTL_Critical_Section;
     h: pointer;
-    udpc: web.win.sockets.TUdpSocket;
+    udpc: sockfix.TUdpSocket;
   public
     constructor Create(sHost: string = ''); reintroduce; virtual;
     destructor Destroy; override;

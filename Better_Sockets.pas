@@ -3,7 +3,7 @@ unit better_Sockets;
 interface
 
 uses
-  better_sockets, classes;
+  web.win.sockets, classes;
 
 type
   TBetterCustomIPClient = TCustomIPClient;
