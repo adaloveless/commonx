@@ -160,7 +160,6 @@
         <DCCReference Include="vclwinx.dcp"/>
         <DCCReference Include="FormBase.pas">
             <Form>frmBase</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="FormReg.pas"/>
         <BuildConfiguration Include="Release">
