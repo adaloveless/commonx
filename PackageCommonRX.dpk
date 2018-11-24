@@ -58,14 +58,14 @@ contains
   AnalogTrackBar in 'AnalogTrackBar.pas',
   CommandListView in 'CommandListView.pas',
   ColorButton in 'ColorButton.pas',
-  InetWinSocketReg in 'InetWinSocketReg.pas',
+  sockfixreg in 'sockfixreg.pas',
   SocketsEditor in 'SocketsEditor.pas',
-  Web.Win.Sockets in 'Web.Win.Sockets.pas',
   FMX.Better.ListBox in 'FMX.Better.ListBox.pas',
   betterobject in 'betterobject.pas',
   FrameHostPanel in 'FrameHostPanel.pas',
   GUIHelpers in 'GUIHelpers.pas',
-  BetterListView in 'BetterListView.pas';
+  BetterListView in 'BetterListView.pas',
+  sockfix in 'sockfix.pas';
 
 //  dbadvgridreg in 'tmspck\dbadvgridreg.pas';
 

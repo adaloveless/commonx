@@ -3,7 +3,7 @@ unit helpers_winsock;
 interface
 
 uses
-  web.win.sockets;
+  sockfix;
 function BetterWaitForDAta(s: TBaseSocket; Timeout: cardinal): boolean;
 
 
