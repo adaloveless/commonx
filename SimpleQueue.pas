@@ -849,7 +849,7 @@ begin
   RoundRobin := true;
   evEmptyAvailable := TSignal.create;
   FList := TBetterList<TSimpleQueue>.create;
-  startcount := lesserof(MQ_START_COUNT,GetNumberOfProcessors);
+  startcount := lesserof(MQ_START_COUNT,GetEnabledCPUCount);
   while FList.Count < startcount do begin
     FList.Add(TPM.Needthread<TSimpleQueue>(nil));
     FList[FList.count-1].Name := 'MQ'+inttostr(FList.count-1);
@@ -866,14 +866,14 @@ begin
   if growfinished then exit;
   Lock;
   try
-    if FList.Count < GEtnumberOfProcessors then begin
+    if FList.Count < GEtnumberOfLogicalProcessors then begin
       FList.Add(TPM.Needthread<TSimpleQueue>(nil));
       FList[FList.count-1].Name := 'MQ'+inttostr(FList.count-1);
       FList[FList.count-1].OnEmpty := self.QueueOnEmpty;
       FList[FList.count-1].BetterPriority := bpHighest;
       FList[FList.count-1].Loop := true;
       FList[FList.count-1].BeginStart;
-      growfinished := FList.count >= GEtnumberOfProcessors;
+      growfinished := FList.count >= GEtnumberOfLogicalProcessors;
     end else
       growfinished := true;
 

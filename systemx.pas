@@ -115,9 +115,13 @@ function ResolveRelativePath(const sPAth: string): string;
 function Slash(const sPath: string): string;
 function UnSlash(const sPath: string): string;
 function ExtractNetworkRoot(s: string): string;
-function GetnumberofProcessors: integer;
+function GetnumberofPhysicalProcessors: integer;
+function GetNumberOfLogicalProcessors: integer;
 function GetCPUCount: integer;
-function GetProcessorCount: integer;
+function GetCPUThreadCount: integer;
+function GetEnabledCPUCount: int64;
+function CountSetBits(bitMask : int64) : ni;
+function xGetProcessorCount: integer;deprecated;
 procedure CopyFile(sSource: string; sTarget: string; bFailIfExists: boolean = false);
 procedure BitSet(byt: pbyte; bit: nativeint; bState: boolean);inline;
 function BitGet(byt: pbyte; bit: nativeint): boolean;inline;
@@ -1171,23 +1175,46 @@ end;
 
 
 
-function GetNumberOfProcessors: integer;
+function GetNumberOfPhysicalProcessors: integer;
 var
   lpi: TLogicalProcessorInformation;
 begin
-  result := TThread.CurrentThread.ProcessorCount;
   lpi := GetLogicalProcessorInfo;
-  result := lpi.LogicalProcessorCount;
+  result := lpi.ProcessorCoreCount;
 end;
 
 function GetCPUCount: integer;
 begin
-  result := GEtNumberOfProcessors;
+  result := GetEnabledCPUCount;
 end;
 
-function GetProcessorCount: integer;
+function GetCPUThreadCount: integer;
 begin
-  result := GEtNumberOfProcessors;
+  result := GetNumberOfLogicalProcessors;
+end;
+
+function GetEnabledCPUCount: int64;
+var
+  procafmask, sysafmask: int64;
+  p,s: DWORD_PTR;
+begin
+  p := DWORD_PTR(@procafmask);
+  s := DWORD_PTR(@sysafmask);
+  GetProcessAffinityMask( GetCurrentProcess, p,s);
+  result := countsetbits(int64(p));
+end;
+
+function xGetProcessorCount: integer;
+begin
+  result := GetEnabledCPUCount;
+end;
+
+function GetNumberOfLogicalProcessors: integer;
+var
+  lpi: TLogicalProcessorInformation;
+begin
+  lpi := GetLogicalProcessorInfo;
+  result := lpi.LogicalProcessorCount;
 end;
 
 
@@ -2982,17 +3009,14 @@ end;
 
 
 
-function CountSetBits(bitMask : NativeUInt) : integer;
+function CountSetBits(bitMask : int64) : ni;
 var
-  lShift, i : integer;
-  bitTest : NativeUInt;
+  i : integer;
 begin
-  lShift := SizeOf(NativeUInt)*8 - 1;
   result := 0;
-  bitTest := 1 shl lShift;
-  for i := 0 to lShift do begin
-    if (bitMask and bitTest) <> 0 then Inc(result);
-    bitTest := bitTest shr 1;
+  for i := 0 to 63 do begin
+    if (bitMask and 1) <> 0 then Inc(result);
+    bitMask := bitmask shr 1;
   end;
 end;
 
@@ -3000,7 +3024,9 @@ function GetLogicalProcessorInfo : TLogicalProcessorInformation;
 var
   i: Integer;
   ReturnLength: DWORD;
-  Buffer: array of TSystemLogicalProcessorInformation;
+  Buffer: array [0..2047] of TSystemLogicalProcessorInformation;
+  cnt: ni;
+  logicals: ni;
 begin
   result.LogicalProcessorCount := 0;
   result.NumaNodeCount := 0;
@@ -3009,27 +3035,27 @@ begin
   result.ProcessorL2CacheCount := 0;
   result.ProcessorL3CacheCount := 0;
   result.ProcessorPackageCount := 0;
-  SetLength(Buffer, 256);
-  returnlength := sizeof(TSystemLogicalProcessorInformation)*length(buffer);
+  returnlength := sizeof(buffer);
   if not GetLogicalProcessorInformation(@Buffer[0], ReturnLength) then
   begin
     if GetLastError = ERROR_INSUFFICIENT_BUFFER then begin
-      SetLength(Buffer,
-        ReturnLength div SizeOf(TSystemLogicalProcessorInformation) + 1);
       if not GetLogicalProcessorInformation(@Buffer[0], ReturnLength) then
         RaiseLastOSError;
     end else
       RaiseLastOSError;
   end;
-  SetLength(Buffer, ReturnLength div SizeOf(TSystemLogicalProcessorInformation));
 
-  for i := 0 to High(Buffer) do begin
+  cnt := (ReturnLength div (SizeOf(TSystemLogicalProcessorInformation)-1));
+  for i := 0 to cnt do begin
     case Buffer[i].Relationship of
         RelationNumaNode: Inc(result.NumaNodeCount);
         RelationProcessorCore:
           begin
-            Inc(result.ProcessorCoreCount);
-            result.LogicalProcessorCount := result.LogicalProcessorCount + CountSetBits(Buffer[i].ProcessorMask);
+            logicals := CountSetBits(Buffer[i].ProcessorMask);
+            if logicals > 0 then begin
+              Inc(result.ProcessorCoreCount);
+              result.LogicalProcessorCount := result.LogicalProcessorCount + logicals;
+            end;
           end;
         RelationCache:
           begin

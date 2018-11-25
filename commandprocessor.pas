@@ -120,7 +120,9 @@ type
   end;
 
   TWaitableCommandList = class;//forward
+  TCommand = class;//forward
 
+  TCommandFinishedProc = reference to procedure (cmd: TCommand);
 
   TCommand = class(TSharedObject, IIndirectlyLinkable<TCommand>)
   strict
@@ -241,6 +243,7 @@ type
     procedure DoExecute; virtual; abstract;
   public
     evWait: TSignal;
+    onFinish_Anon: TCommandFinishedProc;
     procedure AddLinkage(link: TLInkage<TCommand>; list: TObject);
     function GetlinkageFor(obj: TObject): TLinkage<TCommand>;
     procedure RemoveLinkage(obj: TObject);
@@ -584,7 +587,7 @@ type
     // note that this is a SEPARATE thread from the main thread so events can only trigger postmessages
 
     procedure CheckIfShouldSTopThread;
-    procedure WaitForAll;
+    procedure WaitForAll(exceptFor: TCommand = nil);
     property CompleteCount: NativeInt read GetCompleteCount;
     property IsComplete: boolean read GetIsComplete;
 
@@ -1424,6 +1427,8 @@ begin
         if not IsCancelled then begin
           DoExecute;
           PostProcess;
+          if assigned(onFinish_Anon) then
+            onFinish_Anon(self);
         end;
         threadcommand := nil;
         FCompletelyFinished := true;
@@ -1650,8 +1655,8 @@ end;
 
 procedure TCommand.SetCPUExpense(Value: single);
 begin
-  if Value > GetNumberOfProcessors then
-    Value := GetNumberOfProcessors;
+  if Value > GetEnabledCPUCount then
+    Value := GetEnabledCPUCount;
 
   FCPUExpense := Value;
   AlertCommandChange(FProcessor);
@@ -2245,11 +2250,11 @@ var
     result := iBest;
   end;
 begin
-  iCPUs := GetNumberOfProcessors;
+  iCPUs := GetEnabledCPUCount;
   FillMem(pointer(@a[0]), sizeof(a), 0);
   Lock;
   try
-    iCPUs := GEtNumberOfProcessors;
+    iCPUs := GetCPUThreadCount;
 
     //go through all the commands
     //and assign each command to a CPU and record CPU expense
@@ -2970,7 +2975,7 @@ begin
     end;
 
   finally
-    result := lesserof(GetnumberofProcessors,result);
+    result := lesserof(GetCPUThreadCount,result);
     Unlock;
   end;
 end;
@@ -3422,7 +3427,7 @@ begin
         if (FCommandIndex >= FIncompleteCommands.count) then
           FCommandIndex := 0;
       end;
-      if ((c.CPUExpense > 0.0) and (rC + c.CPUExpense > GetnumberofProcessors)) or
+      if ((c.CPUExpense > 0.0) and (rC + c.CPUExpense > GetCPUThreadCount)) or
         ((c.NetworkExpense > 0.0) and (rN + c.NetworkExpense > 1.0))
         or ((c.MemoryExpense > 0.0) and (rM + c.MemoryExpense > 1.0)) then begin
         inc(t);
@@ -3841,7 +3846,7 @@ begin
         r5 := r5others + c.MemoryExpenseGB;
 
         bOverload := (
-             ((r1 > GetnumberofProcessors) and (r1Others>0.0))
+             ((r1 > GetEnabledCPUCount) and (r1Others>0.0))
           or ((r2 > 1.0) and (r2others > 0.0))
           or ((r4 > 1.0) and (r4others > 0.0))
           or ((r5 * 1000000000) > GetPhysicalMemory) and (r5others > 0.0));
@@ -4103,11 +4108,13 @@ begin
   LeaveCriticalSection(sect_incoming);
 end;
 
-procedure TCommandProcessor.WaitForAll;
+procedure TCommandProcessor.WaitForAll(exceptFor: TCommand);
 // NOTE!: FOR EXTERNAL USE ONLY!
 // NOTE NOTE NOTE!:  DO NOT CALL FROM WITHIN SAME THREAD
 // NOTE! we're using FWaitIndex isntead of the usual T because if the commands
 // are reordered then the waitindex must be reset
+var
+  cnt: ni;
 begin
   if Assigned(OnWaitForAll) then
     OnWaitForAll(self);
@@ -4119,6 +4126,10 @@ begin
   finally
     Unlock;
   end;
+  cnt := 0;
+  if exceptFor <> nil then
+    cnt := 1;
+
   while FWaitIndex < CommandCount do begin
     Commands[FWaitIndex].WaitFor;
 
