@@ -1,1 +1,1 @@
-..\..\githelpers.githelper.exe
+..\..\githelpers\githelper.exe
