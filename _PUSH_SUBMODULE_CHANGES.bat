@@ -4,7 +4,7 @@ git commit -m "%msg%"
 git push
 cd ..
 git add commonx
-git commit -m "submodule tracking hash change"
+git commit -m "%msg%"
 git push
 cd commonx
 pause
