@@ -18,8 +18,10 @@ type
     Series1: TPieSeries;
     TabSheet4: TTabSheet;
     ListView1: TListView;
+    tmStartupHack: TTimer;
     procedure Timer1Timer(Sender: TObject);
     procedure TabSheet2Show(Sender: TObject);
+    procedure tmStartupHackTimer(Sender: TObject);
   private
     { Private declarations }
     bg: TfrmBGThreadWatcher;
@@ -29,6 +31,7 @@ type
     destructor Destroy;override;
     procedure UpdateMasterMonitor;
     procedure PutIn(parnt: TWinControl);
+    procedure CReateWatcher;
   end;
 
 implementation
@@ -47,6 +50,15 @@ constructor TframTotalDebug.Create(aowner: TComponent);
 begin
   inherited;
 //  slBackLog := Tstringlist.create;
+end;
+
+procedure TframTotalDebug.CReateWatcher;
+begin
+  if not assigned(bg) then begin
+    bg := TfrmBGThreadWatcher.Create(self);
+    bg.Parent := TabSheet2;
+  end;
+
 end;
 
 destructor TframTotalDebug.Destroy;
@@ -68,10 +80,7 @@ end;
 
 procedure TframTotalDebug.TabSheet2Show(Sender: TObject);
 begin
-  if not assigned(bg) then begin
-    bg := TfrmBGThreadWatcher.Create(self);
-    bg.Parent := TabSheet2;
-  end;
+  createwatcher;
 
 end;
 
@@ -81,8 +90,10 @@ begin
 {$IFDEF DO_MEM_CHART}
   BrainScanUltra.MemChart(chart1);
 {$ENDIF}
+  CreateWatcher;
 
   UpdateMasterMonitor;
+
 
   if not assigned(bg) then begin
     bg := TfrmBGThreadWatcher.Create(self);
@@ -93,6 +104,24 @@ begin
 
 
 
+
+
+
+
+end;
+
+procedure TframTotalDebug.tmStartupHackTimer(Sender: TObject);
+begin
+  //I have a love-hate relationship with Delphi
+  //as it has a ton of bugs... like this one...
+  //my frames will not show unless I put a timer
+  //in the app and cycle through each of the tabs.
+
+  //cycle through next page
+  tabCommands.ActivePageIndex := (tabCommands.activepageIndex + 1) mod tabCommands.PageCount;
+
+  //stop timer once all pages have been loaded
+  tmStartupHack.enabled := tabCommands.ActivePageIndex > 0;
 
 
 end;

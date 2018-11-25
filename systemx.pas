@@ -40,8 +40,15 @@ uses
   sysutils;
 
 type
-
-
+  TLogicalProcessorInformation = record
+    LogicalProcessorCount : integer;
+    NumaNodeCount : integer;
+    ProcessorCoreCount : integer;
+    ProcessorL1CacheCount : integer;
+    ProcessorL2CacheCount : integer;
+    ProcessorL3CacheCount : integer;
+    ProcessorPackageCount : integer;
+  end;
 
 {$IFDEF USE_SYNCOBJS}
 
@@ -182,6 +189,7 @@ function Varsame(v1,v2: variant): boolean;
 function stridelength(p1,p2: pointer): ni;inline;
 function LocalTimeToGMT(dt: TDateTime): TDateTime;
 function GMTtoLocalTime(dt: TDateTime): TDatetime;
+function GetLogicalProcessorInfo : TLogicalProcessorInformation;
 
 function FileSeek64(Handle: THandle; offset: int64; origin: ni): int64;
 
@@ -1164,8 +1172,12 @@ end;
 
 
 function GetNumberOfProcessors: integer;
+var
+  lpi: TLogicalProcessorInformation;
 begin
   result := TThread.CurrentThread.ProcessorCount;
+  lpi := GetLogicalProcessorInfo;
+  result := lpi.LogicalProcessorCount;
 end;
 
 function GetCPUCount: integer;
@@ -2966,6 +2978,70 @@ begin
   if not WinGetPhysicallyInstalledSystemMemory(result) then
     exit(0);
 
+end;
+
+
+
+function CountSetBits(bitMask : NativeUInt) : integer;
+var
+  lShift, i : integer;
+  bitTest : NativeUInt;
+begin
+  lShift := SizeOf(NativeUInt)*8 - 1;
+  result := 0;
+  bitTest := 1 shl lShift;
+  for i := 0 to lShift do begin
+    if (bitMask and bitTest) <> 0 then Inc(result);
+    bitTest := bitTest shr 1;
+  end;
+end;
+
+function GetLogicalProcessorInfo : TLogicalProcessorInformation;
+var
+  i: Integer;
+  ReturnLength: DWORD;
+  Buffer: array of TSystemLogicalProcessorInformation;
+begin
+  result.LogicalProcessorCount := 0;
+  result.NumaNodeCount := 0;
+  result.ProcessorCoreCount := 0;
+  result.ProcessorL1CacheCount := 0;
+  result.ProcessorL2CacheCount := 0;
+  result.ProcessorL3CacheCount := 0;
+  result.ProcessorPackageCount := 0;
+  SetLength(Buffer, 256);
+  returnlength := sizeof(TSystemLogicalProcessorInformation)*length(buffer);
+  if not GetLogicalProcessorInformation(@Buffer[0], ReturnLength) then
+  begin
+    if GetLastError = ERROR_INSUFFICIENT_BUFFER then begin
+      SetLength(Buffer,
+        ReturnLength div SizeOf(TSystemLogicalProcessorInformation) + 1);
+      if not GetLogicalProcessorInformation(@Buffer[0], ReturnLength) then
+        RaiseLastOSError;
+    end else
+      RaiseLastOSError;
+  end;
+  SetLength(Buffer, ReturnLength div SizeOf(TSystemLogicalProcessorInformation));
+
+  for i := 0 to High(Buffer) do begin
+    case Buffer[i].Relationship of
+        RelationNumaNode: Inc(result.NumaNodeCount);
+        RelationProcessorCore:
+          begin
+            Inc(result.ProcessorCoreCount);
+            result.LogicalProcessorCount := result.LogicalProcessorCount + CountSetBits(Buffer[i].ProcessorMask);
+          end;
+        RelationCache:
+          begin
+            if (Buffer[i].Cache.Level = 1) then Inc(result.ProcessorL1CacheCount)
+            else if (Buffer[i].Cache.Level = 2) then Inc(result.ProcessorL2CacheCount)
+            else if (Buffer[i].Cache.Level = 3) then Inc(result.ProcessorL3CacheCount);
+          end;
+        RelationProcessorPackage: Inc(result.ProcessorPackageCount);
+        else
+          raise Exception.Create('Error: Unsupported LOGICAL_PROCESSOR_RELATIONSHIP value.');
+    end;
+  end;
 end;
 
 
