@@ -1,5 +1,5 @@
 //this unit fixes deprecated code issues post delphi xe6
-unit SockFix;
+unit sockfix;
 
 {$WARN SYMBOL_DEPRECATED OFF}
 
