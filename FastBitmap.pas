@@ -46,13 +46,20 @@ type
   TAnonProc = reference to procedure ();
   TIterateExternalProc = reference to procedure (src: TFastBitmap; dst: TFastBitmap; rect: TRect; prog: PProgress = nil);
 
+
+  TTileState = (tsStarted, tsFinished);
+  TTileNotifyEvent = procedure (src, dest: TFastBitmap; region: TRect; state: TTileState) of object;
+
+
   Tcmd_FastBitmapIterate = class(TCommand)
   protected
     procedure DoExecute; override;
   public
     src, dest: TFastBitmap;
     proc: TIterateExternalProc;
+    OnTileStateChange: TTileNotifyEvent;
   end;
+
 
   Tcmd_FastBitmapFX = class(TCommand)
   protected
@@ -61,6 +68,9 @@ type
     proc: TIterateExternalProc;
     region: TRect;
     src, dest: TFastBitmap;
+    state: TTileState;
+    OnTileStateChange: TTileNotifyEvent;
+    procedure SyncNotify;
   end;
 
   TFakeBrush = record
@@ -209,7 +219,7 @@ type
 {$IFNDEF FMX}
     procedure AssignToPicture(p: TPicture);
     procedure AssignToControl(gi: TPersistent);
-    procedure FromFAstBitmapRect(fbm: TFastBitmap; ul,br: TPoint);
+    procedure FromFAstBitmapRect(fbm: TFastBitmap; r: TRect);
 {$ELSE}
     procedure FromFAstBitmapRect(fbm: TFastBitmap; ul, br: TPoint);
 {$ENDIF}
@@ -241,7 +251,7 @@ type
     property FileName: string read FFileNAme;
     procedure IterateExternalSource(src: TFastBitmap; proc: TIterateExternalProc; fin: TAnonProc);
     procedure IterateExternalSource_end(cmd: Tcmd_FastBitmapIterate);
-    function IterateExternalSource_begin(src: TFastBitmap; proc: TIterateExternalProc; fin: TAnonProc): Tcmd_FastBitmapIterate;
+    function IterateExternalSource_begin(src: TFastBitmap; proc: TIterateExternalProc; notify: TTileNotifyEvent = nil): Tcmd_FastBitmapIterate;
 
 
 
@@ -1535,17 +1545,18 @@ end;
 procedure TFastBitmap.IterateExternalSource(src: TFastBitmap;
   proc: TIterateExternalProc; fin: TAnonProc);
 begin
-  IterateExternalSource_End(IterateExternalSource_Begin(src, proc, fin));
+  IterateExternalSource_End(IterateExternalSource_Begin(src, proc, nil));
 end;
 
 
 function TFastBitmap.IterateExternalSource_begin(src: TFastBitmap;
-  proc: TIterateExternalProc; fin: TAnonProc): Tcmd_FastBitmapIterate;
+  proc: TIterateExternalProc; notify: TTileNotifyEvent = nil): Tcmd_FastBitmapIterate;
 begin
   result := Tcmd_FastBitmapIterate.create;
   result.src := src;
   result.dest := self;
   result.proc := proc;
+  result.OnTileStateChange := notify;
   result.start;
 
 end;
@@ -2025,22 +2036,23 @@ begin
 end;
 
 
-procedure TFastBitmap.FromFAstBitmapRect(fbm: TFastBitmap; ul,br: TPoint);
+procedure TFastBitmap.FromFAstBitmapRect(fbm: TFastBitmap; r: TRect);
 var
   xy: TPoint;
   x,y: ni;
 begin
-  Order(ul,br);
-  xy := br-ul;
+  Order(r);
+  xy.x := r.Width;
+  xy.y := r.Height;
 
   allocate(xy.x+1,xy.y+1);
 
   for y:= 0 to xy.y do begin
     for x := 0 to xy.x do begin
 {$IFDEF FMX}
-      canvas.alphapixels[x,y] := fbm.canvas.alphapixels[x+ul.x, y+ul.y];
+      canvas.alphapixels[x,y] := fbm.canvas.alphapixels[x+r.Left, y+r.top];
 {$ELSE}
-      canvas.pixels[x,y] := fbm.canvas.pixels[x+ul.x, y+ul.y];
+      canvas.pixels[x,y] := fbm.canvas.pixels[x+r.left, y+r.top];
 {$ENDIF}
     end;
   end;
@@ -2054,8 +2066,20 @@ end;
 procedure Tcmd_FastBitmapFX.DoExecute;
 begin
   inherited;
-//  memoryexpense := 1.0;
+
+  if assigned(OnTileStateChange) then
+    TThread.Synchronize(self.Thread.realthread, SyncNotify);
+
   proc(src, dest, region, @self.progress);
+
+  state := tsFinished;
+  if assigned(OnTileStateChange) then
+    TThread.Synchronize(self.Thread.realthread, SyncNotify);
+end;
+
+procedure Tcmd_FastBitmapFX.SyncNotify;
+begin
+  OnTileStateChange(src, dest, region, state);
 end;
 
 { Tcmd_FastBitmapIterate }
@@ -2091,13 +2115,14 @@ begin
       cmd.proc := proc;
       cmd.region := rect(0,y,src.width-1,lesserof(src.height-1,y+(ystride-1)));
       cmd.priority := bpLower;
+      cmd.OnTileStateChange := self.OnTileStateChange;
       cmd.Start;
       cl.add(cmd);
   {$ENDIF}
       inc(y, yStride);
     end;
 {$ELSE}
-    grid.Configure(src.Width, src.height, 64, 64);
+    grid.Configure(src.Width, src.height, 128, 128);
     for x := 0 to grid.Steps-1 do begin
       cmd := Tcmd_FastBitmapFX.create;
       cmd.src := src;
@@ -2105,7 +2130,9 @@ begin
       cmd.proc := proc;
       cmd.region := grid.ToTile(grid.LeftToRight(x));
       cmd.priority := bpLower;
+      cmd.OnTileStateChange := self.OnTileStateChange;
       cmd.Start;
+
       cl.add(cmd);
     end;
 
