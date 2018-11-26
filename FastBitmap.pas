@@ -3,8 +3,14 @@ unit FastBitmap;
 interface
 {$I DELPHIDEFS.inc}
 
+
 uses
 {$DEFINE MT_FBM}
+{$IFNDEF WINDOWS}
+  {$DEFINE SLOW_CANVAS_CALLS}
+{$ELSE}
+  Winapi.windows,
+{$ENDIF}
 {$IFNDEF FMX}
   graphics,helpers.stream,
   //pngimage_fixed,
@@ -12,8 +18,13 @@ uses
   helpers.stream,
   uitypes,
 {$ENDIF}
+  gridwalker,
   debug,endian, vcl.imaging.pngimage, vcl.imaging.jpeg, commandprocessor,
-  betterobject, sharedobject, graphicsx, classes, geometry, types, colorconversion, typex, numbers, sysutils, stringx.ansi, systemx, colorblending;
+  betterobject, sharedobject, graphicsx, classes, geometry, types, colorconversion,
+  typex, numbers, sysutils, stringx.ansi, systemx,
+
+
+  colorblending;
 
 const
   FBM_FMT_RAW_ARGB = 1;
@@ -1981,8 +1992,13 @@ begin
           c := self.Canvas.Pixels[x,y];
           result.Canvas.Pixels[x,y] := c and $FFFFFF;
           result.AlphaScanline[y][x] := (c shr 24);
-        end else
+        end else begin
+{$IFDEF SLOW_CANVAS_CALLS}
           result.Canvas.Pixels[x,y] := self.Canvas.Pixels[x,y];
+{$ELSE}
+          Winapi.Windows.SetPixel(result.canvas.Handle, X, Y, ColorToRGB(self.Canvas.Pixels[x,y]));
+{$ENDIF}
+        end;
 
       end;
     end;
@@ -2047,13 +2063,19 @@ end;
 procedure Tcmd_FastBitmapIterate.DoExecute;
 var
   x,y: ni;
+{$DEFINE USE_GRIDWALKER}
+{$IFNDEF USE_GRIDWALKER}
   ystride: ni;
+{$ELSE}
+  grid: TGridWalker;
+{$ENDIF}
   cmd: Tcmd_FastBitmapFX;
   cl: TCommandList<Tcmd_FastBitmapFX>;
 begin
   inherited;
   cl := TCommandList<Tcmd_FastBitmapFX>.create;
   try
+{$IFNDEF USE_GRIDWALKER}
     ystride := greaterof(1,src.height div (greaterof(1,GetEnabledCPUCount)*2));
 
     y := 0;
@@ -2068,11 +2090,26 @@ begin
       cmd.dest := dest;
       cmd.proc := proc;
       cmd.region := rect(0,y,src.width-1,lesserof(src.height-1,y+(ystride-1)));
+      cmd.priority := bpLower;
       cmd.Start;
       cl.add(cmd);
   {$ENDIF}
       inc(y, yStride);
     end;
+{$ELSE}
+    grid.Configure(src.Width, src.height, 64, 64);
+    for x := 0 to grid.Steps-1 do begin
+      cmd := Tcmd_FastBitmapFX.create;
+      cmd.src := src;
+      cmd.dest := dest;
+      cmd.proc := proc;
+      cmd.region := grid.ToTile(grid.LeftToRight(x));
+      cmd.priority := bpLower;
+      cmd.Start;
+      cl.add(cmd);
+    end;
+
+{$ENDIF}
 
     stepcount := cl.count;
     for y:= 0 to cl.count-1 do begin
