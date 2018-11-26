@@ -3,11 +3,11 @@ unit better_Sockets;
 interface
 
 uses
-  better_sockets, classes;
+  sockfix, classes;
 
 type
   TBetterCustomIPClient = TCustomIPClient;
-  ESocketError = web.win.sockets.ESocketError;
+  ESocketError = sockfix.ESocketError;
   TBetterTCpClient = TTcpClient;
   TBetterTcpServer = TTcpServer;
 

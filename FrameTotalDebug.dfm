@@ -16,8 +16,6 @@ object framTotalDebug: TframTotalDebug
       Caption = 'Commands'
       ImageIndex = 1
       OnShow = TabSheet2Show
-      ExplicitLeft = 0
-      ExplicitTop = 40
     end
     object TabSheet3: TTabSheet
       Caption = 'Memory'
@@ -94,5 +92,11 @@ object framTotalDebug: TframTotalDebug
     OnTimer = Timer1Timer
     Left = 232
     Top = 144
+  end
+  object tmStartupHack: TTimer
+    Interval = 100
+    OnTimer = tmStartupHackTimer
+    Left = 136
+    Top = 160
   end
 end

@@ -32,6 +32,10 @@ type
 
 
 
+  TQueueItem = class;//forward
+
+  TQueueItemFinishedProc = reference to procedure (qi: TQueueItem);
+
   TQueueItem = class(TLightObject)
   strict private
     function GEtWait: boolean;inline;
@@ -47,6 +51,7 @@ type
     wasexecuted: boolean;
     FWaitSignal: TSignal;
     tmUSerMarker: ticker;
+    onFinish_Anon: TQueueItemFinishedProc;
     constructor Create;override;
     procedure Init;override;
     procedure Detach;override;
@@ -60,6 +65,15 @@ type
     property Queue: TAbstractSimpleQueue read FQueue write FQueue;
     function DebugString: string;virtual;
     property AllowSynchronous: boolean read FAllowSynchronous write FAllowSynchronous;
+
+  end;
+
+  TIndirectlyLinkableQueueItem = class(TQueueItem, IIndirectlyLinkable<TIndirectlyLinkableQueueItem>)
+  private
+    indirectlinkage: array of TLinkage<TIndirectlyLinkableQueueItem>;
+    function GetLinkageFor(obj: TObject): TLinkage<TIndirectlyLinkableQueueItem>;
+    procedure AddLinkage(link: TLinkage<TIndirectlyLinkableQueueItem>; list: TObject);
+    procedure RemoveLinkage(list: TObject);
   end;
 
   TAnonymousQueueProc = reference to procedure;
@@ -766,7 +780,8 @@ begin
   wasexecuted := true;
 //  self.queue.status := debugstring;
   DoExecute;
-
+  if assigned(onfinish_anon) then
+    onFinish_anon(self);
 
 end;
 
@@ -834,7 +849,7 @@ begin
   RoundRobin := true;
   evEmptyAvailable := TSignal.create;
   FList := TBetterList<TSimpleQueue>.create;
-  startcount := lesserof(MQ_START_COUNT,GetNumberOfProcessors);
+  startcount := lesserof(MQ_START_COUNT,GetEnabledCPUCount);
   while FList.Count < startcount do begin
     FList.Add(TPM.Needthread<TSimpleQueue>(nil));
     FList[FList.count-1].Name := 'MQ'+inttostr(FList.count-1);
@@ -851,14 +866,14 @@ begin
   if growfinished then exit;
   Lock;
   try
-    if FList.Count < GEtnumberOfProcessors then begin
+    if FList.Count < GEtnumberOfLogicalProcessors then begin
       FList.Add(TPM.Needthread<TSimpleQueue>(nil));
       FList[FList.count-1].Name := 'MQ'+inttostr(FList.count-1);
       FList[FList.count-1].OnEmpty := self.QueueOnEmpty;
       FList[FList.count-1].BetterPriority := bpHighest;
       FList[FList.count-1].Loop := true;
       FList[FList.count-1].BeginStart;
-      growfinished := FList.count >= GEtnumberOfProcessors;
+      growfinished := FList.count >= GEtnumberOfLogicalProcessors;
     end else
       growfinished := true;
 
@@ -1061,6 +1076,49 @@ begin
   itm.AutoDestroy := bAutoDestroy;
   Self.AddItem(itm);
   result := itm;
+end;
+
+{ TIndirectlyLinkableQueueItem }
+
+procedure TIndirectlyLinkableQueueItem.AddLinkage(
+  link: TLinkage<TIndirectlyLinkableQueueItem>; list: TObject);
+begin
+//
+  setlength(indirectlinkage, length(indirectlinkage)+1);
+  indirectlinkage[high(indirectlinkage)] := link;
+
+end;
+
+function TIndirectlyLinkableQueueItem.GetLinkageFor(
+  obj: TObject): TLinkage<TIndirectlyLinkableQueueItem>;
+var
+  t: ni;
+begin
+  result := nil;
+  for t:= 0 to high(indirectlinkage) do begin
+    if indirectlinkage[t].obj = obj then
+      exit(indirectlinkage[t]);
+  end;
+//
+end;
+
+procedure TIndirectlyLinkableQueueItem.RemoveLinkage(list: TObject);
+var
+  idx: ni;
+  t,u: ni;
+begin
+  idx := -1;
+  for t:= 0 to high(indirectlinkage) do begin
+    if indirectlinkage[t].obj = list then begin
+      for u := t to high(indirectlinkage)-1 do begin
+        indirectlinkage[u] := indirectlinkage[u+1];
+      end;
+      setlength(indirectlinkage, length(indirectlinkage)-1);
+    end;
+
+  end;
+
+//
 end;
 
 end.

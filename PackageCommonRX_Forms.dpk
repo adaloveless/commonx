@@ -1,4 +1,16 @@
 package PackageCommonRX_Forms;
+//READ ME!
+// If you get "cannot find procedure entry point in DLL" or similar message
+// when installing this package or loading projects that use it. Update your
+// library path.
+//
+// although you can usually get away without updating your GLOBAL
+// library path (Tools->options->Library) for most packages, you can't be
+// so lucky with this package.  I believe this is because this package
+// is dependent on PackageCommonRX to work.  Update the library path to inlclude
+// the path where PackageCommonRX is located
+//
+
 
 {$R *.res}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
@@ -43,7 +55,6 @@ requires
 
 contains
   FormBase in 'FormBase.pas' {frmBase},
-  FormDataAware in 'FormDataAware.pas' {frmDataAware},
   FormReg in 'FormReg.pas';
 
 end.

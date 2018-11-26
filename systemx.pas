@@ -40,8 +40,15 @@ uses
   sysutils;
 
 type
-
-
+  TLogicalProcessorInformation = record
+    LogicalProcessorCount : integer;
+    NumaNodeCount : integer;
+    ProcessorCoreCount : integer;
+    ProcessorL1CacheCount : integer;
+    ProcessorL2CacheCount : integer;
+    ProcessorL3CacheCount : integer;
+    ProcessorPackageCount : integer;
+  end;
 
 {$IFDEF USE_SYNCOBJS}
 
@@ -108,9 +115,13 @@ function ResolveRelativePath(const sPAth: string): string;
 function Slash(const sPath: string): string;
 function UnSlash(const sPath: string): string;
 function ExtractNetworkRoot(s: string): string;
-function GetnumberofProcessors: integer;
+function GetnumberofPhysicalProcessors: integer;
+function GetNumberOfLogicalProcessors: integer;
 function GetCPUCount: integer;
-function GetProcessorCount: integer;
+function GetCPUThreadCount: integer;
+function GetEnabledCPUCount: int64;
+function CountSetBits(bitMask : int64) : ni;
+function xGetProcessorCount: integer;deprecated;
 procedure CopyFile(sSource: string; sTarget: string; bFailIfExists: boolean = false);
 procedure BitSet(byt: pbyte; bit: nativeint; bState: boolean);inline;
 function BitGet(byt: pbyte; bit: nativeint): boolean;inline;
@@ -182,6 +193,7 @@ function Varsame(v1,v2: variant): boolean;
 function stridelength(p1,p2: pointer): ni;inline;
 function LocalTimeToGMT(dt: TDateTime): TDateTime;
 function GMTtoLocalTime(dt: TDateTime): TDatetime;
+function GetLogicalProcessorInfo : TLogicalProcessorInformation;
 
 function FileSeek64(Handle: THandle; offset: int64; origin: ni): int64;
 
@@ -1163,19 +1175,46 @@ end;
 
 
 
-function GetNumberOfProcessors: integer;
+function GetNumberOfPhysicalProcessors: integer;
+var
+  lpi: TLogicalProcessorInformation;
 begin
-  result := TThread.CurrentThread.ProcessorCount;
+  lpi := GetLogicalProcessorInfo;
+  result := lpi.ProcessorCoreCount;
 end;
 
 function GetCPUCount: integer;
 begin
-  result := GEtNumberOfProcessors;
+  result := GetEnabledCPUCount;
 end;
 
-function GetProcessorCount: integer;
+function GetCPUThreadCount: integer;
 begin
-  result := GEtNumberOfProcessors;
+  result := GetNumberOfLogicalProcessors;
+end;
+
+function GetEnabledCPUCount: int64;
+var
+  procafmask, sysafmask: int64;
+  p,s: DWORD_PTR;
+begin
+  p := DWORD_PTR(@procafmask);
+  s := DWORD_PTR(@sysafmask);
+  GetProcessAffinityMask( GetCurrentProcess, p,s);
+  result := countsetbits(int64(p));
+end;
+
+function xGetProcessorCount: integer;
+begin
+  result := GetEnabledCPUCount;
+end;
+
+function GetNumberOfLogicalProcessors: integer;
+var
+  lpi: TLogicalProcessorInformation;
+begin
+  lpi := GetLogicalProcessorInfo;
+  result := lpi.LogicalProcessorCount;
 end;
 
 
@@ -2966,6 +3005,69 @@ begin
   if not WinGetPhysicallyInstalledSystemMemory(result) then
     exit(0);
 
+end;
+
+
+
+function CountSetBits(bitMask : int64) : ni;
+var
+  i : integer;
+begin
+  result := 0;
+  for i := 0 to 63 do begin
+    if (bitMask and 1) <> 0 then Inc(result);
+    bitMask := bitmask shr 1;
+  end;
+end;
+
+function GetLogicalProcessorInfo : TLogicalProcessorInformation;
+var
+  i: Integer;
+  ReturnLength: DWORD;
+  Buffer: array [0..2047] of TSystemLogicalProcessorInformation;
+  cnt: ni;
+  logicals: ni;
+begin
+  result.LogicalProcessorCount := 0;
+  result.NumaNodeCount := 0;
+  result.ProcessorCoreCount := 0;
+  result.ProcessorL1CacheCount := 0;
+  result.ProcessorL2CacheCount := 0;
+  result.ProcessorL3CacheCount := 0;
+  result.ProcessorPackageCount := 0;
+  returnlength := sizeof(buffer);
+  if not GetLogicalProcessorInformation(@Buffer[0], ReturnLength) then
+  begin
+    if GetLastError = ERROR_INSUFFICIENT_BUFFER then begin
+      if not GetLogicalProcessorInformation(@Buffer[0], ReturnLength) then
+        RaiseLastOSError;
+    end else
+      RaiseLastOSError;
+  end;
+
+  cnt := (ReturnLength div (SizeOf(TSystemLogicalProcessorInformation)-1));
+  for i := 0 to cnt do begin
+    case Buffer[i].Relationship of
+        RelationNumaNode: Inc(result.NumaNodeCount);
+        RelationProcessorCore:
+          begin
+            logicals := CountSetBits(Buffer[i].ProcessorMask);
+            if logicals > 0 then begin
+              Inc(result.ProcessorCoreCount);
+              result.LogicalProcessorCount := result.LogicalProcessorCount + logicals;
+            end;
+          end;
+        RelationCache:
+          begin
+            if (Buffer[i].Cache.Level = 1) then Inc(result.ProcessorL1CacheCount)
+            else if (Buffer[i].Cache.Level = 2) then Inc(result.ProcessorL2CacheCount)
+            else if (Buffer[i].Cache.Level = 3) then Inc(result.ProcessorL3CacheCount);
+          end;
+        RelationProcessorPackage: Inc(result.ProcessorPackageCount);
+        else
+          raise Exception.Create('Error: Unsupported LOGICAL_PROCESSOR_RELATIONSHIP value.');
+    end;
+  end;
 end;
 
 

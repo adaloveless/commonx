@@ -5,7 +5,7 @@ interface
 
 uses
   orderlyinit, tickcount, managedthread, SysUtils, Classes, DB, SqlExpr, better_Sockets, systemx,inifiles, commandprocessor,
-  Sockets, classfactory, sharedobject, betterobject, windows, stringx, genericRDTPClient, storageenginetypes, helpers.list;
+  sockfix, classfactory, sharedobject, betterobject, windows, stringx, genericRDTPClient, storageenginetypes, helpers.list;
 
 const
   DB_CONNECTION_TIMEOUT: cardinal = 300000;

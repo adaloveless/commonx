@@ -3,7 +3,14 @@ unit FastBitmap;
 interface
 {$I DELPHIDEFS.inc}
 
+
 uses
+{$DEFINE MT_FBM}
+{$IFNDEF WINDOWS}
+  {$DEFINE SLOW_CANVAS_CALLS}
+{$ELSE}
+  Winapi.windows,
+{$ENDIF}
 {$IFNDEF FMX}
   graphics,helpers.stream,
   //pngimage_fixed,
@@ -11,14 +18,20 @@ uses
   helpers.stream,
   uitypes,
 {$ENDIF}
-  debug,endian, vcl.imaging.pngimage, vcl.imaging.jpeg,
-  betterobject, sharedobject, graphicsx, classes, geometry, types, colorconversion, typex, numbers, sysutils, stringx.ansi, systemx, colorblending;
+  gridwalker,
+  debug,endian, vcl.imaging.pngimage, vcl.imaging.jpeg, commandprocessor,
+  betterobject, sharedobject, graphicsx, classes, geometry, types, colorconversion,
+  typex, numbers, sysutils, stringx.ansi, systemx,
+
+
+  colorblending;
 
 const
   FBM_FMT_RAW_ARGB = 1;
   FMX_FMT_COMPRESSED_ARGB = 2;
 type
   TlocalFileStream = TFileStream;
+
 
   TFBMHeader = packed record
     a: int64;
@@ -29,6 +42,36 @@ type
     procedure Init;
   end;
   TFastBitmap = class;//forward
+
+  TAnonProc = reference to procedure ();
+  TIterateExternalProc = reference to procedure (src: TFastBitmap; dst: TFastBitmap; rect: TRect; prog: PProgress = nil);
+
+
+  TTileState = (tsStarted, tsFinished);
+  TTileNotifyEvent = procedure (src, dest: TFastBitmap; region: TRect; state: TTileState) of object;
+
+
+  Tcmd_FastBitmapIterate = class(TCommand)
+  protected
+    procedure DoExecute; override;
+  public
+    src, dest: TFastBitmap;
+    proc: TIterateExternalProc;
+    OnTileStateChange: TTileNotifyEvent;
+  end;
+
+
+  Tcmd_FastBitmapFX = class(TCommand)
+  protected
+    procedure DoExecute; override;
+  public
+    proc: TIterateExternalProc;
+    region: TRect;
+    src, dest: TFastBitmap;
+    state: TTileState;
+    OnTileStateChange: TTileNotifyEvent;
+    procedure SyncNotify;
+  end;
 
   TFakeBrush = record
     color: TColor;
@@ -89,6 +132,7 @@ type
     property AlphaPixels[x,y: integer]: TAlphaColor read GetAlphaPixels write SetAlphaPixels;
     property AlphaPixelsWrap[x,y: integer]: TAlphaColor read GetAlphaPixelsWrap write SetAlphaPixelsWrap;
 {$ENDIF}
+    function GetAveragePixel(x,y,radiusX, radiusY: ni): TColor;
     property HSLPixels[x,y: integer]: THSLNativefloatColor read GetHSLPixels write SetHSLPixels;
     procedure Rectangle(x1,y1,x2,y2: integer);
     procedure EmptyRectangle(x1, y1, x2, y2: integer);
@@ -105,6 +149,8 @@ type
     procedure ResetTextPos;
 
   end;
+
+
 
 
 
@@ -173,7 +219,7 @@ type
 {$IFNDEF FMX}
     procedure AssignToPicture(p: TPicture);
     procedure AssignToControl(gi: TPersistent);
-    procedure FromFAstBitmapRect(fbm: TFastBitmap; ul,br: TPoint);
+    procedure FromFAstBitmapRect(fbm: TFastBitmap; r: TRect);
 {$ELSE}
     procedure FromFAstBitmapRect(fbm: TFastBitmap; ul, br: TPoint);
 {$ENDIF}
@@ -203,6 +249,12 @@ type
     property EnableAlpha: boolean read FEnableAlpha write FEnableAlpha;
     procedure Effect_MotionDetect(op: TFastBitmap; bAverageCompensate: boolean; bCalcWeightedCenter: boolean = true);
     property FileName: string read FFileNAme;
+    procedure IterateExternalSource(src: TFastBitmap; proc: TIterateExternalProc; fin: TAnonProc);
+    procedure IterateExternalSource_end(cmd: Tcmd_FastBitmapIterate);
+    function IterateExternalSource_begin(src: TFastBitmap; proc: TIterateExternalProc; notify: TTileNotifyEvent = nil): Tcmd_FastBitmapIterate;
+
+
+
 
   end;
 
@@ -1092,6 +1144,28 @@ end;
 
 {$ENDIF}
 
+function TFastCanvas.GetAveragePixel(x, y, radiusX, radiusY: ni): TColor;
+var
+  gc, gcResult: TGiantColor;
+  xx,yy: ni;
+  cnt: ni;
+begin
+  gcResult.Init;
+  cnt := 0;
+  for yy := greaterof(0, y-radiusY) to lesserof(owner.height-1, y+radiusY) do begin
+    for xx := greaterof(0, x-radiusX) to lesserof(owner.width-1, x+radiusX) do begin
+      gc.FromColor(pixels[xx,yy]);
+      gcResult := gcResult + gc;
+      inc(cnt);
+    end;
+  end;
+
+  gcResult := gcResult / cnt;
+  gcResult.a := 1.0;
+  result := gcResult.toColor;
+
+end;
+
 function TFastCanvas.GetHSLPixels(x, y: integer): THSLNativefloatColor;
 begin
   result.FromColor(pixels[x,y]);
@@ -1428,11 +1502,16 @@ end;
 
 function TFastBitmap.GetScanLine(y: integer): PByte;
 begin
+{$IFDEF MT_FBM}
+  result := FScanlines[y];
+{$ELSE}
+  FCurrentScanLinePtr := FScanlines[y];
   if y <> FcurrentScanLine then begin
     FCurrentScanLine := y;
     FCurrentScanLinePtr := FScanlines[y];
   end;
   result := FcurrentscanLinePtr;
+{$ENDIF}
 //  result := FScanlines[y];
 
 end;
@@ -1462,6 +1541,32 @@ begin
   end;
 end;
 
+
+procedure TFastBitmap.IterateExternalSource(src: TFastBitmap;
+  proc: TIterateExternalProc; fin: TAnonProc);
+begin
+  IterateExternalSource_End(IterateExternalSource_Begin(src, proc, nil));
+end;
+
+
+function TFastBitmap.IterateExternalSource_begin(src: TFastBitmap;
+  proc: TIterateExternalProc; notify: TTileNotifyEvent = nil): Tcmd_FastBitmapIterate;
+begin
+  result := Tcmd_FastBitmapIterate.create;
+  result.src := src;
+  result.dest := self;
+  result.proc := proc;
+  result.OnTileStateChange := notify;
+  result.start;
+
+end;
+
+procedure TFastBitmap.IterateExternalSource_end(cmd: Tcmd_FastBitmapIterate);
+begin
+  cmd.waitfor;
+  cmd.free;
+  cmd := nil;
+end;
 
 procedure TFastBitmap.LoadFromFile(sFile: string);
 {$IFNDEF FMX}
@@ -1898,8 +2003,13 @@ begin
           c := self.Canvas.Pixels[x,y];
           result.Canvas.Pixels[x,y] := c and $FFFFFF;
           result.AlphaScanline[y][x] := (c shr 24);
-        end else
+        end else begin
+{$IFDEF SLOW_CANVAS_CALLS}
           result.Canvas.Pixels[x,y] := self.Canvas.Pixels[x,y];
+{$ELSE}
+          Winapi.Windows.SetPixel(result.canvas.Handle, X, Y, ColorToRGB(self.Canvas.Pixels[x,y]));
+{$ENDIF}
+        end;
 
       end;
     end;
@@ -1926,22 +2036,23 @@ begin
 end;
 
 
-procedure TFastBitmap.FromFAstBitmapRect(fbm: TFastBitmap; ul,br: TPoint);
+procedure TFastBitmap.FromFAstBitmapRect(fbm: TFastBitmap; r: TRect);
 var
   xy: TPoint;
   x,y: ni;
 begin
-  Order(ul,br);
-  xy := br-ul;
+  Order(r);
+  xy.x := r.Width;
+  xy.y := r.Height;
 
   allocate(xy.x+1,xy.y+1);
 
   for y:= 0 to xy.y do begin
     for x := 0 to xy.x do begin
 {$IFDEF FMX}
-      canvas.alphapixels[x,y] := fbm.canvas.alphapixels[x+ul.x, y+ul.y];
+      canvas.alphapixels[x,y] := fbm.canvas.alphapixels[x+r.Left, y+r.top];
 {$ELSE}
-      canvas.pixels[x,y] := fbm.canvas.pixels[x+ul.x, y+ul.y];
+      canvas.pixels[x,y] := fbm.canvas.pixels[x+r.left, y+r.top];
 {$ENDIF}
     end;
   end;
@@ -1950,4 +2061,95 @@ begin
 
 end;
 
+{ Tcmd_FastBitmapFX }
+
+procedure Tcmd_FastBitmapFX.DoExecute;
+begin
+  inherited;
+
+  if assigned(OnTileStateChange) then
+    TThread.Synchronize(self.Thread.realthread, SyncNotify);
+
+  proc(src, dest, region, @self.progress);
+
+  state := tsFinished;
+  if assigned(OnTileStateChange) then
+    TThread.Synchronize(self.Thread.realthread, SyncNotify);
+end;
+
+procedure Tcmd_FastBitmapFX.SyncNotify;
+begin
+  OnTileStateChange(src, dest, region, state);
+end;
+
+{ Tcmd_FastBitmapIterate }
+
+procedure Tcmd_FastBitmapIterate.DoExecute;
+var
+  x,y: ni;
+{$DEFINE USE_GRIDWALKER}
+{$IFNDEF USE_GRIDWALKER}
+  ystride: ni;
+{$ELSE}
+  grid: TGridWalker;
+{$ENDIF}
+  cmd: Tcmd_FastBitmapFX;
+  cl: TCommandList<Tcmd_FastBitmapFX>;
+begin
+  inherited;
+  cl := TCommandList<Tcmd_FastBitmapFX>.create;
+  try
+{$IFNDEF USE_GRIDWALKER}
+    ystride := greaterof(1,src.height div (greaterof(1,GetEnabledCPUCount)*2));
+
+    y := 0;
+    while y < src.Height-1 do begin
+  {$IFDEF NO_COMMANDS}
+      for x := 0 to src.Width-1 do begin
+        proc(src, self, rect(x,y,x,lesserof(src.height-1,y+(ystride-1))), nil);
+      end;
+  {$ELSE}
+      cmd := Tcmd_FastBitmapFX.create;
+      cmd.src := src;
+      cmd.dest := dest;
+      cmd.proc := proc;
+      cmd.region := rect(0,y,src.width-1,lesserof(src.height-1,y+(ystride-1)));
+      cmd.priority := bpLower;
+      cmd.OnTileStateChange := self.OnTileStateChange;
+      cmd.Start;
+      cl.add(cmd);
+  {$ENDIF}
+      inc(y, yStride);
+    end;
+{$ELSE}
+    grid.Configure(src.Width, src.height, 128, 128);
+    for x := 0 to grid.Steps-1 do begin
+      cmd := Tcmd_FastBitmapFX.create;
+      cmd.src := src;
+      cmd.dest := dest;
+      cmd.proc := proc;
+      cmd.region := grid.ToTile(grid.LeftToRight(x));
+      cmd.priority := bpLower;
+      cmd.OnTileStateChange := self.OnTileStateChange;
+      cmd.Start;
+
+      cl.add(cmd);
+    end;
+
+{$ENDIF}
+
+    stepcount := cl.count;
+    for y:= 0 to cl.count-1 do begin
+      step := y;
+      cl[y].WaitFor;
+    end;
+    cl.waitforall;
+  finally
+    cl.ClearAndDestroyCommands;
+    cl.free;
+  end;
+end;
+
 end.
+
+

@@ -160,11 +160,6 @@
         <DCCReference Include="vclwinx.dcp"/>
         <DCCReference Include="FormBase.pas">
             <Form>frmBase</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="FormDataAware.pas">
-            <Form>frmDataAware</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="FormReg.pas"/>
         <BuildConfiguration Include="Release">
@@ -222,12 +217,7 @@
                     <VersionInfoKeys Name="CFBundleAllowMixedLocalizations"/>
                     <VersionInfoKeys Name="CFBundleExecutable"/>
                 </VersionInfoKeys>
-                <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k240.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp240.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k240.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp240.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-                </Excluded_Packages>
+                <Excluded_Packages/>
             </Delphi.Personality>
             <Deployment Version="3">
                 <DeployFile LocalName="PackageCommonRX_Forms.bpl" Configuration="Debug" Class="ProjectOutput">
