@@ -2054,7 +2054,7 @@ begin
   inherited;
   cl := TCommandList<Tcmd_FastBitmapFX>.create;
   try
-    ystride := greaterof(1,src.height div (greaterof(1,GetEnabledCPUCount)*4));
+    ystride := greaterof(1,src.height div (greaterof(1,GetEnabledCPUCount)*2));
 
     y := 0;
     while y < src.Height-1 do begin
