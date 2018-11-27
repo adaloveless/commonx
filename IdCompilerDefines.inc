@@ -366,13 +366,23 @@
   {$ENDIF}
 {$ENDIF}
 
-//Delphi & CBuilder 10.2 (Godzilla)
+//Delphi & CBuilder 10.2 Tokyo (Godzilla)
 {$IFDEF VER320}
   {$DEFINE VCL_10_2}
   {$IFDEF CBUILDER}
     {$DEFINE CBUILDER_10_2}
   {$ELSE}
     {$DEFINE DELPHI_10_2}
+  {$ENDIF}
+{$ENDIF}
+
+//Delphi & CBuilder 10.3
+{$IFDEF VER330}
+  {$DEFINE VCL_10_3}
+  {$IFDEF CBUILDER}
+    {$DEFINE CBUILDER_10_3}
+  {$ELSE}
+    {$DEFINE DELPHI_10_3}
   {$ENDIF}
 {$ENDIF}
 
@@ -646,8 +656,16 @@
 
 // end FPC
 
-{$IFDEF VCL_10_2}
+{$IFDEF VCL_10_3}
+  {$DEFINE VCL_10_3_OR_ABOVE}
+{$ENDIF}
+
+{$IFDEF VCL_10_3_OR_ABOVE}
   {$DEFINE VCL_10_2_OR_ABOVE}
+{$ELSE}
+  {$IFDEF VCL_10_2}
+    {$DEFINE VCL_10_2_OR_ABOVE}
+  {$ENDIF}
 {$ENDIF}
 
 {$IFDEF VCL_10_2_OR_ABOVE}

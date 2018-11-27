@@ -327,10 +327,11 @@ var
   b: TIDBytes;
 begin
 {$IFDEF STRING_IS_ANSI}
-  error
+  xxx;
 {$ENDIF}
 
 //  Result := Send(ToBytes(AData, AByteEncoding{$IFDEF STRING_IS_ANSI}, ASrcEncoding{$ENDIF}));
+//  b := ToBytes(adata);
   b := ToBytes(adata, AByteEncoding);
   result := Send(ToBytes(AData, AByteEncoding));
 
