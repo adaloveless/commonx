@@ -442,6 +442,7 @@ type
     function GEtSpin: boolean; override;
     function GetName: string;override;
   public
+    lastUsed: ticker;
     procedure InitFromPool;override;
     destructor Destroy; override;
     procedure DoExecute; override;
@@ -640,6 +641,7 @@ type
   TCPThreadPoolGrowthManager = class(TManagedThread)
   private
     FIdleCount: ni;
+    tmLastNeedtime: ticker;
     FList: TDirectlyLinkedList<TCommandProcessorChildThread>;
     function GetIdleCount: ni;
   protected
@@ -647,6 +649,7 @@ type
   public
     procedure Detach; override;
     procedure GiveUpThreads;
+    procedure CleanStale;
     procedure NoNeedThread(thr: TCommandProcessorChildThread);
     function NeedThread: TCommandProcessorChildThread;
     procedure Init; override;
@@ -2356,7 +2359,7 @@ end;
 
 procedure TCommandProcessor.CleanStaleChildThreads;
 begin
-
+  FQuickPool.CleanStale;
 //  raise Exception.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
@@ -3621,6 +3624,7 @@ begin
 end;
 procedure TCommandProcessor.NoNeedThread(thr: TCommandProcessorChildThread);
 begin
+  thr.lastUsed := getticker;
   thr.HasWork := false;
   Lock;
   try
@@ -4912,6 +4916,27 @@ end;
 
 { TCPThreadPoolGrowthManager }
 
+procedure TCPThreadPoolGrowthManager.CleanStale;
+var
+  thr: TCommandProcessorChildThread;
+begin
+  Lock;
+  try
+    if Flist.count > 0 then begin
+      thr := FList[0];
+      if gettimeSince(thr.lastused) > 60000 then begin
+        FList.remove(thr);
+        thr.loop := false;
+        thr.stop;
+        thr.WaitFor;
+        TPM.NoNeedThread(thr);
+      end;
+    end;
+  finally
+    Unlock;
+  end;
+end;
+
 procedure TCPThreadPoolGrowthManager.Detach;
 begin
   if Detached then exit;
@@ -4926,7 +4951,7 @@ var
 begin
   inherited;
 //  Debug.Log('check expand');
-  if IdleCount = 0 then begin //if there are no threads in reserve then make some
+  if (IdleCount =0) or ((tmLastNeedtime > 0) and (gettimesince(tmLastNeedTime) < 1000) and (IdleCount < 4)) then begin //if there are no threads in reserve then make some
 //    Debug.Log('epanding');
     expanded := TPM.Needthread<TCommandProcessorChildThread>(nil);
     expanded.loop := true;
@@ -4996,6 +5021,7 @@ end;
 
 function TCPThreadPoolGrowthManager.NEedThread: TCommandProcessorChildThread;
 begin
+
   result := nil;
 
   while result = nil do begin
@@ -5015,7 +5041,7 @@ begin
       sleep(100);
 
   end;
-
+  tmLastNeedtime := getticker;
 
 end;
 
