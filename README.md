@@ -1,6 +1,12 @@
 # commonx
 Delphi/Object Pascal Classes and Tools for just about everything and everyone.
 
+## Latest News: 
+
+### ThreadsCommandsAndQueues demo is up!  
+This demo also demonstrates BigBrainUltra, and TFastBitmap for multi-threaded image processing.
+
+Clone/watch https://github.com/adaloveless/commonx_demos for the latest demos of this class library.  Be sure to clone the sub repository.  
 
 ## Where to Start
 
