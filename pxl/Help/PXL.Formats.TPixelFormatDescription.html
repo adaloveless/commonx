@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Formats: record TPixelFormatDescription</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TPixelFormatDescription"></a><h1 class="cio">record TPixelFormatDescription</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td>Hierarchy</td><td><a class="section" href="#PasDoc-Fields">Fields</a></td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td>Properties</td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Formats.html">PXL.Formats</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TPixelFormatDescription = record</code></p>
+<h2 class="description">Description</h2>
+<p>
+Complete information about specific pixel format.</p>
+<h2 class="overview">Overview</h2>
+<a name="PasDoc-Fields"></a><h3 class="summary">Fields</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Formats.TPixelFormatDescription.html#FormatType">FormatType</a></b>: <a  href="PXL.Formats.html#TPixelFormatType">TPixelFormatType</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Formats.TPixelFormatDescription.html#BitCount">BitCount</a></b>: Integer;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Formats.TPixelFormatDescription.html#UsedBitCount">UsedBitCount</a></b>: Integer;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Formats.TPixelFormatDescription.html#RedBits">RedBits</a></b>: <a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Formats.TPixelFormatDescription.html#GreenBits">GreenBits</a></b>: <a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Formats.TPixelFormatDescription.html#BlueBits">BlueBits</a></b>: <a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Formats.TPixelFormatDescription.html#AlphaBits">AlphaBits</a></b>: <a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Formats.TPixelFormatDescription.html#LuminanceBits">LuminanceBits</a></b>: <a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code>procedure <b><a  href="PXL.Formats.TPixelFormatDescription.html#CalculateUsedBitCount">CalculateUsedBitCount</a></b>;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Fields</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="FormatType"></a><code><b>FormatType</b>: <a  href="PXL.Formats.html#TPixelFormatType">TPixelFormatType</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Classification type of pixel format.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="BitCount"></a><code><b>BitCount</b>: Integer;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Total number of bits occupied by each pixel in this format.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="UsedBitCount"></a><code><b>UsedBitCount</b>: Integer;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Actual number of useful bits that this format occupies.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="RedBits"></a><code><b>RedBits</b>: <a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Bit information for red channel.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="GreenBits"></a><code><b>GreenBits</b>: <a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Bit information for green channel.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="BlueBits"></a><code><b>BlueBits</b>: <a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Bit information for blue channel.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="AlphaBits"></a><code><b>AlphaBits</b>: <a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Bit information for alpha-channel.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="LuminanceBits"></a><code><b>LuminanceBits</b>: <a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Bit information for luminance channel.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="CalculateUsedBitCount"></a><code>procedure <b>CalculateUsedBitCount</b>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Calculates the number of useful bits.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Textures: Class TCustomDrawableTexture</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TCustomDrawableTexture"></a><h1 class="cio">Class TCustomDrawableTexture</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td><a class="section" href="#PasDoc-Fields">Fields</a></td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Textures.html">PXL.Textures</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TCustomDrawableTexture = class abstract(<a class="normal" href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Base definition of &quot;drawable&quot; texture; that is, a texture that can be drawn to. Typically, this means that the texture is a <i>render target</i> or <i>render buffer</i>.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="ancestor"><a class="normal" href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a></li>
+<li class="thisitem">TCustomDrawableTexture</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Fields"></a><h3 class="summary">Fields</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Textures.TCustomDrawableTexture.html#FDepthStencil">FDepthStencil</a></b>: <a  href="PXL.Types.html#TDepthStencil">TDepthStencil</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Textures.TCustomDrawableTexture.html#FMultisamples">FMultisamples</a></b>: Integer;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomDrawableTexture.html#BeginDraw">BeginDraw</a></b>: Boolean; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Textures.TCustomDrawableTexture.html#EndDraw">EndDraw</a></b>; virtual; abstract;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomDrawableTexture.html#DepthStencil">DepthStencil</a></b>: <a  href="PXL.Types.html#TDepthStencil">TDepthStencil</a> read <a  href="PXL.Textures.TCustomDrawableTexture.html#FDepthStencil">FDepthStencil</a> write SetDepthStencil;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomDrawableTexture.html#Multisamples">Multisamples</a></b>: Integer read <a  href="PXL.Textures.TCustomDrawableTexture.html#FMultisamples">FMultisamples</a> write SetMultisamples;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Fields</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FDepthStencil"></a><code><b>FDepthStencil</b>: <a  href="PXL.Types.html#TDepthStencil">TDepthStencil</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Currently set level of depth/stencil support.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FMultisamples"></a><code><b>FMultisamples</b>: Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The number of multisamples that is currently selected.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="BeginDraw"></a><code>function <b>BeginDraw</b>: Boolean; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Activates this texture as destination rendering surface, after which normal rendering calls would draw directly on this texture's surface. This should be implemented by derived classes to implement the appropriate functionality depending on provider and platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="EndDraw"></a><code>procedure <b>EndDraw</b>; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Deactivates this texture as destination rendering surface and updates its contents to reflect what has been drawn. This should be implemented by derived classes to implement the appropriate functionality depending on provider and platform.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DepthStencil"></a><code>property <b>DepthStencil</b>: <a  href="PXL.Types.html#TDepthStencil">TDepthStencil</a> read <a  href="PXL.Textures.TCustomDrawableTexture.html#FDepthStencil">FDepthStencil</a> write SetDepthStencil;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The required level of depth/stencil support that should be provided. This can be written to only before the texture is initialized, but can be read at any time.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Multisamples"></a><code>property <b>Multisamples</b>: Integer read <a  href="PXL.Textures.TCustomDrawableTexture.html#FMultisamples">FMultisamples</a> write SetMultisamples;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The required number of multisamples that should be used for rendering. This is merely a hint and the actual number of multisamples that is being used can be overwritten when the texture is initialized. This property can be written to only before the texture is initialized, but can be read at any time.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

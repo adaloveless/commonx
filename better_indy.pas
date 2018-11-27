@@ -170,10 +170,10 @@ begin
     OnUDPRead_MultiVersion(AThread, AData, ABinding);
 end;
 
-procedure Register;
-begin
-  RegisterComponents('Indy_Better', [TDTUDPServer]);
-end;
+//procedure Register;
+//begin
+//  RegisterComponents('Indy_Better', [TDTUDPServer]);
+//end;
 
 
 { TIndySocketThreader }

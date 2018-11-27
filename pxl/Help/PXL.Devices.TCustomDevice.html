@@ -1,0 +1,273 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Devices: Class TCustomDevice</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TCustomDevice"></a><h1 class="cio">Class TCustomDevice</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td><a class="section" href="#PasDoc-Fields">Fields</a></td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Devices.html">PXL.Devices</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TCustomDevice = class abstract(TObject)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Hardware device wrapper that handles communication between application and the video card. The device must be created from the factory and is one of the first objects that needs to be initialized before working with any other components.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="thisitem">TCustomDevice</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Fields"></a><h3 class="summary">Fields</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Devices.TCustomDevice.html#FTechFeatures">FTechFeatures</a></b>: <a  href="PXL.Devices.html#TTechnologyFeatures">TTechnologyFeatures</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Devices.TCustomDevice.html#FTechFeatureVersion">FTechFeatureVersion</a></b>: Integer;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Devices.TCustomDevice.html#FTechnology">FTechnology</a></b>: <a  href="PXL.Devices.html#TDeviceTechnology">TDeviceTechnology</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Devices.TCustomDevice.html#FTechVersion">FTechVersion</a></b>: Integer;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Devices.TCustomDevice.html#Clear">Clear</a></b>(const ClearTypes: <a  href="PXL.Devices.html#TClearTypes">TClearTypes</a>; const ColorValue: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const DepthValue: Single = 1.0; const StencilValue: Cardinal = 0): Boolean; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Devices.TCustomDevice.html#GetDeviceContext">GetDeviceContext</a></b>: <a  href="PXL.Devices.TCustomDeviceContext.html">TCustomDeviceContext</a>; virtual;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Devices.TCustomDevice.html#Context">Context</a></b>: <a  href="PXL.Devices.TCustomDeviceContext.html">TCustomDeviceContext</a> read <a  href="PXL.Devices.TCustomDevice.html#GetDeviceContext">GetDeviceContext</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Devices.TCustomDevice.html#ImageFormatManager">ImageFormatManager</a></b>: <a  href="PXL.ImageFormats.TCustomImageFormatManager.html">TCustomImageFormatManager</a> read GetImageFormatManager;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Devices.TCustomDevice.html#OnRelease">OnRelease</a></b>: TEventNotifier read FOnRelease;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Devices.TCustomDevice.html#OnRestore">OnRestore</a></b>: TEventNotifier read FOnRestore;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Devices.TCustomDevice.html#Provider">Provider</a></b>: <a  href="PXL.Devices.TCustomDeviceProvider.html">TCustomDeviceProvider</a> read FProvider;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Devices.TCustomDevice.html#TechFeatures">TechFeatures</a></b>: <a  href="PXL.Devices.html#TTechnologyFeatures">TTechnologyFeatures</a> read <a  href="PXL.Devices.TCustomDevice.html#FTechFeatures">FTechFeatures</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Devices.TCustomDevice.html#TechFeatureVersion">TechFeatureVersion</a></b>: Integer read <a  href="PXL.Devices.TCustomDevice.html#FTechFeatureVersion">FTechFeatureVersion</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Devices.TCustomDevice.html#Technology">Technology</a></b>: <a  href="PXL.Devices.html#TDeviceTechnology">TDeviceTechnology</a> read <a  href="PXL.Devices.TCustomDevice.html#FTechnology">FTechnology</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Devices.TCustomDevice.html#TechVersion">TechVersion</a></b>: Integer read <a  href="PXL.Devices.TCustomDevice.html#FTechVersion">FTechVersion</a>;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Fields</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FTechFeatures"></a><code><b>FTechFeatures</b>: <a  href="PXL.Devices.html#TTechnologyFeatures">TTechnologyFeatures</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Technology features are currently being provided by the device.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FTechFeatureVersion"></a><code><b>FTechFeatureVersion</b>: Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The feature level version of current technology that is currently being used.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FTechnology"></a><code><b>FTechnology</b>: <a  href="PXL.Devices.html#TDeviceTechnology">TDeviceTechnology</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Type of technology that is currently being used.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FTechVersion"></a><code><b>FTechVersion</b>: Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The version of current technology that is currently being used.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Clear"></a><code>function <b>Clear</b>(const ClearTypes: <a  href="PXL.Devices.html#TClearTypes">TClearTypes</a>; const ColorValue: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const DepthValue: Single = 1.0; const StencilValue: Cardinal = 0): Boolean; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Clears the currently active rendering surface.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetDeviceContext"></a><code>function <b>GetDeviceContext</b>: <a  href="PXL.Devices.TCustomDeviceContext.html">TCustomDeviceContext</a>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This method should be implemented by derived classes to provide important device specific references.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Context"></a><code>property <b>Context</b>: <a  href="PXL.Devices.TCustomDeviceContext.html">TCustomDeviceContext</a> read <a  href="PXL.Devices.TCustomDevice.html#GetDeviceContext">GetDeviceContext</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Device context that contains important device specific references.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ImageFormatManager"></a><code>property <b>ImageFormatManager</b>: <a  href="PXL.ImageFormats.TCustomImageFormatManager.html">TCustomImageFormatManager</a> read GetImageFormatManager;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+A shortcut to image format manager associated with this device's provider.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="OnRelease"></a><code>property <b>OnRelease</b>: TEventNotifier read FOnRelease;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Event notifier that signals when the device has been put into &quot;released&quot; state and all volatile resources are no longer valid and should be freed at earliest convenience.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="OnRestore"></a><code>property <b>OnRestore</b>: TEventNotifier read FOnRestore;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Event notifier that signals when the device has been put into &quot;restored&quot; state, where all volatile resources that had to be freed previously during &quot;release&quot; state can now be recreated and restored.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Provider"></a><code>property <b>Provider</b>: <a  href="PXL.Devices.TCustomDeviceProvider.html">TCustomDeviceProvider</a> read FProvider;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Parent provider object that created this device instance.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TechFeatures"></a><code>property <b>TechFeatures</b>: <a  href="PXL.Devices.html#TTechnologyFeatures">TTechnologyFeatures</a> read <a  href="PXL.Devices.TCustomDevice.html#FTechFeatures">FTechFeatures</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates what technology features are currently being provided by the device.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TechFeatureVersion"></a><code>property <b>TechFeatureVersion</b>: Integer read <a  href="PXL.Devices.TCustomDevice.html#FTechFeatureVersion">FTechFeatureVersion</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates the feature level version of current technology that is currently being used. The difference between this parameter and <a class="normal" href="PXL.Devices.TCustomDevice.html#TechVersion">TechVersion</a> is that the second parameter indicates type of technology being used (for example, DirectX 3D), while this one indicates the level of features available (for example, Direct3D 9.0c). The values here are specified in hexadecimal format. That is, a value of $213 would indicate version 2.1.3.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Technology"></a><code>property <b>Technology</b>: <a  href="PXL.Devices.html#TDeviceTechnology">TDeviceTechnology</a> read <a  href="PXL.Devices.TCustomDevice.html#FTechnology">FTechnology</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates the type of technology that is currently being used.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TechVersion"></a><code>property <b>TechVersion</b>: Integer read <a  href="PXL.Devices.TCustomDevice.html#FTechVersion">FTechVersion</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates the version of current technology that is currently being used. The values are specified in hexadecimal format. That is, a value of $100 indicates version 1.0, while a value of $247 would indicate version 2.4.7. This value is used in combination with <a class="normal" href="PXL.Devices.TCustomDevice.html#Technology">Technology</a>, so if <code>Technology</code> is set to <i>TDeviceTechnology.Direct3D</i> and this value is set to $A10, it means that <i>Direct3D 10.1</i> is being used.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

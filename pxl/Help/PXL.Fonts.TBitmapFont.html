@@ -1,0 +1,810 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Fonts: Class TBitmapFont</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TBitmapFont"></a><h1 class="cio">Class TBitmapFont</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td><a class="section" href="#PasDoc-InternalCRs">Internal Classes and Records</a></td><td><a class="section" href="#PasDoc-InternalTypes">Internal Types</a></td><td><a class="section" href="#PasDoc-Fields">Fields</a></td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Fonts.html">PXL.Fonts</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TBitmapFont = class(TObject)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Bitmap font implementation.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="thisitem">TBitmapFont</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-InternalCRs"></a><h3 class="summary">Internal Classes and Records</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Fonts.TBitmapFont.TKernings.html">TKernings</a></b> = class(TObject)</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Fonts.TBitmapFont.TStyleTags.html">TStyleTags</a></b> = class(TObject)</code></td>
+</tr>
+</table>
+<a name="PasDoc-InternalTypes"></a><h3 class="summary">Internal Types</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="published.gif" alt="Published" title="Published"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Fonts.TBitmapFont.html#TTextEntryEvent">TTextEntryEvent</a></b> = procedure(const Sender: TObject; const FontImage: <a  href="PXL.Images.TAtlasImage.html">TAtlasImage</a>; const SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const DestRect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>; const Color: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const UserContext: Pointer);</code></td>
+</tr>
+</table>
+<a name="PasDoc-Fields"></a><h3 class="summary">Fields</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>internal const <b><a  href="PXL.Fonts.TBitmapFont.html#DefaultBinaryExtension">DefaultBinaryExtension</a></b> = '.font';</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>internal const <b><a  href="PXL.Fonts.TBitmapFont.html#DefaultImageExtension">DefaultImageExtension</a></b> = '.png';</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>internal const <b><a  href="PXL.Fonts.TBitmapFont.html#DefaultXMLExtension">DefaultXMLExtension</a></b> = '.xml';</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Fonts.TBitmapFont.html#FEntries">FEntries</a></b>: array[0..MaxEntriesCount - 1] of TLetterEntry;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Fonts.TBitmapFont.html#FImage">FImage</a></b>: <a  href="PXL.Images.TAtlasImage.html">TAtlasImage</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Fonts.TBitmapFont.html#FSize">FSize</a></b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>constructor <b><a  href="PXL.Fonts.TBitmapFont.html#Create">Create</a></b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>; const ASubscribedTextures: Boolean = True);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#DrawTextCustom">DrawTextCustom</a></b>(const Position: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const Alpha: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const TextEntryEvent: <a  href="PXL.Fonts.TBitmapFont.html#TTextEntryEvent">TTextEntryEvent</a>; const UserContext: Pointer; const RestartStyling: Boolean = True): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#LoadFromBinaryAsset">LoadFromBinaryAsset</a></b>(const AssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#LoadFromBinaryFile">LoadFromBinaryFile</a></b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#LoadFromBinaryStream">LoadFromBinaryStream</a></b>(const Stream: TStream; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#LoadFromXMLAsset">LoadFromXMLAsset</a></b>(const ImageAssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const XMLAssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#LoadFromXMLFile">LoadFromXMLFile</a></b>(const ImageFileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const XMLFileName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#LoadFromXMLStream">LoadFromXMLStream</a></b>(const ImageExtension: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const ImageStream, XMLStream: TStream; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#LoadSystemFont">LoadSystemFont</a></b>(const FontImage: <a  href="PXL.Fonts.html#TSystemFontImage">TSystemFontImage</a> = TSystemFontImage.Font8x8; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#TextExtent">TextExtent</a></b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.Types.TPoint2.html">TPoint2</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#TextExtentInt">TextExtentInt</a></b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#TextHeight">TextHeight</a></b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#TextHeightInt">TextHeightInt</a></b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.TypeDef.html#VectorInt">VectorInt</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#TextWidth">TextWidth</a></b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#TextWidthInt">TextWidthInt</a></b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.TypeDef.html#VectorInt">VectorInt</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#LoadEntriesFromXMLAsset">LoadEntriesFromXMLAsset</a></b>(const AssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#LoadEntriesFromXMLFile">LoadEntriesFromXMLFile</a></b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFont.html#LoadEntriesFromXMLStream">LoadEntriesFromXMLStream</a></b>(const Stream: TStream): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Fonts.TBitmapFont.html#DrawText">DrawText</a></b>(const Position: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const Alpha: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> = 1);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Fonts.TBitmapFont.html#DrawTextAligned">DrawTextAligned</a></b>(const Position: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const HorizAlign, VertAlign: <a  href="PXL.Fonts.html#TTextAlignment">TTextAlignment</a>; const Alpha: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> = 1; const AlignToPixels: Boolean = True);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Fonts.TBitmapFont.html#DrawTextBox">DrawTextBox</a></b>(const TopLeft, BoxSize, ParagraphShift: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const Alpha: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> = 1);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Fonts.TBitmapFont.html#DrawTextCentered">DrawTextCentered</a></b>(const Position: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const Alpha: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> = 1; const AlignToPixels: Boolean = True);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Fonts.TBitmapFont.html#TextRects">TextRects</a></b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const List: TFloatRectList);</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#Canvas">Canvas</a></b>: <a  href="PXL.Canvas.TCustomCanvas.html">TCustomCanvas</a> read FCanvas write FCanvas;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#Device">Device</a></b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#Height">Height</a></b>: <a  href="PXL.TypeDef.html#VectorInt">VectorInt</a> read FSize.Y;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#Image">Image</a></b>: <a  href="PXL.Images.TAtlasImage.html">TAtlasImage</a> read <a  href="PXL.Fonts.TBitmapFont.html#FImage">FImage</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#Interleave">Interleave</a></b>: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> read FInterleave write FInterleave;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#Kernings">Kernings</a></b>: <a  href="PXL.Fonts.TBitmapFont.TKernings.html">TKernings</a> read FKernings;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#Name">Name</a></b>: <a  href="PXL.TypeDef.html#StdString">StdString</a> read FName write FName;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#ParagraphSeparators">ParagraphSeparators</a></b>: <a  href="PXL.TypeDef.html#UniString">UniString</a> read FParagraphSeparators write FParagraphSeparators;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#Scale">Scale</a></b>: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> read FScale write FScale;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#Size">Size</a></b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a> read <a  href="PXL.Fonts.TBitmapFont.html#FSize">FSize</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#SpaceWidth">SpaceWidth</a></b>: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> read FSpaceWidth write FSpaceWidth;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#StyleTags">StyleTags</a></b>: <a  href="PXL.Fonts.TBitmapFont.TStyleTags.html">TStyleTags</a> read FStyleTags write FStyleTags;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#SubscribedTextures">SubscribedTextures</a></b>: Boolean read FSubscribedTextures;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#VerticalSpace">VerticalSpace</a></b>: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> read FVerticalSpace write FVerticalSpace;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#Width">Width</a></b>: <a  href="PXL.TypeDef.html#VectorInt">VectorInt</a> read FSize.X;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFont.html#WordSeparators">WordSeparators</a></b>: <a  href="PXL.TypeDef.html#UniString">UniString</a> read FWordSeparators write FWordSeparators;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Internal Types</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="published.gif" alt="Published" title="Published"></a></td>
+<td class="itemcode"><a name="TTextEntryEvent"></a><code><b>TTextEntryEvent</b> = procedure(const Sender: TObject; const FontImage: <a  href="PXL.Images.TAtlasImage.html">TAtlasImage</a>; const SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const DestRect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>; const Color: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const UserContext: Pointer);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Event invoked by <a class="normal" href="PXL.Fonts.TBitmapFont.html#DrawTextCustom">DrawTextCustom</a> method for custom text rendering, called for each text letter.      </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Sender</dt>
+<dd>Reference to class that invoked this method.</dd>
+<dt>FontImage</dt>
+<dd>Font image that should be used as a source for drawing letter.</dd>
+<dt>SourceRect</dt>
+<dd>Rectangle in font image that contains letter image.</dd>
+<dt>DestRect</dt>
+<dd>Destination rectangle, where font image should be rendered.</dd>
+<dt>Color</dt>
+<dd>Color, which should be used for rendering the letter.</dd>
+<dt>UserContext</dt>
+<dd>User context parameter passed to <a class="normal" href="PXL.Fonts.TBitmapFont.html#DrawTextCustom">DrawTextCustom</a>.</dd>
+</dl>
+</td></tr>
+</table>
+<h3 class="detail">Fields</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DefaultBinaryExtension"></a><code>internal const <b>DefaultBinaryExtension</b> = '.font';</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Default font extension when loading binary fonts.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DefaultImageExtension"></a><code>internal const <b>DefaultImageExtension</b> = '.png';</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Default image extension when loading fonts provided as pair of XML and image files.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DefaultXMLExtension"></a><code>internal const <b>DefaultXMLExtension</b> = '.xml';</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Default XML extension when loading fonts provided as pair of XML and image files.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FEntries"></a><code><b>FEntries</b>: array[0..MaxEntriesCount - 1] of TLetterEntry;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Information regarding locations, spacing and rendering parameters for each of available letters.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FImage"></a><code><b>FImage</b>: <a  href="PXL.Images.TAtlasImage.html">TAtlasImage</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Current font image that contains pre-rendered letters.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FSize"></a><code><b>FSize</b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Current font size that defines maximum rectangle that a letter can occupy.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Create"></a><code>constructor <b>Create</b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>; const ASubscribedTextures: Boolean = True);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Creates new instance of <code>TBitmapFont</code> class bound to the specified device. <code>ASubscribedTextures</code> indicates whether the textures contained in font image should be subscribed to handle &quot;lost device&quot; events. If this font is part of <a class="normal" href="PXL.Fonts.TBitmapFonts.html">TBitmapFonts</a> list, which provides its own notification events regarding device status, then <code>ASubscribedTextures</code> should be set to <code>False</code>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawTextCustom"></a><code>function <b>DrawTextCustom</b>(const Position: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const Alpha: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const TextEntryEvent: <a  href="PXL.Fonts.TBitmapFont.html#TTextEntryEvent">TTextEntryEvent</a>; const UserContext: Pointer; const RestartStyling: Boolean = True): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws text by invoking external rendering event for each of the letters.       </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Position</dt>
+<dd>Starting position of text at top/left.</dd>
+<dt>Text</dt>
+<dd>The actual text to be drawn.</dd>
+<dt>Color</dt>
+<dd>Two colors representing vertical gradient to fill the letters with.</dd>
+<dt>Alpha</dt>
+<dd>A separate alpha representing transparency of the font (in addition to alpha provided in <code>Color</code>).</dd>
+<dt>TextEntryEvent</dt>
+<dd>Event to be called for each letter being rendered (this excludes whitespace characters such as space or #0).</dd>
+<dt>UserContext</dt>
+<dd>User context parameter that will be passed to each <code>TextEntryEvent</code> call.</dd>
+<dt>RestartStyling</dt>
+<dd>Whether the initial style of the text should be reset. This is typically needed when rendering multi-line text such as in case of <a class="normal" href="PXL.Fonts.TBitmapFont.html#DrawTextBox">DrawTextBox</a>.</dd>
+</dl>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadFromBinaryAsset"></a><code>function <b>LoadFromBinaryAsset</b>(const AssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads binary font from file in /assets sub-folder. This includes both letter information and font image. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadFromBinaryFile"></a><code>function <b>LoadFromBinaryFile</b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads binary font from external file. This includes both letter information and font image. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadFromBinaryStream"></a><code>function <b>LoadFromBinaryStream</b>(const Stream: TStream; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads binary font from the given stream. This includes both letter information and font image. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadFromXMLAsset"></a><code>function <b>LoadFromXMLAsset</b>(const ImageAssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const XMLAssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads font letter information and letter image from files in /assets sub-folder. This methods accepts that one of file names is left empty and will be guessed by either changing extension from &quot;.xml&quot; to &quot;.png&quot; or vice-versa. This uses image format manager reference from associated device. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadFromXMLFile"></a><code>function <b>LoadFromXMLFile</b>(const ImageFileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const XMLFileName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads font letter information and letter image from external files on disk. This methods accepts that one of file names is left empty and will be guessed by either changing extension from &quot;.xml&quot; to &quot;.png&quot; or vice-versa. This uses image format manager reference from associated device. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadFromXMLStream"></a><code>function <b>LoadFromXMLStream</b>(const ImageExtension: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const ImageStream, XMLStream: TStream; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads font letter information and letter image from their corresponding streams. This uses image format manager reference from associated device. The image extension indicates what image format for letters image is used. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadSystemFont"></a><code>function <b>LoadSystemFont</b>(const FontImage: <a  href="PXL.Fonts.html#TSystemFontImage">TSystemFontImage</a> = TSystemFontImage.Font8x8; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads and initializes one of the predefined system fonts. These are embedded within the final application and can be used at any time. The drawback of this is that these fonts don't look pretty as the pre-rendered ones and typically contain only ASCII characters. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TextExtent"></a><code>function <b>TextExtent</b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.Types.TPoint2.html">TPoint2</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns total area size that given text string will occupy when rendered.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TextExtentInt"></a><code>function <b>TextExtentInt</b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns total area size (rounded to nearest integer) that given text string will occupy when rendered.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TextHeight"></a><code>function <b>TextHeight</b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns total area height that given text string will occupy when rendered.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TextHeightInt"></a><code>function <b>TextHeightInt</b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.TypeDef.html#VectorInt">VectorInt</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns total area height (rounded to nearest integer) that given text string will occupy when rendered.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TextWidth"></a><code>function <b>TextWidth</b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns total area width that given text string will occupy when rendered.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TextWidthInt"></a><code>function <b>TextWidthInt</b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>): <a  href="PXL.TypeDef.html#VectorInt">VectorInt</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns total area width (rounded to nearest integer) that given text string will occupy when rendered.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="LoadEntriesFromXMLAsset"></a><code>function <b>LoadEntriesFromXMLAsset</b>(const AssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads letter information from file within /assets sub-folder. Returns <code>True</code> when succeeded and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="LoadEntriesFromXMLFile"></a><code>function <b>LoadEntriesFromXMLFile</b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads letter information from external XML file. Returns <code>True</code> when succeeded and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="LoadEntriesFromXMLStream"></a><code>function <b>LoadEntriesFromXMLStream</b>(const Stream: TStream): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads letter information from XML file located in the stream. Returns <code>True</code> when succeeded and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawText"></a><code>procedure <b>DrawText</b>(const Position: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const Alpha: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> = 1);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws text at the given position.    </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Position</dt>
+<dd>Starting position of text at top/left.</dd>
+<dt>Text</dt>
+<dd>The actual text to be drawn.</dd>
+<dt>Color</dt>
+<dd>Two colors representing vertical gradient to fill the letters with.</dd>
+<dt>Alpha</dt>
+<dd>A separate alpha representing transparency of the font (in addition to alpha provided in <code>Color</code>).</dd>
+</dl>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawTextAligned"></a><code>procedure <b>DrawTextAligned</b>(const Position: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const HorizAlign, VertAlign: <a  href="PXL.Fonts.html#TTextAlignment">TTextAlignment</a>; const Alpha: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> = 1; const AlignToPixels: Boolean = True);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws text at the given position with specific alignment.       </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Position</dt>
+<dd>Starting position of text at top/left.</dd>
+<dt>Text</dt>
+<dd>The actual text to be drawn.</dd>
+<dt>Color</dt>
+<dd>Two colors representing vertical gradient to fill the letters with.</dd>
+<dt>HorizAlign</dt>
+<dd>Horizontal text alignment in relation to starting position.</dd>
+<dt>VertAlign</dt>
+<dd>Vertical text alignment in relation to starting position.</dd>
+<dt>Alpha</dt>
+<dd>A separate alpha representing transparency of the font (in addition to alpha provided in <code>Color</code>).</dd>
+<dt>AlignToPixels</dt>
+<dd>Whether to align the resulting text position to start at integer location so that all letters are properly aligned to pixels. This may result in clearer text but can appear choppy during text animations (e.g. zoom in or out).</dd>
+</dl>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawTextBox"></a><code>procedure <b>DrawTextBox</b>(const TopLeft, BoxSize, ParagraphShift: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const Alpha: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> = 1);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws text containing multiple lines onto the designated area.      </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>TopLeft</dt>
+<dd>Top/left origin of designated area.</dd>
+<dt>BoxSize</dt>
+<dd>Width and height of the designated area in relation to top/left origin.</dd>
+<dt>ParagraphShift</dt>
+<dd>Offset to apply when new text paragraph begins.</dd>
+<dt>Text</dt>
+<dd>Multi-line text to be drawn.</dd>
+<dt>Color</dt>
+<dd>Two colors representing vertical gradient to fill the letters with.</dd>
+<dt>Alpha</dt>
+<dd>A separate alpha representing transparency of the font (in addition to alpha provided in <code>Color</code>).</dd>
+</dl>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawTextCentered"></a><code>procedure <b>DrawTextCentered</b>(const Position: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const Alpha: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> = 1; const AlignToPixels: Boolean = True);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws text centered around the specified position.     </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Position</dt>
+<dd>Origin around which the text will be rendered.</dd>
+<dt>Text</dt>
+<dd>The actual text to be drawn.</dd>
+<dt>Color</dt>
+<dd>Two colors representing vertical gradient to fill the letters with.</dd>
+<dt>Alpha</dt>
+<dd>A separate alpha representing transparency of the font (in addition to alpha provided in <code>Color</code>).</dd>
+<dt>AlignToPixels</dt>
+<dd>Whether to align the resulting text position to start at integer location so that all letters are properly aligned to pixels. This may result in clearer text but can appear choppy during text animations (e.g. zoom in or out).</dd>
+</dl>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TextRects"></a><code>procedure <b>TextRects</b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const List: TFloatRectList);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides information regarding individual letter position and sizes for the given text string when rendered. This can be useful for components such as text edit box, for highlighting and selecting different letters.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Canvas"></a><code>property <b>Canvas</b>: <a  href="PXL.Canvas.TCustomCanvas.html">TCustomCanvas</a> read FCanvas write FCanvas;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Destination canvas to which the text should be rendered to. This can be changed between different drawing calls to a different canvas, as long as such canvas is bound to the same device as the font.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Device"></a><code>property <b>Device</b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The device to which this font's image is bound to.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Height"></a><code>property <b>Height</b>: <a  href="PXL.TypeDef.html#VectorInt">VectorInt</a> read FSize.Y;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Font height that defines maximum height in pixels that a letter can occupy.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Image"></a><code>property <b>Image</b>: <a  href="PXL.Images.TAtlasImage.html">TAtlasImage</a> read <a  href="PXL.Fonts.TBitmapFont.html#FImage">FImage</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The image containing all available font letters.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Interleave"></a><code>property <b>Interleave</b>: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> read FInterleave write FInterleave;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Global spacing that will be added horizontally between text letters. This can be used to expand or shrink the text.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Kernings"></a><code>property <b>Kernings</b>: <a  href="PXL.Fonts.TBitmapFont.TKernings.html">TKernings</a> read FKernings;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Individual spacing between each combination of two letters to provide pixel-perfect text rendering.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Name"></a><code>property <b>Name</b>: <a  href="PXL.TypeDef.html#StdString">StdString</a> read FName write FName;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Unique name of the font by which it can be referenced in <a class="normal" href="PXL.Fonts.TBitmapFonts.html">TBitmapFonts</a> list.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ParagraphSeparators"></a><code>property <b>ParagraphSeparators</b>: <a  href="PXL.TypeDef.html#UniString">UniString</a> read FParagraphSeparators write FParagraphSeparators;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Characters that can be used to indicate start of new paragraph in multi-line text drawing with <a class="normal" href="PXL.Fonts.TBitmapFont.html#DrawTextBox">DrawTextBox</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Scale"></a><code>property <b>Scale</b>: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> read FScale write FScale;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Global font scale that is applied to the whole rendered text. Changing this value will likely result in non-pixel-perfect text rendering appearing blurry. However, it can be used for text animations.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Size"></a><code>property <b>Size</b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a> read <a  href="PXL.Fonts.TBitmapFont.html#FSize">FSize</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Font size that defines maximum rectangle that a letter can occupy.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SpaceWidth"></a><code>property <b>SpaceWidth</b>: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> read FSpaceWidth write FSpaceWidth;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The width in pixels corresponding to &quot;space&quot; or other empty characters (that is, characters without an image).</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="StyleTags"></a><code>property <b>StyleTags</b>: <a  href="PXL.Fonts.TBitmapFont.TStyleTags.html">TStyleTags</a> read FStyleTags write FStyleTags;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Style tags that can be used to provide different colors in large texts.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SubscribedTextures"></a><code>property <b>SubscribedTextures</b>: Boolean read FSubscribedTextures;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates whether this font's image has textures subscribed to device events, handling scenarios such as &quot;device lost&quot;. If this is set to <code>False</code>, likely the handling is provided by parent list class such as <a class="normal" href="PXL.Fonts.TBitmapFonts.html">TBitmapFonts</a> by calling the appropriate image functions.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="VerticalSpace"></a><code>property <b>VerticalSpace</b>: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> read FVerticalSpace write FVerticalSpace;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Global spacing that will be added vertically between text lines when drawing with <a class="normal" href="PXL.Fonts.TBitmapFont.html#DrawTextBox">DrawTextBox</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Width"></a><code>property <b>Width</b>: <a  href="PXL.TypeDef.html#VectorInt">VectorInt</a> read FSize.X;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Font width that defines maximum width in pixels that a letter can occupy.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WordSeparators"></a><code>property <b>WordSeparators</b>: <a  href="PXL.TypeDef.html#UniString">UniString</a> read FWordSeparators write FWordSeparators;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Characters that can be used to separate words in multi-line text drawing with <a class="normal" href="PXL.Fonts.TBitmapFont.html#DrawTextBox">DrawTextBox</a>.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

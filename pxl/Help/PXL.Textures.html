@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Textures</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<h1 class="unit">Unit PXL.Textures</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td>Uses</td><td><a class="section" href="#PasDoc-Classes">Classes, Interfaces, Objects and Records</a></td><td>Functions and Procedures</td><td><a class="section" href="#PasDoc-Types">Types</a></td><td><a class="section" href="#PasDoc-Constants">Constants</a></td><td>Variables</td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="description">Description</h2>
+<p>
+Abstract texture specification with basic implementation that is common across different providers and platforms.</p>
+<a name="PasDoc-Uses"></a><h2 class="overview">Overview</h2>
+<a name="PasDoc-Classes"></a><h3 class="cio">Classes, Interfaces, Objects and Records</h3>
+<table class="classestable wide_list">
+<tr class="listheader">
+<th class="itemname">Name</th>
+<th class="itemdesc">Description</th>
+</tr>
+<tr class="list">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Textures.TCustomBaseTexture.html"><code>TCustomBaseTexture</code></a></td>
+<td class="itemdesc">Base definition of hardware-assisted texture.</td>
+</tr>
+<tr class="list2">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Textures.TCustomDrawableTexture.html"><code>TCustomDrawableTexture</code></a></td>
+<td class="itemdesc">Base definition of &quot;drawable&quot; texture; that is, a texture that can be drawn to.</td>
+</tr>
+<tr class="list">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Textures.TCustomLockableTexture.html"><code>TCustomLockableTexture</code></a></td>
+<td class="itemdesc">Base definition of &quot;lockable&quot; texture; that is, a texture that can have regions &quot;locked&quot; so they become accessible to CPU.</td>
+</tr>
+<tr class="list2">
+<td class="itemname">record&nbsp;<a class="bold" href="PXL.Textures.TLockedPixels.html"><code>TLockedPixels</code></a></td>
+<td class="itemdesc">This structure stores information about locked texture's portion that can be accessed by CPU.</td>
+</tr>
+</table>
+<a name="PasDoc-Types"></a><h3 class="summary">Types</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Textures.html#PLockedPixels">PLockedPixels</a></b> = &circ;<a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Textures.html#TTextureState">TTextureState</a></b> = (...);</code></td>
+</tr>
+</table>
+<a name="PasDoc-Constants"></a><h3 class="summary">Constants</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Textures.html#InvalidLockedPixels">InvalidLockedPixels</a></b>: <a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a> = (Bits: nil; Pitch: 0; BytesPerPixel: 0; PixelFormat: TPixelFormat.Unknown;
+    LockedRect: (Left: 0; Top: 0; Right: 0; Bottom: 0));</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Types</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PLockedPixels"></a><code><b>PLockedPixels</b> = &circ;<a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.Textures.TLockedPixels.html">TLockedPixels</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TTextureState"></a><code><b>TTextureState</b> = (...);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Current state of texture.</p>
+<h6 class="description_section">Values</h6>
+<ul>
+<li>
+NotInitialized: The texture has not been initialized yet.</li>
+<li>
+Initialized: The texture has been initialized and is working fine.</li>
+<li>
+Lost: The surface of the texture has been lost and cannot be used right now. It is possible that the application has been minimized and/or paused (depending on platform).</li>
+<li>
+NotRecovered: The surface of the texture has been lost and could not be recovered. If the texture is found in this state, it should be released and, if needed, re-created.</li>
+</ul>
+</td></tr>
+</table>
+<h3 class="detail">Constants</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="InvalidLockedPixels"></a><code><b>InvalidLockedPixels</b>: <a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a> = (Bits: nil; Pitch: 0; BytesPerPixel: 0; PixelFormat: TPixelFormat.Unknown;
+    LockedRect: (Left: 0; Top: 0; Right: 0; Bottom: 0));</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Special constant that defines <a class="normal" href="PXL.Textures.TLockedPixels.html">TLockedPixels</a> that have all fields set to zero, meaning that the data is no longer valid.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

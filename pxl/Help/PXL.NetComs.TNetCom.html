@@ -1,0 +1,354 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.NetComs: Class TNetCom</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TNetCom"></a><h1 class="cio">Class TNetCom</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td><a class="section" href="#PasDoc-InternalTypes">Internal Types</a></td><td>Fields</td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.NetComs.html">PXL.NetComs</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TNetCom = class(TObject)</code></p>
+<h2 class="description">Description</h2>
+<p>
+A simple communication component that can transmit and receive messages through UDP protocol over local network and/or Internet.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="thisitem">TNetCom</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-InternalTypes"></a><h3 class="summary">Internal Types</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="published.gif" alt="Published" title="Published"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.NetComs.TNetCom.html#TReceiveEvent">TReceiveEvent</a></b> = procedure(const Sender: TObject; const Host: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Port: Integer; const Data: Pointer; const Size: Integer) of object;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.NetComs.TNetCom.html#Initialize">Initialize</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.NetComs.TNetCom.html#ResolveHost">ResolveHost</a></b>(const Host: <a  href="PXL.TypeDef.html#StdString">StdString</a>): <a  href="PXL.TypeDef.html#StdString">StdString</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.NetComs.TNetCom.html#ResolveIP">ResolveIP</a></b>(const IPAddress: <a  href="PXL.TypeDef.html#StdString">StdString</a>): <a  href="PXL.TypeDef.html#StdString">StdString</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.NetComs.TNetCom.html#Send">Send</a></b>(const Host: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Port: Integer; const Data: Pointer; const Size: Integer): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.NetComs.TNetCom.html#Finalize">Finalize</a></b>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.NetComs.TNetCom.html#ResetStatistics">ResetStatistics</a></b>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.NetComs.TNetCom.html#Update">Update</a></b>;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.NetComs.TNetCom.html#Broadcast">Broadcast</a></b>: Boolean read FBroadcast write SetBroadcast;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.NetComs.TNetCom.html#BytesPerSec">BytesPerSec</a></b>: Integer read FBytesPerSec;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.NetComs.TNetCom.html#BytesReceived">BytesReceived</a></b>: Integer read FBytesReceived;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.NetComs.TNetCom.html#BytesSent">BytesSent</a></b>: Integer read FBytesSent;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.NetComs.TNetCom.html#Initialized">Initialized</a></b>: Boolean read FInitialized;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.NetComs.TNetCom.html#LocalIP">LocalIP</a></b>: <a  href="PXL.TypeDef.html#StdString">StdString</a> read GetLocalIP;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.NetComs.TNetCom.html#LocalPort">LocalPort</a></b>: Integer read FLocalPort write SetLocalPort;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.NetComs.TNetCom.html#OnReceive">OnReceive</a></b>: <a  href="PXL.NetComs.TNetCom.html#TReceiveEvent">TReceiveEvent</a> read FOnReceive write FOnReceive;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.NetComs.TNetCom.html#ReceivedPackets">ReceivedPackets</a></b>: Integer read FReceivedPackets;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.NetComs.TNetCom.html#SentPackets">SentPackets</a></b>: Integer read FSentPackets;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.NetComs.TNetCom.html#UpdateRefreshTime">UpdateRefreshTime</a></b>: Integer read FUpdateRefreshTime write SetUpdateRefreshTime;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Internal Types</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="published.gif" alt="Published" title="Published"></a></td>
+<td class="itemcode"><a name="TReceiveEvent"></a><code><b>TReceiveEvent</b> = procedure(const Sender: TObject; const Host: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Port: Integer; const Data: Pointer; const Size: Integer) of object;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Data reception event. In this event the incoming message should be interpreted and properly handled. After this event executes, memory referenced by provided pointers is lost; therefore, to preserve the message it is necessary to copy it somewhere within this event. Source host and port can be used to identify the receiver and for sending replies.     </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Sender</dt>
+<dd>Reference to the class that received the message, usually <a class="normal" href="PXL.NetComs.TNetCom.html">TNetCom</a>.</dd>
+<dt>Host</dt>
+<dd>Source host that sent the message.</dd>
+<dt>Port</dt>
+<dd>Source port through which the message was sent.</dd>
+<dt>Data</dt>
+<dd>Pointer to the beginning of message block.</dd>
+<dt>Size</dt>
+<dd>Size of the message block.</dd>
+</dl>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Initialize"></a><code>function <b>Initialize</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Initializes the component and begins listening to the given port for incoming messages. <a class="normal" href="PXL.NetComs.TNetCom.html#LocalPort">LocalPort</a> should be set before calling this function to set a specific listening port. If <a class="normal" href="PXL.NetComs.TNetCom.html#LocalPort">LocalPort</a> remains zero before this call, the listening port will be selected by the system from among available ones and <a class="normal" href="PXL.NetComs.TNetCom.html#LocalPort">LocalPort</a> will be updated to reflect this. <code>True</code> is returned when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ResolveHost"></a><code>function <b>ResolveHost</b>(const Host: <a  href="PXL.TypeDef.html#StdString">StdString</a>): <a  href="PXL.TypeDef.html#StdString">StdString</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Converts text containing host address into the corresponding IP address.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ResolveIP"></a><code>function <b>ResolveIP</b>(const IPAddress: <a  href="PXL.TypeDef.html#StdString">StdString</a>): <a  href="PXL.TypeDef.html#StdString">StdString</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Converts text containing IP address into the corresponding host string.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Send"></a><code>function <b>Send</b>(const Host: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Port: Integer; const Data: Pointer; const Size: Integer): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Sends the specified message data block to the destination.     </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Host</dt>
+<dd>Destination host or address where the message should be sent. Multicast and broadcast addresses are accepted, although should be used with care to not saturate the local network.</dd>
+<dt>Port</dt>
+<dd>Destination port where the receiver is currently listening at.</dd>
+<dt>Data</dt>
+<dd>Pointer to the message data block. The method copies the data to its internal structures, so it's not necessary to maintain the buffer after this call exits.</dd>
+<dt>Size</dt>
+<dd>Size of the message data block.</dd>
+</dl>
+<h6 class="description_section">Returns</h6>
+<p class="return"><code>True</code> when the packet was sent successfully and <code>False</code> when there were errors. It is important to note that since messages are sent through UDP protocol, <code>True</code> return value doesn't necessarily mean that the packet was actually received.</p></td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Finalize"></a><code>procedure <b>Finalize</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Finalizes the component and closes the communication link.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ResetStatistics"></a><code>procedure <b>ResetStatistics</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Resets all statistic parameters related to the current session such as number of packets transmitted, bytes per second among others.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Update"></a><code>procedure <b>Update</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Handles internal communication and receives incoming messages; in addition, internal structures and bandwidth usage are also updated. This method should be called as fast as possible and no less than once per second. During the call to this method, <a class="normal" href="PXL.NetComs.TNetCom.html#OnReceive">OnReceive</a> event may occur to notify the reception of messages.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Broadcast"></a><code>property <b>Broadcast</b>: Boolean read FBroadcast write SetBroadcast;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines whether the communication should support broadcast and multicast messages. This can be written to only before the component is initialized, but can be read from at any time.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="BytesPerSec"></a><code>property <b>BytesPerSec</b>: Integer read FBytesPerSec;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates the current bandwidth usage in bytes per second. In order for this variable to have meaningful values, it is necessary to call <a class="normal" href="PXL.NetComs.TNetCom.html#Update">Update</a> method at least once per second.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="BytesReceived"></a><code>property <b>BytesReceived</b>: Integer read FBytesReceived;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates how many bytes were received during the entire session.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="BytesSent"></a><code>property <b>BytesSent</b>: Integer read FBytesSent;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates how many bytes were sent during the entire session.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Initialized"></a><code>property <b>Initialized</b>: Boolean read FInitialized;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates whether the component has been properly initialized.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LocalIP"></a><code>property <b>LocalIP</b>: <a  href="PXL.TypeDef.html#StdString">StdString</a> read GetLocalIP;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns IP address of current machine. If several IP addresses are present, the last address in the list is returned.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LocalPort"></a><code>property <b>LocalPort</b>: Integer read FLocalPort write SetLocalPort;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Local port that is used for listening and transmitting packets. This can be written to only before the component is initialized, but can be read from at any time.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="OnReceive"></a><code>property <b>OnReceive</b>: <a  href="PXL.NetComs.TNetCom.html#TReceiveEvent">TReceiveEvent</a> read FOnReceive write FOnReceive;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This event occurs when the data has been received. It should always be assigned to interpret any incoming messages.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ReceivedPackets"></a><code>property <b>ReceivedPackets</b>: Integer read FReceivedPackets;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates how many packets in total were received during the entire session.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SentPackets"></a><code>property <b>SentPackets</b>: Integer read FSentPackets;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates how many packets were sent during the entire session.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="UpdateRefreshTime"></a><code>property <b>UpdateRefreshTime</b>: Integer read FUpdateRefreshTime write SetUpdateRefreshTime;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Time interval (in milliseconds) to consider for &quot;BytesPerSec&quot; calculation.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

@@ -1,0 +1,885 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Classes: Class TStreamHelper</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TStreamHelper"></a><h1 class="cio">Class TStreamHelper</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td><a class="section" href="#PasDoc-InternalTypes">Internal Types</a></td><td>Fields</td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td>Properties</td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Classes.html">PXL.Classes</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TStreamHelper = class helper(TObject) for TStream</code></p>
+<h2 class="description">Description</h2>
+<p>
+Extensions to TStream class for reading and writing different values depending on platform. Although TStream in recent versions of FPC and Delphi introduced similar functions, this extension class provides a more comprehensive and unified set of functions that work across all platforms.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="thisitem">TStreamHelper</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-InternalTypes"></a><h3 class="summary">Internal Types</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamByte">TStreamByte</a></b> = <a  href="PXL.TypeDef.html#SizeUInt">SizeUInt</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamByteBool">TStreamByteBool</a></b> = Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamByteIndex">TStreamByteIndex</a></b> = <a  href="PXL.TypeDef.html#SizeInt">SizeInt</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamDouble">TStreamDouble</a></b> = Double;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamInt64">TStreamInt64</a></b> = Int64;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamLongInt">TStreamLongInt</a></b> =  <a  href="PXL.TypeDef.html#SizeInt">SizeInt</a> ;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamLongWord">TStreamLongWord</a></b> =  <a  href="PXL.TypeDef.html#SizeUInt">SizeUInt</a> ;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamShortInt">TStreamShortInt</a></b> = <a  href="PXL.TypeDef.html#SizeInt">SizeInt</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamSingle">TStreamSingle</a></b> = Single;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamSmallInt">TStreamSmallInt</a></b> = <a  href="PXL.TypeDef.html#SizeInt">SizeInt</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamUInt64">TStreamUInt64</a></b> = UInt64;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamWord">TStreamWord</a></b> = <a  href="PXL.TypeDef.html#SizeUInt">SizeUInt</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Classes.TStreamHelper.html#TStreamWordIndex">TStreamWordIndex</a></b> =  <a  href="PXL.TypeDef.html#SizeInt">SizeInt</a> ;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetByte">GetByte</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamByte">TStreamByte</a>; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetByteBool">GetByteBool</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamByteBool">TStreamByteBool</a>; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetByteIndex">GetByteIndex</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamByteIndex">TStreamByteIndex</a>; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetBytePoint2px">GetBytePoint2px</a></b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetDouble">GetDouble</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamDouble">TStreamDouble</a>; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetFloat34">GetFloat34</a></b>: Single;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetFloat43">GetFloat43</a></b>: Single;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetInt64">GetInt64</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamInt64">TStreamInt64</a>; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetLongInt">GetLongInt</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamLongInt">TStreamLongInt</a>; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetLongPoint2px">GetLongPoint2px</a></b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetLongString">GetLongString</a></b>: <a  href="PXL.TypeDef.html#UniString">UniString</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetLongWord">GetLongWord</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamLongWord">TStreamLongWord</a>; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetMediumString">GetMediumString</a></b>: <a  href="PXL.TypeDef.html#UniString">UniString</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetShortInt">GetShortInt</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamShortInt">TStreamShortInt</a>; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetShortString">GetShortString</a></b>: <a  href="PXL.TypeDef.html#UniString">UniString</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetSingle">GetSingle</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamSingle">TStreamSingle</a>; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetSmallInt">GetSmallInt</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamSmallInt">TStreamSmallInt</a>; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetUInt64">GetUInt64</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamUInt64">TStreamUInt64</a>; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetWord">GetWord</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamWord">TStreamWord</a>; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetWordIndex">GetWordIndex</a></b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamWordIndex">TStreamWordIndex</a>; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Classes.TStreamHelper.html#GetWordPoint2px">GetWordPoint2px</a></b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#GetFloats3311">GetFloats3311</a></b>(out Value1, Value2: Single);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#GetFloats44">GetFloats44</a></b>(out Value1, Value2: Single);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutByte">PutByte</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamByte">TStreamByte</a>); inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutByteBool">PutByteBool</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamByteBool">TStreamByteBool</a>); inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutByteIndex">PutByteIndex</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamByteIndex">TStreamByteIndex</a>); inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutBytePoint2px">PutBytePoint2px</a></b>(const Value: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutDouble">PutDouble</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamDouble">TStreamDouble</a>); inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutFloat34">PutFloat34</a></b>(const Value: Single);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutFloat43">PutFloat43</a></b>(const Value: Single);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutFloats3311">PutFloats3311</a></b>(const Value1, Value2: Single);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutFloats44">PutFloats44</a></b>(const Value1, Value2: Single);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutInt64">PutInt64</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamInt64">TStreamInt64</a>); inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutLongInt">PutLongInt</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamLongInt">TStreamLongInt</a>); inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutLongPoint2px">PutLongPoint2px</a></b>(const Value: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutLongString">PutLongString</a></b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutLongWord">PutLongWord</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamLongWord">TStreamLongWord</a>); inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutMediumString">PutMediumString</a></b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const MaxCount: Integer = 0);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutShortInt">PutShortInt</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamShortInt">TStreamShortInt</a>); inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutShortString">PutShortString</a></b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const MaxCount: Integer = 0);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutSingle">PutSingle</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamSingle">TStreamSingle</a>); inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutSmallInt">PutSmallInt</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamSmallInt">TStreamSmallInt</a>); inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutUInt64">PutUInt64</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamUInt64">TStreamUInt64</a>); inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutWord">PutWord</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamWord">TStreamWord</a>); inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutWordIndex">PutWordIndex</a></b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamWordIndex">TStreamWordIndex</a>); inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Classes.TStreamHelper.html#PutWordPoint2px">PutWordPoint2px</a></b>(const Value: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>);</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Internal Types</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamByte"></a><code><b>TStreamByte</b> = <a  href="PXL.TypeDef.html#SizeUInt">SizeUInt</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored as unsigned 8-bit integer, but represented as unsigned 32-bit or 64-bit value depending on platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamByteBool"></a><code><b>TStreamByteBool</b> = Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored as 8-bit unsigned integer, but represented as Boolean.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamByteIndex"></a><code><b>TStreamByteIndex</b> = <a  href="PXL.TypeDef.html#SizeInt">SizeInt</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored as unsigned 8-bit integer, but represented as signed 32-bit or 64-bit index depending on platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamDouble"></a><code><b>TStreamDouble</b> = Double;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored and represented as 64-bit (double-precision) floating-point.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamInt64"></a><code><b>TStreamInt64</b> = Int64;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored and represented as signed 64-bit integer.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamLongInt"></a><code><b>TStreamLongInt</b> =  <a  href="PXL.TypeDef.html#SizeInt">SizeInt</a> ;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored as 32-bit signed integer, but represented as signed 32-bit or 64-bit value depending on platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamLongWord"></a><code><b>TStreamLongWord</b> =  <a  href="PXL.TypeDef.html#SizeUInt">SizeUInt</a> ;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored as unsigned 32-bit integer, but represented as unsigned 32-bit or 64-bit value depending on platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamShortInt"></a><code><b>TStreamShortInt</b> = <a  href="PXL.TypeDef.html#SizeInt">SizeInt</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored as 8-bit signed integer, but represented as signed 32-bit or 64-bit value depending on platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamSingle"></a><code><b>TStreamSingle</b> = Single;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored and represented as 32-bit (single-precision) floating-point.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamSmallInt"></a><code><b>TStreamSmallInt</b> = <a  href="PXL.TypeDef.html#SizeInt">SizeInt</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored as 16-bit signed integer, but represented as signed 32-bit or 64-bit value depending on platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamUInt64"></a><code><b>TStreamUInt64</b> = UInt64;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored and represented as unsigned 64-bit integer.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamWord"></a><code><b>TStreamWord</b> = <a  href="PXL.TypeDef.html#SizeUInt">SizeUInt</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored as unsigned 16-bit integer, but represented as unsigned 32-bit or 64-bit value depending on platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TStreamWordIndex"></a><code><b>TStreamWordIndex</b> =  <a  href="PXL.TypeDef.html#SizeInt">SizeInt</a> ;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Value stored as unsigned 16-bit integer, but represented as signed 32-bit or 64-bit index depending on platform.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetByte"></a><code>function <b>GetByte</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamByte">TStreamByte</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 8-bit unsigned integer from the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetByteBool"></a><code>function <b>GetByteBool</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamByteBool">TStreamByteBool</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads <b>Boolean</b> value from the stream previously saved by <a class="normal" href="PXL.Classes.TStreamHelper.html#PutByteBool">PutByteBool</a>. The resulting value is treated as 8-bit unsigned integer with values of [0..127] considered as <code>True</code> and values of [128..255] considered as <code>False</code>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetByteIndex"></a><code>function <b>GetByteIndex</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamByteIndex">TStreamByteIndex</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 8-bit unsigned index from the stream. The range of returned values is [0..254], the value of 255 is returned as -1.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetBytePoint2px"></a><code>function <b>GetBytePoint2px</b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 2D integer point from the stream. Each coordinate is loaded as 8-bit unsigned integer.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetDouble"></a><code>function <b>GetDouble</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamDouble">TStreamDouble</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 64-bit floating-point value (double-precision) from the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetFloat34"></a><code>function <b>GetFloat34</b>: Single;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads floating-point value as 8-bit signed byte from the stream using 1:3:4 fixed-point format. The possible values are in [-8..7.9375] range.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetFloat43"></a><code>function <b>GetFloat43</b>: Single;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads floating-point value as 8-bit signed byte from the stream using 1:4:3 fixed-point format. The possible values are in [-16..15.875] range.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetInt64"></a><code>function <b>GetInt64</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamInt64">TStreamInt64</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 64-bit signed integer from the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetLongInt"></a><code>function <b>GetLongInt</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamLongInt">TStreamLongInt</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 32-bit signed integer from the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetLongPoint2px"></a><code>function <b>GetLongPoint2px</b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 2D integer point from the stream. Each coordinate is loaded as 32-bit signed integer.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetLongString"></a><code>function <b>GetLongString</b>: <a  href="PXL.TypeDef.html#UniString">UniString</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads Unicode string from the stream in UTF-8 encoding previously saved by <a class="normal" href="PXL.Classes.TStreamHelper.html#PutLongString">PutLongString</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetLongWord"></a><code>function <b>GetLongWord</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamLongWord">TStreamLongWord</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 32-bit unsigned integer from the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetMediumString"></a><code>function <b>GetMediumString</b>: <a  href="PXL.TypeDef.html#UniString">UniString</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads Unicode string from the stream in UTF-8 encoding previously saved by <a class="normal" href="PXL.Classes.TStreamHelper.html#PutMediumString">PutMediumString</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetShortInt"></a><code>function <b>GetShortInt</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamShortInt">TStreamShortInt</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 8-bit signed integer from the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetShortString"></a><code>function <b>GetShortString</b>: <a  href="PXL.TypeDef.html#UniString">UniString</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads Unicode string from the stream in UTF-8 encoding previously saved by <a class="normal" href="PXL.Classes.TStreamHelper.html#PutShortString">PutShortString</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetSingle"></a><code>function <b>GetSingle</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamSingle">TStreamSingle</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 32-bit floating-point value (single-precision) from the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetSmallInt"></a><code>function <b>GetSmallInt</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamSmallInt">TStreamSmallInt</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 16-bit signed integer from the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetUInt64"></a><code>function <b>GetUInt64</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamUInt64">TStreamUInt64</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 64-bit unsigned integer from the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetWord"></a><code>function <b>GetWord</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamWord">TStreamWord</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 16-bit unsigned integer value from the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetWordIndex"></a><code>function <b>GetWordIndex</b>: <a  href="PXL.Classes.TStreamHelper.html#TStreamWordIndex">TStreamWordIndex</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 16-bit unsigned index from the stream. The range of returned values is [0..65534], the value of 65535 is returned as -1.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetWordPoint2px"></a><code>function <b>GetWordPoint2px</b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads 2D integer point from the stream. Each coordinate is loaded as 16-bit unsigned integer.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetFloats3311"></a><code>procedure <b>GetFloats3311</b>(out Value1, Value2: Single);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads two floating-point values as a single 8-bit unsigned byte from the stream with each value stored in fixed-point 1:2:1 format. The possible values are in [-4..3.5] range.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetFloats44"></a><code>procedure <b>GetFloats44</b>(out Value1, Value2: Single);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads two floating-point values as a single 8-bit unsigned byte from the stream with each value having 4-bits. The possible values are in [-8..7] range.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutByte"></a><code>procedure <b>PutByte</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamByte">TStreamByte</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 8-bit unsigned integer to the stream. If the value is outside of [0..255] range, it will be clamped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutByteBool"></a><code>procedure <b>PutByteBool</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamByteBool">TStreamByteBool</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves <b>Boolean</b> value to the stream as 8-bit unsigned integer. A value of <code>False</code> is saved as 255, while <code>True</code> is saved as 0.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutByteIndex"></a><code>procedure <b>PutByteIndex</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamByteIndex">TStreamByteIndex</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 8-bit unsigned index to the stream. A value of -1 (and other negative values) is stored as 255. Positive numbers that are outside of [0..254] range will be clamped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutBytePoint2px"></a><code>procedure <b>PutBytePoint2px</b>(const Value: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 2D integer point to the stream. Each coordinate is saved as 8-bit unsigned integer.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutDouble"></a><code>procedure <b>PutDouble</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamDouble">TStreamDouble</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 64-bit floating-point value (double-precision) to the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutFloat34"></a><code>procedure <b>PutFloat34</b>(const Value: Single);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves floating-point value as 8-bit signed byte to the stream using 1:3:4 fixed-point format with values outside of [-8..7.9375] range will be clamped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutFloat43"></a><code>procedure <b>PutFloat43</b>(const Value: Single);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves floating-point value as 8-bit signed byte to the stream using 1:4:3 fixed-point format with values outside of [-16..15.875] range will be clamped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutFloats3311"></a><code>procedure <b>PutFloats3311</b>(const Value1, Value2: Single);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves two floating-point values as a single 8-bit unsigned byte to the stream with each value stored in fixed-point 1:2:1 format. Values outside of [-4..3.5] range will be clamped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutFloats44"></a><code>procedure <b>PutFloats44</b>(const Value1, Value2: Single);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves two floating-point values as a single 8-bit unsigned byte to the stream with each value having 4-bits. Values outside of [-8..7] range will be clamped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutInt64"></a><code>procedure <b>PutInt64</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamInt64">TStreamInt64</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 64-bit signed integer to the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutLongInt"></a><code>procedure <b>PutLongInt</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamLongInt">TStreamLongInt</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 32-bit signed integer to the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutLongPoint2px"></a><code>procedure <b>PutLongPoint2px</b>(const Value: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 2D integer point to the stream. Each coordinate is saved as 32-bit signed integer.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutLongString"></a><code>procedure <b>PutLongString</b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Stores Unicode string to the stream in UTF-8 encoding.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutLongWord"></a><code>procedure <b>PutLongWord</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamLongWord">TStreamLongWord</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 32-bit unsigned integer to the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutMediumString"></a><code>procedure <b>PutMediumString</b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const MaxCount: Integer = 0);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves Unicode string to the stream in UTF-8 encoding. The resulting UTF-8 string is limited to a maximum of 65535 characters; therefore, for certain charsets the actual string is limited to either 32767 or even 21845 characters in worst case. If MaxCount is not zero, the input string will be limited to the given number of characters.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutShortInt"></a><code>procedure <b>PutShortInt</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamShortInt">TStreamShortInt</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 8-bit signed integer to the stream. If the value is outside of [-128..127] range, it will be clamped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutShortString"></a><code>procedure <b>PutShortString</b>(const Text: <a  href="PXL.TypeDef.html#UniString">UniString</a>; const MaxCount: Integer = 0);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves Unicode string to the stream in UTF-8 encoding. The resulting UTF-8 string is limited to a maximum of 255 characters; therefore, for certain charsets the actual string is limited to either 127 or even 85 characters in worst case. If MaxCount is not zero, the input string will be limited to the given number of characters.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutSingle"></a><code>procedure <b>PutSingle</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamSingle">TStreamSingle</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 32-bit floating-point value (single-precision) to the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutSmallInt"></a><code>procedure <b>PutSmallInt</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamSmallInt">TStreamSmallInt</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 16-bit signed integer to the stream. If the value is outside of [-32768..32767] range, it will be clamped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutUInt64"></a><code>procedure <b>PutUInt64</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamUInt64">TStreamUInt64</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 64-bit unsigned integer to the stream.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutWord"></a><code>procedure <b>PutWord</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamWord">TStreamWord</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 16-bit unsigned integer to the stream. If the value is outside of [0..65535] range, it will be clamped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutWordIndex"></a><code>procedure <b>PutWordIndex</b>(const Value: <a  href="PXL.Classes.TStreamHelper.html#TStreamWordIndex">TStreamWordIndex</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 16-bit unsigned index to the stream. A value of -1 (and other negative values) is stored as 65535. Positive numbers that are outside of [0..65534] range will be clamped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutWordPoint2px"></a><code>procedure <b>PutWordPoint2px</b>(const Value: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves 2D integer point to the stream. Each coordinate is saved as 16-bit unsigned integer.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

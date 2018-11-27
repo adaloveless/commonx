@@ -1,0 +1,12 @@
+
+sampler ImageSampler: register(s0);
+Texture2D <float4> ImageTexture: register(t0);
+
+float4 ps_main(
+  float4 InPos: SV_POSITION,
+  float2 InTex: TEXCOORD1,
+  float4 InCol: COLOR0): SV_TARGET
+{
+  return ImageTexture.Sample(ImageSampler, InTex) * InCol;
+}
+

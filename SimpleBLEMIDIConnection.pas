@@ -17,7 +17,7 @@ interface
 
 
 uses
-  SimpleAbstractconnection, blex, ringbuffer, system.Bluetooth, simplemidibase, typex, tickcount, simplebleioconnection, midiconsts, systemx, debug, stringx;
+  SimpleAbstractconnection, ringbuffer, system.Bluetooth, simplemidibase, typex, tickcount, simplebleioconnection, midiconsts, systemx, debug, stringx;
 
 const
   BLE_MIDI_CHAR : TBluetoothUUID =      '{7772E5DB-3868-4112-A1A9-F2669D106BF3}';

@@ -1,0 +1,876 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Surfaces: Class TPixelSurface</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TPixelSurface"></a><h1 class="cio">Class TPixelSurface</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td><a class="section" href="#PasDoc-Fields">Fields</a></td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Surfaces.html">PXL.Surfaces</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TPixelSurface = class(<a class="normal" href="PXL.Surfaces.TConceptualPixelSurface.html">TConceptualPixelSurface</a>)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Surface that stores pixels in one of supported formats, with facilities for pixel format conversion, resizing, copying, drawing, shrinking and so on. This can serve as a base for more advanced hardware-based surfaces, but it also provides full software implementation for all the functions.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="ancestor"><a class="normal" href="PXL.Surfaces.TConceptualPixelSurface.html">TConceptualPixelSurface</a></li>
+<li class="thisitem">TPixelSurface</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Fields"></a><h3 class="summary">Fields</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Surfaces.TPixelSurface.html#FBits">FBits</a></b>: Pointer;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Surfaces.TPixelSurface.html#FBufferSize">FBufferSize</a></b>: Cardinal;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Surfaces.TPixelSurface.html#FBytesPerPixel">FBytesPerPixel</a></b>: Cardinal;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Surfaces.TPixelSurface.html#FHeight">FHeight</a></b>: Integer;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Surfaces.TPixelSurface.html#FPitch">FPitch</a></b>: Cardinal;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Surfaces.TPixelSurface.html#FPixelFormat">FPixelFormat</a></b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Surfaces.TPixelSurface.html#FWidth">FWidth</a></b>: Integer;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>constructor <b><a  href="PXL.Surfaces.TPixelSurface.html#Create">Create</a></b>; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>constructor <b><a  href="PXL.Surfaces.TPixelSurface.html#CreateNamed">CreateNamed</a></b>(const AName: <a  href="PXL.TypeDef.html#StdString">StdString</a>);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#ApproximatePixelFormat">ApproximatePixelFormat</a></b>(const NewPixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>): <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#ComposeWhiteBlackToGrayAlpha">ComposeWhiteBlackToGrayAlpha</a></b>(const SourceWhite, SourceBlack: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#ConvertPixelFormat">ConvertPixelFormat</a></b>(const NewPixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>): Boolean; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#CopyFrom">CopyFrom</a></b>(const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#CopyRect">CopyRect</a></b>(DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#GetBilinearPixel">GetBilinearPixel</a></b>(const X, Y, FracX, FracY: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#GetBilinearPixel">GetBilinearPixel</a></b>(const X, Y: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#GetPixelWithCheck">GetPixelWithCheck</a></b>(X, Y: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#HasAlphaChannel">HasAlphaChannel</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#IsEmpty">IsEmpty</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#SetSize">SetSize</a></b>(NewWidth, NewHeight: Integer; NewPixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean; overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#SetSize">SetSize</a></b>(const NewSize: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const NewPixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean; overload; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#ShrinkToHalfFrom">ShrinkToHalfFrom</a></b>(const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#GetPixel">GetPixel</a></b>(X, Y: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; override;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#GetPixelUnsafe">GetPixelUnsafe</a></b>(X, Y: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; override;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurface.html#Reallocate">Reallocate</a></b>(const NewWidth, NewHeight: Integer; const NewPixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>): Boolean; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#Clear">Clear</a></b>; overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#Clear">Clear</a></b>(const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#DrawFilledRect">DrawFilledRect</a></b>(DestRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#DrawPixel">DrawPixel</a></b>(const X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); override;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#DrawSurface">DrawSurface</a></b>(DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#FillRect">FillRect</a></b>(Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#FillRect">FillRect</a></b>(const X, Y, Width, Height: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#Flip">Flip</a></b>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#FrameRect">FrameRect</a></b>(const X, Y, Width, Height: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#FrameRect">FrameRect</a></b>(const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#HorizLine">HorizLine</a></b>(X, Y, LineWidth: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#Mirror">Mirror</a></b>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#PremultiplyAlpha">PremultiplyAlpha</a></b>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#ResetAlpha">ResetAlpha</a></b>(const Opaque: Boolean = True);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#StretchBilinearFrom">StretchBilinearFrom</a></b>(const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; DestRect, SourceRect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#StretchFrom">StretchFrom</a></b>(const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; DestRect, SourceRect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#UnpremultiplyAlpha">UnpremultiplyAlpha</a></b>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#VertLine">VertLine</a></b>(X, Y, LineHeight: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#ResetAllocation">ResetAllocation</a></b>; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#SetPixel">SetPixel</a></b>(X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); override;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurface.html#SetPixelUnsafe">SetPixelUnsafe</a></b>(X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); override;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#Bits">Bits</a></b>: Pointer read <a  href="PXL.Surfaces.TPixelSurface.html#FBits">FBits</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#BufferSize">BufferSize</a></b>: Cardinal read <a  href="PXL.Surfaces.TPixelSurface.html#FBufferSize">FBufferSize</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#BytesPerPixel">BytesPerPixel</a></b>: Cardinal read <a  href="PXL.Surfaces.TPixelSurface.html#FBytesPerPixel">FBytesPerPixel</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#Height">Height</a></b>: Integer read <a  href="PXL.Surfaces.TPixelSurface.html#FHeight">FHeight</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#Name">Name</a></b>: <a  href="PXL.TypeDef.html#StdString">StdString</a> read FName;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#Pitch">Pitch</a></b>: Cardinal read <a  href="PXL.Surfaces.TPixelSurface.html#FPitch">FPitch</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#PixelFormat">PixelFormat</a></b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> read <a  href="PXL.Surfaces.TPixelSurface.html#FPixelFormat">FPixelFormat</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#PixelPtr">PixelPtr</a></b>[constX,Y:Integer]: Pointer read GetPixelPtr;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#PremultipliedAlpha">PremultipliedAlpha</a></b>: Boolean read FPremultipliedAlpha write FPremultipliedAlpha;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#Scanline">Scanline</a></b>[constIndex:Integer]: Pointer read GetScanline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#Size">Size</a></b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a> read GetSize;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurface.html#Width">Width</a></b>: Integer read <a  href="PXL.Surfaces.TPixelSurface.html#FWidth">FWidth</a>;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Fields</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FBits"></a><code><b>FBits</b>: Pointer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Memory reference to top/left corner of pixel data contained by this surface, with horizontal rows arranged linearly from top to bottom.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FBufferSize"></a><code><b>FBufferSize</b>: Cardinal;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Size of current surface in bytes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FBytesPerPixel"></a><code><b>FBytesPerPixel</b>: Cardinal;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Current number of bytes each pixel occupies.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FHeight"></a><code><b>FHeight</b>: Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Current height of surface in pixels.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FPitch"></a><code><b>FPitch</b>: Cardinal;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Currently set number of bytes each horizontal row of pixels occupies. This may differ than the actual calculated number and may include unused or even protected memory locations, which should simply be skipped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FPixelFormat"></a><code><b>FPixelFormat</b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Current pixel format in which pixels are stored.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FWidth"></a><code><b>FWidth</b>: Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Current width of surface in pixels.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Create"></a><code>constructor <b>Create</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Creates new instance of this class with empty name.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="CreateNamed"></a><code>constructor <b>CreateNamed</b>(const AName: <a  href="PXL.TypeDef.html#StdString">StdString</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Creates new instance of this class with the specified name.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ApproximatePixelFormat"></a><code>function <b>ApproximatePixelFormat</b>(const NewPixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>): <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Takes the provided pixel format and returns one of pixel formats currently supported, which is a closest match to the provided one. If there is no possible match, this function returns <i>TPixelFormat.Unknown</i>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ComposeWhiteBlackToGrayAlpha"></a><code>function <b>ComposeWhiteBlackToGrayAlpha</b>(const SourceWhite, SourceBlack: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Takes first source image with content rendered on white background and second source image with content rendered on black background (discarding alpha-channels, if such are present), calculating resulting grayscale image with alpha-channel. This is useful in situations when an application does not generate alpha-channel, but can pre-render the image on different backgrounds - by rendering this image on black and white backgrounds, the actual alpha-channel can then be calculated using this function.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ConvertPixelFormat"></a><code>function <b>ConvertPixelFormat</b>(const NewPixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Converts surface from its currently set pixel format to the new one. If both format match, the function does nothing. <code>True</code> is returned when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="CopyFrom"></a><code>function <b>CopyFrom</b>(const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Copies entire contents from source surface to this one. If the current surface has size and/or pixel format not specified, these will be copied from the source surface as well. If current surface is not empty, then its pixel format will not be modified - in this case, pixel format conversion may occur. This function will try to ensure that current surface size matches the source surface and if if this cannot be achieved, will fail; as an alternative, <a class="normal" href="PXL.Surfaces.TPixelSurface.html#CopyRect">CopyRect</a> can be used to instead copy a portion of source surface to this one. <code>True</code> is returned when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="CopyRect"></a><code>function <b>CopyRect</b>(DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Copies a portion of source surface to this one according to specified source rectangle and destination position. If source rectangle is empty, then the entire source surface will be copied. This function does the appropriate clipping and pixel format conversion. It does not change current surface size or pixel format. <code>True</code> is returned when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetBilinearPixel"></a><code>function <b>GetBilinearPixel</b>(const X, Y, FracX, FracY: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Retrieves pixel from integer and fractional coordinates. This works similarly to other <i>GetBilinearPixel</i> variant that receives floating-point coordinates, but this one considers <i>FracX</i> and <i>FracY</i> as values ranging from 0 to 255, representing fractions of <i>X</i> and <i>Y</i>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetBilinearPixel"></a><code>function <b>GetBilinearPixel</b>(const X, Y: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Retrieves pixel from floating-point coordinates, interpolating linearly between four neighbor pixels as necessary to get an accurate match. This can be used for limitless stretching, to get color values that lie between individual pixels and slowly change from one pixel to another.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="GetPixelWithCheck"></a><code>function <b>GetPixelWithCheck</b>(X, Y: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns color value of pixel at the specified coordinates with an additional sanity check: if the coordinates are outside of valid range, they will be clamped so that they stay within.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="HasAlphaChannel"></a><code>function <b>HasAlphaChannel</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Processes the whole surface to determine whether it has meaningful alpha-channel. A surface that has all its pixels with alpha-channel set to fully translucent or fully opaque (but not mixed) is considered lacking alpha-channel. On the other hand, a surface that has at least one pixel with alpha-channel value different than any other pixel, is considered to have alpha-channel. This is useful to determine whether the surface can be stored in one of pixel formats lacking alpha-channel, to avoid losing any transparency information.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="IsEmpty"></a><code>function <b>IsEmpty</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Checks whether the surface has non-zero width and height.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SetSize"></a><code>function <b>SetSize</b>(NewWidth, NewHeight: Integer; NewPixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean; overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Redefines surface size to the specified width, height and pixel format, discarding previous contents. This function provide sanity check on specified parameters and calls <a class="normal" href="PXL.Surfaces.TPixelSurface.html#Reallocate">Reallocate</a> accordingly. <code>True</code> is returned when the operation has been successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SetSize"></a><code>function <b>SetSize</b>(const NewSize: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const NewPixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Boolean; overload; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Redefines surface size to the specified size and pixel format, discarding previous contents. This function provide sanity check on specified parameters and calls <a class="normal" href="PXL.Surfaces.TPixelSurface.html#Reallocate">Reallocate</a> accordingly. <code>True</code> is returned when the operation has been successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ShrinkToHalfFrom"></a><code>function <b>ShrinkToHalfFrom</b>(const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This function works similarly to <a class="normal" href="PXL.Surfaces.TPixelSurface.html#CopyFrom">CopyFrom</a>, except that it produces image with half of size, averaging each four pixels to one. This is specifically useful to generate mipmaps.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetPixel"></a><code>function <b>GetPixel</b>(X, Y: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Reads pixel from the surface and provides necessary pixel format conversion based on parameters such as <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FBits">FBits</a>, <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FPitch">FPitch</a>, <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FPixelFormat">FPixelFormat</a>, <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FBytesPerPixel">FBytesPerPixel</a>, <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FWidth">FWidth</a> and <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FHeight">FHeight</a>. This function does range checking for <i>X</i> and <i>Y</i> parameters and if they are outside of valid range, returns completely black/translucent color (in other words, zero).</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetPixelUnsafe"></a><code>function <b>GetPixelUnsafe</b>(X, Y: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Reads pixel from the surface similarly to <a class="normal" href="PXL.Surfaces.TPixelSurface.html#GetPixel">GetPixel</a>, but does not do any range checking for <i>X</i> and <i>Y</i> with the benefit of increased performance.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="Reallocate"></a><code>function <b>Reallocate</b>(const NewWidth, NewHeight: Integer; const NewPixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Reallocates current pixel surface to new size and pixel format, discarding any previous written content. This function returns <code>True</code> when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Clear"></a><code>procedure <b>Clear</b>; overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Clears the entire surface with zeros.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Clear"></a><code>procedure <b>Clear</b>(const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Clears the entire surface with the given color. This does pixel format conversion when appropriate, so for better performance, consider using <i>Clear</i> without parameters.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawFilledRect"></a><code>procedure <b>DrawFilledRect</b>(DestRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws a rectangle filled with specified gradient onto this surface with alpha-blending. For filling areas with the same color without alpha-blending, a better performance can be achieved with <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FillRect">FillRect</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawPixel"></a><code>procedure <b>DrawPixel</b>(const X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws a single pixel on this surface with alpha-blending.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawSurface"></a><code>procedure <b>DrawSurface</b>(DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Renders a portion of source surface onto this one at the specified origin, using alpha-blending and premultiplying pixels taken from the source surface with specified color gradient. This does pixel pixel conversion and clipping as necessary.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillRect"></a><code>procedure <b>FillRect</b>(Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Fills specified rectangle area with the given color. This also does clipping when appropriate. Note that unlike <a class="normal" href="PXL.Surfaces.TPixelSurface.html#DrawFilledRect">DrawFilledRect</a> method, this just sets pixels to given color, without alpha-blending.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillRect"></a><code>procedure <b>FillRect</b>(const X, Y, Width, Height: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Fills rectangle area of the specified coordinates with the given color. This also does clipping when appropriate. Note that unlike <a class="normal" href="PXL.Surfaces.TPixelSurface.html#DrawFilledRect">DrawFilledRect</a> method, this just sets pixels to given color, without alpha-blending.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Flip"></a><code>procedure <b>Flip</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Flips the visible image on surface vertically.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FrameRect"></a><code>procedure <b>FrameRect</b>(const X, Y, Width, Height: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Fills surface with rectangle of one pixel wide and single color at the specified coordinates.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FrameRect"></a><code>procedure <b>FrameRect</b>(const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Fills surface with rectangle of one pixel wide and single color at the specified area.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="HorizLine"></a><code>procedure <b>HorizLine</b>(X, Y, LineWidth: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Fills surface with horizontal line of single color at the specified coordinates.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Mirror"></a><code>procedure <b>Mirror</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Mirrors the visible image on surface horizontally.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PremultiplyAlpha"></a><code>procedure <b>PremultiplyAlpha</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Processes the whole surface, premultiplying each pixel's red, green and blue values by the corresponding alpha-channel value, resulting in image with premultiplied alpha. Note that this is an irreversible process, during which some color information is lost permanently (smaller alpha values contribute to bigger information loss). This is generally useful to prepare the image for generating mipmaps and/or alpha-blending, to get more accurate visual results.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ResetAlpha"></a><code>procedure <b>ResetAlpha</b>(const Opaque: Boolean = True);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Processes surface pixels, setting alpha-channel to either fully translucent or fully opaque depending on <i>Opaque</i> parameter.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="StretchBilinearFrom"></a><code>procedure <b>StretchBilinearFrom</b>(const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; DestRect, SourceRect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This function works similarly to <a class="normal" href="PXL.Surfaces.TPixelSurface.html#CopyRect">CopyRect</a>, but provides bilinear stretching. That is, it copies source surface rectangle onto destination rectangle with linear filtering (uses <a class="normal" href="PXL.Surfaces.TPixelSurface.html#GetBilinearPixel">GetBilinearPixel</a> function). Clipping and pixel format conversion is done as necessary. Note that this function is meant for stretching only; shrinking although will also work, but result in inaccurate results as shrinking requires calculating average of variable number of pixels depending on shrink ratio.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="StretchFrom"></a><code>procedure <b>StretchFrom</b>(const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; DestRect, SourceRect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This function works similarly to <a class="normal" href="PXL.Surfaces.TPixelSurface.html#CopyRect">CopyRect</a>, but provides stretching and/or shrinking. That is, it copies source surface rectangle onto destination rectangle with point filtering. Clipping and pixel format conversion is done as necessary. For a more accurate stretching, consider using <a class="normal" href="PXL.Surfaces.TPixelSurface.html#StretchBilinearFrom">StretchBilinearFrom</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="UnpremultiplyAlpha"></a><code>procedure <b>UnpremultiplyAlpha</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Processes the whole surface, dividing each pixel by its alpha-value, resulting in image with non-premultiplied alpha. This can be considered an opposite or reversal process of <a class="normal" href="PXL.Surfaces.TPixelSurface.html#PremultiplyAlpha">PremultiplyAlpha</a>. During this process, some color information may be lost due to precision issues. This can be useful to obtain original pixel information from image that has been previously premultiplied; however, this does not recover lost information during premultiplication process. For instance, pixels that had alpha value of zero and were premultiplied lose all information and cannot be recovered; pixels with alpha value of 128 (that is, 50% opaque) lose half of their precision and after &quot;unpremultiply&quot; process will have values multiple of 2.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="VertLine"></a><code>procedure <b>VertLine</b>(X, Y, LineHeight: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Fills surface with vertical line of single color at the specified coordinates.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="ResetAllocation"></a><code>procedure <b>ResetAllocation</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Resets pixel surface allocation, releasing any previously allocated memory and setting all relevant parameters to zero.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetPixel"></a><code>procedure <b>SetPixel</b>(X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Writes pixel to the surface and provides necessary pixel format conversion based on parameters such as <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FBits">FBits</a>, <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FPitch">FPitch</a>, <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FPixelFormat">FPixelFormat</a>, <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FBytesPerPixel">FBytesPerPixel</a>, <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FWidth">FWidth</a> and <a class="normal" href="PXL.Surfaces.TPixelSurface.html#FHeight">FHeight</a>. This function does range checking for <i>X</i> and <i>Y</i> parameters and if they are outside of valid range, does nothing.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetPixelUnsafe"></a><code>procedure <b>SetPixelUnsafe</b>(X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Write pixel to the surface similarly to <a class="normal" href="PXL.Surfaces.TPixelSurface.html#SetPixel">SetPixel</a>, but does not do any range checking for <i>X</i> and <i>Y</i> with the benefit of increased performance.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Bits"></a><code>property <b>Bits</b>: Pointer read <a  href="PXL.Surfaces.TPixelSurface.html#FBits">FBits</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Pointer to top/left corner of pixel data contained by this surface, with horizontal rows arranged linearly from top to bottom.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="BufferSize"></a><code>property <b>BufferSize</b>: Cardinal read <a  href="PXL.Surfaces.TPixelSurface.html#FBufferSize">FBufferSize</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Size of the surface in bytes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="BytesPerPixel"></a><code>property <b>BytesPerPixel</b>: Cardinal read <a  href="PXL.Surfaces.TPixelSurface.html#FBytesPerPixel">FBytesPerPixel</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Number of bytes each pixel occupies.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Height"></a><code>property <b>Height</b>: Integer read <a  href="PXL.Surfaces.TPixelSurface.html#FHeight">FHeight</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Height of surface in pixels.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Name"></a><code>property <b>Name</b>: <a  href="PXL.TypeDef.html#StdString">StdString</a> read FName;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Unique name of this surface.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Pitch"></a><code>property <b>Pitch</b>: Cardinal read <a  href="PXL.Surfaces.TPixelSurface.html#FPitch">FPitch</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The number of bytes each horizontal row of pixels occupies. This may differ than the actual calculated number and may include unusued or even protected memory locations, which should simply be skipped.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PixelFormat"></a><code>property <b>PixelFormat</b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> read <a  href="PXL.Surfaces.TPixelSurface.html#FPixelFormat">FPixelFormat</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Pixel format in which individual pixels are stored.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PixelPtr"></a><code>property <b>PixelPtr</b>[constX,Y:Integer]: Pointer read GetPixelPtr;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides pointer to the pixel data at the given coordinates. If the specified coordinates are outside of valid range, <code>Nil</code> is returned.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PremultipliedAlpha"></a><code>property <b>PremultipliedAlpha</b>: Boolean read FPremultipliedAlpha write FPremultipliedAlpha;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates whether the pixels in this surface have their alpha premultiplied or not. This is just an informative parameter; to actually convert pixels from one mode to another, use <a class="normal" href="PXL.Surfaces.TPixelSurface.html#PremultiplyAlpha">PremultiplyAlpha</a> and <a class="normal" href="PXL.Surfaces.TPixelSurface.html#UnpremultiplyAlpha">UnpremultiplyAlpha</a> methods.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Scanline"></a><code>property <b>Scanline</b>[constIndex:Integer]: Pointer read GetScanline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides pointer to left corner of pixel data at the given scanline index (that is, row number). If the specified index is outside of valid range, <code>Nil</code> is returned.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Size"></a><code>property <b>Size</b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a> read GetSize;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Size of surface in pixels.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Width"></a><code>property <b>Width</b>: Integer read <a  href="PXL.Surfaces.TPixelSurface.html#FWidth">FWidth</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Width of surface in pixels.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

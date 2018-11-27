@@ -1,0 +1,511 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.TypeDef</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<h1 class="unit">Unit PXL.TypeDef</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td>Uses</td><td>Classes, Interfaces, Objects and Records</td><td><a class="section" href="#PasDoc-FuncsProcs">Functions and Procedures</a></td><td><a class="section" href="#PasDoc-Types">Types</a></td><td><a class="section" href="#PasDoc-Constants">Constants</a></td><td><a class="section" href="#PasDoc-Variables">Variables</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="description">Description</h2>
+<p>
+General integer, floating-point and string types optimized for each platform that are used throughout the entire framework.</p>
+<a name="PasDoc-Uses"></a><h2 class="overview">Overview</h2>
+<a name="PasDoc-FuncsProcs"></a><h3 class="summary">Functions and Procedures</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code>procedure <b><a  href="PXL.TypeDef.html#Decrement_PXL_ClassInstances">Decrement_PXL_ClassInstances</a></b>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code>procedure <b><a  href="PXL.TypeDef.html#FreeMemAndNil">FreeMemAndNil</a></b>(var Value);</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code>procedure <b><a  href="PXL.TypeDef.html#Increment_PXL_ClassInstances">Increment_PXL_ClassInstances</a></b>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code>procedure <b><a  href="PXL.TypeDef.html#PopFPUState">PopFPUState</a></b>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code>procedure <b><a  href="PXL.TypeDef.html#PushClearFPUState">PushClearFPUState</a></b>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code>procedure <b><a  href="PXL.TypeDef.html#PushFPUState">PushFPUState</a></b>;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Types"></a><h3 class="summary">Types</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PSizeFloat">PSizeFloat</a></b> = &circ;<a  href="PXL.TypeDef.html#SizeFloat">SizeFloat</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PSizeInt">PSizeInt</a></b> = &circ;<a  href="PXL.TypeDef.html#SizeInt">SizeInt</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PSizeUInt">PSizeUInt</a></b> = &circ;<a  href="PXL.TypeDef.html#SizeUInt">SizeUInt</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PStdChar">PStdChar</a></b> =  PChar ;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PStdString">PStdString</a></b> = &circ;<a  href="PXL.TypeDef.html#StdString">StdString</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PtrInt">PtrInt</a></b> = NativeInt;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PtrUInt">PtrUInt</a></b> = NativeUInt;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PUniChar">PUniChar</a></b> =
+  
+    
+      PChar
+    
+  ;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PUniString">PUniString</a></b> = &circ;<a  href="PXL.TypeDef.html#UniString">UniString</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PUntypedHandle">PUntypedHandle</a></b> = &circ;<a  href="PXL.TypeDef.html#TUntypedHandle">TUntypedHandle</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PVectorFloat">PVectorFloat</a></b> = &circ;<a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PVectorInt">PVectorInt</a></b> = &circ;<a  href="PXL.TypeDef.html#VectorInt">VectorInt</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PVectorUInt">PVectorUInt</a></b> = &circ;<a  href="PXL.TypeDef.html#VectorUInt">VectorUInt</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#SizeFloat">SizeFloat</a></b> =  Double ;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#SizeInt">SizeInt</a></b> = <a  href="PXL.TypeDef.html#PtrInt">PtrInt</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#SizeUInt">SizeUInt</a></b> = <a  href="PXL.TypeDef.html#PtrUInt">PtrUInt</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#StdChar">StdChar</a></b> =
+  
+    
+      Char
+    
+  ;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#StdString">StdString</a></b> =  string ;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#TPXL_ClassInstances">TPXL_ClassInstances</a></b> =
+  
+    Integer
+  ;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#TUntypedHandle">TUntypedHandle</a></b> = <a  href="PXL.TypeDef.html#PtrInt">PtrInt</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#UniChar">UniChar</a></b> =
+  
+    
+      Char
+    
+  ;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#UniString">UniString</a></b> =   UnicodeString  ;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a></b> =  Double ;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#VectorInt">VectorInt</a></b> =
+  
+    
+      Integer
+    
+  ;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#VectorUInt">VectorUInt</a></b> =
+  
+    
+      Cardinal
+    
+  ;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Constants"></a><h3 class="summary">Constants</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#VectorEpsilon">VectorEpsilon</a></b>: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> ;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Variables"></a><h3 class="summary">Variables</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.TypeDef.html#PXL_ClassInstances">PXL_ClassInstances</a></b>: <a  href="PXL.TypeDef.html#TPXL_ClassInstances">TPXL_ClassInstances</a> ;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Functions and Procedures</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="Decrement_PXL_ClassInstances"></a><code>procedure <b>Decrement_PXL_ClassInstances</b>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Decrements the current number of PXL class instances in a thread-safe fashion. On small single-board devices such as Intel Galileo or Raspberry PI, this method is not thread-safe.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="FreeMemAndNil"></a><code>procedure <b>FreeMemAndNil</b>(var Value);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Checks whether the Value is <code>Nil</code> and if not, calls FreeMem on that value and then assigns <code>Nil</code> to it.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="Increment_PXL_ClassInstances"></a><code>procedure <b>Increment_PXL_ClassInstances</b>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Increments the current number of PXL class instances in a thread-safe fashion. On small single-board devices such as Intel Galileo or Raspberry PI, this method is not thread-safe.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PopFPUState"></a><code>procedure <b>PopFPUState</b>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Recovers FPU state from the stack previously saved by <a class="normal" href="PXL.TypeDef.html#PushFPUState">PushFPUState</a> or <a class="normal" href="PXL.TypeDef.html#PushClearFPUState">PushClearFPUState</a> and decrements internal stack pointer. If there are no items on the stack, this function does nothing.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PushClearFPUState"></a><code>procedure <b>PushClearFPUState</b>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Similarly to <a class="normal" href="PXL.TypeDef.html#PushFPUState">PushFPUState</a>, this saves the current FPU state to stack and increments internal stack pointer. Afterwards, this function disables all FPU exceptions. This is typically used with Direct3D rendering methods that require FPU exceptions to be disabled.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PushFPUState"></a><code>procedure <b>PushFPUState</b>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Saves the current FPU state to stack and increments internal stack pointer. The stack has length of 16. If the stack becomes full, this function does nothing.</p>
+</td></tr>
+</table>
+<h3 class="detail">Types</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PSizeFloat"></a><code><b>PSizeFloat</b> = &circ;<a  href="PXL.TypeDef.html#SizeFloat">SizeFloat</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.TypeDef.html#SizeFloat">SizeFloat</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PSizeInt"></a><code><b>PSizeInt</b> = &circ;<a  href="PXL.TypeDef.html#SizeInt">SizeInt</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.TypeDef.html#SizeInt">SizeInt</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PSizeUInt"></a><code><b>PSizeUInt</b> = &circ;<a  href="PXL.TypeDef.html#SizeUInt">SizeUInt</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.TypeDef.html#SizeUInt">SizeUInt</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PStdChar"></a><code><b>PStdChar</b> =  PChar ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.TypeDef.html#StdChar">StdChar</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PStdString"></a><code><b>PStdString</b> = &circ;<a  href="PXL.TypeDef.html#StdString">StdString</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.TypeDef.html#StdString">StdString</a>. It is not recommended to use pointer to strings, so this is mostly for internal use only.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PtrInt"></a><code><b>PtrInt</b> = NativeInt;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer type represented as a signed integer.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PtrUInt"></a><code><b>PtrUInt</b> = NativeUInt;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer type represented as an unsigned integer.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PUniChar"></a><code><b>PUniChar</b> =
+  
+    
+      PChar
+    
+  ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.TypeDef.html#UniChar">UniChar</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PUniString"></a><code><b>PUniString</b> = &circ;<a  href="PXL.TypeDef.html#UniString">UniString</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.TypeDef.html#UniString">UniString</a>. It is not recommended to use pointer to strings, so this is mostly for internal use only.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PUntypedHandle"></a><code><b>PUntypedHandle</b> = &circ;<a  href="PXL.TypeDef.html#TUntypedHandle">TUntypedHandle</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.TypeDef.html#TUntypedHandle">TUntypedHandle</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PVectorFloat"></a><code><b>PVectorFloat</b> = &circ;<a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PVectorInt"></a><code><b>PVectorInt</b> = &circ;<a  href="PXL.TypeDef.html#VectorInt">VectorInt</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.TypeDef.html#VectorInt">VectorInt</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PVectorUInt"></a><code><b>PVectorUInt</b> = &circ;<a  href="PXL.TypeDef.html#VectorUInt">VectorUInt</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.TypeDef.html#VectorUInt">VectorUInt</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="SizeFloat"></a><code><b>SizeFloat</b> =  Double ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Floating-point data type that has the same size as <i>Pointer</i> depending on each platform. That is, on 32-bit platforms this is equivalent of <i>Single</i>, whereas on 64-bit platforms this is equivalent of <i>Double</i>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="SizeInt"></a><code><b>SizeInt</b> = <a  href="PXL.TypeDef.html#PtrInt">PtrInt</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Signed integer data type having the same size as pointer on the given platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="SizeUInt"></a><code><b>SizeUInt</b> = <a  href="PXL.TypeDef.html#PtrUInt">PtrUInt</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Unsigned integer data type having the same size as pointer on the given platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="StdChar"></a><code><b>StdChar</b> =
+  
+    
+      Char
+    
+  ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+General-purpose character type optimized for standard usage and base element of <a class="normal" href="PXL.TypeDef.html#StdString">StdString</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="StdString"></a><code><b>StdString</b> =  string ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+General-purpose string type that is best optimized for standard usage such as file names, paths, XML tags and attributes and so on. It may also contain Unicode-encoded text, either UTF-8 or UTF-16 depending on platform and compiler.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TPXL_ClassInstances"></a><code><b>TPXL_ClassInstances</b> =
+  
+    Integer
+  ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Special data type that is meant for storing class instances in <a class="normal" href="PXL.TypeDef.html#PXL_ClassInstances">PXL_ClassInstances</a>. Typically, this is a 32-bit signed integer.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TUntypedHandle"></a><code><b>TUntypedHandle</b> = <a  href="PXL.TypeDef.html#PtrInt">PtrInt</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Data type meant for storing cross-platform handles. This is a signed integer with the same size as pointer on the given platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="UniChar"></a><code><b>UniChar</b> =
+  
+    
+      Char
+    
+  ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+General-purpose character type optimized for Unicode usage and is base element of <a class="normal" href="PXL.TypeDef.html#UniString">UniString</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="UniString"></a><code><b>UniString</b> =   UnicodeString  ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+General-purpose string type that is best optimized for Unicode usage. Typically, each character uses UTF-16 encoding, but it may vary depending on platform.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="VectorFloat"></a><code><b>VectorFloat</b> =  Double ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Floating-point data type that is commonly used in the framework. Typically, it is an equivalent of <i>Single</i>, unless PXL_SCIENTIFIC_MODE is enabled, in which case it becomes equivalent of <i>Double</i>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="VectorInt"></a><code><b>VectorInt</b> =
+  
+    
+      Integer
+    
+  ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Signed integer data type that is commonly used in the framework. Typically, it is 32-bit and an equivalent of <i>Integer</i>, unless PXL_SCIENTIFIC_MODE_MAX is enabled, in which case it becomes 64-bit and equivalent of <i>Int64</i>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="VectorUInt"></a><code><b>VectorUInt</b> =
+  
+    
+      Cardinal
+    
+  ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Unsigned integer data type that is commonly used in the framework. Typically, it is 32-bit and an equivalent of <i>Cardinal</i>, unless PXL_SCIENTIFIC_MODE_MAX is enabled, in which case it becomes 64-bit and equivalent of <i>UInt64</i>.</p>
+</td></tr>
+</table>
+<h3 class="detail">Constants</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="VectorEpsilon"></a><code><b>VectorEpsilon</b>: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a> ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+A special value that determines precision limit when comparing vectors and coordinates.</p>
+</td></tr>
+</table>
+<h3 class="detail">Variables</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PXL_ClassInstances"></a><code><b>PXL_ClassInstances</b>: <a  href="PXL.TypeDef.html#TPXL_ClassInstances">TPXL_ClassInstances</a> ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+A special global variable that holds number of un-released PXL class instances and is meant for debugging purposes, especially when running under ARC in Delphi.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

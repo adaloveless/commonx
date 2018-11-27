@@ -1,0 +1,245 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Timing: Class TMultimediaTimer</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TMultimediaTimer"></a><h1 class="cio">Class TMultimediaTimer</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td><a class="section" href="#PasDoc-InternalTypes">Internal Types</a></td><td>Fields</td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Timing.html">PXL.Timing</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TMultimediaTimer = class(TObject)</code></p>
+<h2 class="description">Description</h2>
+<p>
+A special-purpose timer implementation that can provide fixed frame-based processing independently of rendering frame rate. This class provides <i>OnProcess</i> event, which occurs exactly <i>Speed</i> times per second, and <i>Latency</i> property, which can be used from within <i>OnTimer</i> event as a scaling coefficient for moving things. In order to function properly, <i>NotifyTick</i> method should be called as fast as possible (for example, before rendering each frame), whereas <i>Process</i> event should be called right before flipping rendering buffers, to take advantage of parallel processing between CPU and GPU. <i>FrameRate</i> will indicate how many frames per second <i>NotifyTick</i> is called. See accompanying examples on how this component can be used.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="thisitem">TMultimediaTimer</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-InternalTypes"></a><h3 class="summary">Internal Types</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="published.gif" alt="Published" title="Published"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Timing.TMultimediaTimer.html#TTimerEvent">TTimerEvent</a></b> = procedure(const Sender: TObject) of object;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Timing.TMultimediaTimer.html#NotifyTick">NotifyTick</a></b>(AllowSleep: Boolean = True);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Timing.TMultimediaTimer.html#Process">Process</a></b>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Timing.TMultimediaTimer.html#Reset">Reset</a></b>;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Timing.TMultimediaTimer.html#Delta">Delta</a></b>: Double read FDelta;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Timing.TMultimediaTimer.html#Enabled">Enabled</a></b>: Boolean read FEnabled write FEnabled;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Timing.TMultimediaTimer.html#FrameRate">FrameRate</a></b>: Integer read FFrameRate;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Timing.TMultimediaTimer.html#Latency">Latency</a></b>: Double read FLatency;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Timing.TMultimediaTimer.html#MaxFPS">MaxFPS</a></b>: Integer read FMaxFPS write SetMaxFPS;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Timing.TMultimediaTimer.html#OnProcess">OnProcess</a></b>: <a  href="PXL.Timing.TMultimediaTimer.html#TTimerEvent">TTimerEvent</a> read FOnProcess write FOnProcess;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Timing.TMultimediaTimer.html#OnTimer">OnTimer</a></b>: <a  href="PXL.Timing.TMultimediaTimer.html#TTimerEvent">TTimerEvent</a> read FOnTimer write FOnTimer;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Timing.TMultimediaTimer.html#SingleCallOnly">SingleCallOnly</a></b>: Boolean read FSingleCallOnly write FSingleCallOnly;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Timing.TMultimediaTimer.html#Speed">Speed</a></b>: Double read FSpeed write SetSpeed;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Internal Types</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="published.gif" alt="Published" title="Published"></a></td>
+<td class="itemcode"><a name="TTimerEvent"></a><code><b>TTimerEvent</b> = procedure(const Sender: TObject) of object;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Event handler description that is used for timer events.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="NotifyTick"></a><code>procedure <b>NotifyTick</b>(AllowSleep: Boolean = True);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This method should be called as fast as possible from within the main application for the timer to work. It can be either called when idle event occurs or from within system timer event.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Process"></a><code>procedure <b>Process</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This method should only be called from within OnTimer event to do constant object movement and animation control. Each time this method is called, OnProcess event may (or may not) occur depending on the current rendering frame rate (see FrameRate) and the desired processing speed (see Speed). The only thing that is assured is that OnProcess event will occur exactly Speed times per second no matter how fast OnTimer occurs (that is, the value of FrameRate).</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Reset"></a><code>procedure <b>Reset</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Resets internal structures of the timer and starts over the timing calculations. This can be useful when a very time-consuming task was executed inside OnTimer event that only occurs once. Normally, it would stall the timer making it think that the processing takes too long or the rendering is too slow; calling this method will tell the timer that it should ignore the situation and prevent the stall.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Delta"></a><code>property <b>Delta</b>: Double read FDelta;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Movement differential between the current frame rate and the requested Speed. Object movement and animation control can be made inside OnTimer event if all displacements are multiplied by this coefficient. For instance, if frame rate is 30 FPS and speed is set to 60, this coefficient will equal to 2.0, so objects moving at 30 FPS will have double displacement to match 60 FPS speed; on the other hand, if frame rate is 120 FPS with speed set to 60, this coefficient will equal to 0.5, to move objects two times slower. An easier and more straight-forward approach can be used with OnProcess event, where using this coefficient is not necessary.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Enabled"></a><code>property <b>Enabled</b>: Boolean read FEnabled write FEnabled;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines whether the timer is enabled or not. The internal processing may still be occurring independently of this value, but it controls whether OnTimer event occurs or not.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FrameRate"></a><code>property <b>FrameRate</b>: Integer read FFrameRate;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The current frame rate in frames per second. This value is calculated approximately two times per second and can only be used for informative purposes (e.g. displaying frame rate in the application). For precise real-time indications it is recommended to use Latency property instead.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Latency"></a><code>property <b>Latency</b>: Double read FLatency;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The time (in milliseconds) calculated between previous frame and the current one. This can be a direct indicator of rendering performance as it indicates how much time it took to render (and possibly process) the frame.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="MaxFPS"></a><code>property <b>MaxFPS</b>: Integer read FMaxFPS write SetMaxFPS;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The maximum allowed frame rate at which OnTimer should be executed. This value is an approximate and the resulting frame rate may be quite different (the resolution can be as low as 10 ms). It should be used with reasonable values to prevent the application from using 100% of CPU and GPU with unnecessarily high frame rates such as 1000 FPS. A reasonable and default value for this property is 200.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="OnProcess"></a><code>property <b>OnProcess</b>: <a  href="PXL.Timing.TMultimediaTimer.html#TTimerEvent">TTimerEvent</a> read FOnProcess write FOnProcess;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This event occurs when calling Process method inside OnTimer event. In this event all constant object movement and animation control should be made. This event can occur more than once for each call to Process or may not occur, depending on the current FrameRate and Speed. For instance, when frame rate is 120 FPS and speed set to 60, this event will occur for each second call to Process; on the other hand, if frame rate is 30 FPS with speed set to 60, this event will occur twice for each call to Process to maintain constant processing. An alternative to this is doing processing inside OnTimer event using Delta as coefficient for object movement. If the processing takes too much time inside this event so that the target speed cannot be achieved, the timer may stall (that is, reduce number of occurrences of this event until the balance is restored).</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="OnTimer"></a><code>property <b>OnTimer</b>: <a  href="PXL.Timing.TMultimediaTimer.html#TTimerEvent">TTimerEvent</a> read FOnTimer write FOnTimer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This event occurs when Enabled is set to <code>True</code> and as fast as possible (only limited approximately by MaxFPS). In this event, all rendering should be made. Inside this event, at some location it is recommended to call Process method, which will invoke OnProcess event for constant object movement and animation control. The idea is to render graphics as fast as possible while moving objects and controlling animation at constant speed. Note that for this event to occur, it is necessary to call NotifyIdle at some point in the application for this timer to do the required calculations.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SingleCallOnly"></a><code>property <b>SingleCallOnly</b>: Boolean read FSingleCallOnly write FSingleCallOnly;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+If this property is set to True, it will prevent the timer from trying to fix situations where the rendering speed is slower than the processing speed (that is, FrameRate is lower than Speed). Therefore, faster rendering produces constant speed, while slower rendering slows the processing down. This is particularly useful for dedicated servers that do no rendering but only processing; in this case, the processing cannot be technically any faster than it already is.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Speed"></a><code>property <b>Speed</b>: Double read FSpeed write SetSpeed;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The speed of constant processing and animation control in frames per second. This affects both Delta property and occurrence of OnProcess event.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

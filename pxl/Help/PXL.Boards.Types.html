@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Boards.Types</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<h1 class="unit">Unit PXL.Boards.Types</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td>Uses</td><td><a class="section" href="#PasDoc-Classes">Classes, Interfaces, Objects and Records</a></td><td>Functions and Procedures</td><td><a class="section" href="#PasDoc-Types">Types</a></td><td><a class="section" href="#PasDoc-Constants">Constants</a></td><td>Variables</td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="description">Description</h2>
+<p>
+Basic types and components commonly used on compact singleboard devices.</p>
+<a name="PasDoc-Uses"></a><h2 class="overview">Overview</h2>
+<a name="PasDoc-Classes"></a><h3 class="cio">Classes, Interfaces, Objects and Records</h3>
+<table class="classestable wide_list">
+<tr class="listheader">
+<th class="itemname">Name</th>
+<th class="itemdesc">Description</th>
+</tr>
+<tr class="list">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Boards.Types.TCustomADC.html"><code>TCustomADC</code></a></td>
+<td class="itemdesc">Abstract ADC (Analog-to-Digital Converter) manager.</td>
+</tr>
+<tr class="list2">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Boards.Types.TCustomClockRTC.html"><code>TCustomClockRTC</code></a></td>
+<td class="itemdesc">Abstract RTC (Real-Time Clock) manager.</td>
+</tr>
+<tr class="list">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Boards.Types.TCustomDataPort.html"><code>TCustomDataPort</code></a></td>
+<td class="itemdesc">Abstract communication manager can be used for reading and writing data.</td>
+</tr>
+<tr class="list2">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Boards.Types.TCustomGPIO.html"><code>TCustomGPIO</code></a></td>
+<td class="itemdesc">Abstract GPIO (General Purpose Input / Output) manager.</td>
+</tr>
+<tr class="list">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Boards.Types.TCustomPortI2C.html"><code>TCustomPortI2C</code></a></td>
+<td class="itemdesc">Abstract I2C (Inter-Integrated Circuit) communication manager.</td>
+</tr>
+<tr class="list2">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Boards.Types.TCustomPortSPI.html"><code>TCustomPortSPI</code></a></td>
+<td class="itemdesc">Abstract SPI (Serial Peripheral Interface) communication manager.</td>
+</tr>
+<tr class="list">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Boards.Types.TCustomPortUART.html"><code>TCustomPortUART</code></a></td>
+<td class="itemdesc">Abstract UART (Universal Asynchronous Receiver / Transmitter) communication manager.</td>
+</tr>
+<tr class="list2">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Boards.Types.TCustomPWM.html"><code>TCustomPWM</code></a></td>
+<td class="itemdesc">Abstract PWM (Pulse-Width Modulation) manager.</td>
+</tr>
+<tr class="list">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Boards.Types.TCustomSystemCore.html"><code>TCustomSystemCore</code></a></td>
+<td class="itemdesc">System core of the board, which provides high-performance utility functions for accurate timing and delays.</td>
+</tr>
+</table>
+<a name="PasDoc-Types"></a><h3 class="summary">Types</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Boards.Types.html#TChipSelectAttribute">TChipSelectAttribute</a></b> = (...);</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Boards.Types.html#TChipSelectAttributes">TChipSelectAttributes</a></b> = set of <a  href="PXL.Boards.Types.html#TChipSelectAttribute">TChipSelectAttribute</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Boards.Types.html#TParity">TParity</a></b> = (...);</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Boards.Types.html#TPinMode">TPinMode</a></b> = (...);</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Boards.Types.html#TPinValue">TPinValue</a></b> = (...);</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Boards.Types.html#TStopBits">TStopBits</a></b> = (...);</code></td>
+</tr>
+</table>
+<a name="PasDoc-Constants"></a><h3 class="summary">Constants</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Boards.Types.html#MaxI2CTransferSize">MaxI2CTransferSize</a></b> = 32;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Boards.Types.html#MaxSPITransferSize">MaxSPITransferSize</a></b> = 4096;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Types</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TChipSelectAttribute"></a><code><b>TChipSelectAttribute</b> = (...);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Chip Select handling attribute.</p>
+<h6 class="description_section">Values</h6>
+<ul>
+<li>
+ActiveHigh: Chip Select should be held active high instead of active low.</li>
+<li>
+Disable: Chip Select should be disabled.</li>
+</ul>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TChipSelectAttributes"></a><code><b>TChipSelectAttributes</b> = set of <a  href="PXL.Boards.Types.html#TChipSelectAttribute">TChipSelectAttribute</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Set of optional Chip Select handling attributes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TParity"></a><code><b>TParity</b> = (...);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Parity bit type used for transceiving binary strings.</p>
+<h6 class="description_section">Values</h6>
+<ul>
+<li>
+None: No parity bit.</li>
+<li>
+Odd: Odd parity bit.</li>
+<li>
+Even: Even parity bit.</li>
+</ul>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TPinMode"></a><code><b>TPinMode</b> = (...);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+I/O mode typically used in GPIO pins.</p>
+<h6 class="description_section">Values</h6>
+<ul>
+<li>
+Input: Pin set for input / high impedance</li>
+<li>
+Output: Pin set for output</li>
+</ul>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TPinValue"></a><code><b>TPinValue</b> = (...);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Digital value of the pin.</p>
+<h6 class="description_section">Values</h6>
+<ul>
+<li>
+Low: Low (0) or zero voltage.</li>
+<li>
+High: High (1) or full voltage.</li>
+</ul>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TStopBits"></a><code><b>TStopBits</b> = (...);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Number of stop bits used for transceiving binary strings.</p>
+<h6 class="description_section">Values</h6>
+<ul>
+<li>
+One: One stop bit.</li>
+<li>
+OneDotFive: One and &quot;half&quot; stop bits.</li>
+<li>
+Two: Two stop bits.</li>
+</ul>
+</td></tr>
+</table>
+<h3 class="detail">Constants</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="MaxI2CTransferSize"></a><code><b>MaxI2CTransferSize</b> = 32;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Maximum number of bytes that can be reliably sent through I2C protocol in each read/write call.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="MaxSPITransferSize"></a><code><b>MaxSPITransferSize</b> = 4096;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Maximum number of bytes that can be reliably sent through SPI protocol in each read/write call.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

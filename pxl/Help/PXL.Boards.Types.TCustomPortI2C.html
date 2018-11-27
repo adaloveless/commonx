@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Boards.Types: Class TCustomPortI2C</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TCustomPortI2C"></a><h1 class="cio">Class TCustomPortI2C</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td>Fields</td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td>Properties</td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Boards.Types.html">PXL.Boards.Types</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TCustomPortI2C = class abstract(<a class="normal" href="PXL.Boards.Types.TCustomDataPort.html">TCustomDataPort</a>)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Abstract I2C (Inter-Integrated Circuit) communication manager.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="ancestor"><a class="normal" href="PXL.Boards.Types.TCustomDataPort.html">TCustomDataPort</a></li>
+<li class="thisitem">TCustomPortI2C</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortI2C.html#ReadBlockData">ReadBlockData</a></b>(const Command: Byte; const Buffer: Pointer; const BufferSize: Integer): Integer; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortI2C.html#ReadByte">ReadByte</a></b>(out Value: Byte): Boolean; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortI2C.html#ReadByteData">ReadByteData</a></b>(const Command: Byte; out Value: Byte): Boolean; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortI2C.html#ReadWordData">ReadWordData</a></b>(const Command: Byte; out Value: Word): Boolean; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortI2C.html#WriteBlockData">WriteBlockData</a></b>(const Command: Byte; const Buffer: Pointer; const BufferSize: Integer): Integer; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortI2C.html#WriteByte">WriteByte</a></b>(const Value: Byte): Boolean; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortI2C.html#WriteByteData">WriteByteData</a></b>(const Command, Value: Byte): Boolean; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortI2C.html#WriteBytes">WriteBytes</a></b>(const Values: array of Byte): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortI2C.html#WriteWordData">WriteWordData</a></b>(const Command: Byte; const Value: Word): Boolean; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomPortI2C.html#SetAddress">SetAddress</a></b>(const Address: Integer); virtual; abstract;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ReadBlockData"></a><code>function <b>ReadBlockData</b>(const Command: Byte; const Buffer: Pointer; const BufferSize: Integer): Integer; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Writes command to current address and reads specified block of data from it. Although this varies depending on implementation, but typically stop bit is given at the end of the whole transmission (so there is no stop bit between command and read operation). Returns <code>True</code> when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ReadByte"></a><code>function <b>ReadByte</b>(out Value: Byte): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Reads a single byte from current address. Returns <code>True</code> when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ReadByteData"></a><code>function <b>ReadByteData</b>(const Command: Byte; out Value: Byte): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Writes command to current address and reads a single byte from it. Although this varies depending on implementation, but typically stop bit is given at the end of the whole transmission (so there is no stop bit between command and read operation). Returns <code>True</code> when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ReadWordData"></a><code>function <b>ReadWordData</b>(const Command: Byte; out Value: Word): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Writes command to current address and reads a word (16-bit unsigned) from it. Although this varies depending on implementation, but typically stop bit is given at the end of the whole transmission (so there is no stop bit between command and read operation). Returns <code>True</code> when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WriteBlockData"></a><code>function <b>WriteBlockData</b>(const Command: Byte; const Buffer: Pointer; const BufferSize: Integer): Integer; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Writes command and specified block of data to current address. Returns <code>True</code> when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WriteByte"></a><code>function <b>WriteByte</b>(const Value: Byte): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Write a single byte to current address. Returns <code>True</code> when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WriteByteData"></a><code>function <b>WriteByteData</b>(const Command, Value: Byte): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Writes command and a single byte of data to current address. Returns <code>True</code> when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WriteBytes"></a><code>function <b>WriteBytes</b>(const Values: array of Byte): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Write one or more bytes to current address. Returns <code>True</code> when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WriteWordData"></a><code>function <b>WriteWordData</b>(const Command: Byte; const Value: Word): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Writes command and a word (16-bit unsigned) of data to current address. Returns <code>True</code> when the operation was successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SetAddress"></a><code>procedure <b>SetAddress</b>(const Address: Integer); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Specifies new device address to which the communication will be made.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

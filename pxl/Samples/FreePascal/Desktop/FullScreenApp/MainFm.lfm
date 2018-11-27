@@ -1,0 +1,12 @@
+object MainForm: TMainForm
+  Left = 243
+  Height = 480
+  Top = 115
+  Width = 640
+  Caption = 'PXL FullScreen Demo'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
+  OnResize = FormResize
+  LCLVersion = '1.5'
+end

@@ -1,0 +1,170 @@
+object MainForm: TMainForm
+  Left = 249
+  Height = 380
+  Top = 123
+  Width = 462
+  Caption = 'PXL Networking Example'
+  ClientHeight = 380
+  ClientWidth = 462
+  Font.CharSet = ANSI_CHARSET
+  Font.Height = -15
+  Font.Name = 'Arial Narrow'
+  Font.Pitch = fpVariable
+  Font.Quality = fqDraft
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  Position = poScreenCenter
+  LCLVersion = '1.5'
+  object IncomingGroupBox: TGroupBox
+    Left = 8
+    Height = 205
+    Top = 8
+    Width = 446
+    Align = alClient
+    BorderSpacing.Around = 8
+    Caption = ' Incoming Messages '
+    ClientHeight = 183
+    ClientWidth = 442
+    TabOrder = 0
+    object IncomingMemo: TMemo
+      Left = 8
+      Height = 167
+      Top = 8
+      Width = 426
+      Align = alClient
+      BorderSpacing.Around = 8
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -15
+      Font.Name = 'Consolas'
+      Font.Pitch = fpFixed
+      Font.Quality = fqDraft
+      ParentFont = False
+      TabOrder = 0
+    end
+  end
+  object SendGroupBox: TGroupBox
+    Left = 8
+    Height = 128
+    Top = 221
+    Width = 446
+    Align = alBottom
+    BorderSpacing.Around = 8
+    Caption = ' Send Message '
+    ClientHeight = 106
+    ClientWidth = 442
+    TabOrder = 1
+    object HostLabel: TLabel
+      AnchorSideTop.Control = DestHostEdit
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = DestHostEdit
+      Left = 169
+      Height = 20
+      Top = 4
+      Width = 93
+      Alignment = taRightJustify
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 8
+      Caption = 'Destination Host:'
+      ParentColor = False
+    end
+    object PortLabel: TLabel
+      AnchorSideTop.Control = DestPortEdit
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = DestPortEdit
+      Left = 172
+      Height = 20
+      Top = 40
+      Width = 90
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 8
+      Caption = 'Destination Port:'
+      ParentColor = False
+    end
+    object DestHostEdit: TEdit
+      AnchorSideRight.Control = SendGroupBox
+      AnchorSideRight.Side = asrBottom
+      Left = 270
+      Height = 28
+      Top = 0
+      Width = 160
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 12
+      TabOrder = 0
+      Text = '127.0.0.1'
+    end
+    object DestPortEdit: TEdit
+      AnchorSideRight.Control = SendGroupBox
+      AnchorSideRight.Side = asrBottom
+      Left = 270
+      Height = 28
+      Top = 36
+      Width = 160
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 12
+      TabOrder = 1
+      Text = '7500'
+    end
+    object PortLabel1: TLabel
+      AnchorSideTop.Control = TextEdit
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = TextEdit
+      Left = 101
+      Height = 20
+      Top = 74
+      Width = 54
+      Alignment = taRightJustify
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 8
+      Caption = 'Message:'
+      ParentColor = False
+    end
+    object TextEdit: TEdit
+      AnchorSideTop.Control = SendButton
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = SendButton
+      Left = 163
+      Height = 28
+      Top = 70
+      Width = 184
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 8
+      TabOrder = 2
+      Text = 'Hello world there!'
+    end
+    object SendButton: TButton
+      AnchorSideRight.Control = SendGroupBox
+      AnchorSideRight.Side = asrBottom
+      Left = 355
+      Height = 25
+      Top = 72
+      Width = 75
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 12
+      Caption = 'Send'
+      OnClick = SendButtonClick
+      TabOrder = 3
+    end
+  end
+  object StatusBar: TStatusBar
+    Left = 0
+    Height = 23
+    Top = 357
+    Width = 462
+    Panels = <    
+      item
+        Text = 'Local IP: Unknown'
+        Width = 200
+      end    
+      item
+        Text = 'Local Port: Unknown'
+        Width = 50
+      end>
+    SimplePanel = False
+  end
+  object SysTimer: TTimer
+    Interval = 100
+    OnTimer = SysTimerTimer
+    left = 40
+    top = 48
+  end
+end

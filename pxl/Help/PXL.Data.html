@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Data</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<h1 class="unit">Unit PXL.Data</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td>Uses</td><td><a class="section" href="#PasDoc-Classes">Classes, Interfaces, Objects and Records</a></td><td><a class="section" href="#PasDoc-FuncsProcs">Functions and Procedures</a></td><td><a class="section" href="#PasDoc-Types">Types</a></td><td>Constants</td><td>Variables</td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="description">Description</h2>
+<p>
+Utility routines for working with binary data including compression, encryption and checksum calculation.</p>
+<a name="PasDoc-Uses"></a><h2 class="overview">Overview</h2>
+<a name="PasDoc-Classes"></a><h3 class="cio">Classes, Interfaces, Objects and Records</h3>
+<table class="classestable wide_list">
+<tr class="listheader">
+<th class="itemname">Name</th>
+<th class="itemdesc">Description</th>
+</tr>
+<tr class="list">
+<td class="itemname">record&nbsp;<a class="bold" href="PXL.Data.TCipherBlock.html"><code>TCipherBlock</code></a></td>
+<td class="itemdesc">Initialization block used for XTEA cipher.</td>
+</tr>
+<tr class="list2">
+<td class="itemname">record&nbsp;<a class="bold" href="PXL.Data.TCipherKey.html"><code>TCipherKey</code></a></td>
+<td class="itemdesc">Security password used for XTEA cipher.</td>
+</tr>
+<tr class="list">
+<td class="itemname">record&nbsp;<a class="bold" href="PXL.Data.TMD5Checksum.html"><code>TMD5Checksum</code></a></td>
+<td class="itemdesc">MD5 checksum value.</td>
+</tr>
+</table>
+<a name="PasDoc-FuncsProcs"></a><h3 class="summary">Functions and Procedures</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code>function <b><a  href="PXL.Data.html#Base64Binary">Base64Binary</a></b>(const Source: <a  href="PXL.Data.html#TBase64String">TBase64String</a>; const Dest: Pointer): Integer;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code>function <b><a  href="PXL.Data.html#Base64String">Base64String</a></b>(const Source: Pointer; const SourceSize: Integer): <a  href="PXL.Data.html#TBase64String">TBase64String</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code>function <b><a  href="PXL.Data.html#ChecksumCRC32">ChecksumCRC32</a></b>(const Source: Pointer; const SourceSize: Cardinal): Cardinal; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code>function <b><a  href="PXL.Data.html#ChecksumMD5">ChecksumMD5</a></b>(const Source: Pointer; const SourceSize: Cardinal): <a  href="PXL.Data.TMD5Checksum.html">TMD5Checksum</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code>function <b><a  href="PXL.Data.html#CompressData">CompressData</a></b>(const Source, Dest: Pointer; const SourceSize, MaxDestSize: Cardinal; const Compression: <a  href="PXL.Data.html#TCompressionLevel">TCompressionLevel</a> = TCompressionLevel.Default): Cardinal;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code>function <b><a  href="PXL.Data.html#DecompressData">DecompressData</a></b>(const Source, Dest: Pointer; const SourceSize, MaxDestSize: Cardinal): Cardinal;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code>procedure <b><a  href="PXL.Data.html#DecryptData">DecryptData</a></b>(const Source, Dest: Pointer; const SourceSize: Integer; const InitVector: <a  href="PXL.Data.TCipherBlock.html">TCipherBlock</a>; const Key: <a  href="PXL.Data.TCipherKey.html">TCipherKey</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code>procedure <b><a  href="PXL.Data.html#EncryptData">EncryptData</a></b>(const Source, Dest: Pointer; const SourceSize: Integer; const InitVector: <a  href="PXL.Data.TCipherBlock.html">TCipherBlock</a>; const Key: <a  href="PXL.Data.TCipherKey.html">TCipherKey</a>);</code></td>
+</tr>
+</table>
+<a name="PasDoc-Types"></a><h3 class="summary">Types</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Data.html#PCipherBlock">PCipherBlock</a></b> = &circ;<a  href="PXL.Data.TCipherBlock.html">TCipherBlock</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Data.html#PCipherKey">PCipherKey</a></b> = &circ;<a  href="PXL.Data.TCipherKey.html">TCipherKey</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Data.html#PMD5Checksum">PMD5Checksum</a></b> = &circ;<a  href="PXL.Data.TMD5Checksum.html">TMD5Checksum</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Data.html#TBase64String">TBase64String</a></b> =  AnsiString ;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Data.html#TCompressionLevel">TCompressionLevel</a></b> = (...);</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Functions and Procedures</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="Base64Binary"></a><code>function <b>Base64Binary</b>(const Source: <a  href="PXL.Data.html#TBase64String">TBase64String</a>; const Dest: Pointer): Integer;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Decodes the base-64 readable text back into the binary format.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="Base64String"></a><code>function <b>Base64String</b>(const Source: Pointer; const SourceSize: Integer): <a  href="PXL.Data.html#TBase64String">TBase64String</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Encodes the binary source into base-64 readable text. This effectively increases the size by 4/3 (rounded up). If the source is not divisible by 3, it will be padded with zeros.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="ChecksumCRC32"></a><code>function <b>ChecksumCRC32</b>(const Source: Pointer; const SourceSize: Cardinal): Cardinal; inline;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Calculates CRC32 checksum from the specified data. This checkum can be used in integrity tests to verify that the data has not been modified.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="ChecksumMD5"></a><code>function <b>ChecksumMD5</b>(const Source: Pointer; const SourceSize: Cardinal): <a  href="PXL.Data.TMD5Checksum.html">TMD5Checksum</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Calculates and returns 128-bit MD5 checksum of the given data block. This checksum can be used as a signature to verify that the data has not been altered in any way.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="CompressData"></a><code>function <b>CompressData</b>(const Source, Dest: Pointer; const SourceSize, MaxDestSize: Cardinal; const Compression: <a  href="PXL.Data.html#TCompressionLevel">TCompressionLevel</a> = TCompressionLevel.Default): Cardinal;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Compresses data block from the source buffer to destination buffer. The memory for both buffers must be allocated. <i>MaxDestSize</i> can be used to specify the maximum data length that can be saved at the destination buffer to prevent overflow.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="DecompressData"></a><code>function <b>DecompressData</b>(const Source, Dest: Pointer; const SourceSize, MaxDestSize: Cardinal): Cardinal;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Decompresses data block from the source buffer to destination buffer. The memory for both buffers must be allocated. <i>MaxDestSize</i> can be used to specify the maximum data length that can be saved at the destination buffer to prevent overflow.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="DecryptData"></a><code>procedure <b>DecryptData</b>(const Source, Dest: Pointer; const SourceSize: Integer; const InitVector: <a  href="PXL.Data.TCipherBlock.html">TCipherBlock</a>; const Key: <a  href="PXL.Data.TCipherKey.html">TCipherKey</a>);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Decrypts data using 128-bit XTEA cipher in CBC chaining mode and residual block termination (in case the data buffer is not multiple of 8 bytes).</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="EncryptData"></a><code>procedure <b>EncryptData</b>(const Source, Dest: Pointer; const SourceSize: Integer; const InitVector: <a  href="PXL.Data.TCipherBlock.html">TCipherBlock</a>; const Key: <a  href="PXL.Data.TCipherKey.html">TCipherKey</a>);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Encrypts data using 128-bit XTEA cipher in CBC chaining mode and residual block termination (in case the data buffer is not multiple of 8 bytes).</p>
+</td></tr>
+</table>
+<h3 class="detail">Types</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PCipherBlock"></a><code><b>PCipherBlock</b> = &circ;<a  href="PXL.Data.TCipherBlock.html">TCipherBlock</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.Data.TCipherBlock.html">TCipherBlock</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PCipherKey"></a><code><b>PCipherKey</b> = &circ;<a  href="PXL.Data.TCipherKey.html">TCipherKey</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.Data.TCipherKey.html">TCipherKey</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PMD5Checksum"></a><code><b>PMD5Checksum</b> = &circ;<a  href="PXL.Data.TMD5Checksum.html">TMD5Checksum</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.Data.TMD5Checksum.html">TMD5Checksum</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TBase64String"></a><code><b>TBase64String</b> =  AnsiString ;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Standard string type used for base-64 encoding.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TCompressionLevel"></a><code><b>TCompressionLevel</b> = (...);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+The level used for data compression.</p>
+<h6 class="description_section">Values</h6>
+<ul>
+<li>
+Default: Default compression ratio and performance.</li>
+<li>
+BestSpeed: Optimize for performance at cost of compression ratio.</li>
+<li>
+BestCompression: Optimize for better compression ratio at cost of performance.</li>
+</ul>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

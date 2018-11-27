@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Surfaces: Class TConceptualPixelSurface</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TConceptualPixelSurface"></a><h1 class="cio">Class TConceptualPixelSurface</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td>Fields</td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Surfaces.html">PXL.Surfaces</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TConceptualPixelSurface = class abstract(TObject)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Conceptual surface that provide means of reading, writing and drawing individual pixels.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="thisitem">TConceptualPixelSurface</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TConceptualPixelSurface.html#GetPixel">GetPixel</a></b>(X, Y: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TConceptualPixelSurface.html#GetPixelUnsafe">GetPixelUnsafe</a></b>(X, Y: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TConceptualPixelSurface.html#DrawPixel">DrawPixel</a></b>(const X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TConceptualPixelSurface.html#DrawPixel">DrawPixel</a></b>(const Position: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TConceptualPixelSurface.html#DrawPixelUnsafe">DrawPixelUnsafe</a></b>(const X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TConceptualPixelSurface.html#DrawPixelUnsafe">DrawPixelUnsafe</a></b>(const Position: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TConceptualPixelSurface.html#SetPixel">SetPixel</a></b>(X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TConceptualPixelSurface.html#SetPixelUnsafe">SetPixelUnsafe</a></b>(X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); virtual; abstract;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TConceptualPixelSurface.html#Pixels">Pixels</a></b>[X,Y:Integer]: <a  href="PXL.Types.html#TIntColor">TIntColor</a> read <a  href="PXL.Surfaces.TConceptualPixelSurface.html#GetPixel">GetPixel</a> write <a  href="PXL.Surfaces.TConceptualPixelSurface.html#SetPixel">SetPixel</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TConceptualPixelSurface.html#PixelsUnsafe">PixelsUnsafe</a></b>[X,Y:Integer]: <a  href="PXL.Types.html#TIntColor">TIntColor</a> read <a  href="PXL.Surfaces.TConceptualPixelSurface.html#GetPixelUnsafe">GetPixelUnsafe</a> write <a  href="PXL.Surfaces.TConceptualPixelSurface.html#SetPixelUnsafe">SetPixelUnsafe</a>;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetPixel"></a><code>function <b>GetPixel</b>(X, Y: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns pixel located at specified coordinates. This also includes a sanity check for pixel coordinates to be within valid range. If coordinates are outside of valid range, zero should be returned.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetPixelUnsafe"></a><code>function <b>GetPixelUnsafe</b>(X, Y: Integer): <a  href="PXL.Types.html#TIntColor">TIntColor</a>; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns pixel located at specified coordinates similarly to <a class="normal" href="PXL.Surfaces.TConceptualPixelSurface.html#GetPixel">GetPixel</a>, but without sanity check for increased performance.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawPixel"></a><code>procedure <b>DrawPixel</b>(const X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws a single pixel at specified coordinates and color with alpha-blending. It also does a sanity check for specified coordinates and if they are outside of valid range, does nothing.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawPixel"></a><code>procedure <b>DrawPixel</b>(const Position: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws a single pixel at specified position and color with alpha-blending. It also does a sanity check for specified position and if it is outside of valid range, does nothing.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawPixelUnsafe"></a><code>procedure <b>DrawPixelUnsafe</b>(const X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws a single pixel at specified coordinates similarly to <a class="normal" href="PXL.Surfaces.TConceptualPixelSurface.html#DrawPixel">DrawPixel</a>, but without sanity check for increased performance.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawPixelUnsafe"></a><code>procedure <b>DrawPixelUnsafe</b>(const Position: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws a single pixel at specified position similarly to <a class="normal" href="PXL.Surfaces.TConceptualPixelSurface.html#DrawPixel">DrawPixel</a>, but without sanity check for increased performance.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetPixel"></a><code>procedure <b>SetPixel</b>(X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Sets pixel located at specified coordinates. This also includes a sanity check for pixel coordinates to be within valid range. If coordinates are outside of valid range, nothing should be done.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetPixelUnsafe"></a><code>procedure <b>SetPixelUnsafe</b>(X, Y: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Sets pixel located at specified coordinates similarly to <a class="normal" href="PXL.Surfaces.TConceptualPixelSurface.html#GetPixel">GetPixel</a>, but without sanity check for increased performance.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Pixels"></a><code>property <b>Pixels</b>[X,Y:Integer]: <a  href="PXL.Types.html#TIntColor">TIntColor</a> read <a  href="PXL.Surfaces.TConceptualPixelSurface.html#GetPixel">GetPixel</a> write <a  href="PXL.Surfaces.TConceptualPixelSurface.html#SetPixel">SetPixel</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides access to surface's individual pixels. See <a class="normal" href="PXL.Surfaces.TConceptualPixelSurface.html#GetPixel">GetPixel</a> and <a class="normal" href="PXL.Surfaces.TConceptualPixelSurface.html#SetPixel">SetPixel</a> on how this actually works.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PixelsUnsafe"></a><code>property <b>PixelsUnsafe</b>[X,Y:Integer]: <a  href="PXL.Types.html#TIntColor">TIntColor</a> read <a  href="PXL.Surfaces.TConceptualPixelSurface.html#GetPixelUnsafe">GetPixelUnsafe</a> write <a  href="PXL.Surfaces.TConceptualPixelSurface.html#SetPixelUnsafe">SetPixelUnsafe</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides access to surface's individual pixels without sanity check for increased performance. See <a class="normal" href="PXL.Surfaces.TConceptualPixelSurface.html#GetPixelUnsafe">GetPixelUnsafe</a> and <a class="normal" href="PXL.Surfaces.TConceptualPixelSurface.html#SetPixelUnsafe">SetPixelUnsafe</a> on how this actually works.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

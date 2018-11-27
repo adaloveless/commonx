@@ -1,0 +1,13 @@
+object MainForm: TMainForm
+  Left = 243
+  Height = 475
+  Top = 120
+  Width = 640
+  Caption = 'PXL Basic Demo (software renderer)'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnPaint = FormPaint
+  OnResize = FormResize
+  Position = poScreenCenter
+  LCLVersion = '1.5'
+end

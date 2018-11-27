@@ -1,0 +1,330 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Textures: Class TCustomLockableTexture</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TCustomLockableTexture"></a><h1 class="cio">Class TCustomLockableTexture</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td><a class="section" href="#PasDoc-Fields">Fields</a></td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Textures.html">PXL.Textures</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TCustomLockableTexture = class abstract(<a class="normal" href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Base definition of &quot;lockable&quot; texture; that is, a texture that can have regions &quot;locked&quot; so they become accessible to CPU. These textures are typical to most GPUs and also provide efficient means of storing dynamically changing data that is provided by CPU.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="ancestor"><a class="normal" href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a></li>
+<li class="thisitem">TCustomLockableTexture</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Fields"></a><h3 class="summary">Fields</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Textures.TCustomLockableTexture.html#FBytesPerPixel">FBytesPerPixel</a></b>: Integer;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Textures.TCustomLockableTexture.html#FDynamicTexture">FDynamicTexture</a></b>: Boolean;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#Clear">Clear</a></b>: Boolean; override;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#CopyFromSurface">CopyFromSurface</a></b>(const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#CopyFromSurfaceRect">CopyFromSurfaceRect</a></b>(DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#CopyToSurface">CopyToSurface</a></b>(const Dest: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#CopyToSurfaceRect">CopyToSurfaceRect</a></b>(DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Dest: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#Lock">Lock</a></b>(const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; out Surface: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean; overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#Lock">Lock</a></b>(out Surface: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean; overload; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#Lock">Lock</a></b>(const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; out LockedPixels: <a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a>): Boolean; overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#Lock">Lock</a></b>(out LockedPixels: <a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a>): Boolean; overload; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#Unlock">Unlock</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#DoCopyRect">DoCopyRect</a></b>(const Source: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; const SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>): Boolean; override;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#DoLock">DoLock</a></b>(const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; out LockedPixels: <a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a>): Boolean; virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#DoUnlock">DoUnlock</a></b>: Boolean; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#IsLockRectFull">IsLockRectFull</a></b>(const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomLockableTexture.html#LockSurface">LockSurface</a></b>(const Surface: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; out LockedPixels: <a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a>): Boolean;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomLockableTexture.html#BytesPerPixel">BytesPerPixel</a></b>: Integer read <a  href="PXL.Textures.TCustomLockableTexture.html#FBytesPerPixel">FBytesPerPixel</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomLockableTexture.html#DynamicTexture">DynamicTexture</a></b>: Boolean read <a  href="PXL.Textures.TCustomLockableTexture.html#FDynamicTexture">FDynamicTexture</a> write SetDynamicTexture;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Fields</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FBytesPerPixel"></a><code><b>FBytesPerPixel</b>: Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Current number of bytes each pixel occupies.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FDynamicTexture"></a><code><b>FDynamicTexture</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines whether the current texture is dynamic (that is, can have content changed intensively) or not.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Clear"></a><code>function <b>Clear</b>: Boolean; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Clears the texture and fills its pixels with zeros.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="CopyFromSurface"></a><code>function <b>CopyFromSurface</b>(const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Copies an entire source surface to this texture. This method does clipping when applicable and calls <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Lock">Lock</a> / <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Unlock">Unlock</a> method pair appropriately during the process.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="CopyFromSurfaceRect"></a><code>function <b>CopyFromSurfaceRect</b>(DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Source: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Copies a portion from source surface to this texture. This method does clipping when applicable and calls <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Lock">Lock</a> / <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Unlock">Unlock</a> method pair appropriately during the process.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="CopyToSurface"></a><code>function <b>CopyToSurface</b>(const Dest: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Copies the entire contents of this texture to the specified destination surface. This method does clipping when applicable and calls <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Lock">Lock</a> / <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Unlock">Unlock</a> method pair appropriately during the process.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="CopyToSurfaceRect"></a><code>function <b>CopyToSurfaceRect</b>(DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Dest: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Copies a region of this texture to the specified destination surface. This method does clipping when applicable and calls <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Lock">Lock</a> / <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Unlock">Unlock</a> method pair appropriately during the process.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Lock"></a><code>function <b>Lock</b>(const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; out Surface: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean; overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Locks a portion of texture so that it can be accessed by CPU and provides <a class="normal" href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> wrapper around this area for easy access. The texture can be unlocked either by calling <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Unlock">Unlock</a> or by freeing the surface returned by this function. Calling <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Unlock">Unlock</a> also releases the surface returned by this call.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Lock"></a><code>function <b>Lock</b>(out Surface: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Boolean; overload; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Locks the entire texture so that it can be accessed by CPU and provides <a class="normal" href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> wrapper around this area for easy access. The texture can be unlocked either by calling <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Unlock">Unlock</a> or by freeing the surface returned by this function. Calling <a class="normal" href="PXL.Textures.TCustomLockableTexture.html#Unlock">Unlock</a> also releases the surface returned by this call.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Lock"></a><code>function <b>Lock</b>(const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; out LockedPixels: <a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a>): Boolean; overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Locks a portion of texture so that it can be accessed by CPU and provides information in <a class="normal" href="PXL.Textures.TLockedPixels.html">TLockedPixels</a> structure regarding this area.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Lock"></a><code>function <b>Lock</b>(out LockedPixels: <a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a>): Boolean; overload; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Locks the entire texture so that it can be accessed by CPU and provides information in <a class="normal" href="PXL.Textures.TLockedPixels.html">TLockedPixels</a> structure regarding this area.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Unlock"></a><code>function <b>Unlock</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Unlocks the texture and updates its contents.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="DoCopyRect"></a><code>function <b>DoCopyRect</b>(const Source: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; const SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>): Boolean; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This class implements internally limited functionality of &quot;DoCopyRect&quot; by locking both textures and copying data on CPU. For typical applications this could be okay, but it is generally inefficient and should be re-implemented by derived classes to provide copy mechanism directly on the GPU.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="DoLock"></a><code>function <b>DoLock</b>(const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; out LockedPixels: <a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a>): Boolean; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Locks the specified rectangle and provides access information regarding this region. This should be implemented by derived classes. Returns <code>True</code> when the operation is successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="DoUnlock"></a><code>function <b>DoUnlock</b>: Boolean; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Unlocks the specified rectangle and makes sure the texture remains updated after these changes. This should be implemented by derived classes. Returns <code>True</code> when the operation is successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="IsLockRectFull"></a><code>function <b>IsLockRectFull</b>(const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns <code>True</code> when the specified rectangle covers the entire texture and <code>False</code> otherwise. On some occasions, this can be useful to determine whether to pass rectangle pointer to locking mechanism or just pass <code>Nil</code> to cover the entire area.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="LockSurface"></a><code>function <b>LockSurface</b>(const Surface: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; const Rect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; out LockedPixels: <a  href="PXL.Textures.TLockedPixels.html">TLockedPixels</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Helper function that provides locking mechanism to a simple <a class="normal" href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>. That is, a quick shortcut to &quot;lock&quot; non-GPU surface. Returns <code>True</code> when the operation is successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="BytesPerPixel"></a><code>property <b>BytesPerPixel</b>: Integer read <a  href="PXL.Textures.TCustomLockableTexture.html#FBytesPerPixel">FBytesPerPixel</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Number of bytes each pixel in the texture occupies.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DynamicTexture"></a><code>property <b>DynamicTexture</b>: Boolean read <a  href="PXL.Textures.TCustomLockableTexture.html#FDynamicTexture">FDynamicTexture</a> write SetDynamicTexture;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines whether the texture is &quot;dynamic&quot;; that is, can have content changing continuously without major impact on rendering performance. This can provide significant performance benefit but may or may not be supported on specific provider and platform.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

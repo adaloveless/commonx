@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Boards.Types: Class TCustomGPIO</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TCustomGPIO"></a><h1 class="cio">Class TCustomGPIO</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td>Fields</td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Boards.Types.html">PXL.Boards.Types</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TCustomGPIO = class abstract(TObject)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Abstract GPIO (General Purpose Input / Output) manager.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="thisitem">TCustomGPIO</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomGPIO.html#GetPinMode">GetPinMode</a></b>(const Pin: Integer): <a  href="PXL.Boards.Types.html#TPinMode">TPinMode</a>; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomGPIO.html#GetPinValue">GetPinValue</a></b>(const Pin: Integer): <a  href="PXL.Boards.Types.html#TPinValue">TPinValue</a>; virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomGPIO.html#SetMux">SetMux</a></b>(const Pin: Integer; const Value: <a  href="PXL.Boards.Types.html#TPinValue">TPinValue</a>); inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomGPIO.html#SetPinMode">SetPinMode</a></b>(const Pin: Integer; const Mode: <a  href="PXL.Boards.Types.html#TPinMode">TPinMode</a>); virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomGPIO.html#SetPinValue">SetPinValue</a></b>(const Pin: Integer; const Value: <a  href="PXL.Boards.Types.html#TPinValue">TPinValue</a>); virtual; abstract;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Boards.Types.TCustomGPIO.html#PinMode">PinMode</a></b>[constPin:Integer]: <a  href="PXL.Boards.Types.html#TPinMode">TPinMode</a> read <a  href="PXL.Boards.Types.TCustomGPIO.html#GetPinMode">GetPinMode</a> write <a  href="PXL.Boards.Types.TCustomGPIO.html#SetPinMode">SetPinMode</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Boards.Types.TCustomGPIO.html#PinValue">PinValue</a></b>[constPin:Integer]: <a  href="PXL.Boards.Types.html#TPinValue">TPinValue</a> read <a  href="PXL.Boards.Types.TCustomGPIO.html#GetPinValue">GetPinValue</a> write <a  href="PXL.Boards.Types.TCustomGPIO.html#SetPinValue">SetPinValue</a>;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetPinMode"></a><code>function <b>GetPinMode</b>(const Pin: Integer): <a  href="PXL.Boards.Types.html#TPinMode">TPinMode</a>; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns current mode for the specified pin number.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetPinValue"></a><code>function <b>GetPinValue</b>(const Pin: Integer): <a  href="PXL.Boards.Types.html#TPinValue">TPinValue</a>; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns current value for the specified pin number, both for input and output modes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SetMux"></a><code>procedure <b>SetMux</b>(const Pin: Integer; const Value: <a  href="PXL.Boards.Types.html#TPinValue">TPinValue</a>); inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Configures the specified pin for output and with the specified value, typically used for configuring multiplexers.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetPinMode"></a><code>procedure <b>SetPinMode</b>(const Pin: Integer; const Mode: <a  href="PXL.Boards.Types.html#TPinMode">TPinMode</a>); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Changes mode for the specified pin number, as long as new mode is different than the current one.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetPinValue"></a><code>procedure <b>SetPinValue</b>(const Pin: Integer; const Value: <a  href="PXL.Boards.Types.html#TPinValue">TPinValue</a>); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Changes value for the specified pin number, as long as new value is different than the current one.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PinMode"></a><code>property <b>PinMode</b>[constPin:Integer]: <a  href="PXL.Boards.Types.html#TPinMode">TPinMode</a> read <a  href="PXL.Boards.Types.TCustomGPIO.html#GetPinMode">GetPinMode</a> write <a  href="PXL.Boards.Types.TCustomGPIO.html#SetPinMode">SetPinMode</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Currently set mode for the specified pin number.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PinValue"></a><code>property <b>PinValue</b>[constPin:Integer]: <a  href="PXL.Boards.Types.html#TPinValue">TPinValue</a> read <a  href="PXL.Boards.Types.TCustomGPIO.html#GetPinValue">GetPinValue</a> write <a  href="PXL.Boards.Types.TCustomGPIO.html#SetPinValue">SetPinValue</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Currently set signal value for the specified pin number.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

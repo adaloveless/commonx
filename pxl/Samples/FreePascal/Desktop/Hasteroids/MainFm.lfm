@@ -1,0 +1,14 @@
+object MainForm: TMainForm
+  Left = 243
+  Height = 480
+  Top = 120
+  Width = 640
+  Caption = 'Hasteroids'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
+  OnKeyUp = FormKeyUp
+  OnResize = FormResize
+  Position = poScreenCenter
+  LCLVersion = '1.5'
+end

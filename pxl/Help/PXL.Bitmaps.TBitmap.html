@@ -1,0 +1,425 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Bitmaps: Class TBitmap</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TBitmap"></a><h1 class="cio">Class TBitmap</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td>Fields</td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Bitmaps.html">PXL.Bitmaps</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TBitmap = class(<a class="normal" href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>)</code></p>
+<h2 class="description">Description</h2>
+<p>
+High-level bitmap that contains image data with multiple storage options (e.g. system, texture, etc.) and has canvas so it can be drawn into. Bitmap operations such as resizing or storage change attempts to preserve existing data as much as possible. In contrast to many other hardware-assisted components in the framework, the methods of this class return no result type but raise exceptions when issues arise.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="ancestor"><a class="normal" href="PXL.Canvas.TCustomCanvasParent.html">TCustomCanvasParent</a></li>
+<li class="ancestor"><a class="normal" href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a></li>
+<li class="thisitem">TBitmap</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>constructor <b><a  href="PXL.Bitmaps.TBitmap.html#Create">Create</a></b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Bitmaps.TBitmap.html#IsEmpty">IsEmpty</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Bitmaps.TBitmap.html#CanvasBeginScene">CanvasBeginScene</a></b>: Boolean; override;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Bitmaps.TBitmap.html#GetRegion">GetRegion</a></b>(const Index: Integer): TIntRectList.PItem; override;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Bitmaps.TBitmap.html#GetTexture">GetTexture</a></b>(const Index: Integer): <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; override;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Bitmaps.TBitmap.html#GetTextureCount">GetTextureCount</a></b>: Integer; override;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Bitmaps.TBitmap.html#Clear">Clear</a></b>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Bitmaps.TBitmap.html#CopyFrom">CopyFrom</a></b>(const Source: <a  href="PXL.Bitmaps.TBitmap.html">TBitmap</a>);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Bitmaps.TBitmap.html#LoadFromFile">LoadFromFile</a></b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Bitmaps.TBitmap.html#LoadFromStream">LoadFromStream</a></b>(const Stream: TStream; const Extension: <a  href="PXL.TypeDef.html#StdString">StdString</a>);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Bitmaps.TBitmap.html#SaveToFile">SaveToFile</a></b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Quality: Pointer = nil);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Bitmaps.TBitmap.html#SaveToStream">SaveToStream</a></b>(const Stream: TStream; const Extension: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Quality: Pointer = nil);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Bitmaps.TBitmap.html#SetSize">SetSize</a></b>(const NewWidth, NewHeight: Integer); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Bitmaps.TBitmap.html#SetSize">SetSize</a></b>(const NewSize: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>); overload; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Bitmaps.TBitmap.html#CanvasEndScene">CanvasEndScene</a></b>; override;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Bitmaps.TBitmap.html#ChangeStorage">ChangeStorage</a></b>(const NewStorage: <a  href="PXL.Bitmaps.html#TBitmapStorage">TBitmapStorage</a>); virtual;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Bitmaps.TBitmap.html#Canvas">Canvas</a></b>: <a  href="PXL.Canvas.TCustomCanvas.html">TCustomCanvas</a> read GetCanvas;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Bitmaps.TBitmap.html#Device">Device</a></b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Bitmaps.TBitmap.html#Height">Height</a></b>: Integer read FHeight write SetHeight;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Bitmaps.TBitmap.html#PixelFormat">PixelFormat</a></b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> read FPixelFormat write SetPixelFormat;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Bitmaps.TBitmap.html#Regions">Regions</a></b>: TIntRectList read FRegions;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Bitmaps.TBitmap.html#Size">Size</a></b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a> read GetSize write <a  href="PXL.Bitmaps.TBitmap.html#SetSize">SetSize</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Bitmaps.TBitmap.html#Storage">Storage</a></b>: <a  href="PXL.Bitmaps.html#TBitmapStorage">TBitmapStorage</a> read FStorage write <a  href="PXL.Bitmaps.TBitmap.html#ChangeStorage">ChangeStorage</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Bitmaps.TBitmap.html#Surface">Surface</a></b>: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> read GetCurrentSurface;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Bitmaps.TBitmap.html#Texture">Texture</a></b>: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a> read GetCurrentTexture;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Bitmaps.TBitmap.html#Width">Width</a></b>: Integer read FWidth write SetWidth;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Create"></a><code>constructor <b>Create</b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Creates new instance of bitmap bound to the specific device.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="IsEmpty"></a><code>function <b>IsEmpty</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns <code>True</code> if the bitmap has zero size (in other words, is empty) and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="CanvasBeginScene"></a><code>function <b>CanvasBeginScene</b>: Boolean; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This function is called during <code>TBitmap.Canvas.BeginScene</code> call, which essentially tells bitmap's drawable texture to activate. This may trigger storage range if current storage is not drawable texture.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetRegion"></a><code>function <b>GetRegion</b>(const Index: Integer): TIntRectList.PItem; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns region specified by the given index from list of existing regions and <code>Nil</code> if <code>Index</code> is outside of valid range.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetTexture"></a><code>function <b>GetTexture</b>(const Index: Integer): <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns either lockable or drawable texture currently occupied by bitmap. <code>Index</code> should always be zero as bitmap can have only one texture. This may trigger storage change if current storage has no texture support.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetTextureCount"></a><code>function <b>GetTextureCount</b>: Integer; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns number of textures as needed by canvas. In this implementation, this will always return one.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Clear"></a><code>procedure <b>Clear</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Clears the bitmap by filling image data with zeros.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="CopyFrom"></a><code>procedure <b>CopyFrom</b>(const Source: <a  href="PXL.Bitmaps.TBitmap.html">TBitmap</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Copies the entire contents of source bitmap to current one. This ensures that current bitmap has the same size as the source. The current pixel format is not changed and if it remains unspecified before this call, it will be set to the default one. This may change bitmap storage for both source and current bitmaps depending on the currently set values to be able to reliably copy image information.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadFromFile"></a><code>procedure <b>LoadFromFile</b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads bitmap from external file. This may change current pixel format, size and storage type. The function uses image format manager reference provided by the associated device.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadFromStream"></a><code>procedure <b>LoadFromStream</b>(const Stream: TStream; const Extension: <a  href="PXL.TypeDef.html#StdString">StdString</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads bitmap from specified stream with image format identified by the given extension. This may change current pixel format, size and storage type. The function uses image format manager reference provided by the associated device.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SaveToFile"></a><code>procedure <b>SaveToFile</b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Quality: Pointer = nil);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves bitmap to external file. This may change current storage type. The function uses image format manager reference provided by the associated device. <code>Quality</code> parameter is a hint that may have different interpretations depending on destination file format, platform and provider; for instance, for JPEG files, on most implementations this is just a typecast integer representing image quality between 0 and 100.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SaveToStream"></a><code>procedure <b>SaveToStream</b>(const Stream: TStream; const Extension: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Quality: Pointer = nil);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Saves bitmap to specified stream with image format identified by the given extension. This may change current storage type. The function uses image format manager reference provided by the associated device. <code>Quality</code> parameter is a hint that may have different interpretations depending on destination file format, platform and provider; for instance, for JPEG files, on most implementations this is just a typecast integer representing image quality between 0 and 100.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SetSize"></a><code>procedure <b>SetSize</b>(const NewWidth, NewHeight: Integer); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Changes bitmap width and height to new parameters preserving original data as much as possible.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SetSize"></a><code>procedure <b>SetSize</b>(const NewSize: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>); overload; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Changes bitmap size to new value preserving original data as much as possible.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="CanvasEndScene"></a><code>procedure <b>CanvasEndScene</b>; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This function is called during <code>TBitmap.Canvas.EndScene</code> call, which essentially tells bitmap's drawable texture to deactivate.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="ChangeStorage"></a><code>procedure <b>ChangeStorage</b>(const NewStorage: <a  href="PXL.Bitmaps.html#TBitmapStorage">TBitmapStorage</a>); virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Attempts to change current storage to a new one, preserving the data. If operation fails for some reason, the appropriate exception will be raised.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Canvas"></a><code>property <b>Canvas</b>: <a  href="PXL.Canvas.TCustomCanvas.html">TCustomCanvas</a> read GetCanvas;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides access to bitmap's canvas wrapped in <a class="normal" href="PXL.Canvas.TCustomCanvas.html">TCustomCanvas</a>, so that bitmap can be rendered into. This changes storage type to <code>TBitmapStorage.Drawable</code> while preserving image data.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Device"></a><code>property <b>Device</b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Reference to the device class to which this bitmap is bound to.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Height"></a><code>property <b>Height</b>: Integer read FHeight write SetHeight;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Height of bitmap in pixels. Changing this preserves image contents as much as possible.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PixelFormat"></a><code>property <b>PixelFormat</b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> read FPixelFormat write SetPixelFormat;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines the pixel format in which to store bitmap's pixels. Changing this preserves image contents as much as possible.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Regions"></a><code>property <b>Regions</b>: TIntRectList read FRegions;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This list contains a list of rectangles that define sub-images (also know as &quot;patterns&quot; or &quot;tiles&quot;) located on this bitmap. When drawing the current bitmap to canvas, there are methods that can take region number as parameter, therefore facilitating use of image atlases or tiles.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Size"></a><code>property <b>Size</b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a> read GetSize write <a  href="PXL.Bitmaps.TBitmap.html#SetSize">SetSize</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Size of bitmap in pixels. Changing this preserves image contents as much as possible.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Storage"></a><code>property <b>Storage</b>: <a  href="PXL.Bitmaps.html#TBitmapStorage">TBitmapStorage</a> read FStorage write <a  href="PXL.Bitmaps.TBitmap.html#ChangeStorage">ChangeStorage</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Storage type currently occupied by bitmap. Changing this to a different value may create new type of resources, while releasing others, but the image data is preserved. Many operations may automatically change storage type depending on context, so this should be changed manually only when doing so can improve performance (for example, to start immediately with drawable texture instead of going through system/lockable stages).</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Surface"></a><code>property <b>Surface</b>: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> read GetCurrentSurface;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides access to image data wrapped in <a class="normal" href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> for direct pixel access. This changes storage type to <code>TBitmapStorage.System</code> while preserving image data.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Texture"></a><code>property <b>Texture</b>: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a> read GetCurrentTexture;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides access to image data wrapped in <a class="normal" href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>, so it can be used for rendering. If current storage type is system (which has no texture), this will change storage type to <code>TBitmapStorage.Lockable</code>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Width"></a><code>property <b>Width</b>: Integer read FWidth write SetWidth;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Width of bitmap in pixels. Changing this preserves image contents as much as possible.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

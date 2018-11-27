@@ -1,0 +1,434 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Images: Class TAtlasImage</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TAtlasImage"></a><h1 class="cio">Class TAtlasImage</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td>Fields</td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Images.html">PXL.Images</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TAtlasImage = class(<a class="normal" href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Atlas image may contain one or more textures and multiple regions, which can be selected when rendering on canvas.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="ancestor"><a class="normal" href="PXL.Canvas.TCustomCanvasParent.html">TCustomCanvasParent</a></li>
+<li class="ancestor"><a class="normal" href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a></li>
+<li class="thisitem">TAtlasImage</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>constructor <b><a  href="PXL.Images.TAtlasImage.html#Create">Create</a></b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>; const ASubscribedTextures: Boolean = True);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Images.TAtlasImage.html#DeviceRestore">DeviceRestore</a></b>: Boolean; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Images.TAtlasImage.html#IndexOfTexture">IndexOfTexture</a></b>(const Texture: <a  href="PXL.Textures.TCustomLockableTexture.html">TCustomLockableTexture</a>): Integer;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Images.TAtlasImage.html#InsertTexture">InsertTexture</a></b>(const InitWidth, InitHeight: Integer): <a  href="PXL.Textures.TCustomLockableTexture.html">TCustomLockableTexture</a>; overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Images.TAtlasImage.html#InsertTexture">InsertTexture</a></b>: Integer; overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Images.TAtlasImage.html#LoadFromAsset">LoadFromAsset</a></b>(const AssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const AlphaFormatRequest: <a  href="PXL.Types.html#TAlphaFormatRequest">TAlphaFormatRequest</a> = TAlphaFormatRequest.DontCare): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Images.TAtlasImage.html#LoadFromFile">LoadFromFile</a></b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const AlphaFormatRequest: <a  href="PXL.Types.html#TAlphaFormatRequest">TAlphaFormatRequest</a> = TAlphaFormatRequest.DontCare): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Images.TAtlasImage.html#LoadFromStream">LoadFromStream</a></b>(const Extension: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Stream: TStream; const AlphaFormatRequest: <a  href="PXL.Types.html#TAlphaFormatRequest">TAlphaFormatRequest</a> = TAlphaFormatRequest.DontCare): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Images.TAtlasImage.html#GetRegion">GetRegion</a></b>(const Index: Integer): TIntRectList.PItem; override;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Images.TAtlasImage.html#GetTexture">GetTexture</a></b>(const Index: Integer): <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; override;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Images.TAtlasImage.html#GetTextureCount">GetTextureCount</a></b>: Integer; override;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Images.TAtlasImage.html#ClearTextures">ClearTextures</a></b>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Images.TAtlasImage.html#DeviceRelease">DeviceRelease</a></b>; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Images.TAtlasImage.html#RemoveTexture">RemoveTexture</a></b>(const Index: Integer);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Images.TAtlasImage.html#SetupRegionPatterns">SetupRegionPatterns</a></b>(const PatternSize: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; VisibleSize: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const PatternCount: Integer = 0); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Images.TAtlasImage.html#SetupRegionPatterns">SetupRegionPatterns</a></b>(const PatternSize: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>); overload; inline;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Images.TAtlasImage.html#Device">Device</a></b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Images.TAtlasImage.html#DynamicImage">DynamicImage</a></b>: Boolean read FDynamicImage write FDynamicImage;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Images.TAtlasImage.html#MipMapping">MipMapping</a></b>: Boolean read FMipMapping write FMipMapping;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Images.TAtlasImage.html#Name">Name</a></b>: <a  href="PXL.TypeDef.html#StdString">StdString</a> read FName write FName;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Images.TAtlasImage.html#PixelFormat">PixelFormat</a></b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> read FPixelFormat write FPixelFormat;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Images.TAtlasImage.html#PremultipliedAlpha">PremultipliedAlpha</a></b>: Boolean read FPremultipliedAlpha write FPremultipliedAlpha;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Images.TAtlasImage.html#Regions">Regions</a></b>: TIntRectList read FRegions;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Images.TAtlasImage.html#SubscribedTextures">SubscribedTextures</a></b>: Boolean read FSubscribedTextures;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Images.TAtlasImage.html#Texture">Texture</a></b>[constIndex:Integer]: <a  href="PXL.Textures.TCustomLockableTexture.html">TCustomLockableTexture</a> read GetLockableTexture;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Images.TAtlasImage.html#TextureCount">TextureCount</a></b>: Integer read <a  href="PXL.Images.TAtlasImage.html#GetTextureCount">GetTextureCount</a>;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Create"></a><code>constructor <b>Create</b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>; const ASubscribedTextures: Boolean = True);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Creates new instance of <code>TAtlasImage</code> class bound to the specified device. <code>ASubscribedTextures</code> indicates whether the textures contained in this image should be subscribed to handle &quot;lost device&quot; events. If this image is part of <a class="normal" href="PXL.Images.TAtlasImages.html">TAtlasImages</a> list, which provides its own notification events regarding device status, then <code>ASubscribedTextures</code> should be set to <code>False</code>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DeviceRestore"></a><code>function <b>DeviceRestore</b>: Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Restores the image after its texture surfaces have been lost (that is, after <a class="normal" href="PXL.Images.TAtlasImage.html#DeviceRelease">DeviceRelease</a> call). Note that this method should only be called when <code>ASubscribedTextures</code> has been set to <code>False</code> during creation.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="IndexOfTexture"></a><code>function <b>IndexOfTexture</b>(const Texture: <a  href="PXL.Textures.TCustomLockableTexture.html">TCustomLockableTexture</a>): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns index of the specified texture in the list. If no such texture is found, -1 is returned.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="InsertTexture"></a><code>function <b>InsertTexture</b>(const InitWidth, InitHeight: Integer): <a  href="PXL.Textures.TCustomLockableTexture.html">TCustomLockableTexture</a>; overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Inserts a new texture to the list of existing textures and tries to initialize with the given width and height, returning its index. If initialization fails, then <code>Nil</code> is returned and the texture is not added to the list.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="InsertTexture"></a><code>function <b>InsertTexture</b>: Integer; overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Inserts a new texture (not initialized) to the list of existing textures and returns its index.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadFromAsset"></a><code>function <b>LoadFromAsset</b>(const AssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const AlphaFormatRequest: <a  href="PXL.Types.html#TAlphaFormatRequest">TAlphaFormatRequest</a> = TAlphaFormatRequest.DontCare): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads image with the specified file name from /assets sub-folder on <i>Android</i> platform. This uses image format manager reference from the associated device. Returns <code>True</code> when succeeded and <code>False</code> otherwise. The method is unsupported on non-Android platforms.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadFromFile"></a><code>function <b>LoadFromFile</b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const AlphaFormatRequest: <a  href="PXL.Types.html#TAlphaFormatRequest">TAlphaFormatRequest</a> = TAlphaFormatRequest.DontCare): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads image with the specified file name from disk. This uses image format manager reference from the associated device. Returns <code>True</code> when succeeded and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LoadFromStream"></a><code>function <b>LoadFromStream</b>(const Extension: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Stream: TStream; const AlphaFormatRequest: <a  href="PXL.Types.html#TAlphaFormatRequest">TAlphaFormatRequest</a> = TAlphaFormatRequest.DontCare): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads image with format corresponding to the given extension from the stream. This uses image format manager reference from the associated device. Returns <code>True</code> when succeeded and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetRegion"></a><code>function <b>GetRegion</b>(const Index: Integer): TIntRectList.PItem; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Retrieves the region specified by its index with information regarding texture number and margins. If the index is outside of valid range, <code>Nil</code> is returned.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetTexture"></a><code>function <b>GetTexture</b>(const Index: Integer): <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides access to individual textures in the image based on the specified index. If the index is outside of valid range, <code>Nil</code> is returned.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetTextureCount"></a><code>function <b>GetTextureCount</b>: Integer; override;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns the number of textures present in the image.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ClearTextures"></a><code>procedure <b>ClearTextures</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Removes any existing textures from the list.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DeviceRelease"></a><code>procedure <b>DeviceRelease</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Releases the image's texture surfaces when the device has been lost. Note that this method should only be called when <code>ASubscribedTextures</code> has been set to <code>False</code> during creation.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="RemoveTexture"></a><code>procedure <b>RemoveTexture</b>(const Index: Integer);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Removes texture with the specified index from the list.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SetupRegionPatterns"></a><code>procedure <b>SetupRegionPatterns</b>(const PatternSize: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; VisibleSize: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const PatternCount: Integer = 0); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Configures the list of regions as if they were rectangular patterns in the image tiled horizontally in series of rows and columns. This fills <a class="normal" href="PXL.Images.TAtlasImage.html#Regions">Regions</a> with new data.   </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>PatternSize</dt>
+<dd>Defines the size of individual pattern.</dd>
+<dt>VisibleSize</dt>
+<dd>Defines the &quot;visible&quot; size inside each individual pattern. This should either match <code>PatternSize</code> or be smaller.</dd>
+<dt>PatternCount</dt>
+<dd>Determines the total number of patterns inside the image. The total number of resulting regions will be equal or smaller than this number.</dd>
+</dl>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SetupRegionPatterns"></a><code>procedure <b>SetupRegionPatterns</b>(const PatternSize: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>); overload; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Configures the list of regions as if they were rectangular patterns in the image tiled horizontally in series of rows and columns. This fills <a class="normal" href="PXL.Images.TAtlasImage.html#Regions">Regions</a> with new data.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Device"></a><code>property <b>Device</b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The device to which this image is bound to.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DynamicImage"></a><code>property <b>DynamicImage</b>: Boolean read FDynamicImage write FDynamicImage;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines whether this image requires frequent access to its pixel data. If this parameter is set to <code>True</code>, dynamic textures will be used, where pixel data can be updated frequently. This should be used when image pixels need to be updated at least once per frame.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="MipMapping"></a><code>property <b>MipMapping</b>: Boolean read FMipMapping write FMipMapping;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines whether the image should contain mipmap data. This can increase memory consumption and slow down the loading of images, but produces better visual results when the image is shrunk to smaller sizes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Name"></a><code>property <b>Name</b>: <a  href="PXL.TypeDef.html#StdString">StdString</a> read FName write FName;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Unique name of the image by which it can be referenced in <a class="normal" href="PXL.Images.TAtlasImages.html">TAtlasImages</a> list.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PixelFormat"></a><code>property <b>PixelFormat</b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> read FPixelFormat write FPixelFormat;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The pixel format that will be used in all image's textures. This parameter is merely a hint and different format may be used in the textures, depending on hardware support; if this format is not supported, usually the closest format will be chosen in textures. When loading pixel data, the conversion will be done automatically, if the texture format does not match the stored pixel format.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PremultipliedAlpha"></a><code>property <b>PremultipliedAlpha</b>: Boolean read FPremultipliedAlpha write FPremultipliedAlpha;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates whether the pixels in this image have premultiplied or non-premultiplied alpha. This does not affect the actual pixels, it is merely a hint for rendering canvas.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Regions"></a><code>property <b>Regions</b>: TIntRectList read FRegions;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This list contains rectangles (with texture number stored as extra pointer value) that define individual sub-images located on one or several textures.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SubscribedTextures"></a><code>property <b>SubscribedTextures</b>: Boolean read FSubscribedTextures;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates whether this class has textures subscribed to device events, handling scenarios such as &quot;device lost&quot;. If this is set to <code>False</code>, likely the handling is provided by parent list class such as <a class="normal" href="PXL.Images.TAtlasImages.html">TAtlasImages</a> through use of <a class="normal" href="PXL.Images.TAtlasImage.html#DeviceRestore">DeviceRestore</a> and <a class="normal" href="PXL.Images.TAtlasImage.html#DeviceRelease">DeviceRelease</a> events.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Texture"></a><code>property <b>Texture</b>[constIndex:Integer]: <a  href="PXL.Textures.TCustomLockableTexture.html">TCustomLockableTexture</a> read GetLockableTexture;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides access to each texture present in the image by its index. If the index is specified outside of valid range, then <code>Nil</code> is returned.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TextureCount"></a><code>property <b>TextureCount</b>: Integer read <a  href="PXL.Images.TAtlasImage.html#GetTextureCount">GetTextureCount</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Total number of textures present in this image.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

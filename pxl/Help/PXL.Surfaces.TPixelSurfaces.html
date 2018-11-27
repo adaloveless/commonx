@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Surfaces: Class TPixelSurfaces</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TPixelSurfaces"></a><h1 class="cio">Class TPixelSurfaces</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td>Fields</td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Surfaces.html">PXL.Surfaces</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TPixelSurfaces = class(TObject)</code></p>
+<h2 class="description">Description</h2>
+<p>
+List of <a class="normal" href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> elements with a function of quickly finding by unique name.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="thisitem">TPixelSurfaces</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurfaces.html#Add">Add</a></b>(const SurfaceName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''): Integer;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurfaces.html#IndexOf">IndexOf</a></b>(const SurfaceName: <a  href="PXL.TypeDef.html#StdString">StdString</a>): Integer;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurfaces.html#Insert">Insert</a></b>(const Surface: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Integer;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Surfaces.TPixelSurfaces.html#CreatePixelSurface">CreatePixelSurface</a></b>(const SurfaceName: <a  href="PXL.TypeDef.html#StdString">StdString</a>): <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurfaces.html#Clear">Clear</a></b>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Surfaces.TPixelSurfaces.html#Remove">Remove</a></b>(const Index: Integer);</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurfaces.html#Count">Count</a></b>: Integer read GetCount write SetCount;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurfaces.html#Items">Items</a></b>[constIndex:Integer]: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> read GetItem;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Surfaces.TPixelSurfaces.html#Surface">Surface</a></b>[constName:<a  href="PXL.TypeDef.html#StdString">StdString</a>]: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> read GetSurface;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Add"></a><code>function <b>Add</b>(const SurfaceName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Inserts a new surface with given name to the list and returns its index.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="IndexOf"></a><code>function <b>IndexOf</b>(const SurfaceName: <a  href="PXL.TypeDef.html#StdString">StdString</a>): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns index of the surface with given name if such exists or -1 otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Insert"></a><code>function <b>Insert</b>(const Surface: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Inserts given surface element to the list and returns its index.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="CreatePixelSurface"></a><code>function <b>CreatePixelSurface</b>(const SurfaceName: <a  href="PXL.TypeDef.html#StdString">StdString</a>): <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Creates a new instance of <a class="normal" href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> when called by <a class="normal" href="PXL.Surfaces.TPixelSurfaces.html#Add">Add</a> method. This resembles <i>factory pattern</i> and provides a way to instantiate extended <i>TPixelSurface</i> classes, for example, in hardware-assisted implementations.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Clear"></a><code>procedure <b>Clear</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Removes all elements from the list.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Remove"></a><code>procedure <b>Remove</b>(const Index: Integer);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Removes element with specified index from the list.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Count"></a><code>property <b>Count</b>: Integer read GetCount write SetCount;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines how many surfaces are in the list.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Items"></a><code>property <b>Items</b>[constIndex:Integer]: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> read GetItem;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides access to individual surface elements by their index.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Surface"></a><code>property <b>Surface</b>[constName:<a  href="PXL.TypeDef.html#StdString">StdString</a>]: <a  href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> read GetSurface;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides reference to the surface with given name. If no surface with such name exists, <code>Nil</code> is returned.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

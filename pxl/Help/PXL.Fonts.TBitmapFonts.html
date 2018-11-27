@@ -1,0 +1,353 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Fonts: Class TBitmapFonts</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TBitmapFonts"></a><h1 class="cio">Class TBitmapFonts</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td>Fields</td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Fonts.html">PXL.Fonts</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TBitmapFonts = class(TObject)</code></p>
+<h2 class="description">Description</h2>
+<p>
+The list that may contain one or more instances of <a class="normal" href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a> and provide facilities to search for fonts by their unique names, font loading and handling &quot;device lost&quot; scenario.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="thisitem">TBitmapFonts</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>constructor <b><a  href="PXL.Fonts.TBitmapFonts.html#Create">Create</a></b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFonts.html#AddFromBinaryAsset">AddFromBinaryAsset</a></b>(const AssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFonts.html#AddFromBinaryFile">AddFromBinaryFile</a></b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFonts.html#AddFromBinaryStream">AddFromBinaryStream</a></b>(const Stream: TStream; const FontName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFonts.html#AddFromXMLAsset">AddFromXMLAsset</a></b>(const ImageAssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const XMLAssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFonts.html#AddFromXMLFile">AddFromXMLFile</a></b>(const ImageFileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const XMLFileName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFonts.html#AddFromXMLStream">AddFromXMLStream</a></b>(const ImageExtension: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const ImageStream, XMLStream: TStream; const FontName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFonts.html#AddSystemFont">AddSystemFont</a></b>(const FontImage: <a  href="PXL.Fonts.html#TSystemFontImage">TSystemFontImage</a> = TSystemFontImage.Font8x8; const FontName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFonts.html#Include">Include</a></b>(const Element: <a  href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a>): Integer;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFonts.html#IndexOf">IndexOf</a></b>(const FontName: <a  href="PXL.TypeDef.html#StdString">StdString</a>): Integer; overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFonts.html#IndexOf">IndexOf</a></b>(const Element: <a  href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a>): Integer; overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Fonts.TBitmapFonts.html#Insert">Insert</a></b>(const Font: <a  href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a>): Integer;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Fonts.TBitmapFonts.html#Clear">Clear</a></b>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Fonts.TBitmapFonts.html#MarkSearchDirty">MarkSearchDirty</a></b>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Fonts.TBitmapFonts.html#Remove">Remove</a></b>(const Index: Integer);</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFonts.html#Canvas">Canvas</a></b>: <a  href="PXL.Canvas.TCustomCanvas.html">TCustomCanvas</a> read FCanvas write SetCanvas;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFonts.html#Count">Count</a></b>: Integer read GetCount;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFonts.html#Device">Device</a></b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFonts.html#Font">Font</a></b>[constName:<a  href="PXL.TypeDef.html#StdString">StdString</a>]: <a  href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a> read GetFont;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFonts.html#Items">Items</a></b>[constIndex:Integer]: <a  href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a> read GetItem;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Fonts.TBitmapFonts.html#StyleTags">StyleTags</a></b>: <a  href="PXL.Fonts.TBitmapFont.TStyleTags.html">TBitmapFont.TStyleTags</a> read FStyleTags;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Create"></a><code>constructor <b>Create</b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Creates new instance of <code>TBitmapFonts</code> class bound to the specified device. Elements inside this list will also be bound to this device.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="AddFromBinaryAsset"></a><code>function <b>AddFromBinaryAsset</b>(const AssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads binary font from file in /assets sub-folder and adds its to the list with font name equal to file name (without extension). The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns font index in the list when successful and -1 otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="AddFromBinaryFile"></a><code>function <b>AddFromBinaryFile</b>(const FileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads binary font from external file and adds its to the list with font name equal to file name (without extension). The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns font index in the list when successful and -1 otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="AddFromBinaryStream"></a><code>function <b>AddFromBinaryStream</b>(const Stream: TStream; const FontName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads binary font from the given stream and adds its to the list with the given name. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns font index in the list when successful and -1 otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="AddFromXMLAsset"></a><code>function <b>AddFromXMLAsset</b>(const ImageAssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const XMLAssetName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads font letter information and letter image from external files in /assets sub-folder and adds the resulting font to the list with the name equal to that of file name (without extension). This methods accepts that one of file names is left empty and will be guessed by either changing extension from &quot;.xml&quot; to &quot;.png&quot; or vice-versa. This uses image format manager reference from associated device. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns font index in the list when successful and -1 otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="AddFromXMLFile"></a><code>function <b>AddFromXMLFile</b>(const ImageFileName: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const XMLFileName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads font letter information and letter image from external files on disk and adds the resulting font to the list with the name equal to that of file name (without extension). This methods accepts that one of file names is left empty and will be guessed by either changing extension from &quot;.xml&quot; to &quot;.png&quot; or vice-versa. This uses image format manager reference from associated device. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns font index in the list when successful and -1 otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="AddFromXMLStream"></a><code>function <b>AddFromXMLStream</b>(const ImageExtension: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const ImageStream, XMLStream: TStream; const FontName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Loads font letter information and letter image from their corresponding streams and adds the resulting font to the list with the given name. This uses image format manager reference from associated device. The image extension indicates what image format for letters image is used. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns font index in the list when successful and -1 otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="AddSystemFont"></a><code>function <b>AddSystemFont</b>(const FontImage: <a  href="PXL.Fonts.html#TSystemFontImage">TSystemFontImage</a> = TSystemFontImage.Font8x8; const FontName: <a  href="PXL.TypeDef.html#StdString">StdString</a> = ''; const PixelFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> = TPixelFormat.Unknown): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Adds and initializes one of the predefined system fonts to the list with the given name. These are embedded within the final application and can be used at any time. The drawback of this is that these fonts don't look pretty as the pre-rendered ones and typically contain only ASCII characters. The given pixel format, if specified, will be used as a hint for initializing font letters image. Returns font index in the list when successful and -1 otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Include"></a><code>function <b>Include</b>(const Element: <a  href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a>): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Includes the specified font to the list, if it wasn't included previously. This implies searching the list before adding the element, which may impact performance.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="IndexOf"></a><code>function <b>IndexOf</b>(const FontName: <a  href="PXL.TypeDef.html#StdString">StdString</a>): Integer; overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns the index of font with given unique name (not case-sensitive) in the list. If no font with such name exists, returns -1.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="IndexOf"></a><code>function <b>IndexOf</b>(const Element: <a  href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a>): Integer; overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns the index of the given font element in the list. If such font is not found, -1 is returned.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Insert"></a><code>function <b>Insert</b>(const Font: <a  href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a>): Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Inserts the given font to the list and returns its index.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Clear"></a><code>procedure <b>Clear</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Removes all font entries from the list.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="MarkSearchDirty"></a><code>procedure <b>MarkSearchDirty</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates that one of the fonts had its name changed, so the list needs to be refreshed to make searching by name (<a class="normal" href="PXL.Fonts.TBitmapFonts.html#IndexOf">IndexOf</a> function and <a class="normal" href="PXL.Fonts.TBitmapFonts.html#Font">Font</a> property) work properly.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Remove"></a><code>procedure <b>Remove</b>(const Index: Integer);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Removes font with the specified index from the list.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Canvas"></a><code>property <b>Canvas</b>: <a  href="PXL.Canvas.TCustomCanvas.html">TCustomCanvas</a> read FCanvas write SetCanvas;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Destination canvas to which the text should be rendered to. This can be changed between different drawing calls to a different canvas, as long as such canvas is bound to the same device as the fonts. Note that setting this property changes <code>Canvas</code> value for all the fonts in the list to this same value.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Count"></a><code>property <b>Count</b>: Integer read GetCount;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Total number of elements in the list.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Device"></a><code>property <b>Device</b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The device to which this list is bound to.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Font"></a><code>property <b>Font</b>[constName:<a  href="PXL.TypeDef.html#StdString">StdString</a>]: <a  href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a> read GetFont;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides access to individual fonts in the list by unique font name (not case-sensitive). If no font with such name is found, <code>Nil</code> is returned.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Items"></a><code>property <b>Items</b>[constIndex:Integer]: <a  href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a> read GetItem;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides access to individual fonts in the list by the corresponding index. If the index is outside of valid range, <code>Nil</code> is returned.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="StyleTags"></a><code>property <b>StyleTags</b>: <a  href="PXL.Fonts.TBitmapFont.TStyleTags.html">TBitmapFont.TStyleTags</a> read FStyleTags;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Global font style tags that can be shared among all fonts contained in this list.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

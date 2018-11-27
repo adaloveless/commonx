@@ -1,0 +1,427 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Textures: Class TCustomBaseTexture</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TCustomBaseTexture"></a><h1 class="cio">Class TCustomBaseTexture</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td><a class="section" href="#PasDoc-Fields">Fields</a></td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Textures.html">PXL.Textures</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TCustomBaseTexture = class abstract(TObject)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Base definition of hardware-assisted texture. Each texture is typically bound to one specific device, which contains any hardware-specific context information.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="thisitem">TCustomBaseTexture</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Fields"></a><h3 class="summary">Fields</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Textures.TCustomBaseTexture.html#FHeight">FHeight</a></b>: Integer;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Textures.TCustomBaseTexture.html#FMipMapping">FMipMapping</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Textures.TCustomBaseTexture.html#FPixelFormat">FPixelFormat</a></b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Textures.TCustomBaseTexture.html#FPremultipliedAlpha">FPremultipliedAlpha</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Textures.TCustomBaseTexture.html#FState">FState</a></b>: <a  href="PXL.Textures.html#TTextureState">TTextureState</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Textures.TCustomBaseTexture.html#FWidth">FWidth</a></b>: Integer;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>constructor <b><a  href="PXL.Textures.TCustomBaseTexture.html#Create">Create</a></b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>; const AutoSubscribe: Boolean); virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomBaseTexture.html#Bind">Bind</a></b>(const Channel: Integer): Boolean; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomBaseTexture.html#Clear">Clear</a></b>: Boolean; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomBaseTexture.html#CopyFrom">CopyFrom</a></b>(const Source: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>): Boolean; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomBaseTexture.html#CopyRect">CopyRect</a></b>(DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Source: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomBaseTexture.html#DeviceRestore">DeviceRestore</a></b>: Boolean; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomBaseTexture.html#Initialize">Initialize</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomBaseTexture.html#DoCopyRect">DoCopyRect</a></b>(const Source: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; const SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>): Boolean; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Textures.TCustomBaseTexture.html#DoInitialize">DoInitialize</a></b>: Boolean; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Textures.TCustomBaseTexture.html#DeviceRelease">DeviceRelease</a></b>; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Textures.TCustomBaseTexture.html#Finalize">Finalize</a></b>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Textures.TCustomBaseTexture.html#DoFinalize">DoFinalize</a></b>; virtual;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomBaseTexture.html#Device">Device</a></b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomBaseTexture.html#Height">Height</a></b>: Integer read <a  href="PXL.Textures.TCustomBaseTexture.html#FHeight">FHeight</a> write SetHeight;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomBaseTexture.html#MipMapping">MipMapping</a></b>: Boolean read <a  href="PXL.Textures.TCustomBaseTexture.html#FMipMapping">FMipMapping</a> write SetMipMapping;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomBaseTexture.html#PixelFormat">PixelFormat</a></b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> read <a  href="PXL.Textures.TCustomBaseTexture.html#FPixelFormat">FPixelFormat</a> write SetPixelFormat;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomBaseTexture.html#PremultipliedAlpha">PremultipliedAlpha</a></b>: Boolean read <a  href="PXL.Textures.TCustomBaseTexture.html#FPremultipliedAlpha">FPremultipliedAlpha</a> write SetPremultipliedAlpha;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomBaseTexture.html#Size">Size</a></b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a> read GetSize write SetSize;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomBaseTexture.html#State">State</a></b>: <a  href="PXL.Textures.html#TTextureState">TTextureState</a> read <a  href="PXL.Textures.TCustomBaseTexture.html#FState">FState</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Textures.TCustomBaseTexture.html#Width">Width</a></b>: Integer read <a  href="PXL.Textures.TCustomBaseTexture.html#FWidth">FWidth</a> write SetWidth;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Fields</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FHeight"></a><code><b>FHeight</b>: Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Current texture height.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FMipMapping"></a><code><b>FMipMapping</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Whether the current texture uses mipmapping or not.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FPixelFormat"></a><code><b>FPixelFormat</b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Current format that texture pixels are represented in.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FPremultipliedAlpha"></a><code><b>FPremultipliedAlpha</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Whether the current texture has RGB elements premultiplied by alpha-channel or not.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FState"></a><code><b>FState</b>: <a  href="PXL.Textures.html#TTextureState">TTextureState</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Current state the texture is in.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FWidth"></a><code><b>FWidth</b>: Integer;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Current texture width.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Create"></a><code>constructor <b>Create</b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>; const AutoSubscribe: Boolean); virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Creates new instance of texture bound to the specific device.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Bind"></a><code>function <b>Bind</b>(const Channel: Integer): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Binds this texture to the specified hardware channel. The actual meaning and functionality of this method varies on different types of hardware and platforms.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Clear"></a><code>function <b>Clear</b>: Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Clears the entire texture and fills pixels with zeros.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="CopyFrom"></a><code>function <b>CopyFrom</b>(const Source: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>): Boolean; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Copies the entire source texture area to this one. If the sizes of both textures do not match, then intersection of both will be copied. This function handles the clipping and possibly pixel format conversion. <code>True</code> is returned when the operation succeeds and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="CopyRect"></a><code>function <b>CopyRect</b>(DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>; const Source: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Copies a portion of source texture area to this one. This function handles the clipping and possibly pixel format conversion. <code>True</code> is returned when the operation succeeds and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DeviceRestore"></a><code>function <b>DeviceRestore</b>: Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Restores the texture after its surface has been lost (that is, after <a class="normal" href="PXL.Textures.TCustomBaseTexture.html#DeviceRelease">DeviceRelease</a> call). This should be implemented by derived classes to handle &quot;device lost&quot; scenario.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Initialize"></a><code>function <b>Initialize</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Initializes the texture with its currently set parameters and prepares for usage in rendering.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="DoCopyRect"></a><code>function <b>DoCopyRect</b>(const Source: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; const SourceRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const DestPos: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a>): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This method is called by <a class="normal" href="PXL.Textures.TCustomBaseTexture.html#CopyRect">CopyRect</a> and should provide copy mechanism between this and other textures available on given provider.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="DoInitialize"></a><code>function <b>DoInitialize</b>: Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This method is called by <a class="normal" href="PXL.Textures.TCustomBaseTexture.html#Initialize">Initialize</a> and should be implemented by derived classes to create necessary hardware elements, and initialize the texture.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DeviceRelease"></a><code>procedure <b>DeviceRelease</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Releases the texture's surface when the device has been lost. This should be implemented by derived classes to handle &quot;device lost&quot; scenario.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Finalize"></a><code>procedure <b>Finalize</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Finalizes the texture and releases its resources that were used for rendering.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="DoFinalize"></a><code>procedure <b>DoFinalize</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This method is called by <a class="normal" href="PXL.Textures.TCustomBaseTexture.html#Finalize">Finalize</a> and should be implemented by derived classes to release any remaining hardware elements, and finalize the texture.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Device"></a><code>property <b>Device</b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Reference to the device class to which this texture is bound to.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Height"></a><code>property <b>Height</b>: Integer read <a  href="PXL.Textures.TCustomBaseTexture.html#FHeight">FHeight</a> write SetHeight;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines the texture height in pixels. This can be written to only before the texture is initialized, but can be read at any time.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="MipMapping"></a><code>property <b>MipMapping</b>: Boolean read <a  href="PXL.Textures.TCustomBaseTexture.html#FMipMapping">FMipMapping</a> write SetMipMapping;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines whether the texture uses mipmapping or not. Mipmapping can improve visual quality when the texture is drawn in different sizes, especially in smaller ones. This can be written to only before the texture is initialized, but can be read at any time.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PixelFormat"></a><code>property <b>PixelFormat</b>: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a> read <a  href="PXL.Textures.TCustomBaseTexture.html#FPixelFormat">FPixelFormat</a> write SetPixelFormat;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines the pixel format in which to store texture's pixels. This can be written to only before the texture is initialized, but can be read at any time.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PremultipliedAlpha"></a><code>property <b>PremultipliedAlpha</b>: Boolean read <a  href="PXL.Textures.TCustomBaseTexture.html#FPremultipliedAlpha">FPremultipliedAlpha</a> write SetPremultipliedAlpha;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines whether the texture has RGB components premultiplied by alpha-channel or not. Premultiplied alpha implies permanent loss of information as the components are multiplied by alpha value and stored (so, for example, pixels with alpha value of zero permanently lose all color information), however this can improve visual quality on mipmaps with translucent pixels. This parameter is merely a hint for rendering system, it does not change the actual pixels - this is something that should be done as a separate step. This parameter can only be changed before the texture is initialized, but can be read at any time.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Size"></a><code>property <b>Size</b>: <a  href="PXL.Types.TPoint2px.html">TPoint2px</a> read GetSize write SetSize;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines the texture size in pixels. This can be written to only before the texture is initialized, but can be read at any time.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="State"></a><code>property <b>State</b>: <a  href="PXL.Textures.html#TTextureState">TTextureState</a> read <a  href="PXL.Textures.TCustomBaseTexture.html#FState">FState</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates the state in which the texture currently is.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Width"></a><code>property <b>Width</b>: Integer read <a  href="PXL.Textures.TCustomBaseTexture.html#FWidth">FWidth</a> write SetWidth;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Determines the texture width in pixels. This can be written to only before the texture is initialized, but can be read at any time.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

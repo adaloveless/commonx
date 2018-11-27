@@ -1,0 +1,22 @@
+object MainForm: TMainForm
+  Left = 0
+  Top = 0
+  Caption = 'PXL Basic Demo'
+  ClientHeight = 480
+  ClientWidth = 640
+  Position = ScreenCenter
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnResize = FormResize
+  OnPaint = FormPaint
+  DesignerMasterStyle = 0
+  object SysTimer: TTimer
+    Interval = 1
+    OnTimer = SysTimerTimer
+    Left = 64
+    Top = 80
+  end
+end

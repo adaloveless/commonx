@@ -1,0 +1,1071 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Canvas: Class TCustomCanvas</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TCustomCanvas"></a><h1 class="cio">Class TCustomCanvas</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td><a class="section" href="#PasDoc-Fields">Fields</a></td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Canvas.html">PXL.Canvas</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TCustomCanvas = class abstract(TObject)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Abstract canvas definition that provides few basic functions that need to be implemented by derived classes and many different rendering functions that internally use basic functions to do the rendering.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="thisitem">TCustomCanvas</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Fields"></a><h3 class="summary">Fields</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Canvas.TCustomCanvas.html#FCurrentPremultipliedAlpha">FCurrentPremultipliedAlpha</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Canvas.TCustomCanvas.html#FCurrentTexture">FCurrentTexture</a></b>: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code><b><a  href="PXL.Canvas.TCustomCanvas.html#FCurrentTextureMapping">FCurrentTextureMapping</a></b>: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>constructor <b><a  href="PXL.Canvas.TCustomCanvas.html#Create">Create</a></b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Canvas.TCustomCanvas.html#BeginScene">BeginScene</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Canvas.TCustomCanvas.html#Initialize">Initialize</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Canvas.TCustomCanvas.html#SetEffect">SetEffect</a></b>(const AEffect: <a  href="PXL.Canvas.TCustomCanvasEffect.html">TCustomCanvasEffect</a>): Boolean; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Canvas.TCustomCanvas.html#SetPalette">SetPalette</a></b>(const Palette: <a  href="PXL.Types.html#TIntColorPalette">TIntColorPalette</a>): Boolean; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Canvas.TCustomCanvas.html#BeginDraw">BeginDraw</a></b>: Boolean; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Canvas.TCustomCanvas.html#DeviceRestore">DeviceRestore</a></b>: Boolean; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Canvas.TCustomCanvas.html#GetClipRect">GetClipRect</a></b>: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Canvas.TCustomCanvas.html#InitCanvas">InitCanvas</a></b>: Boolean; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Canvas.TCustomCanvas.html#NeedsInitialization">NeedsInitialization</a></b>: Boolean; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#Circle">Circle</a></b>(const Origin: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Radius: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Steps: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const UseWuLines: Boolean = False);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#DrawIndexedTriangles">DrawIndexedTriangles</a></b>(const Vertices: <a  href="PXL.Types.html#PPoint2">PPoint2</a>; const Colors: <a  href="PXL.Types.html#PIntColor">PIntColor</a>; const Indices: PLongInt; const VertexCount, TriangleCount: Integer; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#DrawTexturedTriangles">DrawTexturedTriangles</a></b>(const Texture: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; const Vertices, TexCoords: <a  href="PXL.Types.html#PPoint2">PPoint2</a>; const Colors: <a  href="PXL.Types.html#PIntColor">PIntColor</a>; const Indices: PLongInt; const VertexCount, TriangleCount: Integer; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#Ellipse">Ellipse</a></b>(const Origin, Radius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Steps: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const UseWuLines: Boolean = False);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#EndScene">EndScene</a></b>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillArc">FillArc</a></b>(const X, Y, Radius, InitAngle, EndAngle: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Steps: Integer; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a>); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillArc">FillArc</a></b>(const Origin, Radius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const InitAngle, EndAngle: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Steps: Integer; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillCircle">FillCircle</a></b>(X, Y, Radius: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; Steps: Integer; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillEllipse">FillEllipse</a></b>(const Origin, Radius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; Steps: Integer; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillHexagon">FillHexagon</a></b>(const Matrix: <a  href="PXL.Types.TMatrix3.html">TMatrix3</a>; const Color1, Color2, Color3, Color4, Color5, Color6: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillQuad">FillQuad</a></b>(const Points: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillRect">FillRect</a></b>(const Left, Top, Width, Height: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillRect">FillRect</a></b>(const Rect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillRect">FillRect</a></b>(const Rect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillRibbon">FillRibbon</a></b>(const Origin, InsideRadius, OutsideRadius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const InitAngle, EndAngle: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Steps: Integer; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillRibbon">FillRibbon</a></b>(const Origin, InsideRadius, OutsideRadius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const InitAngle, EndAngle: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Steps: Integer; const InsideColor1, InsideColor2, InsideColor3, OutsideColor1, OutsideColor2, OutsideColor3: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FillTri">FillTri</a></b>(const Point1, Point2, Point3: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Color1, Color2, Color3: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#Finalize">Finalize</a></b>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#Flush">Flush</a></b>; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FrameRect">FrameRect</a></b>(const Points: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#FrameRect">FrameRect</a></b>(const Rect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#HorizLine">HorizLine</a></b>(const Left, Top, Width: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Colors: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#HorizLine">HorizLine</a></b>(const Left, Top, Width: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#Line">Line</a></b>(const SrcPoint, DestPoint: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>); overload; virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#Line">Line</a></b>(const SrcPoint, DestPoint: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#Line">Line</a></b>(const X1, Y1, X2, Y2: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#Line">Line</a></b>(const X1, Y1, X2, Y2: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#LineArray">LineArray</a></b>(const Points: <a  href="PXL.Types.html#PPoint2">PPoint2</a>; const ElementCount: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#PutPixel">PutPixel</a></b>(const Point: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#PutPixel">PutPixel</a></b>(const X, Y: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#QuadHole">QuadHole</a></b>(const AreaTopLeft, AreaSize, HoleOrigin, HoleRadius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const OutsideColor, InsideColor: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const Steps: Integer; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#Reset">Reset</a></b>; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#ResetPalette">ResetPalette</a></b>; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#TexQuad">TexQuad</a></b>(const Points: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#UseImage">UseImage</a></b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>; const Mapping: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const TextureIndex: Integer = 0); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#UseImage">UseImage</a></b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#UseImagePx">UseImagePx</a></b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>; const Mapping: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const TextureIndex: Integer = 0);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#UseImageRegion">UseImageRegion</a></b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>; const Region: Integer; const Mirror, Flip: Boolean); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#UseImageRegion">UseImageRegion</a></b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>; const Region: Integer; const SrcRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const Mirror: Boolean = False; const Flip: Boolean = False); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#UseImageRegion">UseImageRegion</a></b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>; const Region: Integer = 0); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#UseTexture">UseTexture</a></b>(const Texture: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; const Mapping: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#UseTexturePx">UseTexturePx</a></b>(const Texture: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; const Mapping: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#VertLine">VertLine</a></b>(const Left, Top, Height: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#VertLine">VertLine</a></b>(const Left, Top, Height: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Colors: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#WireHexagon">WireHexagon</a></b>(const Matrix: <a  href="PXL.Types.TMatrix3.html">TMatrix3</a>; const Color1, Color2, Color3, Color4, Color5, Color6: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const UseWuLines: Boolean = False);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#WireQuad">WireQuad</a></b>(const Points: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const UseWuLines: Boolean = False);</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#WuLine">WuLine</a></b>(const Point1, Point2: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>);</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#DeviceRelease">DeviceRelease</a></b>; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#DoneCanvas">DoneCanvas</a></b>; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#EndDraw">EndDraw</a></b>; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#NextDrawCall">NextDrawCall</a></b>; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#SetClipRect">SetClipRect</a></b>(const Value: <a  href="PXL.Types.TIntRect.html">TIntRect</a>); virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Canvas.TCustomCanvas.html#UpdateAttributes">UpdateAttributes</a></b>; virtual;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Canvas.TCustomCanvas.html#Attributes">Attributes</a></b>: <a  href="PXL.Canvas.html#TCanvasAttributes">TCanvasAttributes</a> read FAttributes write SetAttributes;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Canvas.TCustomCanvas.html#CacheStall">CacheStall</a></b>: Integer read FCacheStall;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Canvas.TCustomCanvas.html#ClipRect">ClipRect</a></b>: <a  href="PXL.Types.TIntRect.html">TIntRect</a> read <a  href="PXL.Canvas.TCustomCanvas.html#GetClipRect">GetClipRect</a> write <a  href="PXL.Canvas.TCustomCanvas.html#SetClipRect">SetClipRect</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Canvas.TCustomCanvas.html#Device">Device</a></b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Canvas.TCustomCanvas.html#Initialized">Initialized</a></b>: Boolean read FInitialized;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Canvas.TCustomCanvas.html#Parent">Parent</a></b>: <a  href="PXL.Canvas.TCustomCanvasParent.html">TCustomCanvasParent</a> read FParent;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Fields</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FCurrentPremultipliedAlpha"></a><code><b>FCurrentPremultipliedAlpha</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Currently set rendering mode in relation to premultiplied or non-premultiplied alpha.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FCurrentTexture"></a><code><b>FCurrentTexture</b>: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Currently defined texture for rendering.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="FCurrentTextureMapping"></a><code><b>FCurrentTextureMapping</b>: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Currently defined coordinates within the texture set in <a class="normal" href="PXL.Canvas.TCustomCanvas.html#FCurrentTexture">FCurrentTexture</a>.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Create"></a><code>constructor <b>Create</b>(const ADevice: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Creates new instance of canvas bound to the specific device.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="BeginScene"></a><code>function <b>BeginScene</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Prepares the canvas to start the rendering. Any rendering calls can be made after this method succeeds. Returns <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Initialize"></a><code>function <b>Initialize</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Initializes the canvas so it can be used for rendering. Note that for actual rendering to take place, <a class="normal" href="PXL.Canvas.TCustomCanvas.html#BeginScene">BeginScene</a> needs to be called first, assuming that initialization succeeded. This results <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SetEffect"></a><code>function <b>SetEffect</b>(const AEffect: <a  href="PXL.Canvas.TCustomCanvasEffect.html">TCustomCanvasEffect</a>): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Sets custom shader effect to be used for rendering. This functionality may be provider and platform dependent. Also, for this to work, <i>TCanvasAttribute.CustomEffect</i> should be set in <a class="normal" href="PXL.Canvas.TCustomCanvas.html#Attributes">Attributes</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="SetPalette"></a><code>function <b>SetPalette</b>(const Palette: <a  href="PXL.Types.html#TIntColorPalette">TIntColorPalette</a>): Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Sets the palette to be used for rendering 8-bit indexed images. Support for such images varies depending on provider and platform. This returns <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="BeginDraw"></a><code>function <b>BeginDraw</b>: Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Prepares the canvas for rendering, after which any number of rendering calls can be made. Returns <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="DeviceRestore"></a><code>function <b>DeviceRestore</b>: Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Restores the canvas after its resources have been lost (that is, after <a class="normal" href="PXL.Canvas.TCustomCanvas.html#DeviceRelease">DeviceRelease</a> call). This may be implemented by derived classes to handle &quot;device lost&quot; scenario.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetClipRect"></a><code>function <b>GetClipRect</b>: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns the currently set clipping rectangle.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="InitCanvas"></a><code>function <b>InitCanvas</b>: Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Creates any implementation specific resources for rendering, including hardware and/or GPU resources. Returns <code>True</code> when successful and <code>False</code> otherwise.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="NeedsInitialization"></a><code>function <b>NeedsInitialization</b>: Boolean; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Depending on actual implementation, this indicates whether the canvas requires initialization or not. When this method returns <code>False</code>, then the canvas becomes initialized at the creation and cannot be &quot;finalized&quot;.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Circle"></a><code>procedure <b>Circle</b>(const Origin: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Radius: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Steps: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const UseWuLines: Boolean = False);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws circle with given origin, radius and color. This function uses <a class="normal" href="PXL.Canvas.TCustomCanvas.html#Line">Line</a> primitive. <code>Steps</code> parameter indicates number of divisions in the ellipse. <code>UseWuLines</code> determines whether to use <a class="normal" href="PXL.Canvas.TCustomCanvas.html#WuLine">WuLine</a> primitive instead.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawIndexedTriangles"></a><code>procedure <b>DrawIndexedTriangles</b>(const Vertices: <a  href="PXL.Types.html#PPoint2">PPoint2</a>; const Colors: <a  href="PXL.Types.html#PIntColor">PIntColor</a>; const Indices: PLongInt; const VertexCount, TriangleCount: Integer; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws one or more triangles filled with color gradient, specified by vertex, color and index buffers. This method is considered basic functionality and should always be implemented by derived classes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="DrawTexturedTriangles"></a><code>procedure <b>DrawTexturedTriangles</b>(const Texture: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; const Vertices, TexCoords: <a  href="PXL.Types.html#PPoint2">PPoint2</a>; const Colors: <a  href="PXL.Types.html#PIntColor">PIntColor</a>; const Indices: PLongInt; const VertexCount, TriangleCount: Integer; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws one or more triangles filled with texture and color gradient, specified by vertex, texture coordinates, color and index buffers.This method is considered basic functionality and should always be implemented by derived classes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Ellipse"></a><code>procedure <b>Ellipse</b>(const Origin, Radius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Steps: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const UseWuLines: Boolean = False);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws ellipse with given origin, radiuses and color. This function uses <a class="normal" href="PXL.Canvas.TCustomCanvas.html#Line">Line</a> primitive. <code>Steps</code> parameter indicates number of divisions in the ellipse. <code>UseWuLines</code> indicates whether to use <a class="normal" href="PXL.Canvas.TCustomCanvas.html#WuLine">WuLine</a> primitive instead.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="EndScene"></a><code>procedure <b>EndScene</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Finishes rendering phase in the canvas.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillArc"></a><code>procedure <b>FillArc</b>(const X, Y, Radius, InitAngle, EndAngle: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Steps: Integer; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a>); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws filled arc at the given coordinates and radius. The arc begins at <code>InitAngle</code> and ends at <code>EndAngle</code> (in radians), subdivided into a number of triangles specified in <code>Steps</code>. The arc's shape is filled with four color gradient.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillArc"></a><code>procedure <b>FillArc</b>(const Origin, Radius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const InitAngle, EndAngle: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Steps: Integer; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws filled arc at the given position and radius. The arc begins at <code>InitAngle</code> and ends at <code>EndAngle</code> (in radians), subdivided into a number of triangles specified in <code>Steps</code>. The arc's shape is filled with four color gradient.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillCircle"></a><code>procedure <b>FillCircle</b>(X, Y, Radius: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; Steps: Integer; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws filled circle at the given position and radius. The circle is subdivided into a number of triangles specified in <code>Steps</code>. The shape of circle is filled with four color gradient.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillEllipse"></a><code>procedure <b>FillEllipse</b>(const Origin, Radius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; Steps: Integer; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws filled ellipse at the given position and radius. The ellipse is subdivided into a number of triangles specified in <code>Steps</code>. The shape of ellipse is filled with four color gradient.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillHexagon"></a><code>procedure <b>FillHexagon</b>(const Matrix: <a  href="PXL.Types.TMatrix3.html">TMatrix3</a>; const Color1, Color2, Color3, Color4, Color5, Color6: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws hexagon where vertices are spaced 0.5 pixels apart from its center (so diameter is 1) in all directions, multiplied by the given matrix and filled with gradient of six colors at the corresponding vertices. The size, position and rotation of hexagon can be given using one or a combination of several 3x3 matrices multiplied together.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillQuad"></a><code>procedure <b>FillQuad</b>(const Points: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws quadrilateral with color gradient specified by given vertices and colors.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillRect"></a><code>procedure <b>FillRect</b>(const Left, Top, Width, Height: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws rectangle filled with single color and specified by given coordinates, and colors.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillRect"></a><code>procedure <b>FillRect</b>(const Rect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws rectangle filled with single color and specified by given margins, and colors.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillRect"></a><code>procedure <b>FillRect</b>(const Rect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws rectangle with color gradient specified by given margins and colors.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillRibbon"></a><code>procedure <b>FillRibbon</b>(const Origin, InsideRadius, OutsideRadius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const InitAngle, EndAngle: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Steps: Integer; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws filled ribbon at the given position between inner and outer radiuses. The ribbon begins at <code>InitAngle</code> and ends at <code>EndAngle</code> (in radians), subdivided into a number of triangles specified in <code>Steps</code>. The ribbon's shape is filled with four color gradient.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillRibbon"></a><code>procedure <b>FillRibbon</b>(const Origin, InsideRadius, OutsideRadius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const InitAngle, EndAngle: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Steps: Integer; const InsideColor1, InsideColor2, InsideColor3, OutsideColor1, OutsideColor2, OutsideColor3: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws filled ribbon at the given position between inner and outer radiuses. The ribbon begins at <code>InitAngle</code> and ends at <code>EndAngle</code> (in radians), subdivided into a number of triangles specified in <code>Steps</code>. The ribbon's shape is filled with continuous gradient set by three pairs of inner and outer colors.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FillTri"></a><code>procedure <b>FillTri</b>(const Point1, Point2, Point3: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Color1, Color2, Color3: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws triangle filled with color gradient specified by given positions and colors.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Finalize"></a><code>procedure <b>Finalize</b>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Finalizes the canvas and releases any resources that were previously allocated during initialization.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Flush"></a><code>procedure <b>Flush</b>; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Flushes the canvas cache and presents the pending primitives on the destination surface. This can be useful to make sure that nothing remains in canvas cache before starting to render, for instance, a 3D scene.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FrameRect"></a><code>procedure <b>FrameRect</b>(const Points: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws rectangle with line width of one pixel specified by given vertices and colors. Although this may receive coordinates for shapes other than rectangle (for example, quadrilateral), the result may be unpredictable. This method unlike other line drawing methods uses filled shapes and assumes that four vertices are aligned to form rectangle. The produced result respects last pixel rule and can be used for drawing UI elements (whereas methods like <a class="normal" href="PXL.Canvas.TCustomCanvas.html#WireQuad">WireQuad</a> may produce incorrectly sized rectangles depending on implementation).</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="FrameRect"></a><code>procedure <b>FrameRect</b>(const Rect: <a  href="PXL.Types.TFloatRect.html">TFloatRect</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws rectangle with line width of one pixel specified by given margins and colors. This works in similar fashion as other overloaded <i>FrameRect</i> method by drawing filled shapes instead of lines, and is meant for rendering UI elements.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="HorizLine"></a><code>procedure <b>HorizLine</b>(const Left, Top, Width: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Colors: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws horizontal line with specified coordinates and color gradient. This method uses filled shapes instead of actual lines to produce accurate results and is meant for rendering UI elements.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="HorizLine"></a><code>procedure <b>HorizLine</b>(const Left, Top, Width: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws horizontal line with specified coordinates and single color. This method uses filled shapes instead of actual lines to produce accurate results and is meant for rendering UI elements.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Line"></a><code>procedure <b>Line</b>(const SrcPoint, DestPoint: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>); overload; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws line between two specified positions and filled with color gradient. This method is considered basic functionality and should always be implemented by derived classes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Line"></a><code>procedure <b>Line</b>(const SrcPoint, DestPoint: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws line between two specified positions and filled with single color.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Line"></a><code>procedure <b>Line</b>(const X1, Y1, X2, Y2: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws line between specified coordinate pairs and filled with single color.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Line"></a><code>procedure <b>Line</b>(const X1, Y1, X2, Y2: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws line between specified coordinate pairs and filled with color gradient.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="LineArray"></a><code>procedure <b>LineArray</b>(const Points: <a  href="PXL.Types.html#PPoint2">PPoint2</a>; const ElementCount: Integer; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws series of lines between specified vertices using solid color.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutPixel"></a><code>procedure <b>PutPixel</b>(const Point: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws a single pixel on the destination surface with the specified position and color (alpha-blended). This method is considered basic functionality and should always be implemented by derived classes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="PutPixel"></a><code>procedure <b>PutPixel</b>(const X, Y: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws a single pixel on the destination surface with the specified coordinates and color (alpha-blended).</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="QuadHole"></a><code>procedure <b>QuadHole</b>(const AreaTopLeft, AreaSize, HoleOrigin, HoleRadius: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const OutsideColor, InsideColor: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const Steps: Integer; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws a filled rectangle at the given position and size with a hole (in form of ellipse) inside at the given center and radius. The quality of the hole is defined by the value of <code>Steps</code> in number of subdivisions. This entire shape is filled with gradient starting from outer color at the edges of rectangle and inner color ending at the edge of hole. This shape can be particularly useful for highlighting items on the screen by darkening the entire area except the one inside the hole.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Reset"></a><code>procedure <b>Reset</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Resets all the states necessary for canvas operation. This can be useful when custom state changes have been made (for instance, in a 3D scene) so to restore the canvas to its working condition this method should be called.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ResetPalette"></a><code>procedure <b>ResetPalette</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Resets the palette to be used for rendering 8-bit indexed images that was previously set by <a class="normal" href="PXL.Canvas.TCustomCanvas.html#SetPalette">SetPalette</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="TexQuad"></a><code>procedure <b>TexQuad</b>(const Points: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws textured rectangle at given vertices and multiplied by the specified four color gradient. The texture must be set prior to this call by one of <code>UseTexture[...]</code> or <code>UseImage[...]</code> calls. For every call of <code>TexQuad</code> there must be a preceding <code>UseTexture[...]</code> or <code>UseImage[...]</code> call to specify the image or texture. All pixels of the rendered texture are multiplied by the gradient color before applying alpha-blending. If the texture has no alpha-channel present, alpha value of the gradient will be used instead.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="UseImage"></a><code>procedure <b>UseImage</b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>; const Mapping: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const TextureIndex: Integer = 0); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Defines the specified image with one of its textures to be used in next call to <a class="normal" href="PXL.Canvas.TCustomCanvas.html#TexQuad">TexQuad</a>. The coordinates inside the texture are defined in logical units in range of [0..1].</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="UseImage"></a><code>procedure <b>UseImage</b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Defines the specified image to be used in next call to <a class="normal" href="PXL.Canvas.TCustomCanvas.html#TexQuad">TexQuad</a>. If the image has multiple textures, then the first one will be used.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="UseImagePx"></a><code>procedure <b>UseImagePx</b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>; const Mapping: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const TextureIndex: Integer = 0);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Defines the specified image with one of its textures to be used in next call to <a class="normal" href="PXL.Canvas.TCustomCanvas.html#TexQuad">TexQuad</a>. The coordinates inside the texture are defined in pixels using floating-point coordinates.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="UseImageRegion"></a><code>procedure <b>UseImageRegion</b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>; const Region: Integer; const Mirror, Flip: Boolean); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Defines the specified region of the image to be used in next call to <a class="normal" href="PXL.Canvas.TCustomCanvas.html#TexQuad">TexQuad</a>. That region can also be mirrored horizontally and/or flipped vertically, if needed. If the image has no or just one pattern, the value of <code>Region</code> should be set to zero; in this case, the entire texture is used instead.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="UseImageRegion"></a><code>procedure <b>UseImageRegion</b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>; const Region: Integer; const SrcRect: <a  href="PXL.Types.TIntRect.html">TIntRect</a>; const Mirror: Boolean = False; const Flip: Boolean = False); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Defines the specified region of the image to be used in next call to <a class="normal" href="PXL.Canvas.TCustomCanvas.html#TexQuad">TexQuad</a>. Only a certain portion of that region is used for rendering defined by the given coordinates; these coordinates can also be mirrored horizontally and/or flipped vertically, if needed. If the image has no or just one pattern, the value of <code>Region</code> should be set to zero; in this case, the entire texture is used instead.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="UseImageRegion"></a><code>procedure <b>UseImageRegion</b>(const Image: <a  href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a>; const Region: Integer = 0); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Defines the specified region of the image to be used in next call to <a class="normal" href="PXL.Canvas.TCustomCanvas.html#TexQuad">TexQuad</a>. If the image has none or just one region defined, the value of <code>Region</code> should be set to zero; in this case, the entire texture is used instead.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="UseTexture"></a><code>procedure <b>UseTexture</b>(const Texture: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; const Mapping: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Defines the specified texture to be used in next call to <a class="normal" href="PXL.Canvas.TCustomCanvas.html#TexQuad">TexQuad</a>. The coordinates inside the texture are defined in logical units in range of [0..1].</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="UseTexturePx"></a><code>procedure <b>UseTexturePx</b>(const Texture: <a  href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a>; const Mapping: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Defines the specified texture to be used in next call to <a class="normal" href="PXL.Canvas.TCustomCanvas.html#TexQuad">TexQuad</a>. The coordinates inside the texture are defined in pixels using floating-point coordinates.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="VertLine"></a><code>procedure <b>VertLine</b>(const Left, Top, Height: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Color: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws vertical line with specified coordinates and single color. This method uses filled shapes instead of actual lines to produce accurate results and is meant for rendering UI elements.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="VertLine"></a><code>procedure <b>VertLine</b>(const Left, Top, Height: <a  href="PXL.TypeDef.html#VectorFloat">VectorFloat</a>; const Colors: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>; const BlendingEffect: <a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a> = TBlendingEffect.Normal); overload;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws vertical line with specified coordinates and color gradient. This method uses filled shapes instead of actual lines to produce accurate results and is meant for rendering UI elements.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WireHexagon"></a><code>procedure <b>WireHexagon</b>(const Matrix: <a  href="PXL.Types.TMatrix3.html">TMatrix3</a>; const Color1, Color2, Color3, Color4, Color5, Color6: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const UseWuLines: Boolean = False);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws lines between each vertex in hexagon. The vertices are spaced 0.5 pixels apart from its center (so diameter is 1) in all directions, multiplied by the given matrix and filled with gradient of six colors at the corresponding vertices. The size, position and rotation of hexagon can be given using one or a combination of several 3x3 matrices multiplied together. This method uses <a class="normal" href="PXL.Canvas.TCustomCanvas.html#Line">Line</a> primitive. <code>UseWuLines</code> determines whether to use <a class="normal" href="PXL.Canvas.TCustomCanvas.html#WuLine">WuLine</a> primitive instead.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WireQuad"></a><code>procedure <b>WireQuad</b>(const Points: <a  href="PXL.Types.TFloatRect4.html">TFloatRect4</a>; const Colors: <a  href="PXL.Types.TIntColor4.html">TIntColor4</a>; const UseWuLines: Boolean = False);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws lines between the specified vertices (making it a wireframe quadrilateral) and vertex colors. Note that this may not necessarily respect last pixel rendering rule). This method uses <a class="normal" href="PXL.Canvas.TCustomCanvas.html#Line">Line</a> primitive. <code>UseWuLines</code> determines whether to use <a class="normal" href="PXL.Canvas.TCustomCanvas.html#WuLine">WuLine</a> primitive instead.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WuLine"></a><code>procedure <b>WuLine</b>(const Point1, Point2: <a  href="PXL.Types.TPoint2.html">TPoint2</a>; const Color: <a  href="PXL.Types.TIntColor2.html">TIntColor2</a>);</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Draws antialiased &quot;wu-line&quot; using <a class="normal" href="PXL.Canvas.TCustomCanvas.html#PutPixel">PutPixel</a> primitive between specified positions filled with single color.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="DeviceRelease"></a><code>procedure <b>DeviceRelease</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Releases the resources of canvas when the device has been lost. This may be implemented by derived classes to handle &quot;device lost&quot; scenario.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="DoneCanvas"></a><code>procedure <b>DoneCanvas</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Releases any implementation specific resources for rendering, including hardware and/or GPU resources.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="EndDraw"></a><code>procedure <b>EndDraw</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Finishes rendering and depending on implementation may present results on destination surface.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="NextDrawCall"></a><code>procedure <b>NextDrawCall</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+This method can be called by specific implementations to indicate that canvas buffer is full and new rendering stage begins. Basically, this increments <a class="normal" href="PXL.Canvas.TCustomCanvas.html#CacheStall">CacheStall</a> by one, which by default is reset back to zero after call to <a class="normal" href="PXL.Canvas.TCustomCanvas.html#BeginScene">BeginScene</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetClipRect"></a><code>procedure <b>SetClipRect</b>(const Value: <a  href="PXL.Types.TIntRect.html">TIntRect</a>); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Specifies new clipping rectangle for rendering.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="UpdateAttributes"></a><code>procedure <b>UpdateAttributes</b>; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Makes the necessary arrangements so that newly set canvas attributes are taken into account for next rendering calls.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Attributes"></a><code>property <b>Attributes</b>: <a  href="PXL.Canvas.html#TCanvasAttributes">TCanvasAttributes</a> read FAttributes write SetAttributes;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Defines one or more canvas attributes that affect the rendering behavior.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="CacheStall"></a><code>property <b>CacheStall</b>: Integer read FCacheStall;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Number of times that rendering cache was reset during last rendering frame. Each cache reset is typically a time-consuming operation so high number of such events could be detrimental to the application's rendering performance. If this parameter happens to be considerably high in the rendered scene, the rendering code should be revised for better grouping of images, shapes and blending types.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ClipRect"></a><code>property <b>ClipRect</b>: <a  href="PXL.Types.TIntRect.html">TIntRect</a> read <a  href="PXL.Canvas.TCustomCanvas.html#GetClipRect">GetClipRect</a> write <a  href="PXL.Canvas.TCustomCanvas.html#SetClipRect">SetClipRect</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The clipping rectangle in which the rendering will be made. This can be useful for restricting the rendering to a certain portion of surface.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Device"></a><code>property <b>Device</b>: <a  href="PXL.Devices.TCustomDevice.html">TCustomDevice</a> read FDevice;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+The device to which this canvas is bound to.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Initialized"></a><code>property <b>Initialized</b>: Boolean read FInitialized;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Indicates whether the canvas has been initialized by using <a class="normal" href="PXL.Canvas.TCustomCanvas.html#Initialize">Initialize</a> function.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Parent"></a><code>property <b>Parent</b>: <a  href="PXL.Canvas.TCustomCanvasParent.html">TCustomCanvasParent</a> read FParent;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Provides access to canvas parent if there is such.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

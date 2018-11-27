@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Formats</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<h1 class="unit">Unit PXL.Formats</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td>Uses</td><td><a class="section" href="#PasDoc-Classes">Classes, Interfaces, Objects and Records</a></td><td><a class="section" href="#PasDoc-FuncsProcs">Functions and Procedures</a></td><td><a class="section" href="#PasDoc-Types">Types</a></td><td>Constants</td><td>Variables</td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="description">Description</h2>
+<p>
+Information, utilities and conversion between different pixel formats.</p>
+<a name="PasDoc-Uses"></a><h2 class="overview">Overview</h2>
+<a name="PasDoc-Classes"></a><h3 class="cio">Classes, Interfaces, Objects and Records</h3>
+<table class="classestable wide_list">
+<tr class="listheader">
+<th class="itemname">Name</th>
+<th class="itemdesc">Description</th>
+</tr>
+<tr class="list">
+<td class="itemname">record&nbsp;<a class="bold" href="PXL.Formats.TPixelFormatColorBits.html"><code>TPixelFormatColorBits</code></a></td>
+<td class="itemdesc">Channel bit information.</td>
+</tr>
+<tr class="list2">
+<td class="itemname">record&nbsp;<a class="bold" href="PXL.Formats.TPixelFormatDescription.html"><code>TPixelFormatDescription</code></a></td>
+<td class="itemdesc">Complete information about specific pixel format.</td>
+</tr>
+<tr class="list">
+<td class="itemname">record&nbsp;<a class="bold" href="PXL.Formats.TPixelFormatHelper.html"><code>TPixelFormatHelper</code></a></td>
+<td class="itemdesc">Extension for <a class="normal" href="PXL.Types.html#TPixelFormat">TPixelFormat</a> to provide number of bits, bytes and string conversion.</td>
+</tr>
+<tr class="list2">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Formats.TPixelFormatList.html"><code>TPixelFormatList</code></a></td>
+<td class="itemdesc">List of one or more pixel format elements.</td>
+</tr>
+</table>
+<a name="PasDoc-FuncsProcs"></a><h3 class="summary">Functions and Procedures</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code>function <b><a  href="PXL.Formats.html#FindClosestPixelFormat">FindClosestPixelFormat</a></b>(const Format: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>; const ExistingFormats: <a  href="PXL.Formats.TPixelFormatList.html">TPixelFormatList</a>): <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code>function <b><a  href="PXL.Formats.html#GetMatchingPixelFormat">GetMatchingPixelFormat</a></b>(const Description: <a  href="PXL.Formats.TPixelFormatDescription.html">TPixelFormatDescription</a>): <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code>function <b><a  href="PXL.Formats.html#GetPixelFormatDescription">GetPixelFormatDescription</a></b>(const Format: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>; out Description: <a  href="PXL.Formats.TPixelFormatDescription.html">TPixelFormatDescription</a>): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code>procedure <b><a  href="PXL.Formats.html#Pixel32ToX">Pixel32ToX</a></b>(const Source: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const Dest: Pointer; const DestFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>);</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code>procedure <b><a  href="PXL.Formats.html#Pixel32ToXArray">Pixel32ToXArray</a></b>(const Source: <a  href="PXL.Types.html#PIntColor">PIntColor</a>; const Dest: Pointer; const DestFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>; const ElementCount: Integer);</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code>function <b><a  href="PXL.Formats.html#PixelXTo32">PixelXTo32</a></b>(const Source: Pointer; const SourceFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>): <a  href="PXL.Types.html#TIntColor">TIntColor</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code>procedure <b><a  href="PXL.Formats.html#PixelXTo32Array">PixelXTo32Array</a></b>(const Source: Pointer; const Dest: <a  href="PXL.Types.html#PIntColor">PIntColor</a>; const SourceFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>; const ElementCount: Integer);</code></td>
+</tr>
+</table>
+<a name="PasDoc-Types"></a><h3 class="summary">Types</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Formats.html#PPixelFormatColorBits">PPixelFormatColorBits</a></b> = &circ;<a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Formats.html#PPixelFormatDescription">PPixelFormatDescription</a></b> = &circ;<a  href="PXL.Formats.TPixelFormatDescription.html">TPixelFormatDescription</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Formats.html#TPixelFormatType">TPixelFormatType</a></b> = (...);</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Functions and Procedures</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="FindClosestPixelFormat"></a><code>function <b>FindClosestPixelFormat</b>(const Format: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>; const ExistingFormats: <a  href="PXL.Formats.TPixelFormatList.html">TPixelFormatList</a>): <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Takes a list of existing pixel formats and tries to find in it a format that closely resembles the provided format sample. The heuristics used by this function tries not to add new channels and will never return a format that has less channels than the sample; it also tries to avoid converting between different format types like integer and floating-point formats.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="GetMatchingPixelFormat"></a><code>function <b>GetMatchingPixelFormat</b>(const Description: <a  href="PXL.Formats.TPixelFormatDescription.html">TPixelFormatDescription</a>): <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Takes the provided pixel format description and tries to find a pixel format that matches this description.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="GetPixelFormatDescription"></a><code>function <b>GetPixelFormatDescription</b>(const Format: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>; out Description: <a  href="PXL.Formats.TPixelFormatDescription.html">TPixelFormatDescription</a>): Boolean;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Provides detailed description regarding the specified pixel format. Returns <code>True</code> when successful and <code>False</code> when such information is not available (e.g. for non-standard pixel formats).</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="Pixel32ToX"></a><code>procedure <b>Pixel32ToX</b>(const Source: <a  href="PXL.Types.html#TIntColor">TIntColor</a>; const Dest: Pointer; const DestFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Converts a single pixel from 32-bit RGBA format (<code>TPixelFormat.A8R8G8B8</code>) to an arbitrary format. If the specified format is not supported, this function does nothing.   </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Source</dt>
+<dd>Source pixel specified in 32-bit RGBA format (<code>TPixelFormat.A8R8G8B8</code>).</dd>
+<dt>Dest</dt>
+<dd>Pointer to the memory block where the resulting pixel should be written to. This memory should be previously allocated.</dd>
+<dt>DestFormat</dt>
+<dd>Pixel format that is used to describe the destination pixel.</dd>
+</dl>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="Pixel32ToXArray"></a><code>procedure <b>Pixel32ToXArray</b>(const Source: <a  href="PXL.Types.html#PIntColor">PIntColor</a>; const Dest: Pointer; const DestFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>; const ElementCount: Integer);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Converts an array of pixels from 32-bit RGBA format (<code>TPixelFormat.A8R8G8B8</code>) to an arbitrary format. If the specified format is not supported, this function does nothing.    </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Source</dt>
+<dd>Pointer to a valid memory block that holds the source pixels.</dd>
+<dt>Dest</dt>
+<dd>Pointer to a valid memory block where destination pixels will be written to.</dd>
+<dt>DestFormat</dt>
+<dd>Pixel format that is used to describe the destination pixels.</dd>
+<dt>Elements</dt>
+<dd>The number of pixels to convert.</dd>
+</dl>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PixelXTo32"></a><code>function <b>PixelXTo32</b>(const Source: Pointer; const SourceFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>): <a  href="PXL.Types.html#TIntColor">TIntColor</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Converts a single pixel from an arbitrary pixel format back to 32-bit RGBA format (<code>TPixelFormat.A8R8G8B8</code>). If the specified format is not supported, this function returns zero.   </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Source</dt>
+<dd>Pointer to a valid block of memory where the source pixel is located at.</dd>
+<dt>SourceFormat</dt>
+<dd>Pixel format that is used to describe the source pixel.</dd>
+</dl>
+<h6 class="description_section">Returns</h6>
+<p class="return">Resulting pixel in 32-bit RGBA format (<code>TPixelFormat.A8R8G8B8</code>).</p></td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PixelXTo32Array"></a><code>procedure <b>PixelXTo32Array</b>(const Source: Pointer; const Dest: <a  href="PXL.Types.html#PIntColor">PIntColor</a>; const SourceFormat: <a  href="PXL.Types.html#TPixelFormat">TPixelFormat</a>; const ElementCount: Integer);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Converts an array of pixels from an arbitrary format back to 32-bit RGBA format (<code>TPixelFormat.A8R8G8B8</code>). If the specified format is not supported, this function does nothing.    </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Source</dt>
+<dd>Pointer to a valid memory block that holds the source pixels.</dd>
+<dt>Dest</dt>
+<dd>Pointer to a valid memory block where destination pixels will be written to.</dd>
+<dt>SourceFormat</dt>
+<dd>Pixel format that is used to describe the source pixels.</dd>
+<dt>Elements</dt>
+<dd>The number of pixels to convert.</dd>
+</dl>
+</td></tr>
+</table>
+<h3 class="detail">Types</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PPixelFormatColorBits"></a><code><b>PPixelFormatColorBits</b> = &circ;<a  href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="PPixelFormatDescription"></a><code><b>PPixelFormatDescription</b> = &circ;<a  href="PXL.Formats.TPixelFormatDescription.html">TPixelFormatDescription</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Pointer to <a class="normal" href="PXL.Formats.TPixelFormatDescription.html">TPixelFormatDescription</a>.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TPixelFormatType"></a><code><b>TPixelFormatType</b> = (...);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Classification type of pixel format.</p>
+<h6 class="description_section">Values</h6>
+<ul>
+<li>
+Normal: Typical integer pixel format (e.g. RGBA).</li>
+<li>
+Float: Floating-point pixel format.</li>
+<li>
+Luminance: Luminance pixel format (e.g. L8A8).</li>
+<li>
+Indexed: Indexed (palettized) pixel format.</li>
+</ul>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

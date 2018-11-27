@@ -1,0 +1,3 @@
+.\assets\internal\Tahoma9b.xml
+.\assets\internal\Lenna.png
+.\assets\internal\Tahoma9b.png

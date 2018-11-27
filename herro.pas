@@ -5,7 +5,7 @@ interface
 
 
 uses
-  betterobject, classes,systemx, betteridsockethandle, idglobal, skill, typex, stringx, better_indy,BetterIdUDPServer, orderlyinit, tickcount, simplequeue, networkx, PeriodicEvents;
+  betterobject, classes,systemx, idsockethandle, idglobal, skill, typex, stringx, better_indy,IdUDPServer, orderlyinit, tickcount, simplequeue, networkx, PeriodicEvents;
 
 
 const
@@ -287,6 +287,6 @@ end;
 
 initialization
 
-orderlyinit.init.RegisterProcs('herro', oinit, oprefinal, ofinal, olatefinal, 'skill,indy,PeriodicEvents');
+orderlyinit.init.RegisterProcs('herro', oinit, oprefinal, ofinal, olatefinal, 'skill,better_indy,PeriodicEvents');
 
 end.

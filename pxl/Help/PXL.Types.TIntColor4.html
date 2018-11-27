@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Types: record TIntColor4</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TIntColor4"></a><h1 class="cio">record TIntColor4</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td>Hierarchy</td><td><a class="section" href="#PasDoc-Fields">Fields</a></td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td>Properties</td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Types.html">PXL.Types</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TIntColor4 = record</code></p>
+<h2 class="description">Description</h2>
+<p>
+A combination of four colors, primarily used for displaying colored quads, where each color corresponds to top/left, top/right, bottom/right and bottom/left accordingly (clockwise). The format for specifying colors is defined as <i>TPixelFormat.A8R8G8B8</i>.</p>
+<h2 class="overview">Overview</h2>
+<a name="PasDoc-Fields"></a><h3 class="summary">Fields</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Types.TIntColor4.html#TopLeft">TopLeft</a></b>: <a  href="PXL.Types.html#TIntColor">TIntColor</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Types.TIntColor4.html#TopRight">TopRight</a></b>: <a  href="PXL.Types.html#TIntColor">TIntColor</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Types.TIntColor4.html#BottomRight">BottomRight</a></b>: <a  href="PXL.Types.html#TIntColor">TIntColor</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Types.TIntColor4.html#BottomLeft">BottomLeft</a></b>: <a  href="PXL.Types.html#TIntColor">TIntColor</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Types.TIntColor4.html#Values">Values</a></b>: array[0..3] of <a  href="PXL.Types.html#TIntColor">TIntColor</a></code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code>function <b><a  href="PXL.Types.TIntColor4.html#HasAlpha">HasAlpha</a></b>: Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code>function <b><a  href="PXL.Types.TIntColor4.html#HasGradient">HasGradient</a></b>: Boolean;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Fields</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TopLeft"></a><code><b>TopLeft</b>: <a  href="PXL.Types.html#TIntColor">TIntColor</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Color corresponding to top/left corner.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TopRight"></a><code><b>TopRight</b>: <a  href="PXL.Types.html#TIntColor">TIntColor</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Color corresponding to top/right corner.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="BottomRight"></a><code><b>BottomRight</b>: <a  href="PXL.Types.html#TIntColor">TIntColor</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Color corresponding to bottom/right corner.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="BottomLeft"></a><code><b>BottomLeft</b>: <a  href="PXL.Types.html#TIntColor">TIntColor</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Color corresponding to bottom/left corner.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="Values"></a><code><b>Values</b>: array[0..3] of <a  href="PXL.Types.html#TIntColor">TIntColor</a></code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Four colors represented as an array.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="HasAlpha"></a><code>function <b>HasAlpha</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Returns <code>True</code> if at least one of the colors has non-zero alpha channel.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="HasGradient"></a><code>function <b>HasGradient</b>: Boolean;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Returns <code>True</code> if at least one of four colors is different from others in red, green, blue or alpha components.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

@@ -1,0 +1,410 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Boards.Types: Class TCustomPortUART</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TCustomPortUART"></a><h1 class="cio">Class TCustomPortUART</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td><a class="section" href="#PasDoc-Fields">Fields</a></td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Boards.Types.html">PXL.Boards.Types</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TCustomPortUART = class abstract(<a class="normal" href="PXL.Boards.Types.TCustomDataPort.html">TCustomDataPort</a>)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Abstract UART (Universal Asynchronous Receiver / Transmitter) communication manager.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="ancestor"><a class="normal" href="PXL.Boards.Types.TCustomDataPort.html">TCustomDataPort</a></li>
+<li class="thisitem">TCustomPortUART</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Fields"></a><h3 class="summary">Fields</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>internal const <b><a  href="PXL.Boards.Types.TCustomPortUART.html#InterimSleepTime">InterimSleepTime</a></b> = 10;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>internal const <b><a  href="PXL.Boards.Types.TCustomPortUART.html#StringBufferSize">StringBufferSize</a></b> = 32;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortUART.html#ReadBuffer">ReadBuffer</a></b>(const Buffer: Pointer; const BufferSize, Timeout: Integer): Integer; virtual;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortUART.html#ReadByte">ReadByte</a></b>(out Value: Byte; const Timeout: Integer = 0): Boolean; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortUART.html#ReadString">ReadString</a></b>(out Text: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const MaxCharacters: Integer = 0; const Timeout: Integer = 0): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortUART.html#WriteBuffer">WriteBuffer</a></b>(const Buffer: Pointer; const BufferSize, Timeout: Integer): Integer; virtual;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortUART.html#WriteByte">WriteByte</a></b>(const Value: Byte; const Timeout: Integer = 0): Boolean; inline;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortUART.html#WriteBytes">WriteBytes</a></b>(const Values: array of Byte; const Timeout: Integer = 0): Boolean;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortUART.html#WriteString">WriteString</a></b>(const Text: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Timeout: Integer = 0): Boolean;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortUART.html#GetBaudRate">GetBaudRate</a></b>: Integer; virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortUART.html#GetBitsPerWord">GetBitsPerWord</a></b>: Integer; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortUART.html#GetParity">GetParity</a></b>: <a  href="PXL.Boards.Types.html#TParity">TParity</a>; virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortUART.html#GetStopBits">GetStopBits</a></b>: <a  href="PXL.Boards.Types.html#TStopBits">TStopBits</a>; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomPortUART.html#Flush">Flush</a></b>; virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomPortUART.html#SetBaudRate">SetBaudRate</a></b>(const Value: Integer); virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomPortUART.html#SetBitsPerWord">SetBitsPerWord</a></b>(const Value: Integer); virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomPortUART.html#SetParity">SetParity</a></b>(const Value: <a  href="PXL.Boards.Types.html#TParity">TParity</a>); virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomPortUART.html#SetStopBits">SetStopBits</a></b>(const Value: <a  href="PXL.Boards.Types.html#TStopBits">TStopBits</a>); virtual; abstract;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Boards.Types.TCustomPortUART.html#BaudRate">BaudRate</a></b>: Integer <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#GetBaudRate">GetBaudRate</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#SetBaudRate">SetBaudRate</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Boards.Types.TCustomPortUART.html#BitsPerWord">BitsPerWord</a></b>: Integer <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#GetBitsPerWord">GetBitsPerWord</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#SetBitsPerWord">SetBitsPerWord</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Boards.Types.TCustomPortUART.html#Parity">Parity</a></b>: <a  href="PXL.Boards.Types.html#TParity">TParity</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#GetParity">GetParity</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#SetParity">SetParity</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Boards.Types.TCustomPortUART.html#StopBits">StopBits</a></b>: <a  href="PXL.Boards.Types.html#TStopBits">TStopBits</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#GetStopBits">GetStopBits</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#SetStopBits">SetStopBits</a>;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Fields</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="InterimSleepTime"></a><code>internal const <b>InterimSleepTime</b> = 10;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Default sleep time while waiting during transmission between multiple attempts.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="StringBufferSize"></a><code>internal const <b>StringBufferSize</b> = 32;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Default buffer size used when reading and writing strings.</p>
+</td></tr>
+</table>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ReadBuffer"></a><code>function <b>ReadBuffer</b>(const Buffer: Pointer; const BufferSize, Timeout: Integer): Integer; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Reads buffer from UART.    </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Buffer</dt>
+<dd>Pointer to data buffer where the data will be written to.</dd>
+<dt>BufferSize</dt>
+<dd>Number of bytes to read.</dd>
+<dt>Timeout</dt>
+<dd>Maximum time (in milliseconds) to wait while attempting to read the buffer. If this parameter is set to zero, then the function will read only as much data as fits in readable FIFO buffers (or none when such buffers are not supported).</dd>
+</dl>
+<h6 class="description_section">Returns</h6>
+<p class="return">Number of bytes that were actually read.</p></td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ReadByte"></a><code>function <b>ReadByte</b>(out Value: Byte; const Timeout: Integer = 0): Boolean; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Attempts to read a byte from UART. <code>Timeout</code> defines maximum time (in milliseconds) to wait while attempting to do so; if this parameter is set to zero, then the function will read only what's in readable FIFO buffers or fail when such buffers are unavailable. <code>True</code> is returned when the operation was successful and <code>False</code> when the byte could not be read.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ReadString"></a><code>function <b>ReadString</b>(out Text: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const MaxCharacters: Integer = 0; const Timeout: Integer = 0): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Reads string from UART.    </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Text</dt>
+<dd>String that will hold the incoming data.</dd>
+<dt>MaxCharacters</dt>
+<dd>Maximum number of characters to read. Once this number of characters has been read, the function immediately returns, even if there is more data to read. When this parameter is set to zero, then the function will continue to read the data, depending on value of <code>Timeout</code>.</dd>
+<dt>Timeout</dt>
+<dd>Maximum time (in milliseconds) to wait while attempting to read the buffer. If this parameter is set to zero, then the function will read only as much data as fits in readable FIFO buffers (or fail when such buffers are not supported).</dd>
+</dl>
+<h6 class="description_section">Returns</h6>
+<p class="return">Number of bytes that were actually read.</p></td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WriteBuffer"></a><code>function <b>WriteBuffer</b>(const Buffer: Pointer; const BufferSize, Timeout: Integer): Integer; virtual;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Writes buffer to UART.    </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Buffer</dt>
+<dd>Pointer to data buffer where the data will be read from.</dd>
+<dt>BufferSize</dt>
+<dd>Number of bytes to write.</dd>
+<dt>Timeout</dt>
+<dd>Maximum time (in milliseconds) to wait while attempting to write the buffer. If this parameter is set to zero, then the function will write only as much data as fits in writable FIFO buffers (or none when such buffers are not supported).</dd>
+</dl>
+<h6 class="description_section">Returns</h6>
+<p class="return">Number of bytes that were actually written.</p></td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WriteByte"></a><code>function <b>WriteByte</b>(const Value: Byte; const Timeout: Integer = 0): Boolean; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Attempts to write a byte to UART. <code>Timeout</code> defines maximum time (in milliseconds) to wait while attempting to do so; if this parameter is set to zero, then the function will write only what fits in writable FIFO buffers or fail when such buffers are unavailable. <code>True</code> is returned when the operation was successful and <code>False</code> when the byte could not be written.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WriteBytes"></a><code>function <b>WriteBytes</b>(const Values: array of Byte; const Timeout: Integer = 0): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Attempts to write multiple bytes to UART. <code>Timeout</code> defines maximum time (in milliseconds) to wait while attempting to do so; if this parameter is set to zero, then the function will write only what fits in writable FIFO buffers or fail when such buffers are unavailable. <code>True</code> is returned when the operation was successful and <code>False</code> when not all bytes could be written.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="WriteString"></a><code>function <b>WriteString</b>(const Text: <a  href="PXL.TypeDef.html#StdString">StdString</a>; const Timeout: Integer = 0): Boolean;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Writes string to UART.   </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Text</dt>
+<dd>String that should be sent.</dd>
+<dt>Timeout</dt>
+<dd>Maximum time (in milliseconds) to wait while attempting to write the buffer. If this parameter is set to zero, then the function will write only what fits in writable FIFO buffers (or fail when such buffers are not supported).</dd>
+</dl>
+<h6 class="description_section">Returns</h6>
+<p class="return">Number of bytes that were actually read.</p></td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetBaudRate"></a><code>function <b>GetBaudRate</b>: Integer; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns currently set baud rate.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetBitsPerWord"></a><code>function <b>GetBitsPerWord</b>: Integer; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns current number of bits per word.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetParity"></a><code>function <b>GetParity</b>: <a  href="PXL.Boards.Types.html#TParity">TParity</a>; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns current parity check type.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetStopBits"></a><code>function <b>GetStopBits</b>: <a  href="PXL.Boards.Types.html#TStopBits">TStopBits</a>; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns current number of stop bits.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Flush"></a><code>procedure <b>Flush</b>; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Flushes UART read and write buffers. The actual meaning of this may depend on implementation - it could mean that the buffers are simply emptied or any buffers that are waiting due to packetization are sent immediately.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetBaudRate"></a><code>procedure <b>SetBaudRate</b>(const Value: Integer); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Sets new baud rate.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetBitsPerWord"></a><code>procedure <b>SetBitsPerWord</b>(const Value: Integer); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Sets new number of bits per word.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetParity"></a><code>procedure <b>SetParity</b>(const Value: <a  href="PXL.Boards.Types.html#TParity">TParity</a>); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Sets new parity check type.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetStopBits"></a><code>procedure <b>SetStopBits</b>(const Value: <a  href="PXL.Boards.Types.html#TStopBits">TStopBits</a>); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Sets new number of stop bits.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="BaudRate"></a><code>property <b>BaudRate</b>: Integer <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#GetBaudRate">GetBaudRate</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#SetBaudRate">SetBaudRate</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Currently used baud rate in terms of bits per second. Note that to calculate the actual speed of transmission, it is necessary to take into account start and stop bits among other things; for typical situations, the actual transmission speed may be something like BaudRate / 10 bytes per second or less.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="BitsPerWord"></a><code>property <b>BitsPerWord</b>: Integer <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#GetBitsPerWord">GetBitsPerWord</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#SetBitsPerWord">SetBitsPerWord</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Number of bits per word used in the transmission.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Parity"></a><code>property <b>Parity</b>: <a  href="PXL.Boards.Types.html#TParity">TParity</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#GetParity">GetParity</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#SetParity">SetParity</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Number of parity bits used in the transmission.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="StopBits"></a><code>property <b>StopBits</b>: <a  href="PXL.Boards.Types.html#TStopBits">TStopBits</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#GetStopBits">GetStopBits</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortUART.html#SetStopBits">SetStopBits</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Number of stop bits used in the transmission.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

@@ -1,0 +1,274 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Boards.Types: Class TCustomPortSPI</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<a name="TCustomPortSPI"></a><h1 class="cio">Class TCustomPortSPI</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td><a class="section" href="#PasDoc-Hierarchy">Hierarchy</a></td><td>Fields</td><td><a class="section" href="#PasDoc-Methods">Methods</a></td><td><a class="section" href="#PasDoc-Properties">Properties</a></td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="unit">Unit</h2>
+<p class="unitlink">
+<a  href="PXL.Boards.Types.html">PXL.Boards.Types</a></p>
+<h2 class="declaration">Declaration</h2>
+<p class="declaration">
+<code>type TCustomPortSPI = class abstract(<a class="normal" href="PXL.Boards.Types.TCustomDataPort.html">TCustomDataPort</a>)</code></p>
+<h2 class="description">Description</h2>
+<p>
+Abstract SPI (Serial Peripheral Interface) communication manager.</p>
+<a name="PasDoc-Hierarchy"></a><h2 class="hierarchy">Hierarchy</h2>
+<ul class="hierarchy"><li class="ancestor">TObject</li>
+<li class="ancestor"><a class="normal" href="PXL.Boards.Types.TCustomDataPort.html">TCustomDataPort</a></li>
+<li class="thisitem">TCustomPortSPI</li></ul><h2 class="overview">Overview</h2>
+<a name="PasDoc-Methods"></a><h3 class="summary">Methods</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#Transfer">Transfer</a></b>(const ReadBuffer, WriteBuffer: Pointer; const BufferSize: Integer): Integer; overload; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#Transfer">Transfer</a></b>(const Buffer: Pointer; const BufferSize: Integer): Integer; overload; inline;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#GetBitsPerWord">GetBitsPerWord</a></b>: Integer; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#GetChipSelectAttributes">GetChipSelectAttributes</a></b>: <a  href="PXL.Boards.Types.html#TChipSelectAttributes">TChipSelectAttributes</a>; virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#GetFrequency">GetFrequency</a></b>: Integer; virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>function <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#GetMode">GetMode</a></b>: Integer; virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#SetBitsPerWord">SetBitsPerWord</a></b>(const Value: Integer); virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#SetChipSelectAttributes">SetChipSelectAttributes</a></b>(const Value: <a  href="PXL.Boards.Types.html#TChipSelectAttributes">TChipSelectAttributes</a>); virtual; abstract;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#SetFrequency">SetFrequency</a></b>(const Value: Integer); virtual; abstract;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><code>procedure <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#SetMode">SetMode</a></b>(const Value: Integer); virtual; abstract;</code></td>
+</tr>
+</table>
+<a name="PasDoc-Properties"></a><h3 class="summary">Properties</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#BitsPerWord">BitsPerWord</a></b>: Integer <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#GetBitsPerWord">GetBitsPerWord</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#SetBitsPerWord">SetBitsPerWord</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#ChipSelectAttributes">ChipSelectAttributes</a></b>: <a  href="PXL.Boards.Types.html#TChipSelectAttributes">TChipSelectAttributes</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#GetChipSelectAttributes">GetChipSelectAttributes</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#SetChipSelectAttributes">SetChipSelectAttributes</a>;</code></td>
+</tr>
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#Frequency">Frequency</a></b>: Integer <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#GetFrequency">GetFrequency</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#SetFrequency">SetFrequency</a>;</code></td>
+</tr>
+<tr class="list2">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><code>property <b><a  href="PXL.Boards.Types.TCustomPortSPI.html#Mode">Mode</a></b>: Integer <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#GetMode">GetMode</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#SetMode">SetMode</a>;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Methods</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Transfer"></a><code>function <b>Transfer</b>(const ReadBuffer, WriteBuffer: Pointer; const BufferSize: Integer): Integer; overload; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Transfers data through SPI port asynchronously - that is, reading and writing at the same time.    </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>ReadBuffer</dt>
+<dd>Pointer to data buffer where the data will be read from. If this parameter is set to <code>Nil</code>, then no reading will be done.</dd>
+<dt>WriteBuffer</dt>
+<dd>Pointer to data buffer where the data will be written to. If this parameter is set to <code>Nil</code>, then no writing will be done.</dd>
+<dt>BufferSize</dt>
+<dd>The size of read and write buffers in bytes.</dd>
+</dl>
+<h6 class="description_section">Returns</h6>
+<p class="return">Number of bytes that were actually transferred.</p></td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Transfer"></a><code>function <b>Transfer</b>(const Buffer: Pointer; const BufferSize: Integer): Integer; overload; inline;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Transfers data through SPI port asynchronously - that is, reading and writing at the same time.   </p>
+<h6 class="description_section">Parameters</h6>
+<dl class="parameters">
+<dt>Buffer</dt>
+<dd>Pointer to data buffer where the data will be read from and at the same time written to, overwriting its contents.</dd>
+<dt>BufferSize</dt>
+<dd>The size of buffer in bytes.</dd>
+</dl>
+<h6 class="description_section">Returns</h6>
+<p class="return">Number of bytes that were actually transferred.</p></td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetBitsPerWord"></a><code>function <b>GetBitsPerWord</b>: Integer; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns current number of bits that each word occupies.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetChipSelectAttributes"></a><code>function <b>GetChipSelectAttributes</b>: <a  href="PXL.Boards.Types.html#TChipSelectAttributes">TChipSelectAttributes</a>; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns current Chip Select handling attributes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetFrequency"></a><code>function <b>GetFrequency</b>: Integer; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns current operating frequency.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="GetMode"></a><code>function <b>GetMode</b>: Integer; virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Returns currently active SPI mode.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetBitsPerWord"></a><code>procedure <b>SetBitsPerWord</b>(const Value: Integer); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Changes current number of bits each word occupies.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetChipSelectAttributes"></a><code>procedure <b>SetChipSelectAttributes</b>(const Value: <a  href="PXL.Boards.Types.html#TChipSelectAttributes">TChipSelectAttributes</a>); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Changes current Chip Select handling attributes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetFrequency"></a><code>procedure <b>SetFrequency</b>(const Value: Integer); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Changes current operating frequency.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="protected.gif" alt="Protected" title="Protected"></a></td>
+<td class="itemcode"><a name="SetMode"></a><code>procedure <b>SetMode</b>(const Value: Integer); virtual; abstract;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Changes current SPI mode to the specified value.</p>
+</td></tr>
+</table>
+<h3 class="detail">Properties</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="BitsPerWord"></a><code>property <b>BitsPerWord</b>: Integer <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#GetBitsPerWord">GetBitsPerWord</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#SetBitsPerWord">SetBitsPerWord</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Number of bits each word occupies, typically either 8 or 16 depending on hardware and support.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="ChipSelectAttributes"></a><code>property <b>ChipSelectAttributes</b>: <a  href="PXL.Boards.Types.html#TChipSelectAttributes">TChipSelectAttributes</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#GetChipSelectAttributes">GetChipSelectAttributes</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#SetChipSelectAttributes">SetChipSelectAttributes</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Chip Select handling attributes.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Frequency"></a><code>property <b>Frequency</b>: Integer <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#GetFrequency">GetFrequency</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#SetFrequency">SetFrequency</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+SPI operating frequency in Hz.</p>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="visibility"><a  href="legend.html"><img  src="public.gif" alt="Public" title="Public"></a></td>
+<td class="itemcode"><a name="Mode"></a><code>property <b>Mode</b>: Integer <a  href="PXL.Boards.Types.TCustomDataPort.html#Read">read</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#GetMode">GetMode</a> <a  href="PXL.Boards.Types.TCustomDataPort.html#Write">write</a> <a  href="PXL.Boards.Types.TCustomPortSPI.html#SetMode">SetMode</a>;</code></td>
+</tr>
+<tr><td colspan="2">
+<p>
+Mode of SPI operation, including Clock Polarity (CPOL) and Clock Edge (CPCHA). The actual meaning of this parameter depends on implementation and should be consulted from corresponding documentation.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

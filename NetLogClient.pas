@@ -3,7 +3,7 @@ unit NetLogClient;
 interface
 
 uses
-  betterobject, classes,systemx, betteridsockethandle, idglobal, skill, typex, stringx, better_indy,BetterIdUDPServer, orderlyinit, tickcount, simplequeue, networkx, PeriodicEvents, netlogpacket, sysutils, herro, managedthread, debug, numbers;
+  betterobject, classes,systemx, idsockethandle, idglobal, skill, typex, stringx, better_indy,IdUDPServer, orderlyinit, tickcount, simplequeue, networkx, PeriodicEvents, netlogpacket, sysutils, herro, managedthread, debug, numbers;
 
 
 const
@@ -617,7 +617,7 @@ end;
 
 initialization
 
-orderlyinit.init.RegisterProcs('netlogclient', oinit, oprefinal, ofinal, olatefinal, 'skill,indy,debug');
+orderlyinit.init.RegisterProcs('netlogclient', oinit, oprefinal, ofinal, olatefinal, 'skill,better_indy,debug');
 
 end.
 

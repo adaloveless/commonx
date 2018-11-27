@@ -1,0 +1,522 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): All Classes, Interfaces, Objects and Records</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<h1 class="allitems">All Classes, Interfaces, Objects and Records</h1>
+<table class="itemstable wide_list">
+<tr class="listheader">
+<th class="itemname">Name</th>
+<th class="itemunit">Unit</th>
+<th class="itemdesc">Description</th>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EBitmapException.html">EBitmapException</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Generic bitmap exception.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EBitmapInvalid.html">EBitmapInvalid</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>The specified bitmap is invalid or <code>Nil</code>.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EBitmapLoad.html">EBitmapLoad</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>There was a problem loading bitmap.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EBitmapSave.html">EBitmapSave</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>There was a problem saving bitmap.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.ECanvasBeginScene.html">ECanvasBeginScene</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>There was a problem trying to start rendering using bitmap's canvas.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.ECanvasInitialize.html">ECanvasInitialize</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Bitmap's canvas could not be initialized.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EDrawableBeginScene.html">EDrawableBeginScene</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Attempting to start rendering on drawable texture failed.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EDrawableTexture.html">EDrawableTexture</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Generic bitmap's drawable texture exception.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EDrawableTextureClear.html">EDrawableTextureClear</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Could not clear drawable texture.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EDrawableTextureCopy.html">EDrawableTextureCopy</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Error during copy operation in drawable texture.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EDrawableTextureCreate.html">EDrawableTextureCreate</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Could not create drawable texture instance.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EDrawableTextureInitialize.html">EDrawableTextureInitialize</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>There was a problem trying to initialize drawable texture.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EDrawableTextureRestore.html">EDrawableTextureRestore</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Drawable texture could not be restored after its surface was released due to &quot;lost device&quot; scenario.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EInvalidBitmapSize.html">EInvalidBitmapSize</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>The specified bitmap size is invalid.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EInvalidImageFormatManager.html">EInvalidImageFormatManager</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Image format manager associated with bitmap's device is invalid or <code>Nil</code>.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EInvalidProvider.html">EInvalidProvider</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Provider associated with bitmap's device is invalid or <code>Nil</code>.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.ELockableTexture.html">ELockableTexture</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Generic bitmap's lockable texture exception.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.ELockableTextureAccess.html">ELockableTextureAccess</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>An error occurred when trying to access lockable texture.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.ELockableTextureClear.html">ELockableTextureClear</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Could not clear lockable texture.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.ELockableTextureCopy.html">ELockableTextureCopy</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Error during copy operation in lockable texture.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.ELockableTextureCreate.html">ELockableTextureCreate</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Could not create lockable texture instance.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.ELockableTextureInitialize.html">ELockableTextureInitialize</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>There was a problem trying to initialize lockable texture.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.ELockableTextureRestore.html">ELockableTextureRestore</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Lockable texture could not be restored after its surface was released due to &quot;lost device&quot; scenario.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EParentDeviceInvalid.html">EParentDeviceInvalid</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Device to which bitmap should be bound to is invalid.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EParentDeviceNull.html">EParentDeviceNull</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Device to which bitmap should be bound to is <code>Nil</code>.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.EPixelFormatConvert.html">EPixelFormatConvert</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>There was a problem converting to new pixel format or new pixel format may not be supported.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.ETextureException.html">ETextureException</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>Generic bitmap's texture exception.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Classes.TAssetStream.html">TAssetStream</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Classes.html">PXL.Classes</a></td>
+<td class="itemdesc"><p>Special stream type that is used to read assets on Android platform.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Images.TAtlasImage.html">TAtlasImage</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Images.html">PXL.Images</a></td>
+<td class="itemdesc"><p>Atlas image may contain one or more textures and multiple regions, which can be selected when rendering on canvas.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Images.TAtlasImages.html">TAtlasImages</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Images.html">PXL.Images</a></td>
+<td class="itemdesc"><p>The list that may contain one or more instances of <a class="normal" href="PXL.Images.TAtlasImage.html">TAtlasImage</a> and provide facilities to search for images by their unique names, image loading and handling &quot;device lost&quot; scenario.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Bitmaps.TBitmap.html">TBitmap</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Bitmaps.html">PXL.Bitmaps</a></td>
+<td class="itemdesc"><p>High-level bitmap that contains image data with multiple storage options (e.g.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Fonts.html">PXL.Fonts</a></td>
+<td class="itemdesc"><p>Bitmap font implementation.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Fonts.TBitmapFont.TKernings.html">TBitmapFont.TKernings</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Fonts.html">PXL.Fonts</a></td>
+<td class="itemdesc"><p>Spacing information between each pair of individual letters to provide pixel-perfect text rendering.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Fonts.TBitmapFont.TStyleTags.html">TBitmapFont.TStyleTags</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Fonts.html">PXL.Fonts</a></td>
+<td class="itemdesc"><p>Text tags that allow changing colors directly inside text.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Fonts.TBitmapFont.TStyleTags.TEntry.html">TBitmapFont.TStyleTags.TEntry</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Fonts.html">PXL.Fonts</a></td>
+<td class="itemdesc"><p>Style tag entry.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Fonts.TBitmapFonts.html">TBitmapFonts</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Fonts.html">PXL.Fonts</a></td>
+<td class="itemdesc"><p>The list that may contain one or more instances of <a class="normal" href="PXL.Fonts.TBitmapFont.html">TBitmapFont</a> and provide facilities to search for fonts by their unique names, font loading and handling &quot;device lost&quot; scenario.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Data.TCipherBlock.html">TCipherBlock</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Data.html">PXL.Data</a></td>
+<td class="itemdesc"><p>Initialization block used for XTEA cipher.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Data.TCipherKey.html">TCipherKey</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Data.html">PXL.Data</a></td>
+<td class="itemdesc"><p>Security password used for XTEA cipher.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Surfaces.TConceptualPixelSurface.html">TConceptualPixelSurface</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Surfaces.html">PXL.Surfaces</a></td>
+<td class="itemdesc"><p>Conceptual surface that provide means of reading, writing and drawing individual pixels.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Boards.Types.TCustomADC.html">TCustomADC</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Boards.Types.html">PXL.Boards.Types</a></td>
+<td class="itemdesc"><p>Abstract ADC (Analog-to-Digital Converter) manager.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Textures.TCustomBaseTexture.html">TCustomBaseTexture</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Textures.html">PXL.Textures</a></td>
+<td class="itemdesc"><p>Base definition of hardware-assisted texture.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Canvas.TCustomCanvas.html">TCustomCanvas</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Canvas.html">PXL.Canvas</a></td>
+<td class="itemdesc"><p>Abstract canvas definition that provides few basic functions that need to be implemented by derived classes and many different rendering functions that internally use basic functions to do the rendering.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Canvas.TCustomCanvasEffect.html">TCustomCanvasEffect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Canvas.html">PXL.Canvas</a></td>
+<td class="itemdesc"><p>Abstract definition for canvas effect.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Canvas.TCustomCanvasImage.html">TCustomCanvasImage</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Canvas.html">PXL.Canvas</a></td>
+<td class="itemdesc"><p>Abstract image that can be rendered with canvas.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Canvas.TCustomCanvasParent.html">TCustomCanvasParent</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Canvas.html">PXL.Canvas</a></td>
+<td class="itemdesc"><p>Abstract class definition that can hold a child reference to canvas.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Boards.Types.TCustomClockRTC.html">TCustomClockRTC</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Boards.Types.html">PXL.Boards.Types</a></td>
+<td class="itemdesc"><p>Abstract RTC (Real-Time Clock) manager.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Boards.Types.TCustomDataPort.html">TCustomDataPort</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Boards.Types.html">PXL.Boards.Types</a></td>
+<td class="itemdesc"><p>Abstract communication manager can be used for reading and writing data.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Devices.TCustomDevice.html">TCustomDevice</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Devices.html">PXL.Devices</a></td>
+<td class="itemdesc"><p>Hardware device wrapper that handles communication between application and the video card.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Devices.TCustomDeviceContext.html">TCustomDeviceContext</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Devices.html">PXL.Devices</a></td>
+<td class="itemdesc"><p>Abstract device context class that contains important device specific references.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Devices.TCustomDeviceContextWriter.html">TCustomDeviceContextWriter</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Devices.html">PXL.Devices</a></td>
+<td class="itemdesc"><p>Abstract writer class that is given by device context upon creation and allows writing to context's internal values.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Devices.TCustomDeviceProvider.html">TCustomDeviceProvider</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Devices.html">PXL.Devices</a></td>
+<td class="itemdesc"><p>Abstract device provider class that is responsible of creating resources that are specific to one particular technology and/or API.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Textures.TCustomDrawableTexture.html">TCustomDrawableTexture</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Textures.html">PXL.Textures</a></td>
+<td class="itemdesc"><p>Base definition of &quot;drawable&quot; texture; that is, a texture that can be drawn to.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Boards.Types.TCustomGPIO.html">TCustomGPIO</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Boards.Types.html">PXL.Boards.Types</a></td>
+<td class="itemdesc"><p>Abstract GPIO (General Purpose Input / Output) manager.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.ImageFormats.TCustomImageFormatHandler.html">TCustomImageFormatHandler</a></td>
+<td class="itemunit"><a class="bold" href="PXL.ImageFormats.html">PXL.ImageFormats</a></td>
+<td class="itemdesc"><p>Extension class for <a class="normal" href="PXL.ImageFormats.TImageFormatManager.html">TImageFormatManager</a> that supports saving and loading different image formats and can be plugged to one or more image format managers.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.ImageFormats.TCustomImageFormatManager.html">TCustomImageFormatManager</a></td>
+<td class="itemunit"><a class="bold" href="PXL.ImageFormats.html">PXL.ImageFormats</a></td>
+<td class="itemdesc"><p>Abstract image format manager, which provides facilities for loading and saving different image formats.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Textures.TCustomLockableTexture.html">TCustomLockableTexture</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Textures.html">PXL.Textures</a></td>
+<td class="itemdesc"><p>Base definition of &quot;lockable&quot; texture; that is, a texture that can have regions &quot;locked&quot; so they become accessible to CPU.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Boards.Types.TCustomPortI2C.html">TCustomPortI2C</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Boards.Types.html">PXL.Boards.Types</a></td>
+<td class="itemdesc"><p>Abstract I2C (Inter-Integrated Circuit) communication manager.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Boards.Types.TCustomPortSPI.html">TCustomPortSPI</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Boards.Types.html">PXL.Boards.Types</a></td>
+<td class="itemdesc"><p>Abstract SPI (Serial Peripheral Interface) communication manager.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Boards.Types.TCustomPortUART.html">TCustomPortUART</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Boards.Types.html">PXL.Boards.Types</a></td>
+<td class="itemdesc"><p>Abstract UART (Universal Asynchronous Receiver / Transmitter) communication manager.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Boards.Types.TCustomPWM.html">TCustomPWM</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Boards.Types.html">PXL.Boards.Types</a></td>
+<td class="itemdesc"><p>Abstract PWM (Pulse-Width Modulation) manager.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Devices.TCustomStateDevice.html">TCustomStateDevice</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Devices.html">PXL.Devices</a></td>
+<td class="itemdesc"><p>A more elaborated hardware device wrapper that can have working state so it needs to be initialized before any rendering can take place.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.SwapChains.TCustomSwapChainDevice.html">TCustomSwapChainDevice</a></td>
+<td class="itemunit"><a class="bold" href="PXL.SwapChains.html">PXL.SwapChains</a></td>
+<td class="itemdesc"><p>Hardware device wrapper that supports rendering to multiple swap chains, which can be located on one or several windows.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Boards.Types.TCustomSystemCore.html">TCustomSystemCore</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Boards.Types.html">PXL.Boards.Types</a></td>
+<td class="itemdesc"><p>System core of the board, which provides high-performance utility functions for accurate timing and delays.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.TFloatColor.html">TFloatColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>A special high-precision color value that has each individual component represented as 32-bit floating-point value in range of [0, 1].</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.TFloatGrayAlpha.html">TFloatGrayAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Grayscale floating-point color representation, where each of the components range from 0 to 1.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.TFloatRect.html">TFloatRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>General-purpose floating-point rectangle type defined by four margins in range of [Left, Right) and [Top, Bottom).</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.TFloatRect4.html">TFloatRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Special floating-point quadrilateral defined by four vertices starting from top/left in clockwise order.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Providers.TGraphicsDeviceProvider.html">TGraphicsDeviceProvider</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Providers.html">PXL.Providers</a></td>
+<td class="itemdesc"><p>Abstract device provider that is able to create new instances of important rendering classes such as canvas and textures.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.ImageFormats.TImageFormatManager.html">TImageFormatManager</a></td>
+<td class="itemunit"><a class="bold" href="PXL.ImageFormats.html">PXL.ImageFormats</a></td>
+<td class="itemdesc"><p>General-purpose Image Format Manager that has pluggable mechanism so that handlers (those derived from <a class="normal" href="PXL.ImageFormats.TCustomImageFormatHandler.html">TCustomImageFormatHandler</a> class) can be associated with it to load and save different image formats.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.TIntColor2.html">TIntColor2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>A combination of two colors, primarily used for displaying text with the first color being on top and the second being on bottom.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.TIntColor4.html">TIntColor4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>A combination of four colors, primarily used for displaying colored quads, where each color corresponds to top/left, top/right, bottom/right and bottom/left accordingly (clockwise).</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.TIntColorRec.html">TIntColorRec</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Alternative representation of <a class="normal" href="PXL.Types.html#TIntColor">TIntColor</a>, where each element can be accessed as an individual value.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.TIntGrayAlphaRec.html">TIntGrayAlphaRec</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Alternative representation of <a class="normal" href="PXL.Types.html#TIntGrayAlpha">TIntGrayAlpha</a>, where each element can be accessed as an individual value.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.TIntRect.html">TIntRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>General-purpose integer rectangle type defined by four margins in range of [Left, Right) and [Top, Bottom).</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Textures.TLockedPixels.html">TLockedPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Textures.html">PXL.Textures</a></td>
+<td class="itemdesc"><p>This structure stores information about locked texture's portion that can be accessed by CPU.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.TMatrix3.html">TMatrix3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>3x3 transformation matrix.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.TMatrix4.html">TMatrix4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>4x4 transformation matrix.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Data.TMD5Checksum.html">TMD5Checksum</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Data.html">PXL.Data</a></td>
+<td class="itemdesc"><p>MD5 checksum value.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Timing.TMultimediaTimer.html">TMultimediaTimer</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Timing.html">PXL.Timing</a></td>
+<td class="itemdesc"><p>A special-purpose timer implementation that can provide fixed frame-based processing independently of rendering frame rate.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.NetComs.TNetCom.html">TNetCom</a></td>
+<td class="itemunit"><a class="bold" href="PXL.NetComs.html">PXL.NetComs</a></td>
+<td class="itemdesc"><p>A simple communication component that can transmit and receive messages through UDP protocol over local network and/or Internet.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Formats.TPixelFormatColorBits.html">TPixelFormatColorBits</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Formats.html">PXL.Formats</a></td>
+<td class="itemdesc"><p>Channel bit information.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Formats.TPixelFormatDescription.html">TPixelFormatDescription</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Formats.html">PXL.Formats</a></td>
+<td class="itemdesc"><p>Complete information about specific pixel format.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Formats.TPixelFormatHelper.html">TPixelFormatHelper</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Formats.html">PXL.Formats</a></td>
+<td class="itemdesc"><p>Extension for <a class="normal" href="PXL.Types.html#TPixelFormat">TPixelFormat</a> to provide number of bits, bytes and string conversion.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Formats.TPixelFormatList.html">TPixelFormatList</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Formats.html">PXL.Formats</a></td>
+<td class="itemdesc"><p>List of one or more pixel format elements.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Surfaces.TPixelMipMapSurface.html">TPixelMipMapSurface</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Surfaces.html">PXL.Surfaces</a></td>
+<td class="itemdesc"><p>This class closely resembles <a class="normal" href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a>, except that it also contains other surfaces, mainly useful for generating and storing mipmaps.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Surfaces.html">PXL.Surfaces</a></td>
+<td class="itemdesc"><p>Surface that stores pixels in one of supported formats, with facilities for pixel format conversion, resizing, copying, drawing, shrinking and so on.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Surfaces.TPixelSurfaces.html">TPixelSurfaces</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Surfaces.html">PXL.Surfaces</a></td>
+<td class="itemdesc"><p>List of <a class="normal" href="PXL.Surfaces.TPixelSurface.html">TPixelSurface</a> elements with a function of quickly finding by unique name.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.TPoint2.html">TPoint2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>2D floating-point vector.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.TPoint2px.html">TPoint2px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>2D integer vector.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.TQuaternion.html">TQuaternion</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>3D quaternion</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Classes.TStreamHelper.html">TStreamHelper</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Classes.html">PXL.Classes</a></td>
+<td class="itemdesc"><p>Extensions to TStream class for reading and writing different values depending on platform.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.SwapChains.TSwapChainInfo.html">TSwapChainInfo</a></td>
+<td class="itemunit"><a class="bold" href="PXL.SwapChains.html">PXL.SwapChains</a></td>
+<td class="itemdesc"><p>General description of rendering swap chain.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.SwapChains.TSwapChains.html">TSwapChains</a></td>
+<td class="itemunit"><a class="bold" href="PXL.SwapChains.html">PXL.SwapChains</a></td>
+<td class="itemdesc"><p>List of all rendering swap chains that are to be used with Asphyre device.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.TVector3.html">TVector3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>3D floating-point vector.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.TVector3px.html">TVector3px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>3D integer vector.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.TVector4.html">TVector4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>4D (3D + w) floating-point vector.</p></td>
+</tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

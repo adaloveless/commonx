@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): PXL.Canvas</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<h1 class="unit">Unit PXL.Canvas</h1>
+<table class="sections wide_list">
+<tr>
+<td><a class="section" href="#PasDoc-Description">Description</a></td><td>Uses</td><td><a class="section" href="#PasDoc-Classes">Classes, Interfaces, Objects and Records</a></td><td>Functions and Procedures</td><td><a class="section" href="#PasDoc-Types">Types</a></td><td>Constants</td><td>Variables</td></tr></table>
+<a name="PasDoc-Description"></a><h2 class="description">Description</h2>
+<p>
+Canvas specification that can draw variety of shapes including lines, triangles, hexagons and images with different blending effects, colors and transparency.</p>
+<a name="PasDoc-Uses"></a><h2 class="overview">Overview</h2>
+<a name="PasDoc-Classes"></a><h3 class="cio">Classes, Interfaces, Objects and Records</h3>
+<table class="classestable wide_list">
+<tr class="listheader">
+<th class="itemname">Name</th>
+<th class="itemdesc">Description</th>
+</tr>
+<tr class="list">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Canvas.TCustomCanvas.html"><code>TCustomCanvas</code></a></td>
+<td class="itemdesc">Abstract canvas definition that provides few basic functions that need to be implemented by derived classes and many different rendering functions that internally use basic functions to do the rendering.</td>
+</tr>
+<tr class="list2">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Canvas.TCustomCanvasEffect.html"><code>TCustomCanvasEffect</code></a></td>
+<td class="itemdesc">Abstract definition for canvas effect.</td>
+</tr>
+<tr class="list">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Canvas.TCustomCanvasImage.html"><code>TCustomCanvasImage</code></a></td>
+<td class="itemdesc">Abstract image that can be rendered with canvas.</td>
+</tr>
+<tr class="list2">
+<td class="itemname">Class&nbsp;<a class="bold" href="PXL.Canvas.TCustomCanvasParent.html"><code>TCustomCanvasParent</code></a></td>
+<td class="itemdesc">Abstract class definition that can hold a child reference to canvas.</td>
+</tr>
+</table>
+<a name="PasDoc-Types"></a><h3 class="summary">Types</h3>
+<table class="summary wide_list">
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Canvas.html#TBlendingEffect">TBlendingEffect</a></b> = (...);</code></td>
+</tr>
+<tr class="list2">
+<td class="itemcode"><code><b><a  href="PXL.Canvas.html#TCanvasAttribute">TCanvasAttribute</a></b> = (...);</code></td>
+</tr>
+<tr class="list">
+<td class="itemcode"><code><b><a  href="PXL.Canvas.html#TCanvasAttributes">TCanvasAttributes</a></b> = set of <a  href="PXL.Canvas.html#TCanvasAttribute">TCanvasAttribute</a>;</code></td>
+</tr>
+</table>
+<h2 class="description">Description</h2>
+<h3 class="detail">Types</h3>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TBlendingEffect"></a><code><b>TBlendingEffect</b> = (...);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+The blending effect that should be applied when drawing 2D primitives.</p>
+<h6 class="description_section">Values</h6>
+<ul>
+<li>
+Unknown: Undefined blending effect. This means that blending effect has not been defined - this is used internally and should not be used otherwise. <br> <br></li>
+<li>
+None: Blending effect disabled. In this case, drawing operation is just copy operation.</li>
+<li>
+Normal: Normal blending effect. If drawing primitive has alpha-channel supplied, it will be alpha-blended to the destination depending on source alpha values. <br> <br></li>
+<li>
+Shadow: Shadow drawing effect. The destination surface will be multiplied by alpha-channel of the source primitive; thus, the rendered image will look like a shadow. <br> <br></li>
+<li>
+Add: Additive blending effect. The source primitive will be multiplied by its alpha-channel and then added to the destination with saturation. <br> <br></li>
+<li>
+Multiply: Multiplication blending effect. The destination surface will be multiplied by the source primitive. <br> <br></li>
+<li>
+InverseMultiply: Inverse multiplication effect. The destination surface will be multiplied by an inverse of the source primitive. <br> <br></li>
+<li>
+SourceColor: Source color blending effect. Instead of using alpha-channel, the grayscale value of source primitive's pixels will be used as an alpha value for blending on destination. <br> <br></li>
+<li>
+SourceColorAdd: Source color additive blending effect. Instead of using alpha-channel, the grayscale value of source primitive's pixels will be used as an alpha value for multiplying source pixels, which will then be added to destination with saturation. <br> <br></li>
+</ul>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TCanvasAttribute"></a><code><b>TCanvasAttribute</b> = (...);</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+Canvas attribute that defines rendering behavior attributes.</p>
+<h6 class="description_section">Values</h6>
+<ul>
+<li>
+Antialias: Antialiasing should be used when rendering images. For typical implementations this means that bilinear filtering will be used when interpolating image pixels.</li>
+<li>
+MipMapping: Mipmapping should be used when rendering images. If this attribute is not included, then mipmapping will be disabled even if the image to be rendered contains mipmaps.</li>
+<li>
+CustomEffect: Custom shader effect will be used when rendering images. This effect needs to be set and configured prior drawing.</li>
+</ul>
+</td></tr>
+</table>
+<table class="detail wide_list">
+<tr class="list">
+<td class="itemcode"><a name="TCanvasAttributes"></a><code><b>TCanvasAttributes</b> = set of <a  href="PXL.Canvas.html#TCanvasAttribute">TCanvasAttribute</a>;</code></td>
+</tr>
+<tr><td colspan="1">
+<p>
+A set of one or multiple canvas attributes.</p>
+</td></tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

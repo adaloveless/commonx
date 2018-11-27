@@ -1,0 +1,1342 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<title>Pascal eXtended Library (PXL): All Functions and Procedures</title>
+<meta name="generator" content="PasDoc 0.14.0">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="tipuesearch/jquery.min.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch_data.js"></script>
+<link rel="stylesheet" type="text/css" href="tipuesearch/tipuesearch.css">
+<script type="text/javascript" src="tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="tipuesearch/tipuesearch.js"></script>
+
+<link rel="StyleSheet" type="text/css" href="pasdoc.css">
+</head>
+<body>
+<table class="container"><tr><td class="navigation">
+<center><a href="http://www.afterwarp.net"><img src="afterwarp-logo.png" /></a><img src="Logo.png" /></center><h2>Pascal eXtended Library (PXL)</h2><p><a href="AllUnits.html" class="navigation">Units</a></p><p><a href="ClassHierarchy.html" class="navigation">Class Hierarchy</a></p><p><a href="AllClasses.html" class="navigation">Classes, Interfaces, Objects and Records</a></p><p><a href="AllTypes.html" class="navigation">Types</a></p><p><a href="AllVariables.html" class="navigation">Variables</a></p><p><a href="AllConstants.html" class="navigation">Constants</a></p><p><a href="AllFunctions.html" class="navigation">Functions and Procedures</a></p><p><a href="AllIdentifiers.html" class="navigation">Identifiers</a></p><p><form class="search-form" action="_tipue_results.html"><div class="search-input"><input type="text" name="q" id="tipue_search_input"></div><div class="search-button"><input type="button" id="tipue_search_button" onclick="this.form.submit();"></div></form>
+<div style="clear: both"></div>
+
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        /* 10 items to display seems standard */
+        'show': 10,
+        /* For PasDoc docs, showing urls is not very useful,
+           since the page title already shows the unit and identifier. */
+        'showURL': false
+    });
+});
+</script>
+</p></td><td class="content">
+<h1 class="allitems">All Functions and Procedures</h1>
+<table class="itemstable wide_list">
+<tr class="listheader">
+<th class="itemname">Name</th>
+<th class="itemunit">Unit</th>
+<th class="itemdesc">Description</th>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#AddGrayPixels">AddGrayPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Adds two 16-bit grayscale colors together clamping the resulting values if necessary.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#AddPixels">AddPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Adds two 32-bit RGBA color values together clamping the resulting values if necessary.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#AdjointMtx3">AdjointMtx3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates 2D adjoint matrix for given matrix.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#AdjointMtx4">AdjointMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates adjoint values for given 3D matrix.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Angle2">Angle2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns the angle (in radians) at which the 2D vector is pointing at.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Angle2px">Angle2px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns the angle (in radians) at which the 2D vector is pointing at.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Angle3">Angle3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates angle between two 3D vectors.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Angle3px">Angle3px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates angle between two 3D vectors.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#AverageColors">AverageColors</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes average of two given floating-point color values.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#AverageFourPixels">AverageFourPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes average of four given 32-bit RGBA color values.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#AverageGrayColors">AverageGrayColors</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes average of two given floating-point grayscale colors.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#AverageGrayPixels">AverageGrayPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes average of two given 16-bit grayscale colors.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#AveragePixels">AveragePixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes average of two given 32-bit RGBA color values.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#AverageSixPixels">AverageSixPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes average of six given 32-bit RGBA color values.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Data.html#Base64Binary">Base64Binary</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Data.html">PXL.Data</a></td>
+<td class="itemdesc"><p>Decodes the base-64 readable text back into the binary format.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Data.html#Base64String">Base64String</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Data.html">PXL.Data</a></td>
+<td class="itemdesc"><p>Encodes the binary source into base-64 readable text.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#BlendFourPixels">BlendFourPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes resulting alpha-blended value between four 32-bit RGBA colors using linear interpolation.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#BlendGrayPixels">BlendGrayPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes alpha-blending for a pair of 16-bit grayscale colors.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#BlendPixels">BlendPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes alpha-blending for a pair of 32-bit RGBA colors values.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#CatmullRom">CatmullRom</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between four values using Catmull-Rom spline, where <i>Theta</i> must be in [0..1] range.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#CatmullRom2">CatmullRom2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between four 2D vectors using <i>Catmull-Rom</i> curve.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#CatmullRom2px">CatmullRom2px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between four integer 2D vectors using <i>Catmull-Rom</i> curve.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#CatmullRom3">CatmullRom3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between four 3D vectors using <i>Catmull-Rom</i> curve.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#CatmullRom3px">CatmullRom3px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between four integer 3D vectors using <i>Catmull-Rom</i> curve.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#CatmullRom4">CatmullRom4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between four 4D vectors using <i>Catmull-Rom</i> curve.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#CatmullRomColors">CatmullRomColors</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between four floating-point colors using Catmull-Rom curve.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#CatmullRomPixels">CatmullRomPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between four colors using Catmull-Rom curve.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#CeilPowerOfTwo">CeilPowerOfTwo</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns the least power of two greater or equal to the specified value.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Data.html#ChecksumCRC32">ChecksumCRC32</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Data.html">PXL.Data</a></td>
+<td class="itemdesc"><p>Calculates CRC32 checksum from the specified data.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Data.html#ChecksumMD5">ChecksumMD5</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Data.html">PXL.Data</a></td>
+<td class="itemdesc"><p>Calculates and returns 128-bit MD5 checksum of the given data block.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ClipCoords">ClipCoords</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes source and destination sizes, source rectangle and destination position, then applies clipping to ensure that final rectangle stays within valid boundaries of both source and destination sizes.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ClipCoords">ClipCoords</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes source and destination sizes, source and destination rectangles, then applies clipping to ensure that final rectangle stays within valid boundaries of both source and destination sizes.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ColorToGray">ColorToGray</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns grayscale value in range of [0..1] from the given floating-point color value.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ColorToVec3">ColorToVec3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts Red, Green and Blue components of 32-bit color to X, Y and Z components of 3D vector accordingly.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ColorToVec4">ColorToVec4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts Red, Green, Blue and Alpha components of 32-bit color to X, Y, Z and W components of 4D vector accordingly.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Data.html#CompressData">CompressData</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Data.html">PXL.Data</a></td>
+<td class="itemdesc"><p>Compresses data block from the source buffer to destination buffer.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ConjugateQuat">ConjugateQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes quaternion's conjugate.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.ImageFormats.Auto.html#CreateDefaultImageFormatHandler">CreateDefaultImageFormatHandler</a></td>
+<td class="itemunit"><a class="bold" href="PXL.ImageFormats.Auto.html">PXL.ImageFormats.Auto</a></td>
+<td class="itemdesc"><p>Creates image format handler by default choosen depending on platform, OS and available support.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Providers.Auto.html#CreateDefaultProvider">CreateDefaultProvider</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Providers.Auto.html">PXL.Providers.Auto</a></td>
+<td class="itemdesc"><p>Creates an instance of <a class="normal" href="PXL.Providers.TGraphicsDeviceProvider.html">TGraphicsDeviceProvider</a> depending on current platform, OS and available support.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Cross2">Cross2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates a so-called &quot;cross product&quot; of 2D vectors, or analog of thereof.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Cross2px">Cross2px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates a so-called &quot;cross product&quot; of 2D vectors, or analog of thereof.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Cross3">Cross3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates cross product of specified 3D vectors.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Cross3px">Cross3px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates cross product of specified 3D vectors.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Classes.html#CrossFixFileName">CrossFixFileName</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Classes.html">PXL.Classes</a></td>
+<td class="itemdesc"><p>A quick method for replacing &quot;\&quot; with &quot;/&quot; and vice-versa depending on platform.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Data.html#DecompressData">DecompressData</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Data.html">PXL.Data</a></td>
+<td class="itemdesc"><p>Decompresses data block from the source buffer to destination buffer.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.TypeDef.html#Decrement_PXL_ClassInstances">Decrement_PXL_ClassInstances</a></td>
+<td class="itemunit"><a class="bold" href="PXL.TypeDef.html">PXL.TypeDef</a></td>
+<td class="itemdesc"><p>Decrements the current number of PXL class instances in a thread-safe fashion.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Data.html#DecryptData">DecryptData</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Data.html">PXL.Data</a></td>
+<td class="itemdesc"><p>Decrypts data using 128-bit XTEA cipher in CBC chaining mode and residual block termination (in case the data buffer is not multiple of 8 bytes).</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Devices.html#DeviceTechnologyToString">DeviceTechnologyToString</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Devices.html">PXL.Devices</a></td>
+<td class="itemdesc"><p>Returns a readable text string with the name of the specified device technology.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Devices.html#DeviceVersionToString">DeviceVersionToString</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Devices.html">PXL.Devices</a></td>
+<td class="itemdesc"><p>Converts device version value originally specified in hexadecimal format (e.g.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#DisplaceRB">DisplaceRB</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Switches red and blue channels in 32-bit RGBA color value.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Dot2">Dot2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates the dot-product of the specified 2D vectors.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Dot2px">Dot2px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates the dot-product of the specified 2D vectors.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Dot3">Dot3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates dot product of specified 3D vectors.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Dot3px">Dot3px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates dot product of specified 3D vectors.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#DotQuat">DotQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes the dot product of two given quaternions.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Data.html#EncryptData">EncryptData</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Data.html">PXL.Data</a></td>
+<td class="itemdesc"><p>Encrypts data using 128-bit XTEA cipher in CBC chaining mode and residual block termination (in case the data buffer is not multiple of 8 bytes).</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ExpQuat">ExpQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes exponentiation of the given quaternion.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ExtractGrayAlpha">ExtractGrayAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Extracts alpha-channel from two grayscale samples.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ExtractGrayAlpha">ExtractGrayAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Extracts alpha-channel from two grayscale samples.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Formats.html#FindClosestPixelFormat">FindClosestPixelFormat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Formats.html">PXL.Formats</a></td>
+<td class="itemdesc"><p>Takes a list of existing pixel formats and tries to find in it a format that closely resembles the provided format sample.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FlipRect4">FlipRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates quadrilateral from another quadrilateral but having top vertices exchanged with the bottom ones, effectively flipping it vertically.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatColor">FloatColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates floating-point color using specified individual components for red, green, blue and alpha channel.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatColor">FloatColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates floating-point color from its 32-bit integer representation.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatColorToGray">FloatColorToGray</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts floating-point RGBA color to floating-point grayscale color.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatGrayAlpha">FloatGrayAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates floating-point grayscale color from its 16-bit representation.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatGrayAlpha">FloatGrayAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates floating-point grayscale color using individual components.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatGrayToColor">FloatGrayToColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts floating-point grayscale color to floating-point RGBA color.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRect">FloatRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates rectangle based on top/left position, width and height.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRect">FloatRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates rectangle based on top/left position and size.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRect4">FloatRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates quadrilateral with individually specified vertices.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRect4">FloatRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates quadrilateral with individually specified vertex coordinates.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRect4">FloatRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates quadrilateral rectangle with top/left position, width and height.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRect4">FloatRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates quadrilateral rectangle from specified integer rectangle.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRect4">FloatRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates quadrilateral rectangle from specified floating-point rectangle.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRect4R">FloatRect4R</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates quadrilateral specified by its dimensions.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRect4RC">FloatRect4RC</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates quadrilateral specified by its dimensions.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRect4RTL">FloatRect4RTL</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates quadrilateral specified by top-left corner and size.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRect4S">FloatRect4S</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates quadrilateral with the specified top left corner and the given dimensions, which are scaled by the provided coefficient.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRectBDS">FloatRectBDS</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates rectangle based on top/left and bottom/right margin bounds.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatRectBDS">FloatRectBDS</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates rectangle based on individual margin bounds.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatToIntColor">FloatToIntColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts floating-point color to 32-bit integer representation.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloatToIntGrayAlpha">FloatToIntGrayAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts floating-point grayscale color to its 16-bit integer equivalent.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#FloorPowerOfTwo">FloorPowerOfTwo</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns the greatest power of two lesser or equal to the specified value.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.TypeDef.html#FreeMemAndNil">FreeMemAndNil</a></td>
+<td class="itemunit"><a class="bold" href="PXL.TypeDef.html">PXL.TypeDef</a></td>
+<td class="itemdesc"><p>Checks whether the Value is <code>Nil</code> and if not, calls FreeMem on that value and then assigns <code>Nil</code> to it.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Devices.html#GetFullDeviceTechString">GetFullDeviceTechString</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Devices.html">PXL.Devices</a></td>
+<td class="itemdesc"><p>Returns a readable text string that describes the current device's technology, technology version and feature level version.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Formats.html#GetMatchingPixelFormat">GetMatchingPixelFormat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Formats.html">PXL.Formats</a></td>
+<td class="itemdesc"><p>Takes the provided pixel format description and tries to find a pixel format that matches this description.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Formats.html#GetPixelFormatDescription">GetPixelFormatDescription</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Formats.html">PXL.Formats</a></td>
+<td class="itemdesc"><p>Provides detailed description regarding the specified pixel format.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Timing.html#GetSystemTickCount">GetSystemTickCount</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Timing.html">PXL.Timing</a></td>
+<td class="itemdesc"><p>Returns current timer counter represented as 32-bit unsigned integer.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Timing.html#GetSystemTimerValue">GetSystemTimerValue</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Timing.html">PXL.Timing</a></td>
+<td class="itemdesc"><p>Returns current timer counter represented as 64-bit unsigned integer.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Timing.html#GetSystemTimeValue">GetSystemTimeValue</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Timing.html">PXL.Timing</a></td>
+<td class="itemdesc"><p>Returns the current timer counter represented as 64-bit floating-point number.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#HeadingPitchBankMtx4">HeadingPitchBankMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D rotation matrix based on parameters similar to flight dynamics, specifically heading, pitch and Bank.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#HeadingPitchBankMtx4">HeadingPitchBankMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D rotation matrix based on parameters similar to flight dynamics, specifically heading, pitch and Bank.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.TypeDef.html#Increment_PXL_ClassInstances">Increment_PXL_ClassInstances</a></td>
+<td class="itemunit"><a class="bold" href="PXL.TypeDef.html">PXL.TypeDef</a></td>
+<td class="itemdesc"><p>Increments the current number of PXL class instances in a thread-safe fashion.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#InflateRect">InflateRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Decrements <i>Left</i> and <i>Top</i> of given rectangle and increments <i>Right</i> and <i>Bottom</i> by given offset.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#InflateRect">InflateRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Decrements <i>Left</i> and <i>Top</i> of given rectangle and increments <i>Right</i> and <i>Bottom</i> by each of corresponding offset values.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#InflateRect">InflateRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Decrements <i>Left</i> and <i>Top</i> of given rectangle and increments <i>Right</i> and <i>Bottom</i> by each of corresponding offset values.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#InflateRect">InflateRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Decrements <i>Left</i> and <i>Top</i> of given rectangle and increments <i>Right</i> and <i>Bottom</i> by given offset.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor">IntColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 32-bit RGBA color with the specified color value, having its alpha-channel multiplied by the specified coefficient and divided by 255.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor">IntColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 32-bit RGBA color where the original color value has its components multiplied by the given grayscale value and alpha-channel multiplied by the specified coefficient.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor">IntColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 32-bit RGBA color where the original color value has its components multiplied by the given grayscale value and alpha-channel multiplied by the specified coefficient, and all components divided by 255.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor">IntColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 32-bit RGBA color where the specified color value has its alpha-channel multiplied by the given coefficient.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor2">IntColor2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates two 32-bit RGBA color gradient with both values set to specified color.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor2">IntColor2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates two 32-bit RGBA color gradient from specified pair of values.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor4">IntColor4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a construct of four colors using individual components.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor4">IntColor4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a construct of four colors having the same component in each corner.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor4H">IntColor4H</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a construct of four colors from two color values to create horizontal gradient.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor4H">IntColor4H</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a construct of four colors from two color pair to create horizontal gradient.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor4V">IntColor4V</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a construct of four colors from two color values to create vertical gradient.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColor4V">IntColor4V</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a construct of four colors from two color pair to create vertical gradient.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColorAlpha">IntColorAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 32-bit RGBA color with alpha-channel specified by the given coefficient (multiplied by 255) and the rest of components set to 255.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColorAlpha">IntColorAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 32-bit RGBA color with the specified alpha-channel and each of red, green and blue components set to 255.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColorGray">IntColorGray</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 32-bit RGBA color using specified grayscale and alpha values.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColorGray">IntColorGray</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 32-bit RGBA color using specified grayscale and alpha-channel values (both multiplied by 255).</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColorRGB">IntColorRGB</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 32-bit RGBA color using specified individual components for red, green, blue and alpha channel.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntColorToGray">IntColorToGray</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts 32-bit RGBA color to 16-bit grayscale color.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntersectRect">IntersectRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates rectangle that results from intersection of given two rectangles.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntersectRect">IntersectRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates rectangle that results from intersection of given two rectangles.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntGrayAlpha">IntGrayAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 16-bit grayscale color using its individual components.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntGrayAlpha">IntGrayAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 16-bit grayscale color using its individual components (both multiplied by 255).</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntGrayToColor">IntGrayToColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts 16-bit grayscale color into 32-bit RGBA color.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntRect">IntRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates rectangle based on top/left position, width and height.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntRect">IntRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates rectangle based on top/left position and size.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntRectBDS">IntRectBDS</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates rectangle based on individual margin bounds.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IntRectBDS">IntRectBDS</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates rectangle based on top/left and bottom/right margin bounds.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#InverseMtx3">InverseMtx3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates inverse of given 2D matrix.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#InvertColor">InvertColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Inverts floating-point color applying formula &quot;Xn = 1.0 - X&quot; for each component.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#InvertGrayColor">InvertGrayColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Inverts floating-point grayscale color applying formula &quot;Xn = 1.0 - X&quot; for each component.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#InvertMtx4">InvertMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates inverse of given matrix.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#InvertPixel">InvertPixel</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Inverts each of the components in the pixel, including alpha-channel.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#IsPowerOfTwo">IsPowerOfTwo</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns <code>True</code> if the specified value is a power of two or <code>False</code> otherwise.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Length2">Length2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns the length of the specified 2D vector.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Length2px">Length2px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns the length of the specified 2D vector.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Length3">Length3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns length of specified 3D vector.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Length3px">Length3px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns length of specified 3D integer vector.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Length4">Length4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns the length of the specified 4D vector.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#LengthQuat">LengthQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns the magnitude of given quaternion.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Lerp">Lerp</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between two values linearly, where <i>Theta</i> must be specified in [0..1] range.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Lerp2">Lerp2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between specified two 2D vectors.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Lerp2px">Lerp2px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between specified two 2D integer vectors.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Lerp3">Lerp3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between specified two 3D vectors.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Lerp3px">Lerp3px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between specified two integer 3D vectors.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Lerp4">Lerp4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Interpolates between specified two 4D vectors.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#LerpColors">LerpColors</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes alpha-blending for a pair of floating-point colors values.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#LerpFourPixels">LerpFourPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes resulting alpha-blended value between four 32-bit RGBA colors using linear interpolation.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#LerpGrayColors">LerpGrayColors</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes alpha-blending for a pair of floating-point grayscale colors.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#LerpGrayPixels">LerpGrayPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes alpha-blending for a pair of 16-bit grayscale colors using floating-point approach.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#LerpPixels">LerpPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Computes alpha-blending for a pair of 32-bit RGBA colors values using floating-point approach.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#LookAtMtx4">LookAtMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a view matrix that is defined by the camera's position, its target and vertical axis or &quot;ceiling&quot;.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Timing.html#MicroSleep">MicroSleep</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Timing.html">PXL.Timing</a></td>
+<td class="itemdesc"><p>Causes the calling thread to sleep for a given number of microseconds.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#MirrorRect4">MirrorRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates quadrilateral from another quadrilateral but having left vertices exchanged with the right ones, effectively mirroring it horizontally.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#MultiplyGrayPixels">MultiplyGrayPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Multiplies two 16-bit grayscale colors together.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#MultiplyPixels">MultiplyPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Multiplies two 32-bit RGBA color values together.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Norm2">Norm2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Normalizes the specified 2D vector to unity length.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Norm3">Norm3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Normalizes specified 3D vector to unity length.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Norm4">Norm4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Normalizes the specified 4D vector to unity length.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#NormalizeQuat">NormalizeQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Normalizes the given quaternion.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#OffsetRect">OffsetRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Displaces given rectangle by each of offset values.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#OffsetRect">OffsetRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Displaces given rectangle by each of offset values.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#OffsetRect">OffsetRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Displaces given rectangle by certain offset.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#OffsetRect">OffsetRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Displaces given rectangle by certain offset.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#OffsetRect4">OffsetRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Displaces vertices of given quadrilateral by the specified offset.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#OffsetRect4">OffsetRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Displaces vertices of given quadrilateral by the specified displacement values.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#OrthogonalBDSMtx4">OrthogonalBDSMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates orthogonal projection matrix defined by the individual axis's boundaries.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#OrthogonalVOLMtx4">OrthogonalVOLMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates orthogonal projection matrix defined by the viewing volume in 3D space.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#OverlapRect">OverlapRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns <code>True</code> when two specified rectangles overlap or <code>False</code> otherwise.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#OverlapRect">OverlapRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns <code>True</code> when two specified rectangles overlap or <code>False</code> otherwise.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Parallel3">Parallel3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates portion of given 3D vector that is parallel to the direction vector.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Perp3">Perp3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates portion of given 3D vector that is perpendicular to the direction vector.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PerspectiveBDSMtx4">PerspectiveBDSMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates perspective projection matrix defined by the individual axis's boundaries.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PerspectiveFOVXMtx4">PerspectiveFOVXMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates perspective projection matrix defined by a field of view on X axis.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PerspectiveFOVYMtx4">PerspectiveFOVYMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates perspective projection matrix defined by a field of view on Y axis.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PerspectiveVOLMtx4">PerspectiveVOLMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates perspective projection matrix defined by the viewing volume in 3D space.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Formats.html#Pixel32ToX">Pixel32ToX</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Formats.html">PXL.Formats</a></td>
+<td class="itemdesc"><p>Converts a single pixel from 32-bit RGBA format (<code>TPixelFormat.A8R8G8B8</code>) to an arbitrary format.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Formats.html#Pixel32ToXArray">Pixel32ToXArray</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Formats.html">PXL.Formats</a></td>
+<td class="itemdesc"><p>Converts an array of pixels from 32-bit RGBA format (<code>TPixelFormat.A8R8G8B8</code>) to an arbitrary format.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PixelToGray">PixelToGray</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns grayscale value in range of [0..255] from the given 32-bit RGBA color value.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PixelToGrayFloat">PixelToGrayFloat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns grayscale value in range of [0..1] from the given 32-bit RGBA color value.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Formats.html#PixelXTo32">PixelXTo32</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Formats.html">PXL.Formats</a></td>
+<td class="itemdesc"><p>Converts a single pixel from an arbitrary pixel format back to 32-bit RGBA format (<code>TPixelFormat.A8R8G8B8</code>).</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Formats.html#PixelXTo32Array">PixelXTo32Array</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Formats.html">PXL.Formats</a></td>
+<td class="itemdesc"><p>Converts an array of pixels from an arbitrary format back to 32-bit RGBA format (<code>TPixelFormat.A8R8G8B8</code>).</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Point2">Point2</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a <a class="normal" href="PXL.Types.TPoint2.html">TPoint2</a> record using the specified coordinates.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Point2px">Point2px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a <a class="normal" href="PXL.Types.TPoint2px.html">TPoint2px</a> record using the specified coordinates.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Point2ToPx">Point2ToPx</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts <a class="normal" href="PXL.Types.TPoint2.html">TPoint2</a> to <a class="normal" href="PXL.Types.TPoint2px.html">TPoint2px</a> by using floating-point rounding.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PointInRect">PointInRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns <code>True</code> when point is inside specified rectangle or <code>False</code> otherwise.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PointInRect">PointInRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns <code>True</code> when point is inside specified rectangle or <code>False</code> otherwise.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PointInRect4">PointInRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns <code>True</code> when point is inside specified quadrilateral or <code>False</code> otherwise.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PointInTriangle">PointInTriangle</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns <code>True</code> if specified point is inside the triangle specified by given three vertices or <code>False</code> otherwise.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PointInTriangle">PointInTriangle</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns <code>True</code> if specified point is inside the triangle specified by given three vertices or <code>False</code> otherwise.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.TypeDef.html#PopFPUState">PopFPUState</a></td>
+<td class="itemunit"><a class="bold" href="PXL.TypeDef.html">PXL.TypeDef</a></td>
+<td class="itemdesc"><p>Recovers FPU state from the stack previously saved by <a class="normal" href="PXL.TypeDef.html#PushFPUState">PushFPUState</a> or <a class="normal" href="PXL.TypeDef.html#PushClearFPUState">PushClearFPUState</a> and decrements internal stack pointer.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PremultiplyAlpha">PremultiplyAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes floating-point color with unpremultiplied alpha and multiplies each of red, green, and blue components by its alpha channel, resulting in premultiplied alpha color.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PremultiplyAlpha">PremultiplyAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes 32-bit RGBA color with unpremultiplied alpha and multiplies each of red, green, and blue components by its alpha channel, resulting in premultiplied alpha color.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PremultiplyGrayColor">PremultiplyGrayColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes floating-point grayscale color with unpremultiplied alpha and multiplies gray value by its alpha-channel, resulting in premultiplied grayscale color.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#PremultiplyGrayPixel">PremultiplyGrayPixel</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes 16-bit grayscale color with unpremultiplied alpha and multiplies gray value by its alpha-channel, resulting in premultiplied grayscale color.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.TypeDef.html#PushClearFPUState">PushClearFPUState</a></td>
+<td class="itemunit"><a class="bold" href="PXL.TypeDef.html">PXL.TypeDef</a></td>
+<td class="itemdesc"><p>Similarly to <a class="normal" href="PXL.TypeDef.html#PushFPUState">PushFPUState</a>, this saves the current FPU state to stack and increments internal stack pointer.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.TypeDef.html#PushFPUState">PushFPUState</a></td>
+<td class="itemunit"><a class="bold" href="PXL.TypeDef.html">PXL.TypeDef</a></td>
+<td class="itemdesc"><p>Saves the current FPU state to stack and increments internal stack pointer.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RandomGaussValueEnd">RandomGaussValueEnd</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates random number in [0..1] range using gaussian distribution with higher probability located near 1.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RandomGaussValueMiddle">RandomGaussValueMiddle</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates random number in [0..1] range using gaussian distribution with higher probability located near 0.5.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RandomGaussValueOmni">RandomGaussValueOmni</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates random number in [-1..1] range using gaussian distribution with higher probability located near 0.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RandomGaussValueStart">RandomGaussValueStart</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates random number in [0..1] range using gaussian distribution with higher probability located near 0.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RectInRect">RectInRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns <code>True</code> when given rectangle is contained within another rectangle or <code>False</code> otherwise.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RectInRect">RectInRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns <code>True</code> when given rectangle is contained within another rectangle or <code>False</code> otherwise.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Reflect3">Reflect3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates 3D vector that is a reflection of given vector from surface given by specified normal.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ReflectMtx4">ReflectMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a reflection matrix specified by the given vector defining the orientation of the reflection.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotateAboutAxisQuat">RotateAboutAxisQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D quaternion containing rotation around an arbitrary axis with given angle (in radians).</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotateAboutXQuat">RotateAboutXQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D quaternion containing rotation around X axis with given angle (in radians).</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotateAboutYQuat">RotateAboutYQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D quaternion containing rotation around Y axis with given angle (in radians).</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotateAboutZQuat">RotateAboutZQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D quaternion containing rotation around Z axis with given angle (in radians).</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotateInertialToObjectQuat">RotateInertialToObjectQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D quaternion setup to perform Inertial-To-Object rotation using the angles specified in Euler format.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotateMtx3">RotateMtx3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 2D rotation matrix with specified angle (in radiants).</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotateMtx4">RotateMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D rotation matrix around specified axis and angle (in radiants).</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotateObjectToIntertialQuat">RotateObjectToIntertialQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D quaternion setup to perform Object-To-Inertial rotation using the angles specified in Euler format.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotateXMtx4">RotateXMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D rotation matrix around X axis with the specified angle.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotateYMtx4">RotateYMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D rotation matrix around Y axis with the specified angle.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotateZMtx4">RotateZMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D rotation matrix around Z axis with the specified angle.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotationAngleQuat">RotationAngleQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns rotational angle &quot;theta&quot; that is present in current quaternion.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#RotationAxisQuat">RotationAxisQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns rotational axis that is present in current quaternion.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Saturate">Saturate</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Ensures that the given value stays within specified range limit, clamping it if necessary.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Saturate">Saturate</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Ensures that the given value stays within specified range limit, clamping it if necessary.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#SaturateColor">SaturateColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes original floating-point color and clamps each component within [0, 1] range.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#SaturateGrayColor">SaturateGrayColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes original floating-point grayscale color and clamps each component within [0, 1] range.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ScaleMtx3">ScaleMtx3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 2D scaling matrix with specified individual coefficients.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ScaleMtx3">ScaleMtx3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 2D scaling matrix with specified coefficients.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ScaleMtx3">ScaleMtx3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 2D scaling matrix with with X and Y equal to the specified coefficient.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ScaleMtx4">ScaleMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D translation matrix with specified coefficients.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ScaleMtx4">ScaleMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D translation matrix with specified X, Y and (optional) Z coefficients.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ScaleMtx4">ScaleMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D translation matrix with X, Y and Z equal to the specified coefficient.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#ScaleRect4">ScaleRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Rescales vertices of the given quadrilateral by provided coefficient, optionally centering them around zero origin.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#SineAccelerate">SineAccelerate</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Transforms value in range of [0, 1] using sine wave accelerating.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#SineCycle">SineCycle</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Transforms value in range of [0, 1] to go through full cycle (0 -&gt; 1 -&gt; 0).</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#SineDecelerate">SineDecelerate</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Transforms value in range of [0, 1] using sine wave decelerating.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#SineSymCycle">SineSymCycle</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Transforms value in range of [0, 1] to go full cycle through sine function (0 -&gt; 1 -&gt; 0 -&gt; -1 -&gt; 0).</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#SineTransform">SineTransform</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Transforms value in range of [0, 1] using sine wave (accelerate, decelerate).</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#SlerpQuat">SlerpQuat</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Applies spherical linear interpolation between current and given quaternions.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#SubtractGrayPixels">SubtractGrayPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Subtracts two 16-bit grayscale colors clamping the resulting values if necessary.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#SubtractPixels">SubtractPixels</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Subtracts two 32-bit RGBA color values clamping the resulting values if necessary.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Timing.html#TickCountInBetween">TickCountInBetween</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Timing.html">PXL.Timing</a></td>
+<td class="itemdesc"><p>Returns number of milliseconds between two values returned by <a class="normal" href="PXL.Timing.html#GetSystemTickCount">GetSystemTickCount</a>.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Timing.html#TimerValueInBetween">TimerValueInBetween</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Timing.html">PXL.Timing</a></td>
+<td class="itemdesc"><p>Returns number of microseconds between two values returned by <a class="normal" href="PXL.Timing.html#GetSystemTimerValue">GetSystemTimerValue</a>.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#TransformRect4">TransformRect4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Transforms (multiplies) vertices of given quadrilateral by the specified matrix.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#TranslateMtx3">TranslateMtx3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 2D translation matrix with specified offset.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#TranslateMtx3">TranslateMtx3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 2D translation matrix with specified coordinates.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#TranslateMtx4">TranslateMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D translation matrix with specified X, Y and (optional) Z coordinates.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#TranslateMtx4">TranslateMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D translation matrix with specified offset.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#TransposeMtx3">TransposeMtx3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns transposed 2D matrix.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#TransposeMtx4">TransposeMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Returns transposed 3D matrix.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#UnionRect">UnionRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates rectangle that results from union of given two rectangles.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#UnionRect">UnionRect</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Calculates rectangle that results from union of given two rectangles.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#UnpremultiplyAlpha">UnpremultiplyAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes floating-point color with premultiplied alpha channel and divides each of its red, green, and blue components by alpha, resulting in unpremultiplied alpha color.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#UnpremultiplyAlpha">UnpremultiplyAlpha</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes 32-bit RGBA color with premultiplied alpha channel and divides each of its red, green, and blue components by alpha, resulting in unpremultiplied alpha color.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#UnpremultiplyGrayColor">UnpremultiplyGrayColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes floating-point grayscale color with premultiplied alpha-channel and divides its gray value by alpha, resulting in unpremultiplied grayscale color.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#UnpremultiplyGrayPixel">UnpremultiplyGrayPixel</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes 16-bit grayscale color with premultiplied alpha-channel and divides its gray value by alpha, resulting in unpremultiplied grayscale color.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Vec3ToColor">Vec3ToColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts X, Y and Z components of 3D vector to Red, Green and Blue components of 32-bit color accordingly.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Vec4ToColor">Vec4ToColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts X, Y, Z and W components of 4D vector to Red, Green, Blue and Alpha components of 32-bit color accordingly.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Vector3">Vector3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates <a class="normal" href="PXL.Types.TVector3.html">TVector3</a> record using 2D vector and specified Z coordinate.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Vector3">Vector3</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates <a class="normal" href="PXL.Types.TVector3.html">TVector3</a> record using the specified coordinates.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Vector3px">Vector3px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates <a class="normal" href="PXL.Types.TVector3px.html">TVector3px</a> record using 2D vector and specified Z coordinate.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Vector3px">Vector3px</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates <a class="normal" href="PXL.Types.TVector3px.html">TVector3px</a> record using the specified coordinates.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Vector3ToPx">Vector3ToPx</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Converts <a class="normal" href="PXL.Types.TVector3.html">TVector3</a> to <a class="normal" href="PXL.Types.TVector3px.html">TVector3px</a> by using floating-point rounding.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Vector4">Vector4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a <a class="normal" href="PXL.Types.TVector4.html">TVector4</a> record using the specified 3D vector and W coordinate.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#Vector4">Vector4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates a <a class="normal" href="PXL.Types.TVector4.html">TVector4</a> record using the specified X, Y, Z and W coordinates.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#WarpColor">WarpColor</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Takes original floating-point color and attempts to normalize it so each component stays within [0, 1] range.</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="PXL.Types.html#YawPitchRollMtx4">YawPitchRollMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D rotation matrix based on parameters similar to flight dynamics, specifically yaw, pitch and roll.</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="PXL.Types.html#YawPitchRollMtx4">YawPitchRollMtx4</a></td>
+<td class="itemunit"><a class="bold" href="PXL.Types.html">PXL.Types</a></td>
+<td class="itemdesc"><p>Creates 3D rotation matrix based on parameters similar to flight dynamics, specifically yaw, pitch and roll.</p></td>
+</tr>
+</table>
+<hr noshade size="1"><span class="appinfo">Copyright &copy; 2015 Yuriy Kotsarenko. <em>Help files generated by <a  href="http://pasdoc.sourceforge.net/">PasDoc 0.14.0</a>. </em>
+</span>
+</td></tr></table></body></html>

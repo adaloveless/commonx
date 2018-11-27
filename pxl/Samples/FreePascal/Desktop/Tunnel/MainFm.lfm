@@ -1,0 +1,12 @@
+object MainForm: TMainForm
+  Left = 243
+  Height = 720
+  Top = 120
+  Width = 720
+  Caption = 'PXL Tunnel Demo'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnResize = FormResize
+  Position = poScreenCenter
+  LCLVersion = '1.5'
+end

@@ -1,0 +1,40 @@
+<font width="22" height="23" space="5">
+  <item ascii="33" raw="!" bottom="3" x="114" y="54" width="10" height="20" leading="-1" trailing="-3" />
+  <item ascii="48" raw="0" top="3" bottom="3" x="0" y="35" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="49" raw="1" top="3" bottom="3" x="42" y="0" width="13" height="17" leading="-1" trailing="-3" />
+  <item ascii="50" raw="2" top="3" bottom="3" x="56" y="0" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="51" raw="3" top="3" x="100" y="96" width="19" height="20" leading="-1" trailing="-4" />
+  <item ascii="52" raw="4" top="3" bottom="3" x="96" y="0" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="53" raw="5" top="3" bottom="3" x="0" y="17" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="54" raw="6" top="3" bottom="3" x="20" y="18" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="55" raw="7" top="3" bottom="3" x="40" y="18" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="56" raw="8" top="3" x="60" y="93" width="19" height="20" leading="-1" trailing="-4" />
+  <item ascii="57" raw="9" top="3" bottom="3" x="80" y="18" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="58" raw=":" top="3" bottom="3" x="116" y="0" width="10" height="17" leading="-1" trailing="-3" />
+  <item ascii="97" raw="a" top="3" bottom="3" x="100" y="18" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="98" raw="b" bottom="3" x="40" y="93" width="19" height="20" leading="-1" trailing="-4" />
+  <item ascii="99" raw="c" top="3" bottom="3" x="20" y="36" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="100" raw="d" bottom="3" x="20" y="90" width="19" height="20" leading="-1" trailing="-4" />
+  <item ascii="101" raw="e" top="3" bottom="3" x="60" y="36" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="102" raw="f" top="3" bottom="3" x="80" y="36" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="103" raw="g" top="3" x="0" y="89" width="19" height="20" leading="-1" trailing="-4" />
+  <item ascii="104" raw="h" top="3" bottom="3" x="0" y="53" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="105" raw="i" top="3" bottom="3" x="20" y="54" width="10" height="17" leading="-1" trailing="-3" />
+  <item ascii="106" raw="j" top="3" bottom="3" x="31" y="54" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="107" raw="k" bottom="3" x="80" y="72" width="19" height="20" leading="-1" trailing="-4" />
+  <item ascii="108" raw="l" top="3" bottom="3" x="71" y="54" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="109" raw="m" top="3" bottom="3" x="91" y="54" width="22" height="17" leading="-1" trailing="-4" />
+  <item ascii="110" raw="n" top="3" bottom="3" x="0" y="71" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="111" raw="o" top="3" bottom="3" x="20" y="72" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="112" raw="p" top="3" x="60" y="72" width="19" height="20" leading="-1" trailing="-4" />
+  <item ascii="113" raw="q" top="3" x="40" y="72" width="19" height="20" leading="-1" trailing="-4" />
+  <item ascii="114" raw="r" top="3" bottom="3" x="22" y="0" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="115" raw="s" top="3" bottom="3" x="51" y="54" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="116" raw="t" bottom="3" x="100" y="75" width="19" height="20" leading="-1" trailing="-4" />
+  <item ascii="117" raw="u" top="3" bottom="3" x="100" y="36" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="118" raw="v" top="3" bottom="3" x="40" y="36" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="119" raw="w" top="3" bottom="4" x="0" y="0" width="21" height="16" leading="-1" trailing="-3" />
+  <item ascii="120" raw="x" top="3" bottom="3" x="60" y="18" width="19" height="17" leading="-1" trailing="-4" />
+  <item ascii="121" raw="y" top="3" x="80" y="93" width="19" height="20" leading="-1" trailing="-4" />
+  <item ascii="122" raw="z" top="3" bottom="3" x="76" y="0" width="19" height="17" leading="-1" trailing="-4" />
+</font>
