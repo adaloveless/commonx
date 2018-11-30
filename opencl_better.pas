@@ -3,7 +3,7 @@ unit opencl_better;
 interface
 
 uses
-  cl, cl_gl, betterobject, typex, systemx,sysutils, math, stringx;
+  cl, cl_gl, betterobject, typex, systemx,sysutils, math, stringx, debug;
 
 const
   c_device_types:array[1..3] of cardinal=(CL_DEVICE_TYPE_CPU, CL_DEVICE_TYPE_GPU, CL_DEVICE_TYPE_ACCELERATOR);
@@ -15,14 +15,23 @@ type
 		device_type: cl_device_type; // CL_DEVICE_TYPE_CPU; CL_DEVICE_TYPE_GPU; CL_DEVICE_TYPE_ACCELERATOR
 	end;
 
+  PCLFloatArray = cl_mem;
+
   EOpenCLError = class(Exception);
+  TCLMem = record
+    localmem: PByte;
+    clmem: cl_mem;
+    sz: ni;
+  end;
 
   TOpenCL = class(TBetterObject)
   private
     FDeviceIndex: cl_uint;
     FProg: string;
     FFunc: string;
+    FMainFunction: string;
   protected
+
   	num_devices_returned: cl_uint;
     errcode_ret: cl_uint;
     platform_devices: array of t_platform_device;
@@ -31,31 +40,61 @@ type
     clKernel: cl_kernel;
     clProgram: cl_program;
     CommandQueue: cl_command_queue;
-    aglobalThreads: array[0..0] of size_t;
+    aglobalIterations: array[0..0] of size_t;
+
+    inputs: array of TCLMem;
+    outputs: array of TCLMem;
+
+    function AddInput(mem: PByte; sz: ni): cl_mem;
+    function AddOutput(mem: PByte; sz: ni): cl_mem;
+
     procedure EnumDevices;
     procedure Prepare;
     procedure Build;
     procedure PrepareParams;virtual;
-    procedure CopyParamData;virtual;
     procedure Run;
     procedure GetResults;virtual;
-    procedure UnprepareParams;virtual;
-
     procedure Unprepare;
+    procedure Init;override;
+    procedure clAssert(err: ni);
+  strict private
+    procedure UnprepareParams;
   public
+
+
     constructor Create;override;
     property DeviceIndex: cl_uint read FDeviceIndex write FDeviceIndex;
     property Prog: string read FProg write FProg;
     property Func: string read FFunc write FFunc;
+    property MainFunction: string read FMainFunction write FMainFunction;
     procedure Execute;
 
     procedure LoadCLFile(sFile: string);
-    property Threads: size_t read aglobalThreads[0] write aglobalthreads[0];
+    property Iterations: size_t read aglobalIterations[0] write aglobalIterations[0];
   end;
 
 implementation
 
 { TOpenCL }
+
+function TOpenCL.AddInput(mem: PByte; sz: ni): cl_mem;
+begin
+  result := clCreateBuffer(context, CL_MEM_READ_ONLY or CL_MEM_COPY_HOST_PTR, sz, mem, nil);
+  setlength(inputs, length(inputs)+1);
+  inputs[high(inputs)].localmem := mem;
+  inputs[high(inputs)].sz:= sz;
+  inputs[high(inputs)].clmem := result;
+
+end;
+
+function TOpenCL.AddOutput(mem: PByte; sz: ni): cl_mem;
+begin
+  result := clCreateBuffer(context, CL_MEM_WRITE_ONLY, sz, nil, nil);
+  setlength(outputs, length(outputs)+1);
+  outputs[high(outputs)].localmem := mem;
+  outputs[high(outputs)].sz:= sz;
+  outputs[high(outputs)].clmem := result;
+end;
 
 procedure TOpenCL.Build;
 var
@@ -65,8 +104,6 @@ var
   sourcePAnsiChar: PAnsiChar;
 
   GPUVector1, GPUVector2, GPUOutputVector: cl_mem;
-  globalThreads: array[0..0] of size_t;
-  //localThreads: array[0..0] of size_t;
   s, error_string: AnsiString;
   returned_size: size_t;
   f: ansistring;
@@ -90,29 +127,31 @@ begin
     clGetProgramBuildInfo(clProgram, device_ids[0], CL_PROGRAM_BUILD_LOG, Length(s), PAnsiChar(s), @returned_size);
     SetLength(s, Min(Pos(#0, s)-1, returned_size-1));
     error_string:=error_string+s;
-
-    raise EOpenCLError.create(error_string);
+    Debug.Log(error_string);
     clReleaseProgram(clProgram);
     clReleaseContext(context);
     raise EOpenCLError.create(error_string);
     exit;
   end;
 	// Create a handle to the compiled OpenCL function (Kernel)
-  f := ansistring(func);
+  f := ansistring(MainFunction);
 	clKernel:=clCreateKernel(clProgram, PAnsiChar(f), nil);
+  if clKErnel = nil then
+    raise EOpenCLError.Create('probably did not find '+f+'()');
+	CommandQueue:=clCreateCommandQueue(context, device_ids[0], 0, nil);
 end;
-procedure TOpenCL.CopyParamData;
-begin
 
-  raise ECritical.create('unimplemented');
-//TODO -cunimplemented: unimplemented block
+procedure TOpenCL.clAssert(err: ni);
+begin
+  if err <> 0 then
+    raise EOpenCLError.create('OpenCL assert '+inttostr(err));
 end;
 
 constructor TOpenCL.Create;
 begin
   inherited;
   EnumDevices;
-  threads := 2048;
+  iterations := 1;
 end;
 
 procedure TOpenCL.EnumDevices;
@@ -180,17 +219,44 @@ end;
 procedure TOpenCL.Execute;
 begin
   Prepare;
-    PrepareParams;
-      CopyParamData;
-        Run;
-      GetResults;
-    UnprepareParams;
+  Build;
+
+  PrepareParams;//override this to define inputs/outputs with AddInput and AddOutput
+  var idx := 0;
+
+  //outputs first
+  for var t := 0 to high(outputs) do begin
+  	clAssert(clSetKernelArg(clKernel, idx, sizeof(cl_mem), @outputs[t].clmem));
+    inc(idx);
+  end;
+
+  //inputs second
+  for var t := 0 to high(inputs) do begin
+  	clAssert(clSetKernelArg(clKernel, idx, sizeof(cl_mem), @inputs[t].clmem));
+    inc(idx);
+  end;
+
+  Run;
+
+  //read back inputs
+  for var t := 0 to high(outputs) do begin
+  	clAssert(clEnqueueReadBuffer(CommandQueue, outputs[t].clmem, CL_TRUE, 0, outputs[t].sz, outputs[t].localmem, 0, nil, nil));
+  end;
+
+  GetResults;//useless
+
   Unprepare;
 end;
 
 procedure TOpenCL.GetResults;
 begin
   //
+end;
+
+procedure TOpenCL.Init;
+begin
+  inherited;
+  FMainFunction := 'main';
 end;
 
 procedure TOpenCL.LoadCLFile(sFile: string);
@@ -218,17 +284,24 @@ end;
 
 procedure TOpenCL.PrepareParams;
 begin
-  //
+  //no implementation required
 end;
 
 procedure TOpenCL.Run;
 begin
-	clEnqueueNDRangeKernel(CommandQueue, clKernel, 1, nil, @aglobalThreads, nil, 0, nil, nil);
+	var status := clEnqueueNDRangeKernel(CommandQueue, clKernel, 1{dimensions}, nil, @aglobaliterations[0], nil, 0, nil, nil);
+
+  if (status <> 0) then begin
+    debug.log('CL_ERROR '+status.tostring);
+  end;
+
+
 
 end;
 
 procedure TOpenCL.Unprepare;
 begin
+  UnprepareParams;
 	clReleaseCommandQueue(CommandQueue);
 	clReleaseKernel(clKernel);
   clReleaseProgram(clProgram);
