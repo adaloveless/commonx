@@ -243,7 +243,7 @@ begin
   	clAssert(clEnqueueReadBuffer(CommandQueue, outputs[t].clmem, CL_TRUE, 0, outputs[t].sz, outputs[t].localmem, 0, nil, nil));
   end;
 
-  GetResults;//useless
+  GetResults;//copy buffers back to objects (if required)
 
   Unprepare;
 end;
@@ -290,6 +290,7 @@ end;
 procedure TOpenCL.Run;
 begin
 	var status := clEnqueueNDRangeKernel(CommandQueue, clKernel, 1{dimensions}, nil, @aglobaliterations[0], nil, 0, nil, nil);
+  classert(status);
 
   if (status <> 0) then begin
     debug.log('CL_ERROR '+status.tostring);
