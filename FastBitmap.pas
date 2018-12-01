@@ -2,7 +2,7 @@ unit FastBitmap;
 
 interface
 {$I DELPHIDEFS.inc}
-
+{$DEFINE ALLOW_OPENCL}
 
 uses
 {$DEFINE MT_FBM}
@@ -17,6 +17,10 @@ uses
 {$ELSE}
   helpers.stream,
   uitypes,
+{$ENDIF}
+{$IFDEF ALLOW_OPENCL}
+  opencl_better,
+  fastbitmap_opencl_extension,
 {$ENDIF}
   gridwalker,
   debug,endian, vcl.imaging.pngimage, vcl.imaging.jpeg, commandprocessor,
@@ -54,8 +58,11 @@ type
   Tcmd_FastBitmapIterate = class(TCommand)
   protected
     procedure DoExecute; override;
+    procedure DoExecute_CPU;
+    function DoExecute_GPU: boolean;
   public
     src, dest: TFastBitmap;
+    opencl: string;
     proc: TIterateExternalProc;
     OnTileStateChange: TTileNotifyEvent;
   end;
@@ -249,9 +256,11 @@ type
     property EnableAlpha: boolean read FEnableAlpha write FEnableAlpha;
     procedure Effect_MotionDetect(op: TFastBitmap; bAverageCompensate: boolean; bCalcWeightedCenter: boolean = true);
     property FileName: string read FFileNAme;
-    procedure IterateExternalSource(src: TFastBitmap; proc: TIterateExternalProc; fin: TAnonProc);
+    procedure IterateExternalSource(src: TFastBitmap; opencl: string; fallbackproc: TIterateExternalProc; fin: TAnonProc);
     procedure IterateExternalSource_end(cmd: Tcmd_FastBitmapIterate);
-    function IterateExternalSource_begin(src: TFastBitmap; proc: TIterateExternalProc; notify: TTileNotifyEvent = nil): Tcmd_FastBitmapIterate;
+    function IterateExternalSource_begin(src: TFastBitmap; opencl: string; fallbackproc: TIterateExternalProc; notify: TTileNotifyEvent = nil): Tcmd_FastBitmapIterate;
+    function ToByteArray: TDynByteArray;
+    procedure FromByteArray(ba: TDynByteArray);
 
 
 
@@ -1543,19 +1552,20 @@ end;
 
 
 procedure TFastBitmap.IterateExternalSource(src: TFastBitmap;
-  proc: TIterateExternalProc; fin: TAnonProc);
+  opencl: string; fallbackproc: TIterateExternalProc; fin: TAnonProc);
 begin
-  IterateExternalSource_End(IterateExternalSource_Begin(src, proc, nil));
+  IterateExternalSource_End(IterateExternalSource_Begin(src, opencl, fallbackproc, nil));
 end;
 
 
 function TFastBitmap.IterateExternalSource_begin(src: TFastBitmap;
-  proc: TIterateExternalProc; notify: TTileNotifyEvent = nil): Tcmd_FastBitmapIterate;
+  opencl: string; fallbackproc: TIterateExternalProc; notify: TTileNotifyEvent = nil): Tcmd_FastBitmapIterate;
 begin
   result := Tcmd_FastBitmapIterate.create;
   result.src := src;
   result.dest := self;
-  result.proc := proc;
+  result.opencl := opencl;
+  result.proc := fallbackproc;
   result.OnTileStateChange := notify;
   result.start;
 
@@ -1976,7 +1986,29 @@ begin
   end;
 
 end;
+
 {$ENDIF}
+
+function TFastBitmap.ToByteArray: TDynByteArray;
+begin
+  setlength(result, width*height*FAST_BITMAP_PIXEL_ALIGN);
+  var stride := width*FAST_BITMAP_PIXEL_ALIGN;
+  for var t:= 0 to height-1 do begin
+    MoveMem32(@result[t*stride], FScanlines[t], stride);
+  end;
+end;
+
+procedure TFastBitmap.FromByteArray(ba: TDynByteArray);
+begin
+  if length(ba) <> (width*height*FAST_BITMAP_PIXEL_ALIGN) then
+    raise ECritical.create('byte array is not exactly the right size for this bitmap.  Set Width and height prior to calleing FromByteArray()');
+  var stride := width*FAST_BITMAP_PIXEL_ALIGN;
+  for var t:= 0 to height-1 do begin
+    MoveMem32(FScanlines[t], @ba[t*stride], stride);
+  end;
+end;
+
+
 
 
 {$IFNDEF FMX}
@@ -2085,6 +2117,19 @@ end;
 { Tcmd_FastBitmapIterate }
 
 procedure Tcmd_FastBitmapIterate.DoExecute;
+begin
+  inherited;
+  try
+    if not DoExecute_GPU then begin
+      DoExecute_CPU;
+    end;
+  except
+    DoExecute_CPU;
+  end;
+
+end;
+
+procedure Tcmd_FastBitmapIterate.DoExecute_CPU;
 var
   x,y: ni;
 {$DEFINE USE_GRIDWALKER}
@@ -2148,6 +2193,49 @@ begin
     cl.ClearAndDestroyCommands;
     cl.free;
   end;
+end;
+
+function Tcmd_FastBitmapIterate.DoExecute_GPU: boolean;
+begin
+  result := false;
+  try
+  var cl := TopenCL_FastBitmap.Create;
+  try
+    var i: TCLBitmapInfo;
+    i.init;
+    i.Width := src.Width;
+    i.Height := src.Height;
+    i.pixelsize := PixelSize(src.PixelFormat);
+    i.ystrideInPixels := i.Width;
+    i.ptr := src.ToByteArray;
+    cl.src := i;
+
+    i.init;
+    i.Width := dest.Width;
+    i.Height := dest.Height;
+    i.pixelsize := PixelSize(dest.PixelFormat);
+    i.ystrideInPixels := i.Width;
+    i.ptr := dest.ToByteArray;
+    cl.dest := i;
+
+    cl.Iterations := cl.dest.Iterations;
+    cl.Prog := self.opencl;
+    cl.Execute;
+    dest.FromByteArray(cl.dest.ptr);
+    result := true;
+  finally
+    cl.Free;
+    cl := nil;
+  end;
+  except
+    on e: exception do begin
+      Debug.Log(e.message);
+      result := false;
+    end;
+  end;
+
+
+
 end;
 
 end.
