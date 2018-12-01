@@ -235,7 +235,7 @@ uses
 
 function ffmpeg_cpus: ni;
 begin
-  result := greaterof(1,lesserof(GetNumberOfProcessors,16));//ffmpeg doesn't really scale past 16 cpus
+  result := greaterof(1,lesserof(GetEnabledCPUCount,16));//ffmpeg doesn't really scale past 16 cpus
 end;
 
 function ffmpeg: string;
@@ -1806,7 +1806,7 @@ procedure Tcmd_VideoToJVID.InitExpense;
 begin
   inherited;
   CPUExpense := 0;
-  resources.SetResourceUsage('ffmpeg', lesserof(1.0,2/(GetnumberofProcessors)));
+  resources.SetResourceUsage('ffmpeg', lesserof(1.0,2/(GetEnabledCPUCount)));
 end;
 
 procedure TJVIDBS.Init;
@@ -1880,7 +1880,7 @@ procedure Tcmd_VideoToDmxVideo.InitExpense;
 begin
   inherited;
   CPUExpense := 0;
-  resources.SetResourceUsage('ffmpeg', lesserof(1.0,1/(lesserof(16,GetnumberofProcessors))));
+  resources.SetResourceUsage('ffmpeg', lesserof(1.0,1/(lesserof(16,GetEnabledCPUCount))));
 end;
 
 

@@ -5146,7 +5146,7 @@ begin
   FEndpoints := TReliableUDPEndpointList.Create;
   FEndpoints.OwnsObjects := false;
   Init;
-  self.BufferSize := 65536;
+  self.BufferSize := 65536*4;
 
 {$IFDEF QUEUE_INCOMING_UDP}
 {$IFDEF MULTI_QUEUE_IN}
