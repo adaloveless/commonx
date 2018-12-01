@@ -31,6 +31,7 @@ implementation
 procedure TOpenCL_RGBtoHSL.Init;
 begin
   inherited;
+  //NOTE: this doesn't actually do what it says... just an experinent
   Prog := '';
   Prog := Prog + '__kernel void main(__global float* outdata, __global float* data)';
   Prog := Prog + '{';
@@ -67,7 +68,6 @@ begin
 //    raise ECritical.create('output size mismatch!');
 //  setlength(output, self.Outputs[0].sz div (sizeof(output[0])));
 //  MoveMem32(@Output[0], self.outputs[0].mem, self.outputs[0].sz);
-
 end;
 
 end.
