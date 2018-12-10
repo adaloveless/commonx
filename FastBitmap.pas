@@ -2198,6 +2198,8 @@ end;
 function Tcmd_FastBitmapIterate.DoExecute_GPU: boolean;
 begin
   result := false;
+  if opencl='' then
+    exit;
   try
   var cl := TopenCL_FastBitmap.Create;
   try

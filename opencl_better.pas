@@ -33,7 +33,7 @@ type
   protected
 
   	num_devices_returned: cl_uint;
-    errcode_ret: cl_uint;
+    errcode_ret: cl_int;
     platform_devices: array of t_platform_device;
   	device_ids: array of cl_device_id; // compute device IDs
   	context: cl_context; // compute context
