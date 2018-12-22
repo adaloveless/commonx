@@ -8,7 +8,7 @@ uses
 {$DEFINE USE_COPY_FILE_EX}
   windows,
 {$ENDIF}
-  commandprocessor, typex,classes, systemx, tickcount, commandicons, ioutils, debug, numbers, orderlyinit, stringx;
+  dirfile, commandprocessor, typex,classes, systemx, tickcount, commandicons, ioutils, debug, numbers, orderlyinit, stringx;
 
 
 
@@ -427,7 +427,7 @@ procedure TFilecopycommand.SetSource(const Value: string);
 begin
   FSource := value;
   UniqueString(FSource);
-  Size := idglobalprotocols.FileSizeByName(value);
+  Size := dirfile.GEtfileSize(value);
   RecalculateExpense;
 end;
 
