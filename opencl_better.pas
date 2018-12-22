@@ -217,21 +217,24 @@ end;
 
 
 procedure TOpenCL.Execute;
+var
+  idx: ni;
+  t: ni;
 begin
   Prepare;
   Build;
 
   PrepareParams;//override this to define inputs/outputs with AddInput and AddOutput
-  var idx := 0;
+  idx := 0;
 
   //outputs first
-  for var t := 0 to high(outputs) do begin
+  for t := 0 to high(outputs) do begin
   	clAssert(clSetKernelArg(clKernel, idx, sizeof(cl_mem), @outputs[t].clmem));
     inc(idx);
   end;
 
   //inputs second
-  for var t := 0 to high(inputs) do begin
+  for t := 0 to high(inputs) do begin
   	clAssert(clSetKernelArg(clKernel, idx, sizeof(cl_mem), @inputs[t].clmem));
     inc(idx);
   end;
@@ -239,7 +242,7 @@ begin
   Run;
 
   //read back inputs
-  for var t := 0 to high(outputs) do begin
+  for t := 0 to high(outputs) do begin
   	clAssert(clEnqueueReadBuffer(CommandQueue, outputs[t].clmem, CL_TRUE, 0, outputs[t].sz, outputs[t].localmem, 0, nil, nil));
   end;
 
@@ -288,8 +291,10 @@ begin
 end;
 
 procedure TOpenCL.Run;
+var
+  status: cl_int;
 begin
-	var status := clEnqueueNDRangeKernel(CommandQueue, clKernel, 1{dimensions}, nil, @aglobaliterations[0], nil, 0, nil, nil);
+	status := clEnqueueNDRangeKernel(CommandQueue, clKernel, 1{dimensions}, nil, @aglobaliterations[0], nil, 0, nil, nil);
   classert(status);
 
   if (status <> 0) then begin

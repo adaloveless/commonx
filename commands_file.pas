@@ -8,7 +8,7 @@ uses
 {$DEFINE USE_COPY_FILE_EX}
   windows,
 {$ENDIF}
-  commandprocessor, typex,classes, systemx, tickcount, commandicons, ioutils, debug, idglobalprotocols, numbers, orderlyinit, stringx;
+  commandprocessor, typex,classes, systemx, tickcount, commandicons, ioutils, debug, numbers, orderlyinit, stringx;
 
 
 

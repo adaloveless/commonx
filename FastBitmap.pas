@@ -1990,20 +1990,24 @@ end;
 {$ENDIF}
 
 function TFastBitmap.ToByteArray: TDynByteArray;
+var
+  stride, t: nativeint;
 begin
   setlength(result, width*height*FAST_BITMAP_PIXEL_ALIGN);
-  var stride := width*FAST_BITMAP_PIXEL_ALIGN;
-  for var t:= 0 to height-1 do begin
+  stride := width*FAST_BITMAP_PIXEL_ALIGN;
+  for t:= 0 to height-1 do begin
     MoveMem32(@result[t*stride], FScanlines[t], stride);
   end;
 end;
 
 procedure TFastBitmap.FromByteArray(ba: TDynByteArray);
+var
+  stride, t: nativeint;
 begin
   if length(ba) <> (width*height*FAST_BITMAP_PIXEL_ALIGN) then
     raise ECritical.create('byte array is not exactly the right size for this bitmap.  Set Width and height prior to calleing FromByteArray()');
-  var stride := width*FAST_BITMAP_PIXEL_ALIGN;
-  for var t:= 0 to height-1 do begin
+  stride := width*FAST_BITMAP_PIXEL_ALIGN;
+  for t:= 0 to height-1 do begin
     MoveMem32(FScanlines[t], @ba[t*stride], stride);
   end;
 end;
@@ -2196,12 +2200,15 @@ begin
 end;
 
 function Tcmd_FastBitmapIterate.DoExecute_GPU: boolean;
+var
+  cl: TOpenCL_FastBitmap;
+  i: TCLBitmapInfo;
 begin
   result := false;
   try
-  var cl := TopenCL_FastBitmap.Create;
+  cl := TopenCL_FastBitmap.Create;
   try
-    var i: TCLBitmapInfo;
+
     i.init;
     i.Width := src.Width;
     i.Height := src.Height;
