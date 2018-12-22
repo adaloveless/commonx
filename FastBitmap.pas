@@ -2205,6 +2205,8 @@ var
   i: TCLBitmapInfo;
 begin
   result := false;
+  if opencl='' then
+    exit;
   try
   cl := TopenCL_FastBitmap.Create;
   try

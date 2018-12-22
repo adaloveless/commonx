@@ -3045,8 +3045,8 @@ begin
       RaiseLastOSError;
   end;
 
-  cnt := (ReturnLength div (SizeOf(TSystemLogicalProcessorInformation)-1));
-  for i := 0 to cnt do begin
+  cnt := (ReturnLength div (SizeOf(TSystemLogicalProcessorInformation)));
+  for i := 0 to cnt-1 do begin
     case Buffer[i].Relationship of
         RelationNumaNode: Inc(result.NumaNodeCount);
         RelationProcessorCore:
@@ -3065,7 +3065,7 @@ begin
           end;
         RelationProcessorPackage: Inc(result.ProcessorPackageCount);
         else
-          raise Exception.Create('Error: Unsupported LOGICAL_PROCESSOR_RELATIONSHIP value.');
+          raise Exception.Create('Error: Unsupported LOGICAL_PROCESSOR_RELATIONSHIP value: '+inttostr(ord(buffer[i].relationship)));
     end;
   end;
 end;

@@ -2026,7 +2026,8 @@ begin
 {$IFDEF CPUx86}
   OpenCL_handle:=LoadLibrary('OpenCL.dll');
 {$ELSE}
-  OpenCL_handle:=LoadLibrary('OpenCL64.dll');
+  OpenCL_handle:=LoadLibrary('OpenCL.dll');
+//  OpenCL_handle:=LoadLibrary('OpenCL64.dll');
 {$ENDIF}
   OpenCL_loaded:=OpenCL_handle<>0;
   result:=OpenCL_loaded;

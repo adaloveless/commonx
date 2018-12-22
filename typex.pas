@@ -47,6 +47,8 @@ const
 
 
 type
+  void = record
+  end;
 {$IFDEF CPUx64}
   TSize = uint64;
 {$ELSE}
