@@ -778,6 +778,7 @@ begin
   if not realthread.terminated then begin
     realthread.terminate;
   end;
+  waitforsingleobject(realthread.Handle, 0);
 
   poolloop := false;
   loop := false;

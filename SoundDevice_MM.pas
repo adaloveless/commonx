@@ -13,7 +13,7 @@ uses
 type
   TSoundDevice_MM = class(TAbstractSoundDevice, ISoundOscillatorRenderer)
   private
-    hWave: THandle;
+    hWave: HWAVEOUT;
     FSampleRate: ni;
     waveHeader: TWaveHdr;
     waveHeader_tag: WaveHdr_tag;
@@ -256,9 +256,17 @@ begin
 end;
 
 procedure TSoundDevice_MM.CleanupWave;
+var
+  err: ni;
 begin
   inherited;
-  waveoutclose(ni(hwave));
+  if hwave = 0 then
+    exit;
+  waveOutReset(hwave);
+  err := waveoutclose(hwave);
+  if  err <> MMSYSERR_NOERROR then
+    raise ECritical.create('error '+inttostr(err)+' cleaning up waveout');
+  hwave := 0;
 //waveoutopen(phwaveout(@hWave), DeviceID, @wf, 0, 0, 0);
 end;
 
