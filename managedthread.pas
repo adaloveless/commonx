@@ -2,6 +2,7 @@ unit managedthread;
 {$MESSAGE '*******************COMPILING ManagedThread.pas'}
 {$I 'DelphiDefs.inc'}
 {$DEFINE NEW_LOOP}
+{$DEFINE GWATCH}
 interface
 {x$INLINE AUTO}
 {x$DEFINE SUSPEND_ACK}
@@ -763,7 +764,6 @@ end;
 destructor TManagedThread.Destroy;
 begin
 
-  Debug.Log('Destroy '+nameex);
 
   if thread_shutdown_tracking_stage > 0 then
     Debug.Log(self, classname+' should be destroyed already at shutdown stage '+inttostr(thread_shutdown_tracking_stage)+'!!!!!!!!!!!!!!!!!');
@@ -775,6 +775,14 @@ begin
     realthread.resume;
     realthread.terminate;
   end;
+  if not realthread.terminated then begin
+    realthread.terminate;
+  end;
+
+  poolloop := false;
+  loop := false;
+  signal(evSleeping,true);
+  Debug.Log('Destroy '+nameex);
 
   WaitForSignal(evConcluded);
   Debug.Log('Concluded '+nameex);
