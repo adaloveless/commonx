@@ -2,9 +2,14 @@ unit FormBase;
 
 interface
 {$DEFINE DISABLE_GLASS}
+{x$DEFINE BEEP_ON_STATE_SAVE}
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, generics.collections,
+  Windows,
+{$IFDEF BEEP_ON_STATE_SAVE}
+  beeper,
+{$ENDIF}
+  Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, generics.collections,
   Dialogs, GDIPOBJ, betterobject, easyimage, menus, systemx, StdCtrls, ApplicationParams,commandprocessor,
   ComCtrls, ExtCtrls, GUIHelpers, GlassControls, screenscrape, typex, numbers, geometry ,gdiplus, guiproclist;
 
@@ -771,6 +776,9 @@ begin
     UPPut('STATE_'+token+'_top', top);
   end;
   UPPut('STATE_'+token+'_maximize', WindowState=wsMaximized);
+{$IFDEF BEEP_ON_STATE_SAVE}
+  beeper.BeepArray([500,1000], [50,50]);
+{$ENDIF}
 
 end;
 
