@@ -1,4 +1,4 @@
-package PackageCommonRX_Forms;
+package PackageCommonRX_Forms_Berlin;
 {$R *.res}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
@@ -37,7 +37,7 @@ requires
   IndyProtocols,
   IndyCore,
   bindengine,
-  PackageCommonRX,
+  PackageCommonRX_Berlin,
   vclwinx;
 
 contains

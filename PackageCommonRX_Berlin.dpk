@@ -1,4 +1,4 @@
-package PackageCommonRX;
+package PackageCommonRX_Berlin;
 
 {$R *.res}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
@@ -45,8 +45,7 @@ requires
   IndySystem,
   IndyCore,
   IndyProtocols,
-  bindengine,
-  vclwinx;
+  bindengine;
 
 contains
   GraphicButton in 'GraphicButton.pas',

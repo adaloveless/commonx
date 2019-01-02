@@ -224,7 +224,6 @@ type
     FPlayOrigin: int64;
     iters: int64;
     fillptr: int64;
-    hWave: THandle;
     FACtualBufferSize: nativeint;
     FBuf: array [0 .. (MAX_STREAM_BUFFER_SIZE - 1)] of T16BitStereoSoundSample;
 

@@ -98,7 +98,6 @@ type
 
     procedure Fill(iBufferPos: integer; mt: ToscMessageType; out res: TStereoSoundSample; iSampleTime: int64);overload;
 
-
   end;
 
 

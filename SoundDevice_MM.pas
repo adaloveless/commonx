@@ -8,20 +8,23 @@ uses
 {$IFDEF MSWINDOWS}
   winapi.mmsystem,
 {$ENDIF}
-  msacm, soundtools, typex, soundinterfaces, sysutils, classes, signals, ringbuffer, systemx, windows, soundsample;
+  msacm, soundtools, typex, soundinterfaces, sysutils, classes, signals, ringbuffer, systemx, windows, soundsample, managedthread;
 
 type
   TSoundDevice_MM = class(TAbstractSoundDevice, ISoundOscillatorRenderer)
   private
+    hWave: HWAVEOUT;
     FSampleRate: ni;
     waveHeader: TWaveHdr;
     waveHeader_tag: WaveHdr_tag;
 
   public
+    constructor Create(Owner: TObject; Manager: TThreadManager; pool: TThreadpoolBase); override;
     procedure Init;override;
     procedure SetupWave;override;
     procedure CleanupWave;override;
     function GetSamplePosition: int64;
+
     property SampleRate: ni read FSampleRate write FSampleRate;
     procedure AudioLoop;override;
   end;
@@ -248,11 +251,33 @@ begin
       until StopRequested;
 // until mmtime.sample >= (high(Fbuf) div 2);
 
+    FillMem(PByte(@Fbuf[0]), sizeof(FBuf), 0);
+
 end;
 
 procedure TSoundDevice_MM.CleanupWave;
+var
+  err: ni;
 begin
   inherited;
+  if hwave = 0 then
+    exit;
+  waveOutReset(hwave);
+  err := waveoutclose(hwave);
+  if  err <> MMSYSERR_NOERROR then
+    raise ECritical.create('error '+inttostr(err)+' cleaning up waveout');
+  hwave := 0;
+//waveoutopen(phwaveout(@hWave), DeviceID, @wf, 0, 0, 0);
+end;
+
+constructor TSoundDevice_MM.Create(Owner: TObject; Manager: TThreadManager;
+  pool: TThreadpoolBase);
+begin
+  inherited;
+  samplerate := 44100;
+  betterPriority := bpTimeCritical;
+  DeviceID := WAVE_MAPPER;
+
 
 end;
 
@@ -264,9 +289,7 @@ end;
 procedure TSoundDevice_MM.Init;
 begin
   inherited;
-  samplerate := 44100;
-  betterPriority := bpTimeCritical;
-  DeviceID := WAVE_MAPPER;
+
 
 end;
 
