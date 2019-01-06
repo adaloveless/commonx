@@ -58,11 +58,21 @@ uses
   ctypes;
 
 const
+{x$DEFINE ALT_DLLS}
 {$IF Defined(MSWINDOWS)}
 {$IFDEF CPUX86}
-  LibName = 'portaudio_x86.dll';
+  {$IFDEF ALT_DLLS}
+    LibName = 'portaudio_x86.dll';
+  {$ELSE}
+    LibName = 'libportaudio32bit.dll';
+  {$ENDIF}
 {$ELSE}
-  LibName = 'portaudio_x64.dll';
+  {$IFDEF ALT_DLLS}
+    LibName = 'portaudio_x64.dll';
+  {$ELSE}
+    LibName = 'libportaudio64bit.dll';
+  {$ENDIF}
+
 {$ENDIF}
 {$ELSEIF Defined(DARWIN)}
   // this is for portaudio version 19
@@ -269,7 +279,7 @@ type
       {** The well known unique identifier of this host API @see PaHostApiTypeId *}
       _type: TPaHostApiTypeId;
       {** A textual description of the host API for display on user interfaces. *}
-      name: PChar;
+      name: PAnsiChar;
 
       {**  The number of devices belonging to this host API. This field may be
        used in conjunction with Pa_HostApiDeviceIndexToDeviceIndex() to enumerate
