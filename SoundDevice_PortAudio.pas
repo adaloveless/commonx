@@ -10,6 +10,7 @@ uses
 type
   TSoundDevice_PortAudio = class(TAbstractSoundDevice, ISoundOscillatorRenderer)
   private
+    DevicesScanned: boolean;
     shuttingdown: boolean;
     FSampleRate: ni;
     function GetPADeviceCount: ni;
@@ -29,6 +30,7 @@ type
     str: pointer;
     lastsamplenumber:int64;
 
+    procedure InitFromPool;override;
     procedure Init;override;
     procedure SetupWave;override;
     procedure CleanupWave;override;
@@ -105,12 +107,21 @@ procedure TSoundDevice_PortAudio.RefreshDevices;
 var
   t: ni;
 begin
-  FDevicelist.clear;
-  for t:= 0 to PADeviceCount-1 do begin
-    if PADevices[t].maxOutputChannels > 0 then begin
-      var hapi := PAHostApis[PAdevices[t].hostApi];
-      FDeviceList.add(hapi.name+'/'+PAdevices[t].name);
+  try
+    FDevicelist.clear;
+    for t:= 0 to PADeviceCount-1 do begin
+      if PADevices[t].maxOutputChannels > 0 then begin
+        var hapi := PAHostApis[PAdevices[t].hostApi];
+        FDeviceList.add(hapi.name+'/'+PAdevices[t].name);
+      end;
     end;
+    //if this is the first time we've scanned the devices, also set
+    //default device
+    if self.DeviceCount > 0 then begin
+      DeviceName := Self.Devices[0];
+    end;
+  finally
+    DevicesScanned := true;
   end;
 
 end;
@@ -144,8 +155,17 @@ procedure TSoundDevice_PortAudio.Init;
 begin
   inherited;
   samplerate := 44100;
-  DeviceNAme := 'Microsoft Sound Mapper - Output';
+//  DeviceNAme := 'Microsoft Sound Mapper - Output';
 //  devidx := 16;
+end;
+
+procedure TSoundDevice_PortAudio.InitFromPool;
+begin
+  inherited;
+  RefreshDevices;
+  if self.DeviceCount > 0 then begin
+    DeviceName := Self.Devices[0];
+  end;
 end;
 
 function TSoundDevice_PortAudio.PAAudioFill(const inputbuffer,

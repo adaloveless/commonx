@@ -64,13 +64,13 @@ const
   {$IFDEF ALT_DLLS}
     LibName = 'portaudio_x86.dll';
   {$ELSE}
-    LibName = 'libportaudio32bit.dll';
+    LibName = 'portaudio_x86_2016.dll';
   {$ENDIF}
 {$ELSE}
   {$IFDEF ALT_DLLS}
     LibName = 'portaudio_x64.dll';
   {$ELSE}
-    LibName = 'libportaudio64bit.dll';
+    LibName = 'portaudio_x86_2016.dll';
   {$ENDIF}
 
 {$ENDIF}
