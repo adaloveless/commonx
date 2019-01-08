@@ -206,18 +206,28 @@ type
 
   TAbstractSoundDevice = class(TManagedThread, ISoundOscillatorRenderer)
   private
+    procedure SetDeviceID(const Value: cardinal);
+    function GetDevice(idx: ni): string;
+    function GetDeviceCount: ni;
+    procedure SetDeviceName(const Value: string);
+    function GetDeviceListH: IHolder<TStringlist>;
   protected
+    Factive: boolean;
     FFrequency: cardinal;
     FEngineStartTime: int64;
     FBufferSize: integer;
     FDeviceID: cardinal;
+    FPendingDeviceChange: boolean;
     FRemoteport: string;
     FRemoteHost: string;
+    FDeviceName: string;
+    FDeviceNames: TStringlist;
     FRemote: boolean;
     FOutPacket: TSoundPacket;
     FOutPacketDataPtr: nativeint;
     FPlayPosition: int64;
     FOscillators: TList<TSoundOscillator>;
+    FDeviceList: TStringlist;
     FTaskHandle: THandle;
     FTaskIndex: integer;
     fMuteAudio: boolean;
@@ -239,7 +249,8 @@ type
     function GetBufferSize: nativeint;
     function GetEngineSTartTime: int64;
     procedure SetEngineStartTime(const Value: int64);
-
+    procedure ResolveDeviceName;virtual;
+    procedure DeviceChanged;virtual;
   public
     UDP_LagRecordsWhenUnlocked: smallint;
     UDP_LagRecordsWhenLocked: smallint;
@@ -283,7 +294,7 @@ type
     property Position_int64: int64 read GetPosition_int64;
     procedure ResetPlayOrigin;
     property EngineStartTime : int64 read GetEngineSTartTime write SetEngineStartTime;
-    property DeviceID: cardinal read FDeviceID write FDeviceID;
+    property DeviceID: cardinal read FDeviceID write SetDeviceID;
     property Buffersize: nativeint read GetBufferSize write SetBufferSize;
     property SampleRate: nativeint read GEtSampleRate;
     property NyquistFrequency: nativeint read GEtNyquistFrequency;
@@ -301,6 +312,12 @@ type
     procedure EndSampling(iSampleTime: int64);
     function RenderSample(iSample: int64; out ss: TStereoSoundSample): boolean;
 
+    procedure RefreshDevices;virtual;
+    property DeviceCount: ni read GetDeviceCount;
+    property Devices[idx: ni]: string read GetDevice;
+    property DeviceName: string read FDeviceName write SetDeviceName;
+    property DeviceList: IHolder<TStringlist> read GetDeviceListH;
+    property Active: boolean read FActive;
   end;
 
 
@@ -1677,6 +1694,7 @@ end;
 constructor TAbstractSoundDevice.Create(Owner: TObject; Manager: TThreadManager; pool: TThreadpoolBase);
 begin
   inherited;
+  FDeviceList := TStringlist.create;
   FOscillators := TList<TSoundOscillator>.Create;
 
   ControlRoomVolume := 1.0;
@@ -1733,7 +1751,14 @@ begin
 
   FOscillators.free;
   remoteaudio.Free;
+  FDeviceList.free;
+  FDeviceList := nil;
   inherited;
+end;
+
+procedure TAbstractSoundDevice.DeviceChanged;
+begin
+  //no implementation required
 end;
 
 function ring_subtract(iptr: nativeint; buffer_size: nativeint; iDec: nativeint = 1): integer;
@@ -1769,7 +1794,7 @@ begin
   Status := 'Doing Stuff';
 
 
-  SetupWave;
+  FPendingDeviceChange := true;
   try
 
       // ---
@@ -1778,8 +1803,14 @@ begin
       FTaskIndex := 0;
       FTaskHandle := AvSetMmThreadCharacteristics_Safe('Pro Audio', FTaskIndex);
 
-      while not StopREquested do
+      while not StopREquested do begin
+        if FPendingDeviceChange then begin
+          CleanupWave;
+          SetupWave;
+          FPendingDeviceChange := false;
+        end;
         AudioLoop;
+      end;
 
 
   finally
@@ -1876,6 +1907,30 @@ begin
   result := FBufferSize;
 end;
 
+function TAbstractSoundDevice.GetDevice(idx: ni): string;
+begin
+  result := FDeviceList[idx];
+end;
+
+function TAbstractSoundDevice.GetDeviceCount: ni;
+begin
+  result := FDeviceList.count;
+end;
+
+function TAbstractSoundDevice.GetDeviceListH: IHolder<TStringlist>;
+begin
+  result := THolder<TStringlist>.create;
+  result.o := TStringlist.create;
+  result.o.Assign(FDeviceList);
+end;
+
+procedure TAbstractSoundDevice.RefreshDevices;
+begin
+  FDeviceList.clear;
+  FDeviceList.Add('WAVE_MAPPER');
+
+end;
+
 function TAbstractSoundDevice.GetEngineSTartTime: int64;
 begin
   result := FEngineSTartTime;
@@ -1946,6 +2001,16 @@ begin
 
 end;
 
+procedure TAbstractSoundDevice.ResolveDeviceName;
+begin
+  if FDeviceID < 0 then
+    FDeviceNAme := 'No Device Selected'
+  else
+    FDeviceName := 'index '+FDeviceID.tostring;
+
+
+end;
+
 procedure TAbstractSoundDevice.SetBufferSize(const Value: nativeint);
 begin
   Lock;
@@ -1954,6 +2019,23 @@ begin
   finally
     Unlock;
   end;
+end;
+
+procedure TAbstractSoundDevice.SetDeviceID(const Value: cardinal);
+begin
+  FDeviceID := Value;
+end;
+
+procedure TAbstractSoundDevice.SetDeviceName(const Value: string);
+begin
+  FDeviceName := Value;
+  if FPendingDeviceChange and Active then begin
+    Debug.Log('Another device change is still pending');
+    sleep(2000);
+  end;
+  FPendingDeviceChange := true;
+
+
 end;
 
 procedure TAbstractSoundDevice.SetEngineStartTime(const Value: int64);

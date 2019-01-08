@@ -17,7 +17,8 @@ type
     FSampleRate: ni;
     waveHeader: TWaveHdr;
     waveHeader_tag: WaveHdr_tag;
-
+  protected
+    procedure ResolveDeviceName; override;
   public
     constructor Create(Owner: TObject; Manager: TThreadManager; pool: TThreadpoolBase); override;
     procedure Init;override;
@@ -27,6 +28,7 @@ type
 
     property SampleRate: ni read FSampleRate write FSampleRate;
     procedure AudioLoop;override;
+
   end;
 
 function GetStandardWaveFormat(samplerate: cardinal = 44100): TWaveFormatEx;
@@ -277,6 +279,7 @@ begin
   samplerate := 44100;
   betterPriority := bpTimeCritical;
   DeviceID := WAVE_MAPPER;
+  DeviceName := 'WAVE_MAPPER';
 
 
 end;
@@ -289,6 +292,18 @@ end;
 procedure TSoundDevice_MM.Init;
 begin
   inherited;
+
+
+end;
+
+procedure TSoundDevice_MM.ResolveDeviceName;
+begin
+  inherited;
+  if DeviceID = WAVE_MAPPER then
+    FDeviceName := 'WAVE_MAPPER'
+  else
+    FDeviceName := 'Device ID '+inttostr(DeviceID);
+
 
 
 end;

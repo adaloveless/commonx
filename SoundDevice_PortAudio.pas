@@ -5,22 +5,32 @@ interface
 uses
   debug, tickcount, soundtools, typex, soundinterfaces, sysutils, classes,
   signals, ringbuffer, systemx, windows, orderlyinit,
-  portaudio, synth_functions, soundsample;
+  portaudio, synth_functions, soundsample, stringx;
 
 type
   TSoundDevice_PortAudio = class(TAbstractSoundDevice, ISoundOscillatorRenderer)
   private
+    DevicesScanned: boolean;
     shuttingdown: boolean;
     FSampleRate: ni;
-    FDeviceName: string;
-    function GetDeviceCount: ni;
-    function GetDevice(idx: ni): PPaDeviceInfo;
-    procedure SetDeviceName(const Value: string);
+    function GetPADeviceCount: ni;
+    function GetPADevice(idx: ni): PPaDeviceInfo;
+    function GetPAHostAPICount: ni;
+    function GetPAHostApiInfo(idx: ni): TPaHostApiInfo;
+  strict protected
+    procedure RefreshDevices;override;
+    property PADeviceCount: ni read GetPADeviceCount;
+    property PADevices[idx: ni]: PPaDeviceInfo read GetPADevice;
+    function PADeviceNameToPAIdx: ni;
+    property PAHostApicount: ni read GetPAHostAPICount;
+    property PAHostApis[idx: ni]: TPaHostApiInfo read GetPAHostApiInfo;
+  protected
+    procedure DeviceChanged; override;
   public
-    devidx: ni;
     str: pointer;
     lastsamplenumber:int64;
-    procedure ChooseDevice;
+
+    procedure InitFromPool;override;
     procedure Init;override;
     procedure SetupWave;override;
     procedure CleanupWave;override;
@@ -28,10 +38,8 @@ type
     property SampleRate: ni read FSampleRate write FSampleRate;
     procedure AudioLoop;override;
     function PAAudioFill(const inputbuffer, outputbuffer: pointer; framesperbuffer: cardinal; const timeinfo: TPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags): integer;
-    property DeviceCount: ni read GetDeviceCount;
-    property Devices[idx: ni]: PPaDeviceInfo read GetDevice;
-    property DeviceName: string read FDeviceName write SetDeviceName;
-    function GetAudioDeviceList: TStringlist;
+
+
   end;
 
   Tpatestdata = packed record
@@ -41,7 +49,8 @@ type
 
 function patestcallback(const inputbuffer, outputbuffer: pointer; framesperbuffer: cardinal; const timeinfo: TPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags; userdata:pointer): integer; cdecl;
 function pacallback_global(const inputbuffer, outputbuffer: pointer; framesperbuffer: cardinal; const timeinfo: TPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags; userdata:pointer): integer; cdecl;
-
+//function HostAPIToString(const api: TPaHostApiTypeId): string;
+function StringToHostApi(const s: string): ni;
 
 implementation
 
@@ -75,25 +84,11 @@ begin
     sleep(100);
 end;
 
-procedure TSoundDevice_PortAudio.ChooseDevice;
-var
-  t: ni;
-  di: PPaDeviceInfo;
-begin
-  for t:= 0 to DeviceCount-1 do begin
-    di := GetDevice(t);
-    debug.consolelog('Audio Device ['+inttostr(t)+']='+di.name);
-    debug.consolelog('API='+inttostr(di.hostApi));
-    if di.name = DeviceName then
-      devidx := t;
-  end;
-
-
-end;
 
 procedure TSoundDevice_PortAudio.CleanupWave;
 begin
   inherited;
+  FActive := false;
   shuttingdown := true;
   Pa_StopStream(str);
 //  while not (Pa_IsStreamSTopped(str)=1) do
@@ -102,25 +97,53 @@ begin
 end;
 
 
-function TSoundDevice_PortAudio.GetAudioDeviceList: TStringlist;
+procedure TSoundDevice_PortAudio.DeviceChanged;
+begin
+  inherited;
+
+end;
+
+procedure TSoundDevice_PortAudio.RefreshDevices;
 var
   t: ni;
 begin
-  result := TStringlist.create;
-  for t:= 0 to DeviceCount-1 do begin
-    result.add(devices[t].name);
+  try
+    FDevicelist.clear;
+    for t:= 0 to PADeviceCount-1 do begin
+      if PADevices[t].maxOutputChannels > 0 then begin
+        var hapi := PAHostApis[PAdevices[t].hostApi];
+        FDeviceList.add(hapi.name+'/'+PAdevices[t].name);
+      end;
+    end;
+    //if this is the first time we've scanned the devices, also set
+    //default device
+    if self.DeviceCount > 0 then begin
+      DeviceName := Self.Devices[0];
+    end;
+  finally
+    DevicesScanned := true;
   end;
 
 end;
 
-function TSoundDevice_PortAudio.GetDevice(idx: ni): PPaDeviceInfo;
+function TSoundDevice_PortAudio.GetPADevice(idx: ni): PPaDeviceInfo;
 begin
   result := Pa_GetDeviceInfo(idx);
 end;
 
-function TSoundDevice_PortAudio.GetDeviceCount: ni;
+function TSoundDevice_PortAudio.GetPADeviceCount: ni;
 begin
   result := Pa_GetDeviceCount;
+end;
+
+function TSoundDevice_PortAudio.GetPAHostAPICount: ni;
+begin
+  result := PAHostApicount;
+end;
+
+function TSoundDevice_PortAudio.GetPAHostApiInfo(idx: ni): TPaHostApiInfo;
+begin
+  result := Pa_GetHostApiInfo( idx )^;
 end;
 
 function TSoundDevice_PortAudio.GetSamplePosition: int64;
@@ -132,8 +155,17 @@ procedure TSoundDevice_PortAudio.Init;
 begin
   inherited;
   samplerate := 44100;
-  DeviceNAme := 'Microsoft Sound Mapper - Output';
+//  DeviceNAme := 'Microsoft Sound Mapper - Output';
 //  devidx := 16;
+end;
+
+procedure TSoundDevice_PortAudio.InitFromPool;
+begin
+  inherited;
+  RefreshDevices;
+  if self.DeviceCount > 0 then begin
+    DeviceName := Self.Devices[0];
+  end;
 end;
 
 function TSoundDevice_PortAudio.PAAudioFill(const inputbuffer,
@@ -251,11 +283,26 @@ begin
 
 end;
 
-procedure TSoundDevice_PortAudio.SetDeviceName(const Value: string);
+function TSoundDevice_PortAudio.PADeviceNameToPAIdx: ni;
+var
+  t: ni;
+  di: PPaDeviceInfo;
+  sApi, sDevice: string;
 begin
-  FDeviceName := Value;
-  ChooseDevice;
+  result := -1;
+  SplitString(DeviceName, '/', sApi, sDevice);
+  for t:= 0 to PADeviceCount-1 do begin
+    di := GetPADevice(t);
+//    debug.consolelog('Audio Device ['+inttostr(t)+']='+di.name);
+//    debug.consolelog('API='+inttostr(di.hostApi));
+    var sThisApi := PaHostApis[di.hostapi].name;
+    if (di.name = sDevice) and (sThisApi=sApi) then
+      exit(t);
+  end;
+
 end;
+
+
 
 procedure TSoundDevice_PortAudio.SetupWave;
 var
@@ -263,11 +310,16 @@ var
   err: TPaError;
 begin
   inherited;
+  shuttingdown := false;
   //Pa_Initialize;
-  sp.device := devidx;
+  Debug.Log('Setup '+DeviceName);
+  sp.device := PADeviceNameToPAIdx;
   sp.channelCount := 2;
   sp.sampleFormat := paFloat32;
-  sp.suggestedLatency := 0.02;//Pa_GetDeviceInfo(devidx).defaultLowOutputLatency;
+
+  var info := Pa_GetDeviceInfo(sp.device);
+  if info <> nil then
+    sp.suggestedLatency := info.defaultLowOutputLatency;
 
   sp.hostApiSpecificStreamInfo := nil;
 
@@ -278,6 +330,7 @@ begin
   end;
   //Pa_OpenDefaultStream(str, 0, 2, paFloat32, 44100, 512, @pacallback_global, pointer(self));
   Pa_StartStream(str);
+  FActive := true;
 
 end;
 
@@ -308,6 +361,52 @@ function pacallback_global(const inputbuffer, outputbuffer: pointer; framesperbu
 begin
   result := TSoundDevice_PortAudio(userdata).PAAudioFill(inputbuffer, outputbuffer, framesperbuffer, timeinfo, statusFlags);
 end;
+
+//function HostAPIToString(const api: TPaHostApiTypeId): string;
+//begin
+//  result := '';
+//  case api of
+//    paInDevelopment: result := 'InDevelopment';
+//    paDirectSound: result := 'DirectSound';
+//    paMME: result := 'MME';
+//    paASIO: result := 'ASIO';
+//    paSoundManager: result := 'SoundManager';
+//    paCoreAudio: result := 'CoreAudio';
+//    paOSS: result := 'OSS';
+//    paALSA: result := 'ALSA';
+//    paAL: result := 'AL';
+//    paBeOS: result := 'BeOS';
+//    paWDMKS: result := 'WDMKS';
+//    paJACK: result := 'JACK';
+//    paWASAPI: result := 'WASAPI';
+//    paAudioScienceHPI: result := 'AudioScienceHPI';
+//  else
+//    raise ECritical.create('Unsupported Port Audio API');
+//  end;
+//
+//end;
+
+function StringToHostApi(const s: string): ni;
+begin
+  result := 0;
+  if s = 'InDevelopment' then exit(paInDevelopment);
+  if s = 'DirectSound' then exit(paDirectSound);
+  if s = 'MME' then exit(paMME);
+  if s = 'ASIO' then exit(paASIO);
+  if s = 'SoundManager' then exit(paSoundManager);
+  if s = 'CoreAudio' then exit(paCoreAudio);
+  if s = 'OSS' then exit(paOSS);
+  if s = 'ALSA' then exit(paALSA);
+  if s = 'AL' then exit(paAL);
+  if s = 'BeOS' then exit(paBeOS);
+  if s = 'WDMKS' then exit(paWDMKS);
+  if s = 'JACK' then exit(paJACK);
+  if s = 'WASAPI' then exit(paWASAPI);
+  if s = 'AudioScienceHPI' then exit(paAudioScienceHPI);
+
+
+end;
+
 
 
 initialization
