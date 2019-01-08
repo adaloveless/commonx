@@ -25,10 +25,11 @@ type
     FStartSuspended: Boolean;
     FSynchronizeFinish: boolean;
     FSynchronizeExecute: boolean;
-  protected
+  strict private
     procedure SyncFinished;
     procedure SyncExecute;
     procedure SyncError;
+  protected
     procedure DoExecute; override;
   public
     procedure InitExpense; override;
@@ -41,8 +42,19 @@ type
 
 //    class constructor Create;
 //    class destructor Destroy;
-
  end;
+  TAnonTimerProc = reference to procedure();
+
+  TAnonymousTimer = class(TAnonymousCommand<boolean>)
+  public
+    timerproc: TAnonTimerProc;
+    procedure InitExpense;override;
+  end;
+
+{ TAnonymousTimer }
+
+
+function SetTimer(interval: ni; ontimerproc: TAnonTimerProc): TAnonymousTimer;
 
 implementation
 
@@ -183,5 +195,32 @@ begin
   inherited;
   sleep(4000);
 end;
+
+procedure TAnonymousTimer.InitExpense;
+begin
+  inherited;
+  CPuExpense := 0;
+end;
+
+function SetTimer(interval: ni; ontimerproc: TAnonTimerProc): TAnonymousTimer;
+begin
+  result := TAnonymousTimer.create(
+    function : boolean
+    begin
+      sleep(interval);
+      exit(true);
+    end,
+    procedure (b: boolean)
+    begin
+      ontimerproc();
+    end,
+    procedure (e: exception)
+    begin
+    end
+  );
+  result.FireForget := true;
+  result.start;
+end;
+
 
 end.

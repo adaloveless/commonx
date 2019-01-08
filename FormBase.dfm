@@ -14,6 +14,7 @@ object frmBase: TfrmBase
   Position = poScreenCenter
   Scaled = False
   OnClose = FormClose
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnPaint = FormPaint

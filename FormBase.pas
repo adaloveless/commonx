@@ -3,19 +3,31 @@ unit FormBase;
 interface
 {$DEFINE DISABLE_GLASS}
 {x$DEFINE BEEP_ON_STATE_SAVE}
+{$DEFINE LOCALCOMMANDWAIT}
 
 uses
-  Windows,
+  Windows, anoncommand,
 {$IFDEF BEEP_ON_STATE_SAVE}
   beeper,
 {$ENDIF}
-  Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, generics.collections,
+  Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, generics.collections, tickcount,
   Dialogs, GDIPOBJ, betterobject, easyimage, menus, systemx, StdCtrls, ApplicationParams,commandprocessor,
   ComCtrls, ExtCtrls, GUIHelpers, GlassControls, screenscrape, typex, numbers, geometry ,gdiplus, guiproclist;
 
 const
   CM_UPDATE_STATE = WM_USER+100;
 type
+  TfrmBase = class;//forward
+  TAnonTimerProc = reference to procedure();
+
+  TAnonFormTimer = class(TAnonymousCommand<boolean>)
+  public
+    form: TfrmBase;
+    timerproc: TAnonTimerProc;
+    procedure InitExpense;override;
+  end;
+
+
   TfrmBase = class(TForm)
     tmAfterFirstActivation: TTimer;
     tmDelayedFormSave: TTimer;
@@ -26,6 +38,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure tmAfterFirstActivationTimer(Sender: TObject);
     procedure tmDelayedFormSaveTimer(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     FLateLoaded: boolean;
     FDisabledtimers: TList<TTimer>;
@@ -54,8 +67,10 @@ type
     { Private declarations }
 
   protected
+    FMonitoringCommands: TList<TCommand>;
     FToken: string;
     statuspanel: TPanel;
+    statusprog: TProgressBar;
     procedure SaveState;virtual;
     procedure LoadState;virtual;
     procedure LoadLateState;virtual;
@@ -98,6 +113,9 @@ type
     property CreatingThreadID: THandle read FCreatingThreadID;
     procedure Move(var Msg: TWMMove);message WM_MOVE;
     procedure DoMove;virtual;
+    procedure ShowStatus();overload;
+    procedure ShowStatus(sMEssage: string);overload;
+    procedure ShowStatus(c: TCommand);overload;
   published
     property OnPaintPlus: TGPGraphicEvent read FOnPaintPLus write FOnPaintPLus;
     property OnFirstActivation: TNotifyEvent read FOnFirstActivation write FOnFirstACtivation;
@@ -110,7 +128,7 @@ type
     procedure RestoreDisabledTimers;
     function AsInterface<T:IUnknown>(guid: TGUID):T;
     function IsInterface(guid: TGUID):boolean;
-    procedure ShowStatus(sMEssage: string);
+
     procedure HideStatus;
 
     function WindowCenter: TPoint;
@@ -122,7 +140,11 @@ type
     procedure DelaySaveState;
     procedure PushCursor(cr: TCursor);
     procedure PopCursor;
+    procedure CleanupExpiredCommands;
+    function SetTimer(interval: ni; ontimerproc: TAnonTimerProc): TAnonFormTimer;
+    procedure SetTimerAndWatch(interval: ni; ontimerproc: TAnonTimerProc);
   end;
+
 
 
 type
@@ -130,7 +152,11 @@ type
 
 implementation
 
-uses FrameBase, FormWindowManager, debug;
+uses FrameBase, FormWindowManager,
+{$IFNDEF LOCALCOMMANDWAIT}
+  progressform,
+{$ENDIF}
+  debug;
 
 {$R *.dfm}
 
@@ -188,6 +214,7 @@ begin
 end;
 
 
+
 procedure TfrmBase.EnableGlass;
 var
   t: integer;
@@ -242,9 +269,19 @@ begin
     Action := caFree;
 end;
 
+procedure TfrmBase.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  CleanupExpiredCommands;
+  //if you don't cleanup any commands that are potentially referencing
+  //the form before shutting down, an Access Violation may likely occur.
+  CanClose := FMonitoringCommands.count = 0;
+
+end;
+
 procedure TfrmBase.FormCreate(Sender: TObject);
 begin
   inherited;
+  FMonitoringcommands := TList<TCommand>.create;
   FToken := name;
   FCreatingThreadID := GetCurrentThreadId;
   InitializeCriticalSEction(sect);
@@ -258,6 +295,9 @@ procedure TfrmBase.FormDestroy(Sender: TObject);
 begin
   Detach;
   FDisabledTimers.free;
+  FMonitoringCommands.free;
+  Fmonitoringcommands := nil;
+  inherited;
 
 end;
 
@@ -627,19 +667,41 @@ end;
 
 procedure TfrmBase.WaitForSinglecommand(c: TCommand);
 begin
+
+{$IFDEF LOCALCOMMANDWAIT}
+  if c.FireForget then
+    raise Ecritical.create('you cannot watch a fireforget '+c.ClassName);
   self.showstatus(c.Status);
   try
-    while not c.IsComplete do begin
-      sleep(100);
-      self.ShowStatus(c.Status);
-    end;
+    var wasenabled := self.Enabled;
     try
-      c.WaitFor;
-    except
+      var tmLastupdate := GetTicker;
+      while not c.IsComplete do begin
+        sleep(1000 div 120);
+        if GetTimeSince(tmLastUpdate) > 500 then begin
+          self.ShowStatus(c);
+          tmLastUpdate := getticker;
+        end;
+        application.processmessages;
+      end;
+      try
+        c.WaitFor;
+      except
+      end;
+    finally
+      enabled := wasenabled;
     end;
   finally
     self.HideStatus;
   end;
+{$ELSE}
+  progressform.BeginProgress;
+  try
+    progressform.frmProgress.WatchSingleCommand(c);
+  finally
+    progressform.endprogress;
+  end;
+{$ENDIF}
 
 end;
 
@@ -851,17 +913,65 @@ begin
   end;
 end;
 
+function TfrmBase.SetTimer(interval: ni; ontimerproc: TAnonTimerProc): TAnonFormTimer;
+var
+  c: TAnonFormTimer;
+begin
+  c := TAnonFormTimer.create(
+    function : boolean
+    begin
+      var tmStart := GetTicker;
+      c.status := 'Please wait...';
+      c.step := 0;
+      c.stepcount := interval;
+      while gettimesince(tmStart) < interval do begin
+        sleep(lesserof(interval, ((tmSTart+interval)-getticker), 500));
+        c.step := gettimesince(tmStart);
+      end;
+      exit(true);
+    end,
+    procedure (b: boolean)
+    begin
+      ontimerproc();
+    end,
+    procedure (e: exception)
+    begin
+    end
+  );
+  result := c;
+  result.FireForget := false;
+  result.SynchronizeFinish := true;
+  result.form := self;
+  result.start;
+  FMonitoringCommands.add(result);
+  CleanupExpiredcommands;
+
+
+end;
+
+procedure TfrmBase.SetTimerAndWatch(interval: ni;
+  ontimerproc: TAnonTimerProc);
+begin
+  var c := SetTimer(interval, ontimerproc);
+  self.WaitForSinglecommand(c);
+  CleanupExpiredCommands;
+end;
+
 procedure TfrmBase.SetToken(const Value: string);
 begin
   FToken := value;
 end;
 
-procedure TfrmBase.ShowStatus(sMEssage: string);
+procedure TfrmBase.ShowStatus;
 begin
   if csDesigning in componentstate then
     exit;
   if statuspanel = nil then begin
     statuspanel := TPanel.create(self);
+
+    statusprog := TProgressBar.create(self);
+    statusprog.parent := statuspanel;
+    statusprog.align := alBottom;
   end;
 
   statuspanel.Font.Size := 18;
@@ -871,10 +981,28 @@ begin
   statuspanel.Left := 0;
   statuspanel.top := (clientheight div 16) * 7;
   statuspanel.BringToFront;
-  statuspanel.caption := sMessage;
 
+
+end;
+
+procedure TfrmBase.ShowStatus(c: TCommand);
+begin
+  showstatus();
+  statuspanel.caption := c.Status;
+  statusprog.visible := true;
+  statusprog.Min := 0;
+  statusprog.MAx := c.StepCount;
+  statusprog.Position := c.Step;
   refresh;
 
+end;
+
+procedure TfrmBase.ShowStatus(sMEssage: string);
+begin
+  showStatus();
+  statuspanel.caption := sMessage;
+  statusprog.visible := false;
+  refresh;
 end;
 
 procedure TfrmBase.tmAfterFirstActivationTimer(Sender: TObject);
@@ -908,6 +1036,19 @@ begin
 
 end;
 
+procedure TfrmBase.CleanupExpiredCommands;
+begin
+
+  while (FMonitoringCommands.count > 0) and (FMonitoringCommands[0].IsComplete) do begin
+    FMonitoringCommands[0].WaitFor;
+    FMonitoringCommands[0].free;
+    FMonitoringCommands.delete(0);
+  end;
+
+
+end;
+
+
 function TfrmBase.IsInterface(guid: TGUID): boolean;
 var
   cout:IUnknown;
@@ -916,6 +1057,14 @@ begin
 end;
 
 
+
+{ TAnonymousTimer }
+
+procedure TAnonFormTimer.InitExpense;
+begin
+  inherited;
+  cpuexpense := 0.0;
+end;
 
 initialization
 
