@@ -4958,11 +4958,11 @@ begin
     expanded.haswork := false;
     expanded.beginstart;
 
-    Debug.Log('got thread waiting for out of pool');
+    //Debug.Log('got thread waiting for out of pool');
     WaitForSignal(expanded.evOutOfPool);
     Lock;
     try
-      Debug.Log('put in list');
+      //Debug.Log('put in list');
       FList.add(expanded);
     finally
       Unlock;
