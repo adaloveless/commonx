@@ -36,7 +36,7 @@ type
     procedure Detach; override;
     property SynchronizeFinish: boolean read FSynchronizeFinish write FSynchronizeFinish;
     constructor Create(AThreadFunc: TFunc<T>; AOnFinishedProc: TProc<T>;AOnErrorProc: TProc<Exception>; ACreateSuspended: Boolean = False;
-      FreeOnComplete: Boolean = True);
+      FreeOnComplete: Boolean = True);reintroduce;
     destructor Destroy;override;
 
 

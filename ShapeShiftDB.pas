@@ -2786,7 +2786,7 @@ end;
 
 procedure Tcmd_PushVolume.InitExpense;
 begin
-  CPUExpense := systemx.GetnumberofProcessors/32;
+  CPUExpense := systemx.GetEnabledCPUCount/32;
   MemoryExpense := 0.25;
 end;
 

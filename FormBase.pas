@@ -1038,6 +1038,8 @@ end;
 
 procedure TfrmBase.CleanupExpiredCommands;
 begin
+  if FMonitoringCommands = nil then
+    exit;
 
   while (FMonitoringCommands.count > 0) and (FMonitoringCommands[0].IsComplete) do begin
     FMonitoringCommands[0].WaitFor;

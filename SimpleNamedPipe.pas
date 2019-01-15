@@ -26,8 +26,8 @@ type
   public
     constructor Create; override;
     destructor Destroy; override;
-    function Connect: boolean; override;
-    procedure Disconnect;override;
+    function DoConnect: boolean; override;
+    procedure DoDisconnect;override;
 
   end;
 
@@ -48,13 +48,14 @@ begin
   sPipeName := '';
 end;
 //-------------------------------------------------------------------------------
-function TSimpleNamedPipeConnection.Connect: boolean;
+function TSimpleNamedPipeConnection.DoConnect: boolean;
 //Connects to the Named pipe.  Returns TRUE if successful, else FALSE.
 var
   bTimeout: boolean;
   tm1, tm2: integer;
   iLastError: integer;
 begin
+  inherited;
   sPipeName := '\\'+FHostName+'\pipe\'+FEndPoint;
   result := false;
   bTimeOut := false;
@@ -93,9 +94,10 @@ begin
 
 end;
 //-------------------------------------------------------------------------------
-procedure TSimpleNamedPipeConnection.Disconnect;
+procedure TSimpleNamedPipeConnection.DoDisconnect;
 //Closes the pipe
 begin
+  inherited;
   CloseHandle(hPipe);
 end;
 //-------------------------------------------------------------------------------
