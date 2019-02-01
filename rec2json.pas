@@ -27,7 +27,8 @@ type
 
 
 function RecToJSon(inst: pointer; TypeInfoOfRec: pointer): string;
-function JSONtoRec(j: TJSON; inst: pointer; TypeInfoOfRec: pointer): string;
+function JSONtoRec(j: TJSON; inst: pointer; TypeInfoOfRec: pointer): string;overload;
+procedure JSONToRec(s: string; inst: pointer; TypeInfoOfRec: pointer);overload;
 
 
 
@@ -159,6 +160,17 @@ begin
   end;
 end;
 
+procedure JSONToRec(s: string; inst: pointer; TypeInfoOfRec: pointer);overload;
+begin
+  var j := TJSON.Create;
+  try
+    j.FromString(s);
+    JSONToRec(s, inst, TypeInfoOfRec);
+  finally
+    j.free;
+    j := nil;
+  end;
+end;
 function JSONtoRec(j: TJSON; inst: pointer; TypeInfoOfRec: pointer): string;
 var
   FContext: TRTTIContext;

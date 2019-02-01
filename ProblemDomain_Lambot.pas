@@ -227,7 +227,6 @@ const
   INVALID_CURRENCY_ID = -1;
   QUOTE_WINDOW = 60;
 
-  BTX_DUST = 0.0005;
   MAX_OPEN_TRADES = 75;
   FUND_RISK_DIVISOR = 1;
   SWING_TAKE_DIV = 4;
@@ -360,7 +359,7 @@ type
     destructor Destroy; override;
 
     property TradeCount: ni read GetTradecount;
-    function CreatePosition(sCoin: string; amountToSpend: double; maxrate: double; strategy, TypicalSwing, historicalBottom: double): string;
+    function CreatePosition(sBase, sCoin: string; amountToSpend: double; maxrate: double; strategy: double; jsCreate: string): string;
     function GetTradeByUUID(sUUID: string): TOpenPosition;
     function CheckPositions(liquidate: boolean; thr: TManagedThread): boolean;
     procedure PickTrades;
@@ -379,8 +378,8 @@ type
     function FindOpenPosition(sCoin: string; iWindowSize: ni): POpenPosition;overload;
     function FindOpenPosition(id: int64): PopenPosition;overload;
 
-    procedure BeginOpenPosition(p: POpenPosition; forceRate: double = 0.0);
-    procedure BeginClosePosition(p: POpenPOsition);
+    procedure BeginOpenPosition(p: POpenPosition; frommarket: string = 'USDT'; forceRate: double = 0.0);
+    procedure BeginClosePosition(p: POpenPOsition; tomarket: string = 'USDT');
     procedure ForceClose(id: int64);
 
     procedure SendSellMail(p: TOpenPosition);
@@ -1665,84 +1664,13 @@ begin
 
 end;
 
-procedure TPDTrades.BeginClosePosition(p: POpenPOsition);
+procedure TPDTrades.BeginClosePosition(p: POpenPOsition; tomarket: string = 'USDT');
 var
   j,f: IJSONHolder;
-  function  SellAlternatePath: boolean;
-  var
-    sp: TBestBuy;
-    j2: IJSONHolder;
-    est: double;
-  begin
-    result := false;
-    try
-    {$DEFINE SELL_BEST_PATH}
-    {$IFNDEF SELL_BEST_PATH}
-      exit(false);
-    {$ENDIF}
-    est := p.currentrate;
-
-    sp := btx.GetBestSellPath(p.coin, p.buyamount, false);
-    if comparetext(sp.path,'btc')=0 then begin
-      exit(false);
-    end else begin
-      ssdb.CoinLog('btc', p.coin, 'Selling via ETH path');
-      ssdb.CoinLog('btc', p.coin, 'Beginning ETH path sell at '+sat(est));
-      result := true;
-      j := btx.SellLimit('ETH-'+p.coin, p.UnitsToProcess, sp.intermediateCrav.finalRate);
-      if j.o['success'].value = true then begin
-        repeat
-          ssdb.CoinLog('btc', p.coin, 'GetTradeByUUID');
-          f := btx.GetTradeByUUID(j.o['result']['uuid'].AsString);
-          if f.o['success'].value <> true then begin
-            ssdb.CoinLog('btc', p.coin, 'failed GetTradeByUUID '+f.o['message'].value);
-          end;
-          if f.o['result']['IsOpen'].value = true then begin
-            ssdb.CoinLog('btc', p.coin, 'still open');
-            sleep(1000);
-          end;
-        until f.o['result']['IsOpen'].value = false;
-        j2 := j;
-        ssdb.CoinLog('btc', p.coin, 'Sold for  '+sat(j.o['result']['PricePerUnit'].Value)+' ETH');
-        ssdb.CoinLog('btc', p.coin, 'Selling ETH for BTC');
-        j := btx.SellLimit('BTC-ETH', (f.o['result']['PricePerUnit'].value*f.o['result']['Quantity'].value)-f.o['result']['CommissionPaid'].value, sp.crav.finalRate);
-        if j.o['success'].value = true then begin
-          ssdb.CoinLog('btc', p.coin, 'BTC-ETH sell stage was successful');
-          p.SellUUID := j.o['result']['uuid'].AsString;
-          p.state := POSITIONSTATE_SELLING;
-          ssdb.CoinLog('btc', p.coin, 'ETH was sold for '+sat(j.o['result']['PricePerUnit'].Value)+' ETH');
-          p.CurrentValue := j.o['result']['PricePerUnit'].Value*j.o['result']['Quantity'].Value;
-          p.sellrate := est;
-          ssdb.CoinLog('btc', p.coin, 'Est BTC sell rate via eth  '+sat(j.o['result']['PricePerUnit'].Value)+' ETH');
-
-          ssdb.ChangePositionState(p.id, p.state);
-        end else begin
-          ssdb.CoinLog('btc', p.coin, 'When closing BTC-ETH from '+p.coin+' got '+j.o['message'].AsString);
-          if comparetext(j.o['message'].asstring,'insufficient_funds')=0 then begin
-            ssdb.CoinLog('btc', p.coin, 'Moving to cancel state because message was insufficient_funds');
-            ssdb.ChangePositionState(p.id, p.state);
-            p.state := POSITIONSTATE_CANCEL;
-          end;
-        end;
-
-      end else begin
-        ssdb.CoinLog('btc', p.coin, 'When closing '+p.coin+' via ETH got '+j.o['message'].AsString);
-        p.state := POSITIONSTATE_CANCEL;
-        if comparetext(j.o['message'].asstring,'insufficient_funds')=0 then begin
-          ssdb.ChangePositionState(p.id, p.state);
-        end;
-      end;
-    end;
-    except
-      on E: Exception do begin
-        ssdb.CoinLog('btc', p.coin, 'When closing '+p.coin+' via ETH got EXCEPTION '+e.message);
-      end;
-    end;
-  end;
 var
   oba: TorderBookAnalysis;
 begin
-  oba := btx.GetOrderBookAnalysis('BTC', p.coin, btIamSelling, p.buyamount,false);
+  oba := btx.GetOrderBookAnalysis(tomarket, p.coin, btIamSelling, p.buyamount,false);
   p.currentrate := oba.crav.convertedRate;
   if ((p.UnitsToProcess * p.currentRate) < BTX_DUST) and (((p.UnitsToProcess * p.currentRate) > 0.0)) then begin
     ssdb.CoinLog('btc', p.coin, 'dust!');
@@ -1750,18 +1678,18 @@ begin
 //    p.state := POSITIONSTATE_ABANDONED_DUST;
 //    ssdb.ChangePositionState(p.id, p.state);
   end else begin
-    ssdb.CoinLog('btc', p.coin, 'Sell position of '+sat(p.buyamount)+' at '+SAT(OBA.CRAV.finalrate));
-    if not SellAlternatePath then begin
-      ssdb.CoinLog('btc', p.coin, 'Selling via classic path.');
-      j := btx.SellLimit('BTC-'+p.coin, p.UnitsToProcess, oba.crav.finalRate);
-      ssdb.CoinLog('btc', p.coin, 'Sell Request Submitted');
+    ssdb.CoinLog(tomarket, p.coin, 'Sell position of '+sat(p.buyamount)+' at '+SAT(OBA.CRAV.finalrate));
+    if true then begin
+      ssdb.CoinLog(tomarket, p.coin, 'Selling via classic path.');
+      j := btx.SellLimit(tomarket+'-'+p.coin, p.UnitsToProcess, oba.crav.finalRate);
+      ssdb.CoinLog(tomarket, p.coin, 'Sell Request Submitted');
       if j.o['success'].value = true then begin
-        ssdb.CoinLog('btc', p.coin, 'Sell Successful');
+        ssdb.CoinLog(tomarket, p.coin, 'Sell Successful');
         p.state := POSITIONSTATE_SELLING;
         p.SellUUID := j.o['result']['uuid'].AsString;
         ssdb.ChangePositionState(p.id, p.state);
       end else begin
-        ssdb.CoinLog('btc', p.coin, 'When closing '+p.coin+' '+j.o['message'].AsString);
+        ssdb.CoinLog(tomarket, p.coin, 'When closing '+p.coin+' '+j.o['message'].AsString);
         if comparetext(j.o['message'].asstring,'insufficient_funds')=0 then begin
           p.state := POSITIONSTATE_CANCEL;
           ssdb.ChangePositionState(p.id, p.state);
@@ -1771,7 +1699,7 @@ begin
   end;
 end;
 
-procedure TPDTrades.BeginOpenPosition(p: POpenPosition; forceRate: double = 0.0);
+procedure TPDTrades.BeginOpenPosition(p: POpenPosition; frommarket: string = 'USDT'; forceRate: double = 0.0);
 var
   j: IJSONHolder;
   oba: TOrderBookAnalysis;
@@ -1782,7 +1710,7 @@ begin
 
   oba := btx.GetOrderBookAnalysis('BTC', p.coin, btIamBuying, p.buyCost,false);
   p.currentrate := oba.crav.finalRate;
-  p.buyrate := oba.crav.finalRate;
+//  p.buyrate := oba.crav.finalRate;
   p.peakrate := p.buyrate;
   p.lowestRate := p.buyrate;
   if forcerate > 0.0 then begin
@@ -1790,7 +1718,7 @@ begin
   end else begin
     useRate := oba.crav.finalRate*1.05;
   end;
-  ssdb.CoinLog('btc', p.coin, 'buy '+sat(p.buyamount)+' '+p.coin+' at '+sat(useRate)+' for '+sat(p.buycost));
+  ssdb.CoinLog(p.base, p.coin, 'buy '+sat(p.buyamount)+' '+p.coin+' at '+sat(useRate)+' for '+sat(p.buycost));
   ssdb.BeginOpenPosition(p.id, p.id);
   j := btx.BuyLimit('BTC-'+p.coin, p.buycost / useRate, useRate);
   if not j.o['success'].value then begin
@@ -1891,8 +1819,8 @@ begin
   strat.pdTrades := self;
 end;
 
-function TPDTrades.CreatePosition(sCoin: string; amountToSpend,
-  maxrate: double; strategy, TypicalSwing, historicalBottom: double): string;
+function TPDTrades.CreatePosition(sBase, sCoin: string; amountToSpend,
+  maxrate: double; strategy: double; jsCreate: string): string;
 var
 //  j: IHolder<TJSON>;
   id: int64;
@@ -1909,6 +1837,7 @@ begin
   //record uuid in positions table
   id := round(now*60*60*24);
 
+  p.base := sBase;
   p.coin := sCoin;
   p.id := id;
   p.buyCost := amountToSpend;
@@ -1921,8 +1850,9 @@ begin
   p.peakValue := p.peakRate * p.buyamount;
   p.lowestValue := p.lowestRate * p.buyamount;
   p.strategy := round(strategy);
-  p.TypicalSwing := TypicalSwing;
-  p.HistoricalBottom := HistoricalBottom;
+  p.TypicalSwing := 0.0;
+  p.HistoricalBottom := 0.0;
+  p.jscreate := jscreate;
   p.statex := '';
 
   ssdb.RecordPosition(@p);

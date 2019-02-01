@@ -328,7 +328,7 @@ begin
   tm := GetTicker;
   Debug.Log('Read Query: '+sQuery);
   result := cli.ReadQuery(sQuery);
-  Debug.Log('Query Took: '+commaize(gettimesince(tm))+'ms.');
+//  Debug.Log('Query Took: '+commaize(gettimesince(tm))+'ms.');
 end;
 
 function Trdtpdb.ReadQueryDBC(sQuery: string): TAbstractDBCursor;
@@ -421,7 +421,7 @@ var
 begin
   tm := GetTicker;
   result := cli.ReadQuery_Response;
-  Debug.Log('END Read Query took '+commaize(gettimesince(tm))+'ms.');
+//  Debug.Log('END Read Query took '+commaize(gettimesince(tm))+'ms.');
 end;
 
 procedure Trdtpdb.Setcontext(Value: string);

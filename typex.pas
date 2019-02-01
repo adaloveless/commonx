@@ -178,7 +178,7 @@ function IsVarString(v: variant): boolean;
 implementation
 
 uses
-  systemx;
+  systemx, numbers;
 
 function STRZ(): nativeint;
 //Returns the index of the first element of a string based on current configuration
@@ -281,7 +281,10 @@ begin
 
   if bCanInt then begin
     try
-      exit(strtoint64(s));
+      if IsNumber(s) then
+        exit(strtoint64(s))
+      else
+        exit(s);
     except
       exit(s);
     end;

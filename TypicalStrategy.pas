@@ -10,7 +10,7 @@ uses
   systemx, stringx, numbers, bittrex, shapeshiftdb, sysutils;
 
 const
-  LOCAL_PICK_STRATID = 757;
+  LOCAL_PICK_STRATID = 101;
 
 type
   TTypicalStrategy = class(TStrategy)
@@ -51,7 +51,7 @@ implementation
 {$IFNDEF NO_STRATS}
 uses
 // strategy_moonrise, strategy_allin, strategy_socialvelocity;
-  strategy_enroyd, strategy_enroyd_tusd;
+  strategy_enroyd, strategy_enroyd_tusd, strategy_tusd_usdt;
 {$ENDIF}
 
 
@@ -71,6 +71,7 @@ begin
   case strat of
     STRATID_ENROYD: result := TManage_Enroyd.create;
     STRATID_ENROYD_TUSD: result := TManage_Enroyd_TUSD.create;
+    STRATID_TUSD_USDT: result := TManage_Enroyd_TUSD.create;
   else
     raise ECritical.create('StratID not found '+inttostr(strat));
   end;

@@ -73,6 +73,7 @@ procedure Swap(var x: integer; var y: integer);overload;
 procedure Swap(var x: int64; var y: int64);overload;
 
 function MinArray(a: array of nativeint): nativeint;
+function IsNumber(s: string): boolean;
 
 type
   TGiantFuckingInt = record
@@ -1047,6 +1048,15 @@ begin
     exit(ifnull);
 
   exit(v);
+end;
+
+function IsNumber(s: string): boolean;
+var
+  iValue, iCode: integer;
+begin
+  val(s, iValue, iCode);
+  result := iCode = 0;
+
 end;
 
 
