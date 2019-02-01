@@ -3,7 +3,7 @@ unit artnet;
 interface
 
 uses
-  betterobject, sharedobject, typex, systemx, classes, idglobal, betteridudpserver, betteridsockethandle, debug, sysutils, orderlyinit, endian, numbers, better_collections, stringx, consolelock;
+  betterobject, sharedobject, typex, systemx, classes, idglobal, idudpserver, idsockethandle, debug, sysutils, orderlyinit, endian, numbers, better_collections, stringx, consolelock;
 
 type
   TArtCC = packed record

@@ -2144,7 +2144,7 @@ begin
     result := screenX
   else
     result := Interpolate(screenX, BoundX1, BoundX2, LeftMargin,
-      FSurfaceWidth - (RightMargin + LeftMargin));
+      width - (RightMargin + LeftMargin));
 
 end;
 
@@ -2154,7 +2154,7 @@ begin
     result := screenY
   else
     result := Interpolate(screenY, BoundY1, BoundY2, TopMargin,
-      FSurfaceHeight - (BottomMargin + TopMargin));
+      Height - (BottomMargin + TopMargin));
 
 end;
 
