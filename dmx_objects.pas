@@ -8030,9 +8030,10 @@ begin
       result := GetPixelBase((dimensions.y-1)-y,x);
     end;
     lo90Right:
-      raise ECritical.Create('unimplemented');
+      result := GetPixelBase(y,(dimensions.x-1)-x);
     lo180: begin
-      raise ECritical.Create('unimplemented');
+      result := GetPixelBase((dimensions.x-1)-x,(dimensions.y-1)-y);
+
     end;
   end;
 end;
@@ -8115,9 +8116,17 @@ begin
       px.Intensity := strobeintensity;
     end;
 
-    if gettimesince(Self.tmLastStrobeEvent) > (round(1000-(950*StrobeSpeed)))  then begin
-      strobestate := not strobestate;
-      tmLastStrobeEvent := getTicker;
+    if strobestate then begin
+      //quick off if on
+      if gettimesince(Self.tmLastStrobeEvent) > (1000/45)  then begin
+        strobestate := not strobestate;
+        tmLastStrobeEvent := getTicker;
+      end;
+    end else begin
+      if gettimesince(Self.tmLastStrobeEvent) > (round(1000-(950*StrobeSpeed)))  then begin
+        strobestate := not strobestate;
+        tmLastStrobeEvent := getTicker;
+      end;
     end;
   end;
 end;
