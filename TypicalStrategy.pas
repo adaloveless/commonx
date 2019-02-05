@@ -18,6 +18,7 @@ type
     thrWatching: TManagedThread;
     manageCOmmands: TCommandList<TManageStrategy>;
     pickCommands: TCommandList<TPickStrategy>;
+    FPickTradeInterval: ticker;
     procedure SyncManageCommands;
     procedure SyncPickCommands;
     function IndexOfManageCommand(tradeId: int64): ni;
@@ -41,6 +42,7 @@ type
     procedure AfterConstruction; override;
     procedure Init; override;
     procedure Detach; override;
+    property PickTradeInterval: ticker read FPickTradeInterval write FPickTradeInterval;
 
   end;
 
@@ -176,6 +178,7 @@ end;
 procedure TTypicalStrategy.Init;
 begin
   inherited;
+  PickTradeInterval := 600000;
   pickCommands := TCommandList<TPickStrategy>.create;
   manageCommands := TCommandList<TManageStrategy>.create;
 

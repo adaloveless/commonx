@@ -676,8 +676,7 @@ implementation
 
 
 uses
-  TypicalStrategy;
-
+  TypicalStrategy, Strategy_TUSD_USDT;
 
 
 procedure CoinMail(sMsg: string; sTO: string = '');
@@ -1815,7 +1814,7 @@ end;
 constructor TPDTrades.Create;
 begin
   inherited;
-  strat := TTypicalStrategy.create;
+  strat := TTUSD_USDTStrategy.create;
   strat.pdTrades := self;
 end;
 
@@ -2934,7 +2933,7 @@ function TPDTrades.TimeToPickTrade: boolean;
 begin
   if lastTradePickTime = 0 then
     exit(true);
-  result := GetTimeSince(lastTradePickTime) > 600000;
+  result := GetTimeSince(lastTradePickTime) > 30000;
 
 end;
 
