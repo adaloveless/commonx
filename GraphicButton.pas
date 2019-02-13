@@ -3,7 +3,7 @@ unit GraphicButton;
 interface
 
 uses
-  controls, glasscontrols, graphics, sysutils, classes;
+  controls, glasscontrols, graphics, sysutils, classes, fastbitmap, types, typex, colorblending;
 
 
 type
@@ -37,6 +37,9 @@ type
 
     procedure SetEnabled(value: boolean);override;
     procedure RefreshState;
+    procedure GenerateMissingImages;
+    procedure GenerateOverImage;
+    procedure GenerateDownImage;
   published
     constructor create(AOwner: TComponent);override;
     destructor Destroy;override;
@@ -92,6 +95,101 @@ begin
   inherited;
 end;
 
+procedure TGraphicButton.GenerateDownImage;
+var
+  fbm, output: TFastBitmap;
+begin
+  fbm := TFastBitmap.create;
+  try
+    fbm.FromPicture(self.Picture);
+    output := TFastBitmap.create;
+    try
+      output.Width := fbm.Width;
+      output.height := fbm.Height;
+      output.New;
+      output.IterateExternalSource(fbm, '',
+        procedure (src: TFastBitmap; dst: TFastBitmap; rect: TPixelRect; prog: PProgress = nil)
+        begin
+          var x,y: ni;
+          for y := 0 to rect.Height-1 do begin
+            for x := 0 to rect.Width-1 do begin
+              var xx := x + rect.Left;
+              var yy := y + rect.Top;
+              dst.Canvas.Pixels[xx,yy] := src.canvas.Pixels[xx,yy] xor $FFFFFF;
+            end;
+          end;
+        end,
+        procedure
+        begin
+          //no implementation required
+        end
+      );
+
+      output.assignToPicture(FPictureDown);
+
+    finally
+      output.free;
+    end;
+
+
+  finally
+    fbm.free;
+  end;
+end;
+
+procedure TGraphicButton.GenerateMissingImages;
+begin
+  if csDesigning in ComponentState then
+    exit;
+  if self.picture <> nil then begin
+    if FPictureOver.Graphic = nil then
+      GenerateOverImage;
+    if FPictureDown.Graphic = nil then
+      GenerateDownImage;
+  end;
+end;
+
+procedure TGraphicButton.GenerateOverImage;
+var
+  fbm, output: TFastBitmap;
+begin
+  fbm := TFastBitmap.create;
+  try
+    fbm.FromPicture(self.Picture);
+    output := TFastBitmap.create;
+    try
+      output.Width := fbm.Width;
+      output.height := fbm.Height;
+      output.New;
+      output.IterateExternalSource(fbm, '',
+        procedure (src: TFastBitmap; dst: TFastBitmap; rect: TPixelRect; prog: PProgress = nil)
+        begin
+          var x,y: ni;
+          for y := 0 to rect.Height-1 do begin
+            for x := 0 to rect.Width-1 do begin
+              var xx := x + rect.Left;
+              var yy := y + rect.Top;
+              dst.Canvas.Pixels[xx,yy] := ColorBlend_PreserveSourceAlpha(src.canvas.Pixels[xx,yy], clWhite, 0.5);
+            end;
+          end;
+        end,
+        procedure
+        begin
+          //no implementation required
+        end
+      );
+
+      output.assignToPicture(FPictureOver);
+    finally
+      output.free;
+    end;
+
+
+  finally
+    fbm.free;
+  end;
+end;
+
 function TGraphicButton.GetState: TGraphicButtonState;
 begin
   if Down then begin
@@ -105,6 +203,7 @@ end;
 
 procedure TGraphicButton.LocalMouseEnter(sender: TObject);
 begin
+  GenerateMissingImages;
   if Doover and assigned(pictureOver.graphic) then
     Over := true;
 
@@ -226,11 +325,13 @@ end;
 
 procedure TGraphicButton.SetPictureDown(const Value: TPicture);
 begin
+  GenerateMissingImages;
   FPictureDown.assign(value);
 end;
 
 procedure TGraphicButton.SetPictureOver(const Value: TPicture);
 begin
+  GenerateMissingImages;
   FPictureOver.assign(value);
 end;
 

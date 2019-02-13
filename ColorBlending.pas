@@ -15,6 +15,7 @@ function ColorSubtract(cBackGround, cForeGround: TColor;
   alpha: advancedFloat): TColor; overload;
 function ColorBlend(cBackGround, cForeGround: TColor; alpha: advancedFloat): TColor;overload;
 function ColorBlend_ForegroundSourceAlpha(cBackGround, cForeGround: TColor; alpha: advancedFloat): TColor;
+function ColorBlend_PreserveSourceAlpha(cBackGround, cForeGround: TColor; alpha: advancedFloat): TColor;
 function ColorBlendRGBA(cBackGround, cForeGround: TColor; alpha: advancedFloat): TColor;inline;overload;
 function ColorOp(cBackGround, cForeGround: TColor; alpha: advancedFloat;
   AlphaOp: TAlphaOp): TColor;inline;
@@ -164,6 +165,32 @@ begin
 
   result := (a shl 24)+(b shl 16) + (g shl 8) + r;
 end;
+
+function ColorBlend_PreserveSourceAlpha(cBackGround, cForeGround: TColor; alpha: advancedFloat): TColor;
+var
+  r1, g1, b1, r2, g2, b2,a1: nativeint;
+  r, g, b,a: nativeint;
+begin
+  r1 := (cBackGround shr 0) and 255;
+  g1 := (cBackGround shr 8) and 255;
+  b1 := (cBackGround shr 16) and 255;
+  a1 := (cBackGround shr 24) and 255;
+
+  r2 := (cForeGround shr 0) and 255;
+  g2 := (cForeGround shr 8) and 255;
+  b2 := (cForeGround shr 16) and 255;
+//  a2 := (cForeGround shr 24) and 255;
+//  alpha := (a1/255) * alpha;
+
+  r := Round(((r2 - r1) * alpha) + r1);
+  g := Round(((g2 - g1) * alpha) + g1);
+  b := Round(((b2 - b1) * alpha) + b1);
+  a := a1;
+
+  result := (a shl 24)+(b shl 16) + (g shl 8) + r;
+
+end;
+
 function ColorBlend_ForegroundSourceAlpha(cBackGround, cForeGround: TColor; alpha: advancedFloat): TColor;
 var
   r1, g1, b1, r2, g2, b2,a1,a2: nativeint;

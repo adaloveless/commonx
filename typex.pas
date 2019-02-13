@@ -6,7 +6,7 @@ uses
 {$IFDEF NEED_FAKE_ANSISTRING}
   ios.stringx.iosansi,
 {$ENDIF}
-  sysutils, variants;
+  sysutils, variants, types;
 
 
 
@@ -91,6 +91,8 @@ const STRZERO = 1;
 
 {$IFDEF GT_XE3}
 type
+
+
   TVolatileProgression = record
     StepsCompleted: nativeint;
     TotalSteps: nativeint;
@@ -147,6 +149,20 @@ type
 
   PProgress = ^TProgress;
 
+  TPixelRect = record
+    //this rect behaves more like you'd expect TRect to behave in the Pixel context
+    //if you make a rect from (0,0)-(1,1) the width is 2 and height is 2
+  private
+    function GetRight: nativeint;
+    procedure SetRight(const value: nativeint);
+    function GetBottom: nativeint;
+    procedure SetBottom(const value: nativeint);
+  public
+    Left, Top, Width, Height: nativeint;
+    property Right: nativeint read GetRight write SetRight;
+    property Bottom: nativeint read GetBottom write SetBottom;
+  end;
+
 
 
 
@@ -163,6 +179,7 @@ type
   Pfftw_float = system.Pdouble;
   PAfftw_float = PDoubleArray;
 
+function PointToStr(pt:TPoint): string;
 function STRZ(): nativeint;
 function BoolToTriBool(b: boolean): TriBool;inline;
 function TriBoolToBool(tb: TriBool): boolean;inline;
@@ -174,6 +191,12 @@ function StringToTypedVariant(s: string): variant;
 function JavaScriptStringToTypedVariant(s: string): variant;
 function VartoStrEx(v: variant): string;
 function IsVarString(v: variant): boolean;
+
+function rect_notdumb(x1,y1,x2,y2: int64): TRect;
+function PixelRect(x1,y1,x2,y2: int64): TPixelRect;
+
+
+
 
 implementation
 
@@ -333,6 +356,49 @@ begin
   StepsCompleted := 0;
   Complete := false;
 end;
+
+function PointToStr(pt:TPoint): string;
+begin
+  result := pt.x.tostring+','+pt.y.tostring;
+end;
+
+function rect_notdumb(x1,y1,x2,y2: int64): TRect;
+begin
+  result.Left := x1;
+  result.top := y1;
+  result.Right := x2+1;
+  result.Bottom := y2+1;
+end;
+
+function TPixelRect.GetRight: nativeint;
+begin
+  result := (right-left)+1;
+end;
+
+procedure TPixelRect.SetRight(const value: nativeint);
+begin
+  width := (value-left)+1;
+end;
+
+function TPixelRect.GetBottom: nativeint;
+begin
+  result := (height-top)+1;
+end;
+
+procedure TPixelRect.SetBottom(const value: nativeint);
+begin
+  height := (value+top)+1;
+end;
+
+function PixelRect(x1,y1,x2,y2: int64): TPixelRect;
+begin
+  result.Left := x1;
+  result.Top := y1;
+  result.Width := (x2-x1)+1;
+  result.Height := (y2-y1)+1;
+end;
+
+
 
 
 

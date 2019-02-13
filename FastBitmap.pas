@@ -48,11 +48,11 @@ type
   TFastBitmap = class;//forward
 
   TAnonProc = reference to procedure ();
-  TIterateExternalProc = reference to procedure (src: TFastBitmap; dst: TFastBitmap; rect: TRect; prog: PProgress = nil);
+  TIterateExternalProc = reference to procedure (src: TFastBitmap; dst: TFastBitmap; rect: TPixelRect; prog: PProgress = nil);
 
 
   TTileState = (tsStarted, tsFinished);
-  TTileNotifyEvent = procedure (src, dest: TFastBitmap; region: TRect; state: TTileState) of object;
+  TTileNotifyEvent = procedure (src, dest: TFastBitmap; region: TPixelRect; state: TTileState) of object;
 
 
   Tcmd_FastBitmapIterate = class(TCommand)
@@ -73,7 +73,7 @@ type
     procedure DoExecute; override;
   public
     proc: TIterateExternalProc;
-    region: TRect;
+    region: TPixelRect;
     src, dest: TFastBitmap;
     state: TTileState;
     OnTileStateChange: TTileNotifyEvent;
@@ -199,6 +199,7 @@ type
 {$IFNDEF FMX}
     procedure FromBitmap(bm: TBitmap);
     procedure FromPNG(bm: TPNGImage);
+    procedure FromJPEG(jpg: TJpegImage);
 {$ENDIF}
     procedure FromFastBitmap(bm: TFastBitmap);
 {$IFNDEF FMX}
@@ -222,8 +223,8 @@ type
 
 {$ENDIF}
 
-
 {$IFNDEF FMX}
+    procedure FromPicture(p: TPicture);
     procedure AssignToPicture(p: TPicture);
     procedure AssignToControl(gi: TPersistent);
     procedure FromFAstBitmapRect(fbm: TFastBitmap; r: TRect);
@@ -914,6 +915,23 @@ begin
 end;
 
 {$IFNDEF FMX}
+procedure TFastBitmap.FromPicture(p: TPicture);
+begin
+  if p.Graphic = nil then
+    raise ECritical.create('picture graphic is nil');
+
+  if p.Graphic is TPngImage then
+    self.FromPNG(p.Graphic as TPNGImage);
+
+  if p.Graphic is TBitmap then
+    self.FromBitmap(p.Graphic as TBitmap);
+
+  if p.Graphic is TJPEGImage then
+    self.FromJPEG(p.Graphic as TJPEGImage);
+
+
+end;
+
 procedure TFastBitmap.FromPNG(bm: TPNGImage);
 var
   t,u: integer;
@@ -1554,6 +1572,7 @@ end;
 procedure TFastBitmap.IterateExternalSource(src: TFastBitmap;
   opencl: string; fallbackproc: TIterateExternalProc; fin: TAnonProc);
 begin
+  self.EnableAlpha := src.EnableAlpha;
   IterateExternalSource_End(IterateExternalSource_Begin(src, opencl, fallbackproc, nil));
 end;
 
@@ -2097,6 +2116,11 @@ begin
 
 end;
 
+procedure TFastBitmap.FromJPEG(jpg: TJpegImage);
+begin
+  raise ENotImplemented.create('FromJPEG is not implemented, but should be easy to do so');
+end;
+
 { Tcmd_FastBitmapFX }
 
 procedure Tcmd_FastBitmapFX.DoExecute;
@@ -2155,7 +2179,7 @@ begin
     while y < src.Height-1 do begin
   {$IFDEF NO_COMMANDS}
       for x := 0 to src.Width-1 do begin
-        proc(src, self, rect(x,y,x,lesserof(src.height-1,y+(ystride-1))), nil);
+        proc(src, self, TRect.Create(x,y,x,lesserof(src.height-1,y+(ystride-1))), nil);
       end;
   {$ELSE}
       cmd := Tcmd_FastBitmapFX.create;
