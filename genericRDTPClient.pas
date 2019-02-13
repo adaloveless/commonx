@@ -161,7 +161,7 @@ type
   end;
 
 var
-  RDTP_USE_TCP: boolean = false;
+  RDTP_USE_TCP: boolean = true;
   RDTP_USE_SOCKS: boolean = false;
 
 implementation
@@ -1319,8 +1319,8 @@ begin
 end;
 
 initialization
-  RDTP_USE_TCP := false;
-  RDTP_USE_SOCKS := false;
+//  RDTP_USE_TCP := false;//globally initialized
+//  RDTP_USE_SOCKS := false;
 
 end.
 
