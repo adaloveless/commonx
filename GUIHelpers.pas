@@ -65,6 +65,7 @@ type
     procedure PositionAbove(cBelow: TControl; gap: ni = 0; match_width: boolean = true);
     procedure PositionLeft(cRight: TControl; gap: ni = 0; match_height: boolean = true);
     procedure PositionRight(cLeft: TControl; gap: ni = 0; match_height: boolean = true);
+    function PositionInsideParent(reference: TWinControl): TPoint;
   end;
 
 
@@ -361,6 +362,18 @@ begin
   if match_width then
     Width := cAbove.Width;
 
+end;
+
+function TControlHelper.PositionInsideParent(reference: TWinControl): TPoint;
+begin
+  result := point(left, top);
+  Debug.Log('Pos '+self.parent.classname+' vs '+reference.classname);
+  if self.Parent <> reference then begin
+    if self.parent = nil then
+      raise ECritical.create(self.ClassName+' has no parent')
+    else
+      result := result + self.Parent.PositionInsideParent(reference);
+  end;
 end;
 
 procedure TControlHelper.PositionLeft(cRight: TControl; gap: ni;

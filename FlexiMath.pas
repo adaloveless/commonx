@@ -14,6 +14,7 @@ type
 
   TFlexiMath = class(TDictionary<string, IHolder<TJSON>>)
   public
+    LastScriptError: string;
     function HasNode(sAddr: string): boolean;
     function GetNode(sAddr: string): TJSON;
     function AddNew<TJ: TJSON, constructor>(sName: string): TJ;
@@ -21,8 +22,9 @@ type
     procedure FromJSON(s: string);
     function ToQuickSave: string;
     procedure FromQuickSave(s: string);
-
     function CalcArrayTimeStampRate(iArrayStart, iArrayEnd: ni; sAddr: string): double;
+    function Calc(sScript: string): IHolder<TJSON>;
+
   end;
 
 
@@ -56,6 +58,8 @@ type
   public
     procedure DoCalculate; override;
   end;
+
+
 
 
 
@@ -196,6 +200,30 @@ begin
     TJSONOp(result).fm := self;
 
   self.Add(sName, h);
+end;
+
+function TFlexiMath.Calc(sScript: string): IHolder<TJSON>;
+begin
+  result := nil;
+  if length(sScript) < 1 then begin
+    LastScriptError := 'Blank Script';
+    exit;
+  end;
+  if length(sScript) < 2 then begin
+    LastScriptError := 'A valid script must have at least 2 characters';
+    exit;
+  end;
+
+  if sScript[STRZ] <> '=' then begin
+    LAstScriptError := 'A Script must start with =';
+    exit;
+  end;
+
+
+
+
+
+
 end;
 
 function TFlexiMath.CalcArrayTimeStampRate(iArrayStart, iArrayEnd: ni;

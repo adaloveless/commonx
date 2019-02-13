@@ -15,8 +15,6 @@ type
     function GetInput(sNAme: string): IHolder<TJSON>;
   public
     property Inputs[sName: string]: IHolder<TJSON> read GetInput write SetInput;
-
-
   end;
 
   TValueCacheRec = record
@@ -39,9 +37,6 @@ type
     constructor Create; override;
     destructor Destroy; override;
     function Acquire(urn_SPACE_params: string; nonce: string; ttl: ticker): string;
-
-
-
 
   end;
 

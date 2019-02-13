@@ -17,7 +17,7 @@ type
     function TopToBottom(step: ni): TPoint;
     function BottomToTop(step: ni): TPoint;
     function VerticalSnake(step: ni): TPoint;
-    function ToTile(p: TPoint): TRect;
+    function ToTile(p: TPoint): TPixelRect;
 
   end;
 
@@ -71,7 +71,7 @@ begin
 
 end;
 
-function TGridWalker.ToTile(p: TPoint): TRect;
+function TGridWalker.ToTile(p: TPoint): TPixelRect;
 begin
   result.Top := p.y*tileH;
   result.Left := p.x*tileW;
