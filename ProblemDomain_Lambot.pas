@@ -343,7 +343,7 @@ type
     allowNewPositions: boolean;
     strat: TStrategy;
 
-    function IsDuplicatePosition(p: TOpenPosition): boolean;
+    function IsDuplicatePosition(p: TOpenPosition; stateLow: ni = 0; stateHigh: ni = 0): boolean;
     function LoadSignalBuckets(sBase, sMarket: string): TBuckets;
     function UpdateClimateAssessment: double;
     procedure ClearWatching;
@@ -359,6 +359,7 @@ type
     destructor Destroy; override;
 
     property TradeCount: ni read GetTradecount;
+    function IsAlreadyWatching(sBase, sCoin: string): boolean;
     function CreatePosition(sBase, sCoin: string; amountToSpend: double; maxrate: double; strategy: double; jsCreate: string): string;
     function GetTradeByUUID(sUUID: string): TOpenPosition;
     function CheckPositions(liquidate: boolean; thr: TManagedThread): boolean;
@@ -379,7 +380,7 @@ type
     function FindOpenPosition(id: int64): PopenPosition;overload;
 
     procedure BeginOpenPosition(p: POpenPosition; frommarket: string = 'USDT'; forceRate: double = 0.0);
-    procedure BeginClosePosition(p: POpenPOsition; tomarket: string = 'USDT');
+    procedure BeginClosePosition(p: POpenPOsition; tomarket: string = 'BTC');
     procedure ForceClose(id: int64);
 
     procedure SendSellMail(p: TOpenPosition);
@@ -669,6 +670,7 @@ var
   GAllowNewPositions: boolean = true;
   ManageProcesssor: commandprocessor.TCommandProcessor;
   GJSONCache: TJSONCache;
+  GDebugPositionID: int64;
 
 
 
@@ -697,7 +699,7 @@ begin
               sMSG);
   splitstring(sMsg, '..', s1,s2);
 
-  speech.SayNatural(s1);
+//  speech.SayNatural(s1);
 end;
 
 
@@ -1663,7 +1665,7 @@ begin
 
 end;
 
-procedure TPDTrades.BeginClosePosition(p: POpenPOsition; tomarket: string = 'USDT');
+procedure TPDTrades.BeginClosePosition(p: POpenPOsition; tomarket: string = 'BTC');
 var
   j,f: IJSONHolder;
 var
@@ -1708,8 +1710,9 @@ begin
     exit;
 
   oba := btx.GetOrderBookAnalysis('BTC', p.coin, btIamBuying, p.buyCost,false);
+
   p.currentrate := oba.crav.finalRate;
-//  p.buyrate := oba.crav.finalRate;
+  p.buyrate := oba.crav.finalRate;
   p.peakrate := p.buyrate;
   p.lowestRate := p.buyrate;
   if forcerate > 0.0 then begin
@@ -1717,6 +1720,13 @@ begin
   end else begin
     useRate := oba.crav.finalRate*1.05;
   end;
+
+  var sellValueForDustCheck := BTX.GetOrderBookAnalysis('btc', p.coin, btIamSelling, p.buyamount, false);
+  if sellValueForDustCheck.crav.BaseAmount < (BTX_DUST*2) then begin
+    ssdb.CoinLog(p.base, p.coin, 'cannot buy dust! '+sat(sellValueForDustCheck.crav.BaseAmount));
+  end;
+
+
   ssdb.CoinLog(p.base, p.coin, 'buy '+sat(p.buyamount)+' '+p.coin+' at '+sat(useRate)+' for '+sat(p.buycost));
   ssdb.BeginOpenPosition(p.id, p.id);
   j := btx.BuyLimit('BTC-'+p.coin, p.buycost / useRate, useRate);
@@ -1799,6 +1809,7 @@ end;
 function TPDTrades.CheckPositions(Liquidate: boolean; thr: TManagedThread): boolean;
 begin
   result := strat.ManageTrades(Liquidate, thr);
+  result := true;
 end;
 
 procedure TPDTrades.ClearWatching;
@@ -1897,7 +1908,8 @@ begin
     for t:= 0 to high(trades) do begin
       trades[t].id := rs['transactionid'];
       TRADES[T].Fstate := rs['state'];
-        trades[t].coin := rs['marketcoin'];
+      trades[t].base := rs['basecoin'];
+      trades[t].coin := rs['marketcoin'];
       trades[t].buycost := rs['buycost'];
       trades[t].buyamount := rs['buyamount'];
       trades[t].buyrate := rs['buyRate'];
@@ -2319,6 +2331,20 @@ begin
 
 end;
 
+function TPDTrades.IsAlreadyWatching(sBase, sCoin: string): boolean;
+begin
+  Fetch;
+  for var t := 0 to high(trades) do begin
+    if (trades[t].state = 0)
+    and (comparetext(trades[t].base, sBase)=0)
+    and (comparetext(trades[t].coin, sCoin)=0) then begin
+      exit(true);
+    end;
+  end;
+
+  exit(false);
+end;
+
 function TPDTrades.IsCryptopiaMarket(sCoin: string): boolean;
 var
   mc: TMarketComparison;
@@ -2331,12 +2357,18 @@ begin
 
 end;
 
-function TPDTrades.IsDuplicatePosition(p: TOpenPosition): boolean;
+function TPDTrades.IsDuplicatePosition(p: TOpenPosition; stateLow, stateHigh: ni): boolean;
 var
   t: ni;
 begin
   for t:= 0 to high(trades) do begin
-    if (compareText(trades[t].coin,p.coin)=0)
+    var matchesState := true;
+    if stateHigh > 0 then begin
+      matchesState := (p.state >=stateLow) and (p.state <= stateHigh);
+    end;
+
+    if matchesState
+    and (compareText(trades[t].coin,p.coin)=0)
     and (p.strategy = trades[t].strategy)
     and (p.id <> trades[t].id) then begin
       exit(true);
@@ -2418,7 +2450,7 @@ var
 
     if comparetext(coin, 'tusd') =0 then begin
       //get current price of bitcoin
-      csBTC.nao := 1/btx.GetConvertableRateAndValue('btc', 'tusd', btIAmBuying, 1.0, true).bestRate;
+      csBTC.nao := 1/btx.GetConvertableRateAndValue('btc', 'tusd', btIAmBuying, 1.0, qtAlt, true).bestRate;
 
       //get 24-hour price of bitcoin
       csBTC.future :=enroyd.Get24HourBitCoinPrice;
@@ -2427,13 +2459,13 @@ var
       result := csBTC.PercentRise;
     end else begin
       //get current price of bitcoin
-      csBTC.nao := 1/btx.GetConvertableRateAndValue('btc', 'tusd', btIAmBuying, 1.0, true).bestRate;
+      csBTC.nao := 1/btx.GetConvertableRateAndValue('btc', 'tusd', btIAmBuying, 1.0, qtAlt, true).bestRate;
 
       //get 24-hour price of bitcoin
       csBTC.future :=enroyd.Get24HourBitCoinPrice;
 
       //get 24-hour price
-      csCoin.nao := btx.GetConvertableRateAndValue('btc', coin, btIAmSelling, 1.0, true).bestRate;
+      csCoin.nao := btx.GetConvertableRateAndValue('btc', coin, btIAmSelling, 1.0, qtAlt, true).bestRate;
       csCoin.nao := csCoin.nao * csBTC.nao;
       csCoin.future := enroyd.Get24HourPrice(coin);
       result := csCoin.PercentRise;
@@ -3602,6 +3634,7 @@ end;
 initialization
 
 init.RegisterProcs('ProblemDomain', oinit, ofinal, 'CommandProcessor,ManagedThread');
+GDebugPositionID := 0;
 
 
 finalization
