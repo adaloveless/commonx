@@ -55,6 +55,7 @@ function Order(var ul,br: TPoint): boolean;overload;
 function Order(var ul,br: TPointF): boolean;overload;
 function Order(var r: TRect): boolean;overload;
 function Order(var r: TRectF): boolean;overload;
+function Order(var r: TPixelRect): boolean;overload;
 function HextoInt(s: string): integer;
 function HextoInt64(s: string): int64;
 function truncate(r: single; bSubOneNegative: boolean): nativeint;overload;
@@ -539,8 +540,12 @@ end;
 function Order(var r: TRect): boolean;overload;
 begin
   result := Order(r.TopLeft, r.BottomRight);
+end;
 
-
+function Order(var r: TPixelRect): boolean;overload;
+begin
+  r := r;
+  result := true;
 end;
 
 function Order(var r: TRectF): boolean;overload;

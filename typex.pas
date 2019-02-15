@@ -157,10 +157,13 @@ type
     procedure SetRight(const value: nativeint);
     function GetBottom: nativeint;
     procedure SetBottom(const value: nativeint);
+
   public
     Left, Top, Width, Height: nativeint;
     property Right: nativeint read GetRight write SetRight;
     property Bottom: nativeint read GetBottom write SetBottom;
+    function ToRect: TRect;
+
   end;
 
 
@@ -372,7 +375,7 @@ end;
 
 function TPixelRect.GetRight: nativeint;
 begin
-  result := (right-left)+1;
+  result := (left+width)-1;
 end;
 
 procedure TPixelRect.SetRight(const value: nativeint);
@@ -382,13 +385,24 @@ end;
 
 function TPixelRect.GetBottom: nativeint;
 begin
-  result := (height-top)+1;
+  result := (height+top)-1;
 end;
 
 procedure TPixelRect.SetBottom(const value: nativeint);
 begin
-  height := (value+top)+1;
+  height := (value-top)+1;
 end;
+
+function TPixelRect.ToRect: TRect;
+begin
+  result.LEft := self.left;
+  result.Top := self.top;
+  result.width := self.width+1;
+  result.Height := self.height+1;
+end;
+
+
+
 
 function PixelRect(x1,y1,x2,y2: int64): TPixelRect;
 begin

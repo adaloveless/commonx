@@ -227,7 +227,7 @@ type
     procedure FromPicture(p: TPicture);
     procedure AssignToPicture(p: TPicture);
     procedure AssignToControl(gi: TPersistent);
-    procedure FromFAstBitmapRect(fbm: TFastBitmap; r: TRect);
+    procedure FromFAstBitmapRect(fbm: TFastBitmap; r: TPixelRect);
 {$ELSE}
     procedure FromFAstBitmapRect(fbm: TFastBitmap; ul, br: TPoint);
 {$ENDIF}
@@ -2091,7 +2091,7 @@ begin
 end;
 
 
-procedure TFastBitmap.FromFAstBitmapRect(fbm: TFastBitmap; r: TRect);
+procedure TFastBitmap.FromFAstBitmapRect(fbm: TFastBitmap; r: TPixelRect);
 var
   xy: TPoint;
   x,y: ni;
