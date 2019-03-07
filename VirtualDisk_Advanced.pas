@@ -9191,7 +9191,7 @@ begin
 
   setlength(c, Length(PayloadConfig.filelist));
 
-  cpus := GetProcessorCount - 1;
+  cpus := GetEnabledCPUCount - 1;
   if cpus = 0 then
     cpus := 1;
   for t := 0 to cpus - 1 do
