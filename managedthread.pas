@@ -74,19 +74,34 @@ type
   public
   end;
 
+  TThreadInfo = record
+    spin: boolean;
+    autospin: boolean;
+    name: string;
+    status: string;
+    iterations: int64;
+    step: int64;
+    stepcount: int64;
+    error: string;
+    lastused: ticker;
+    pooled: boolean;//requires refresh on extract
+    Blocked: boolean;
+    threadid: int64;//copied when real thread assigned
+    signaldebug: string;
+    coldruninterval: nativeint;
+  private
+    function GetAge: ticker;
+  public
+    property Age: ticker read GetAge;
+  end;
+
 
   TManagedThread = class(TsharedObject)
   protected
     FTimes: array[0..19] of ticker;
     FTimeIndex: nativeint;
-    FAutoSpin: boolean;
-    FSpin: boolean;
-    FName: string;
-    FStatus: string;
-    FIterations: int64;
-    FStepCount: int64;
-    FStep: int64;
-    FError: string;
+    Finfo: TThreadInfo;
+
     FthreadManager: TThreadManager;
     FLastUsed: cardinal;
     FOwner: TObject;
@@ -94,7 +109,6 @@ type
 
     FMenu: TStringlist;
     FPool: TThreadPoolBase;
-    FBlocked: boolean;
     function GEtError: string;
     procedure SetError(const Value: string);
     procedure SetAutoSpin(const Value: boolean);
@@ -146,7 +160,6 @@ type
     FPoolLoop: boolean;
     FLoop: boolean;
     FDebugName: string;
-    FColdRuninterval: nativeint;
     FPendingPoolAddition: boolean;
     beforestartcalled: boolean;
     FOnIdle: TNotifyEvent;
@@ -170,6 +183,7 @@ type
     function GetHandle: THandle;
     function GetBetterPriority: TBetterPriority;
     procedure SetBetterPriority(const Value: TBetterPriority);
+    function Getinfo: TThreadInfo;
   protected
     procedure BeforeDoExecute;virtual;
     procedure DoExecute;virtual;
@@ -202,6 +216,7 @@ type
     StatusUpdated: boolean;
     NoWorkRunInterval: single;
 
+    property Info: TThreadInfo read Getinfo;
     property AutoCountCycles: boolean read FAutoCycle write FAutoCycle;
     procedure Terminate;
     procedure WaitForFinish;virtual;
@@ -255,7 +270,7 @@ type
     property Pooled: boolean read GetPooled;
     property Pool: TThreadPoolBase read GetPool write SetPool;
     property Owner: TObject read GetOwner write SetOwner;
-    property Blocked: boolean read FBlocked write FBlocked;
+    property Blocked: boolean read Finfo.Blocked write Finfo.Blocked;
     procedure Detach; override;
     procedure SetMM(sType: string);
     procedure ClearMM;
@@ -276,7 +291,7 @@ type
     procedure BeginSTart;
     procedure EndStart;
     property AverageExecutionTime: nativefloat read GEtAverageExecutionTime;
-    property ColdRunInterval: nativeint read FColdRuninterval write fColdRunInterval;
+    property ColdRunInterval: nativeint read Finfo.ColdRuninterval write finfo.ColdRunInterval;
     property PendingPoolAddition: boolean read FPendingPoolAddition write FPendingPoolAddition;
     procedure PrepareForPool;virtual;
     procedure ToPool(p: TMasterThreadPOol = nil);
@@ -485,6 +500,7 @@ type
     function ThreadClassCount(threadclass: TManagedThreadClass): integer;
     procedure TerminateAllThreads;
     procedure DetachAllThreads;
+    function GetInfoList: TArray<TThreadInfo>;
   end;
 
 
@@ -604,7 +620,7 @@ constructor TManagedThread.Create(Owner: TObject;
 var
   h: THandle;
 begin
-  FName := Classname;
+  Finfo.Name := Classname;
   evStart := TManagedSignal.Create;
   evOutOfPool := TManagedSignal.create;
   evSleeping := TManagedSignal.create;
@@ -620,6 +636,7 @@ begin
   //do normal startup operations
   inherited Create;
   realThread := TRealManagedThread.create(true);
+  FInfo.threadid := realThread.threadid;
   realThread.mt := self;
   {$IFDEF STACK_TRACING}InitStackTrace;{$ENDIF}
   IdleIterations := 1;
@@ -701,9 +718,9 @@ begin
   FMMTaskHandle := cardinal(PDWord(@h)^);
 {$ENDIF}
 
-  FStepCount := 0;
-  FStep := 0;
-  FIterations := 0;
+  Finfo.StepCount := 0;
+  Finfo.Step := 0;
+  Finfo.Iterations := 0;
 
   //initialize critical section
   //initialize status vars
@@ -742,9 +759,9 @@ procedure TManagedThread.InterationComplete;
 begin
 //  Lock;
 //  try
-    inc(FIterations);
-    if FIterations>2000000000 then
-      FIterations := 0;
+    inc(Finfo.Iterations);
+    if Finfo.Iterations>2000000000 then
+      Finfo.Iterations := 0;
 
 //  finally
 //    unlock;
@@ -952,7 +969,7 @@ begin
             if FName <> FDebugName then
               Realthread.NameThreadForDebugging(FName);
       {$ENDIF}
-            FDebugName := FName;
+            FDebugName := Finfo.Name;
       {$IFDEF DETAILED_DEBUG}
             Debug.Log(self,'Execute: '+self.classname);
       {$ENDIF}
@@ -987,7 +1004,7 @@ rep_not_continue:
 
                 DoExecute;
                 if AutoCountCycles then
-                  inc(FIterations);
+                  inc(Finfo.Iterations);
                 tm2 := tickcount.GetTicker;
                 FTimeIndex := FTimeIndex mod length(FTimes);
                 FTimes[FTimeIndex] := GetTimeSince(tm2, tm1);
@@ -1081,6 +1098,12 @@ begin
   result := IsSignaled(evHasWork);
 end;
 
+function TManagedThread.Getinfo: TThreadInfo;
+begin
+  result := FInfo;
+  result.pooled := FPool <> nil;//volatile
+end;
+
 function TManagedThread.GetIsComplete: boolean;
 begin
   result := IsSignaled(evFinished);
@@ -1095,7 +1118,7 @@ function TManagedThread.GetIterations: NativeInt;
 begin
 //  Lock;
 //  try
-    result := FIterations;
+    result := Finfo.Iterations;
 //  finally
 //    UnLock;
 //  end;
@@ -1122,7 +1145,7 @@ function TManagedThread.GEtError: string;
 begin
   Lock;
   try
-    result := FError;
+    result := Finfo.Error;
   finally
     Unlock;
   end;
@@ -1134,7 +1157,7 @@ function TManagedThread.GetStepCount: NativeInt;
 begin
   Lock;
   try
-    result := FStepCount;
+    result := Finfo.StepCount;
   finally
     UnLock;
   end;
@@ -1155,7 +1178,7 @@ function TManagedThread.GetName: string;
 begin
   Lock;
   try
-    result := FName;
+    result := Finfo.Name;
     UniqueString(result);
   finally
     UnLock;
@@ -1247,7 +1270,7 @@ function TManagedThread.GEtSpin: boolean;
 begin
   Lock;
   try
-    result := FSpin;
+    result := Finfo.Spin;
   finally
     Unlock;
   end;
@@ -1263,7 +1286,7 @@ function TManagedThread.GetStatus: string;
 begin
   Lock;
   try
-    result := FStatus;
+    result := Finfo.Status;
     UniqueString(result);
     StatusUpdated := false;
   finally
@@ -1298,7 +1321,7 @@ function TManagedThread.GetStep: NativeInt;
 begin
   Lock;
   try
-    result := FStep;
+    result := Finfo.Step;
   finally
     UnLock;
   end;
@@ -1403,7 +1426,7 @@ end;
 
 procedure TManagedThread.IterationComplete;
 begin
-  inc(FIterations);
+  inc(Finfo.Iterations);
 end;
 
 procedure TManagedThread.MenuAction(idx: NativeInt);
@@ -1476,7 +1499,7 @@ function TManagedThread.GetAutoSpin: boolean;
 begin
   Lock;
   try
-    result := FAutoSpin;
+    result := Finfo.AutoSpin;
   finally
     Unlock;
   end;
@@ -1542,7 +1565,7 @@ procedure TManagedThread.SetAutoSpin(const Value: boolean);
 begin
   Lock;
   try
-    FAutoSpin := value;
+    Finfo.AutoSpin := value;
   finally
     Unlock;
   end;
@@ -1557,7 +1580,7 @@ procedure TManagedThread.SetIterations(const Value: NativeInt);
 begin
 //  Lock;
 //  try
-    FIterations := Value;
+    Finfo.Iterations := Value;
 //  finally
 //    UnLock;
 //  end;
@@ -1567,7 +1590,7 @@ procedure TManagedThread.SetError(const Value: string);
 begin
   Lock;
   try
-    FError := value;
+    Finfo.Error := value;
   finally
     Unlock;
   end;
@@ -1583,7 +1606,7 @@ procedure TManagedThread.SetStepCount(const Value: NativeInt);
 begin
 //  Lock;
 //  try
-    FStepCount := Value;
+    Finfo.StepCount := Value;
 //  finally
 //    UnLock;
 //  end;
@@ -1602,8 +1625,8 @@ begin
   try
     if value = '' then
       Debug.Log(self, 'thread name is blank!');
-    if FName = value then exit;
-    FName := value;
+    if Finfo.Name = value then exit;
+    Finfo.Name := value;
     //Debug.Log(inttostr(Threadid)+' Thread name changed: '+value);
   finally
     UnLock;
@@ -1656,7 +1679,7 @@ procedure TManagedThread.SEtSpin(const Value: boolean);
 begin
   Lock;
   try
-    FSpin := value;
+    Finfo.Spin := value;
   finally
     Unlock;
   end;
@@ -1690,7 +1713,7 @@ procedure TManagedThread.SetStatus(const Value: string);
 begin
   Lock;
   try
-    FStatus := Value;
+    Finfo.Status := Value;
 //    UniqueString(FSTatus);
     tmLastStatusUpdate := GetTicker;
     StatusUpdated := true;
@@ -1743,7 +1766,7 @@ procedure TManagedThread.SetStep(const Value: NativeInt);
 begin
 //  Lock;
 //  try
-    FStep := Value;
+    Finfo.Step := Value;
 //  finally
 //    UnLock;
 //  end;
@@ -1941,7 +1964,7 @@ procedure TManagedThread.StepComplete(iStepCount: NativeInt);
 begin
   Lock;
   try
-    inc(FStep, iStepCount);
+    inc(Finfo.Step, iStepCount);
   finally
     UnLock;
   end;
@@ -3204,6 +3227,22 @@ begin
   end;
 end;
 
+function TThreadManager.GetInfoList: TArray<TThreadInfo>;
+var
+  t: ni;
+begin
+  Lock;
+  try
+    setlength(result, count);
+    for t:= 0 to count-1 do begin
+      result[t] := threads[t].info;
+    end;
+  finally
+    Unlock;
+  end;
+
+end;
+
 function TThreadManager.GetThreads(idx: integer): TManagedThread;
 //Getter for the Threads array property.
 begin
@@ -3462,6 +3501,13 @@ begin
   inherited;
   Loop := true;
   HasWork := false;
+end;
+
+{ TThreadInfo }
+
+function TThreadInfo.GetAge: ticker;
+begin
+  result := GetTimeSince(LastUsed);
 end;
 
 initialization

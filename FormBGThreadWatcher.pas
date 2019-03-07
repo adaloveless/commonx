@@ -110,6 +110,7 @@ type
     procedure SyncPopup;
     procedure POpupMenuClick(sender: TObject);
     function REfreshHits: boolean;
+    procedure UpdateInfos(infos: TArray<TThreadInfo>);
     procedure ForceItemCount(lv: TlistView; iQuantity: integer);
     procedure ForceSubItems(li: TListItem; iCount: integer);
     procedure DrawDiskUsage(cp: TCommandProcessor);
@@ -189,188 +190,19 @@ var
   totalCpuTicks: int64;
   totalUsedTicks: int64;
   ts:  PThreadState;
+  infos: Tarray<TThreadInfo>;
 begin
   result := false;
     //ServerSocket1.
     //background threads
     if BackgroundthreadMan.TryLockRead then
     try
-      temptime := GetHighResTicker;
-      deltaTime := (temptime-Self.LastNanotick);
-      result := true;
-      ForceItemCount(lvBackground, BackgroundthreadMan.count);
-      for t:= 0 to BackgroundthreadMan.count-1 do begin
-        thr2 := BackgroundthreadMan.threads[t];
-        item := lvBackground.Items[t];
-        ForceSubItems(item, 14);
-        ts := @threadstates[t];
-        ts.pooled := false;
-        ts.expireprog := 0;
-
-        //ts.pooled := thr2.pooled;
-        ts.expireprog := thr2.Age / 60000;
-        if thr2.trylock(100) then
-        try
-          ts.pooled := thr2.Pooled;
-
-          if thr2.Blocked then begin
-            item.ImageIndex := 41;
-          end else
-          if thr2.Spin then begin
-            if not thr2.AutoSpin then
-              item.ImageIndex := thr2.Step mod 8
-            else
-              item.imageindex := (item.imageindex+1) mod 8;
-          end else begin
-            if thr2.trylock(100) then
-            try
-              c := thr2.Step;
-              l := thr2.StepCount;
-              if l > 0 then
-                i := round((c / l)*32)
-              else
-                i := 0;
-
-              if i> 32 then i:=32;
-              if i <0 then i:= 0;
-              item.ImageIndex := 8+i;
-            finally
-              thr2.Unlock;
-            end;
-
-
-          end;
-          if thr2.trylock(100) then
-          try
-            if (item.caption <> inttostr(thr2.threadid)) then
-              item.caption := inttostr(thr2.threadid);
-
-            if item.subitems[1] <> thr2.Name then
-              item.subitems[1] := thr2.GetSignalDebug+thr2.Name;
-
-            //read last tick
-            if item.SubItems[9] <> '' then
-              cTemp1 := cardinal(strtoint64(item.Subitems[9]))
-            else
-              cTemp1 := 0;
-
-            //read last work value
-            if item.SubItems[4] <> '' then
-              iTemp1 := strtoint64(item.Subitems[5])
-            else
-              iTemp1 := 0;
-
-
-            //get current tick
-            cTemp2 := GetTicker;
-
-            item.SubItems[8] := inttostr(integer(cTemp2));
-
-            //calc tick difference
-            cTEmp2 := cTemp2-cTemp1;
-
-            //read current work value
-            iTemp2 := thr2.Iterations;
-
-            //calculate work throughput
-            if cTemp2 >0 then
-              fTemp := (iTemp2-iTemp1)/(cTemp2/1000)
-            else
-              fTemp := 0.0;
-
-            //write out values
-            item.SubItems[2] := thr2.Status;
-            item.SubItems[3] := inttostr(thr2.StepCount);
-            item.SubItems[4] := inttostr(thr2.Step);
-            item.SubItems[5] := inttostr(thr2.Iterations);
-            item.SubItems[6] := thr2.ColdRunInterval.tostring;
-            item.SubItems[9] := inttostr(thr2.age);
-            item.SubItems[7] := floatprecision(thr2.AverageExecutionTime,1);
-            tt := tickcount.getthreadtime(thr2.handle);
-
-
-            //-----------THREAD TIMES
-            if deltaTime = 0 then deltaTime := 1;
-
-
-            QueryPerformanceFrequency(tempfreq);
-
-            //- - - - - - - - - - - - - - - - - - - -
-            if (IsInteger(item.subitems[12])) then begin
-              temp64 := strtoint64(item.subitems[12]);
-            end else
-              temp64 := 0;
-
-//              temp64 := 0;
-
-            temp64 := tt.user - temp64;
-//              IF tt.kernel > 0 then
-//                debug.consolelog('weee');
-
-            item.subitems[12] := tt.user.tostring;
-            totalCPUTicks := 0;
-            if deltaTime > 0 then begin
-              rTemp := (((temp64/tempfreq)/(deltaTime/tempfreq)));
-              totalCPUTicks := temp64;
-              rTemp := lesserof(1, rTemp);
-              sTemp := floatprecision(rTemp*100,2)+'%';
-              item.SubItems[10] := sTemp;
-            end;
-
-            //- - - - - - - - - - - - - - - - - - - -
-            if (IsInteger(item.subitems[13])) then begin
-              temp64 := strtoint64(item.subitems[13]);
-            end else
-              temp64 := 0;
-
-//              temp64 := 0;
-
-            temp64 := tt.kernel - temp64;
-            item.subitems[13] := tt.kernel.tostring;
-
-            if deltaTime > 0 then begin
-              rTemp := (((temp64/tempfreq)/(deltaTime/tempfreq)));
-              rTemp := lesserof(1, rTemp);
-              sTemp := floatprecision(rTemp*100,2)+'%';
-              item.subitems[11] := sTemp;
-              inc(totalCPUTicks, temp64);
-              rTemp := (((totalCPUTicks/tempfreq)/(deltaTime/tempfreq)));
-              rTemp := lesserof(1, rTemp);
-              rTemp := rTemp * 10;
-              sTemp := '..........';
-              for t2:= 1 to (round(rTemp)) do begin
-                sTemp[t2-(1-STRZ)] := '|';
-              end;
-
-              item.SubItems[0] := sTemp;
-
-            end;
-
-
-
-
-
-
-
-
-
-
-
-          finally
-            thr2.unlock;
-          end;
-        finally
-          thr2.unlock;
-        end;
-
-
-      end;
-      self.LastNanoTick := temptime;
+      infos := BackgroundThreadMan.GetInfoList;
     finally
-      BackgroundthreadMan.UnLockRead;
+      BackgroundThreadMan.UnlockRead;
     end;
 
-
+    UpdateInfos(infos);
 
 
 
@@ -705,6 +537,174 @@ begin
 end;
 
 
+
+procedure TfrmBGThreadWatcher.UpdateInfos(infos: TArray<TThreadInfo>);
+begin
+  var temptime := GetHighResTicker;
+  var deltaTime := (temptime-Self.LastNanotick);
+  ForceItemCount(lvBackground, length(infos));
+  SetLength(threadstates, length(infos));
+  lvBackground.Columns[2].Caption := 'Threads ('+inttostr(length(Infos))+')';
+  for var t:= 0 to high(infos) do begin
+    var thr2 := infos[t];
+    var item := lvBackground.Items[t];
+
+    ForceSubItems(item, 14);
+    var ts : PThreadState := @threadstates[t];
+    ts.pooled := false;
+    ts.expireprog := 0;
+
+    //ts.pooled := thr2.pooled;
+    ts.expireprog := thr2.Age / 60000;
+    try
+      ts.pooled := thr2.Pooled;
+
+      if thr2.Blocked then begin
+        item.ImageIndex := 41;
+      end else
+      if thr2.Spin then begin
+        if not thr2.AutoSpin then
+          item.ImageIndex := thr2.Step mod 8
+        else
+          item.imageindex := (item.imageindex+1) mod 8;
+      end else begin
+        var c := thr2.Step;
+        var l := thr2.StepCount;
+        var i := c;
+        if l > 0 then
+          i := round((c / l)*32)
+        else
+          i := 0;
+
+        if i> 32 then i:=32;
+        if i <0 then i:= 0;
+        item.ImageIndex := 8+i;
+      end;
+      try
+        if (item.caption <> inttostr(thr2.threadid)) then
+          item.caption := inttostr(thr2.threadid);
+
+        if item.subitems[1] <> thr2.Name then
+          item.subitems[1] := thr2.SignalDebug+thr2.Name;
+
+        //read last tick
+        var cTemp1: ticker;
+        var iTemp1: ticker;
+        var cTemp2: ticker;
+        var iTemp2: ticker;
+        if item.SubItems[9] <> '' then
+          cTemp1 := strtoint64(item.Subitems[9])
+        else
+          cTemp1 := 0;
+
+        //read last work value
+        if item.SubItems[4] <> '' then
+          iTemp1 := strtoint64(item.Subitems[5])
+        else
+          iTemp1 := 0;
+
+
+        //get current tick
+        cTemp2 := GetTicker;
+
+        item.SubItems[8] := inttostr(integer(cTemp2));
+
+        //calc tick difference
+        cTEmp2 := cTemp2-cTemp1;
+
+        //read current work value
+        iTemp2 := thr2.Iterations;
+
+        //calculate work throughput
+        var fTemp: double;
+        if cTemp2 >0 then
+          fTemp := (iTemp2-iTemp1)/(cTemp2/1000)
+        else
+          fTemp := 0.0;
+
+        //write out values
+        item.SubItems[2] := thr2.Status;
+        item.SubItems[3] := inttostr(thr2.StepCount);
+        item.SubItems[4] := inttostr(thr2.Step);
+        item.SubItems[5] := inttostr(thr2.Iterations);
+        item.SubItems[6] := thr2.ColdRunInterval.tostring;
+        item.SubItems[9] := inttostr(thr2.age);
+        item.SubItems[7] := 'deprecated';
+
+
+        //-----------THREAD TIMES
+        if deltaTime = 0 then deltaTime := 1;
+
+        var tempfreq: TLargeInteger;
+        QueryPerformanceFrequency(tempfreq);
+
+
+
+        //- - - - - - - - - - - - - - - - - - - -
+        var temp64: int64;
+        if (IsInteger(item.subitems[12])) then begin
+          temp64 := strtoint64(item.subitems[12]);
+        end else
+          temp64 := 0;
+
+//              temp64 := 0;
+
+        var tt: TthreadTimes;
+        temp64 := tt.user - temp64;
+//              IF tt.kernel > 0 then
+//                debug.consolelog('weee');
+
+        item.subitems[12] := tt.user.tostring;
+        var totalCPUTicks := 0;
+        var rTemp: double := 0.0;
+        var sTemp: string := '';
+        if deltaTime > 0 then begin
+          rTemp := (((temp64/tempfreq)/(deltaTime/tempfreq)));
+          totalCPUTicks := temp64;
+          rTemp := lesserof(1, rTemp);
+          sTemp := floatprecision(rTemp*100,2)+'%';
+          item.SubItems[10] := sTemp;
+        end;
+
+        //- - - - - - - - - - - - - - - - - - - -
+        if (IsInteger(item.subitems[13])) then begin
+          temp64 := strtoint64(item.subitems[13]);
+        end else
+          temp64 := 0;
+
+//              temp64 := 0;
+
+        temp64 := tt.kernel - temp64;
+        item.subitems[13] := tt.kernel.tostring;
+
+        if deltaTime > 0 then begin
+          rTemp := (((temp64/tempfreq)/(deltaTime/tempfreq)));
+          rTemp := lesserof(1, rTemp);
+          sTemp := floatprecision(rTemp*100,2)+'%';
+          item.subitems[11] := sTemp;
+          inc(totalCPUTicks, temp64);
+          rTemp := (((totalCPUTicks/tempfreq)/(deltaTime/tempfreq)));
+          rTemp := lesserof(1, rTemp);
+          rTemp := rTemp * 10;
+          sTemp := '..........';
+          for var t2:= 1 to (round(rTemp)) do begin
+            sTemp[t2-(1-STRZ)] := '|';
+          end;
+
+          item.SubItems[0] := sTemp;
+
+        end;
+
+
+      finally
+      end;
+    finally
+    end;
+
+
+  end;
+  self.LastNanoTick := temptime;
+end;
 
 function TCommandBitmapThread.GetIdealSquareSize(): integer;
 var

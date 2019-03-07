@@ -167,6 +167,10 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     object TabSheet7: TTabSheet
       Caption = 'RUDP'
       ImageIndex = 6
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Splitter2: TSplitter
         Left = 0
         Top = 59
@@ -348,10 +352,6 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     object TabSheet6: TTabSheet
       Caption = 'Ring Stats'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object memRingStats: TMemo
         Left = 0
         Top = 0
@@ -397,10 +397,6 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     object TabSheet3: TTabSheet
       Caption = 'Disk Usage'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object memDisk: TMemo
         Left = 0
         Top = 0
@@ -521,7 +517,7 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     Left = 96
     Top = 96
     Bitmap = {
-      494C01012A002D00640010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01012A002D00040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000B0000000010020000000000000B0
       0000000000000000000000000000000000000000000000000000000000000000
       0000CECED6007B8494004A52630031395200313952004A5263007B848C00C6CE
@@ -1984,7 +1980,7 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     Left = 32
     Top = 96
     Bitmap = {
-      494C010121002500640010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010121002500040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000CECED6007B8494004A52630031395200313952004A5263007B848C00C6CE
