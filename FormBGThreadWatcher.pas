@@ -173,23 +173,6 @@ end;
 
 function TfrmBGThreadWatcher.RefreshHits: boolean;
 var
-  t,t2: integer;
-  thr2: TManagedThread;
-  item : TListItem;
-  tmNow: cardinal;
-  sTemp: string;
-  cTemp1, cTemp2: cardinal;
-  iTemp1, iTEmp2: integer;
-  v: variant;
-  fTemp: real;
-  temp64, temptime, deltatime, tempfreq: int64;
-  c,l,i: int64;
-  tt: TThreadTimes;
-
-  rTemp: single;
-  totalCpuTicks: int64;
-  totalUsedTicks: int64;
-  ts:  PThreadState;
   infos: Tarray<TThreadInfo>;
 begin
   result := false;
@@ -539,18 +522,37 @@ end;
 
 
 procedure TfrmBGThreadWatcher.UpdateInfos(infos: TArray<TThreadInfo>);
+var
+  t,t2: integer;
+  thr2: TThreadInfo;
+  item : TListItem;
+  tmNow: cardinal;
+  sTemp: string;
+  cTemp1, cTemp2: cardinal;
+  iTemp1, iTEmp2: integer;
+  v: variant;
+  fTemp: real;
+  temp64, temptime, deltatime, tempfreq: int64;
+  c,l,i: int64;
+  tt: TThreadTimes;
+
+  rTemp: single;
+  totalCpuTicks: int64;
+  totalUsedTicks: int64;
+  ts:  PThreadState;
 begin
-  var temptime := GetHighResTicker;
-  var deltaTime := (temptime-Self.LastNanotick);
+  totalCPUTicks := 0;
+  temptime := GetHighResTicker;
+  deltaTime := (temptime-Self.LastNanotick);
   ForceItemCount(lvBackground, length(infos));
   SetLength(threadstates, length(infos));
   lvBackground.Columns[2].Caption := 'Threads ('+inttostr(length(Infos))+')';
-  for var t:= 0 to high(infos) do begin
-    var thr2 := infos[t];
-    var item := lvBackground.Items[t];
+  for t:= 0 to high(infos) do begin
+    thr2 := infos[t];
+    item := lvBackground.Items[t];
 
     ForceSubItems(item, 14);
-    var ts : PThreadState := @threadstates[t];
+    ts := @threadstates[t];
     ts.pooled := false;
     ts.expireprog := 0;
 
@@ -568,9 +570,9 @@ begin
         else
           item.imageindex := (item.imageindex+1) mod 8;
       end else begin
-        var c := thr2.Step;
-        var l := thr2.StepCount;
-        var i := c;
+        c := thr2.Step;
+        l := thr2.StepCount;
+        i := c;
         if l > 0 then
           i := round((c / l)*32)
         else
@@ -588,10 +590,6 @@ begin
           item.subitems[1] := thr2.SignalDebug+thr2.Name;
 
         //read last tick
-        var cTemp1: ticker;
-        var iTemp1: ticker;
-        var cTemp2: ticker;
-        var iTemp2: ticker;
         if item.SubItems[9] <> '' then
           cTemp1 := strtoint64(item.Subitems[9])
         else
@@ -616,7 +614,6 @@ begin
         iTemp2 := thr2.Iterations;
 
         //calculate work throughput
-        var fTemp: double;
         if cTemp2 >0 then
           fTemp := (iTemp2-iTemp1)/(cTemp2/1000)
         else
@@ -635,13 +632,11 @@ begin
         //-----------THREAD TIMES
         if deltaTime = 0 then deltaTime := 1;
 
-        var tempfreq: TLargeInteger;
         QueryPerformanceFrequency(tempfreq);
 
 
 
         //- - - - - - - - - - - - - - - - - - - -
-        var temp64: int64;
         if (IsInteger(item.subitems[12])) then begin
           temp64 := strtoint64(item.subitems[12]);
         end else
@@ -649,15 +644,13 @@ begin
 
 //              temp64 := 0;
 
-        var tt: TthreadTimes;
+
         temp64 := tt.user - temp64;
 //              IF tt.kernel > 0 then
 //                debug.consolelog('weee');
 
         item.subitems[12] := tt.user.tostring;
-        var totalCPUTicks := 0;
-        var rTemp: double := 0.0;
-        var sTemp: string := '';
+        totalCPUTicks := 0;
         if deltaTime > 0 then begin
           rTemp := (((temp64/tempfreq)/(deltaTime/tempfreq)));
           totalCPUTicks := temp64;
@@ -687,7 +680,7 @@ begin
           rTemp := lesserof(1, rTemp);
           rTemp := rTemp * 10;
           sTemp := '..........';
-          for var t2:= 1 to (round(rTemp)) do begin
+          for t2:= 1 to (round(rTemp)) do begin
             sTemp[t2-(1-STRZ)] := '|';
           end;
 
