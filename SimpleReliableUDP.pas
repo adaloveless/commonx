@@ -18,6 +18,7 @@ type
   TMultiplexedUDPEndpoint = rudp2.TMultiplexedUDPEndpoint;
   TSimpleReliablePrivateServerEndpoint = rudp2.TSimpleReliablePrivateServerEndpoint;
 {$ELSE}
+  TconnectionType = rudp1.TConnectionType;
   TReliableUDPEndpoint = rudp1.TReliableUDPEndpoint;
   TSimpleReliableUDPClient = rudp1.TSimpleReliableUDPClient;
   TMultiplexedUDPServer = rudp1.TMultiplexedUDPServer;

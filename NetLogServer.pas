@@ -7,7 +7,7 @@ uses
   winapi.windows,//for inline support
 {$ENDIF}
   SYstem.SysUtils, numbers, herro,
-  betterobject, classes,systemx, betteridsockethandle, idglobal, skill, typex, stringx, better_indy,BetterIdUDPServer, orderlyinit, tickcount, simplequeue, networkx, PeriodicEvents, netlogpacket, debug, managedthread;
+  betterobject, classes,systemx, idsockethandle, idglobal, skill, typex, stringx, better_indy,IdUDPServer, orderlyinit, tickcount, simplequeue, networkx, PeriodicEvents, netlogpacket, debug, managedthread;
 
 
 const
@@ -83,11 +83,11 @@ constructor TNetLogServer.create;
 begin
   queue := TPM.Needthread<TSimpleQueue>(nil);
   queue.MaxItemsInQueue := 512;
-  queue.start;
+  queue.beginstart;
 
   queueout := TPM.Needthread<TSimpleQueue>(nil);
   queueout.MaxItemsInQueue := 512;
-  queueout.start;
+  queueout.beginstart;
 
 
   self.ThreadedEvent := true;
@@ -314,7 +314,7 @@ end;
 
 initialization
 
-orderlyinit.init.RegisterProcs('NetLogServer', oinit, oprefinal, ofinal, olatefinal, 'skill,indy,managedthread');
+orderlyinit.init.RegisterProcs('NetLogServer', oinit, oprefinal, ofinal, olatefinal, 'skill,managedthread');
 
 end.
 
