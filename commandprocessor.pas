@@ -3135,15 +3135,15 @@ begin
     if Assigned(Command) then begin
       if Command.TryLock then
         try
-          Fautospin := Command.Step = 0;
+          Finfo.autospin := Command.Step = 0;
         finally
           Command.Unlock;
         end;
     end
     else begin
-      Fautospin := false;
+      Finfo.autospin := false;
     end;
-    Result := Fautospin;
+    Result := Finfo.autospin;
   finally
     Unlock;
   end;
@@ -3210,16 +3210,16 @@ begin
     if Assigned(Command) then begin
       if Command.TryLock then
         try
-          FStepCount := Command.StepCount;
+          Finfo.StepCount := Command.StepCount;
         finally
           Command.Unlock;
         end;
 
     end
     else begin
-      FStepCount := 0;
+      Finfo.StepCount := 0;
     end;
-    Result := FStepCount;
+    Result := Finfo.StepCount;
   finally
     Unlock;
   end;
@@ -3255,15 +3255,15 @@ begin
     if Assigned(Command) then begin
       if Command.TryLock then
         try
-          Fspin := Command.Step = 0;
+          Finfo.spin := Command.Step = 0;
         finally
           Command.Unlock;
         end;
     end
     else
-      Fspin := false;
+      Finfo.spin := false;
 
-    Result := Fspin;
+    Result := Finfo.spin;
 
   finally
     Unlock;
@@ -3278,7 +3278,7 @@ begin
     if Assigned(Command) then begin
       if Command.TryLock then
         try
-          FStatus := Command.Status;
+          Finfo.Status := Command.Status;
         finally
           Command.Unlock;
         end;
@@ -3286,7 +3286,7 @@ begin
     else begin
       // FStatus := '(unassigned)';
     end;
-    Result := FStatus;
+    Result := Finfo.Status;
   finally
     Unlock;
   end;
@@ -3309,15 +3309,15 @@ begin
     if Assigned(Command) then begin
       if Command.TryLock then
         try
-          FStep := Command.Step;
+          Finfo.Step := Command.Step;
         finally
           Command.Unlock;
         end;
     end
     else begin
-      FStep := 0;
+      Finfo.Step := 0;
     end;
-    Result := FStep;
+    Result := Finfo.Step;
   finally
     Unlock;
   end;

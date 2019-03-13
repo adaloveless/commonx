@@ -666,6 +666,9 @@ end;
 
 
 procedure TfrmBase.WaitForSinglecommand(c: TCommand);
+var
+  wasenabled: boolean;
+  tmLastUpdate: ticker;
 begin
 
 {$IFDEF LOCALCOMMANDWAIT}
@@ -673,9 +676,9 @@ begin
     raise Ecritical.create('you cannot watch a fireforget '+c.ClassName);
   self.showstatus(c.Status);
   try
-    var wasenabled := self.Enabled;
+    wasenabled := self.Enabled;
     try
-      var tmLastupdate := GetTicker;
+      tmLastupdate := GetTicker;
       while not c.IsComplete do begin
         sleep(1000 div 120);
         if GetTimeSince(tmLastUpdate) > 500 then begin
@@ -916,11 +919,12 @@ end;
 function TfrmBase.SetTimer(interval: ni; ontimerproc: TAnonTimerProc): TAnonFormTimer;
 var
   c: TAnonFormTimer;
+  tmStart: ticker;
 begin
   c := TAnonFormTimer.create(
     function : boolean
     begin
-      var tmStart := GetTicker;
+      tmStart := GetTicker;
       c.status := 'Please wait...';
       c.step := 0;
       c.stepcount := interval;
@@ -951,8 +955,10 @@ end;
 
 procedure TfrmBase.SetTimerAndWatch(interval: ni;
   ontimerproc: TAnonTimerProc);
+var
+  c: TAnonFormTimer;
 begin
-  var c := SetTimer(interval, ontimerproc);
+  c := SetTimer(interval, ontimerproc);
   self.WaitForSinglecommand(c);
   CleanupExpiredCommands;
 end;

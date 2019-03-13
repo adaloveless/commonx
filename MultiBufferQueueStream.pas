@@ -317,7 +317,7 @@ uses
 
 procedure TMultiBufferQueueStream.AdjustBufferBounds(oldsize, newsize: int64);
 var
-  t: ni;
+  t: nativeint;
   iStart, iCount: int64;
   p: array of byte;
   bufStart, bufLast: int64;
