@@ -202,8 +202,10 @@ function FindInMemory(patternPtr: Pbyte; patternSz: ni; poolPointer: Pbyte; pool
 
 
 function GetPhysicalMemory: int64;
+{$IFNDEF CPUX86}
 function WinGetPhysicallyInstalledSystemMemory(var TotalMemoryInKilobytes: int64): Boolean; stdcall;
 //{$EXTERNALSYM WinGetPhysicallyInstalledSystemMemory}
+{$ENDIF}
 
 
 //type              S
@@ -2998,12 +3000,18 @@ begin
 end;
 
 
+{$IFNDEF CPUx86}
 function WinGetPhysicallyInstalledSystemMemory; external kernel32 name 'GetPhysicallyInstalledSystemMemory';
+{$ENDIF}
 
 function GetPhysicalMemory: int64;
 begin
+{$IFDEF CPUx86}
+  result := 2000000000;
+{$ELSE}
   if not WinGetPhysicallyInstalledSystemMemory(result) then
     exit(0);
+{$ENDIF}
 
 end;
 
