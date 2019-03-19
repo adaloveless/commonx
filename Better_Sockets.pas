@@ -3,11 +3,17 @@ unit better_Sockets;
 interface
 
 uses
-  sockfix, classes;
+{$IFDEF FIX}
+  sockfix,
+{$ELSE}
+  sockets,
+{$ENDIF}
+  typex,
+  classes;
 
 type
   TBetterCustomIPClient = TCustomIPClient;
-  ESocketError = sockfix.ESocketError;
+  ESocketError = ECritical;
   TBetterTCpClient = TTcpClient;
   TBetterTcpServer = TTcpServer;
 

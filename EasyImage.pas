@@ -206,6 +206,7 @@ function SmallColorToGiantColor(var sc: TSmallColor): TGiantColor;
 function ColorToGiantColor(sc: TColor): TGiantColor;
 function GiantColorToColor(gc: TGiantColor): TColor;
 procedure SetGiantColorToPointer(gc: TGiantColor; pColor: pointer; pAlpha: pointer=nil);
+function PngtoBMP(png: TPNGImage): vcl.graphics.TBitmap;
 
 function GetColorFromPointer(p: pointer): Tcolor;inline;
 procedure SetColorToPointer(p: pointer; c: TColor);inline;
@@ -2869,6 +2870,20 @@ begin
   if lowercase(extractfileext(sFile)) = '.jpg' then begin
     result := GetImageFileDImensions_JPG(sFile, w,h);
   end;
+end;
+
+function PngtoBMP(png: TPNGImage): vcl.graphics.TBitmap;
+var
+  fbm: TFastBitmap;
+begin
+  fbm := TFastBitmap.create;
+  try
+    fbm.FromPNG(png);
+    result := fbm.ToBitmap
+  finally
+    fbm.free;
+  end;
+
 end;
 
 

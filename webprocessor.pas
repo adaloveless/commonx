@@ -4,7 +4,7 @@ unit WebProcessor;
 interface
 
 uses SharedObject, requestinfo, tickcount,beeper,
-    better_sockets, helpers.sockets, stringx,
+    better_sockets, helpers.sockets, stringx, sockets,
     IPClientWrapper, httpclient, systemx, typex,
     MotherShipWebServer, classes, sysutils, exceptions, windows, webstring, stringx.ansi, webfunctions;
 
@@ -19,7 +19,7 @@ type
     { Private declarations }
     FRequestState: TRequestState;
 
-    FCLientSocket: TBetterCustomIPclient;
+    FCLientSocket: TCustomIPclient;
 
     FRQINfo: TRequestInfo;
     msIncoming: TMemoryStream;
@@ -34,8 +34,8 @@ type
     function GetRequestState: TRequestState;
     procedure ClientExecute;
     procedure Execute;
-    function GetSocketProxy: TBetterCustomIPClient;
-    procedure SetSocketProxy(const Value: TBetterCustomIPClient);
+    function GetSocketProxy: TCustomIPClient;
+    procedure SetSocketProxy(const Value: TCustomIPClient);
 
   protected
 
@@ -55,8 +55,8 @@ type
     property RequestState: TRequestState read GetRequestState write SetRequestState;
     property StateString: string read GetStateString;
 
-    property ClientSocketProxy: TBetterCustomIPClient read GetSocketProxy write SetSocketProxy;
-    property ClientSocket: TBetterCustomIPClient read FCLIentSocket write FClientSocket;
+    property ClientSocketProxy: TCustomIPClient read GetSocketProxy write SetSocketProxy;
+    property ClientSocket: TCustomIPClient read FCLIentSocket write FClientSocket;
 
     property rqInfo: TRequestInfo read FRQINfo;
 
@@ -122,7 +122,7 @@ begin
 end;
 
 
-function TWebProcessor.GetSocketProxy: TBetterCustomIPClient;
+function TWebProcessor.GetSocketProxy: TCustomIPClient;
 begin
   result := self.ClientSocket;
 end;
@@ -631,7 +631,7 @@ begin
 
   IF clientsocket.WaitForData(SHORT_SOCKET_TIMEOUT) then begin
     setlength(ansi, 512);
-    setlength(ansi, helpers.sockets.Socket_Read(clientsocket, @ansi[STRZ], 512));
+    setlength(ansi, helpers.sockets.Socket_Read(clientsocket, Pbyte(@ansi[STRZ]), 512));
     result := ansi;
   end else
     raise ESocketError.Create('timed out/disconnected waiting for text');
@@ -653,7 +653,7 @@ begin
 end;
 
 
-procedure TWebProcessor.SetSocketProxy(const Value: TBetterCustomIPClient);
+procedure TWebProcessor.SetSocketProxy(const Value: TCustomIPClient);
 begin
   self.ClientSocket := value;
 end;
