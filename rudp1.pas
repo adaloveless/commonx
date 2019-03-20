@@ -114,6 +114,8 @@ uses
   ringstats,
 {$IFDEF WINDOWS}
   idwinsock2,
+{$ELSE}
+  ios.stringx.iosansi,
 {$ENDIF}
   btree,
 {$IFDEF USE_FEC}
@@ -1919,7 +1921,7 @@ begin
     bRetry := false;
     if SmartLock then
     try
-      Debug.Log('Waiting for connection ACKnowledgement');
+      Debug.Log('Waiting for connection ACKnowledgement from '+self.Remotehost+':'+self.RemotePort.tostring);
 
       SendPacket(h, nil, 0);
     //  multiplexer.Active := true;
@@ -2338,10 +2340,12 @@ begin
   queue_pipe_in.WaitForEmptyQueue;
   Detached := true;
 
+{$IFDEF MSWINDOWS}
   if (self.lockowner = getcurrentthreadid)
   and (self.IsLocked) then begin
     Debug.Log(self, 'Calling detach from locked object WILL cause deadlocks.');
   end;
+{$ENDIF}
 
 {$IFDEF ENDPOINT_REFERENCES}
   //if someone else has references to this object
@@ -7792,8 +7796,8 @@ var
   sz: ni;
 begin
   head := idsocket_GuaranteeRead(acontext.connection.Socket, 4);
-  if (head[0] <> ord(ansichar('W')))
-  or (head[1] <> ord(ansichar('R'))) then begin
+  if (head[0] <> ordEx('W'))
+  or (head[1] <> ordEx('R')) then begin
     exit(false);
   end;
 

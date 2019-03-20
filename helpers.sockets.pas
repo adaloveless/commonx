@@ -3,7 +3,7 @@ unit helpers.sockets;
 interface
 
 uses
-  typex,systemx, web.win.sockets, better_sockets, classes, numbers, debug, sysutils;
+  typex,systemx, sockfix, better_sockets, classes, numbers, debug, sysutils;
 
 procedure Socket_GuaranteeRead(s: TCustomIPClient; p: pbyte; iLength: ni);overload;
 procedure Socket_GuaranteeWrite(s: TCustomIPClient; p: pbyte; iLength: ni);overload;

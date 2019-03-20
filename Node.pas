@@ -3,7 +3,7 @@ unit Node;
 interface
 
 uses
-  sharedobject, commandprocessor, exe, dir, dirfile, namedcommandlist, stringx, systemx, debug;
+  sharedobject, commandprocessor, exe, dir, dirfile, namedcommandlist, stringx, systemx, debug, tickcount;
 
 type
   Tcmd_NodeBuild = class(TCommand)
@@ -20,6 +20,7 @@ type
 
 var
   nodeprojectroot: string = '';
+  lastchecked: ticker;
 
 
 
@@ -35,6 +36,9 @@ var
   c: Tcmd_Nodebuild;
   key: string;
 begin
+  if gettimesince(lastchecked) < 120000 then
+    exit;
+  lastchecked := getticker;
 
   GNC.CommandHoldTime := 8000;
   GNC.CombStaleCommands;

@@ -6,7 +6,7 @@ interface
 
 uses
 
-	TickCount, Classes, Sysutils, sharedobject, webstring,
+	TickCount, Classes, Sysutils, sharedobject, webstring, numbers,
   InterfaceList, PersistentInterfacedObject, stringx, variants, typex, systemx, better_collections;
 
 var
@@ -137,7 +137,6 @@ type
     FGenesis: cardinal;
     FExpired: boolean;
     FTableLink: string;
-    FFetchQuery: string;
     FIsList: boolean;
     FListOf: string;
     FIdentityKeyCount: ni;
@@ -177,6 +176,7 @@ type
     FReferences: integer;
     FKeys: array of string;
     FFilterPhrase: string;
+    FFetchQuery: string;
 
     //object general validation
     FOnCanSave: TObjectValidationEvent;
@@ -226,6 +226,7 @@ type
     function GetSpecialField(sFieldName: string): TDataField;
     function CreateSpecialField(sFieldName: string): TDataField;
     function DoCreateSpecialField(sFieldName: string): TDataField; virtual;
+    procedure Calculatefield(sFieldName: string; f: TDataField);virtual;
 
     //flywieight arrays
     function GetFieldDefs(idx: integer): TDOFieldDef;
@@ -556,6 +557,9 @@ type
     //Returns the name for this object to be used in XML documents.
 
     procedure SetOrphanedValues; virtual;
+    procedure MergeAdd(o: TDataObject);virtual;
+    procedure CopyFrom(o: TDataObject);virtual;
+
 
 
     function CanExitField(field: TDatafield; var value: variant): boolean; virtual;
@@ -630,6 +634,7 @@ type
     procedure DefineAutoKeyParams(sfield: string; sTable: string = '');
     property KeyupdateQuery: string read GetKeyUpdateQuery;
     property AutoKeyNames[idx: ni]: string read GetautoKeyName;
+
   end;
 
 	TDataFieldChoices = Class(TPersistentInterfacedObject)
@@ -821,6 +826,7 @@ type
       //Keeps track of what type of value is stored in this field (simply
       //checking the class type was not good enough)
     property Name: string read GetName write SetName;
+    procedure Increment;
     property AsVariant: Variant read GetAsVariant write SetAsVariantTemplate;
     property AsString: string read GetAsString write SetAsStringTemplate;
     property AsWebString: string read GetAsWebString write SetAsWebString;
@@ -1696,6 +1702,15 @@ begin
     end;
   end;
 end;
+procedure TDataObject.CopyFrom(o: TDataObject);
+var
+  t: ni;
+begin
+  for t:= 0 to lesserof(fieldcount, o.FieldCount)-1 do begin
+    self.FieldByIndex[t].AsVariant := o.FieldByIndex[t].AsVariant;
+  end;
+end;
+
 //---------------------------------------------------------
 function TDataObject.InstantiateToken(var obj: TDataObject; Token: TDataObjectToken; iSessionID: integer): boolean;
 //(protected)
@@ -2305,6 +2320,11 @@ begin
   if self.classtype = TBooleanDataField then
     result := dftBoolean;
 end;
+procedure TDataField.Increment;
+begin
+  asVariant := asVariant + 1;
+end;
+
 //------------------------------------------------------------------------------
 procedure TDatafield.SetOwner(owner: TDataObject);
 begin
@@ -2859,6 +2879,12 @@ begin
   SetLength(FExtFieldDefs, Value+1)
 end;
 //------------------------------------------------------------------------------
+procedure TDataObject.Calculatefield(sFieldName: string; f: TDataField);
+begin
+  //no implementation required
+  //write f.AsVariant or f.AsString with final calculated value
+end;
+
 function TDataObject.CanChangeField(field: TDataField; var value: variant): boolean;
 begin
   //ABSTRACT
@@ -3239,6 +3265,7 @@ begin
 
 end;
 //------------------------------------------------------------------------------
+
 function TDataObject.IndexOfAssociateObject(doFind: TDataObject; sAssociateName: string): integer;
 var
   t: integer;
@@ -3510,6 +3537,11 @@ begin
   AsVariant := strtofloat(str);
 end;
 
+
+procedure TDataObject.MergeAdd(o: TDataObject);
+begin
+  raise ECritical.Create('Not implemented. Do not call inherited when overridden.');
+end;
 
 procedure TDataObject.MergeObjects(doMerger: TDataObject;
   bRemoveDuplicates: boolean);

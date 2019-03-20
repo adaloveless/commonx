@@ -42,7 +42,7 @@ uses ServerInterfaceInterface, DataObjectCache;
 //------------------------------------------------------------------------------
 function CompareAsyncStartDate(item1, item2: Pointer): integer;
 var
-  s1, s2 : ansistring;
+  s1, s2 : string;
 begin
   s1 := LowerCase(TDataObject(item1)['Start'].AsString);
   s2 := LowerCase(TDataObject(item2)['Start'].AsString);

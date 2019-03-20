@@ -27,6 +27,7 @@ begin
 
 end;
 function AnsiStringToIDBytes(a: ansistring): TIDBytes;
+{$IFDEF MSWINDOWS}
 var
   t: ni;
 begin
@@ -35,6 +36,15 @@ begin
     result[t] := ord(a[STRZ+t]);
 
 end;
+{$ELSE}
+var
+  t: ni;
+begin
+  setlength(result, length(a));
+  for t := 0  to length(a)-1 do
+    result[t] := a.bytes[STRZ+t];
+end;
+{$ENDIF}
 
 function idsocket_GuaranteeRead(idsocket: TIdIOHandlerSocket; iCount: ni): TidBytes;
 var

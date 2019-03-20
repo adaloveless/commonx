@@ -1,7 +1,7 @@
 unit better_Sockets;
 
 interface
-
+{$DEFINE FIX}
 uses
 {$IFDEF FIX}
   sockfix,

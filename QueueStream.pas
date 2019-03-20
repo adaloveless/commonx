@@ -1,4 +1,8 @@
 unit QueueStream;
+interface
+{$IFDEF WINDOWS}
+//!!!!WINDOWS ONLY FOR NOW!!!!
+
 {$DEFINE DOUBLE_READ}
 {x$DEFINE DISABLE_WRITES}
 //2018 What I Remember
@@ -61,11 +65,6 @@ unit QueueStream;
 
 
 
-
-
-
-
-interface
 {x$DEFINE ALERT_WRITE}
 {x$DEFINE LOCK_UNDER_INSTEAD_OF_BACK}
 {$DEFINE ALLOW_UB_SIDE_FETCH}//yes, tries prefetches n stuff
@@ -623,7 +622,11 @@ type
 var
   g_FORCE_UB_PREFETCH : ni = 64;
 
+{$ENDIF}
+
 implementation
+
+{$IFDEF WINDOWS}
 
 uses
 {$IFDEF BAD_USES}
@@ -4075,7 +4078,7 @@ end;
 
 { TAlignedTempSpace }
 
-
+{$ENDIF}
 
 initialization
 //  g_alarm := false;

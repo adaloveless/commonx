@@ -6,16 +6,14 @@ unit FileProxy;
 {$DEFINE ATS}
 
 interface
+{$IFDEF WINDOWS}
+{ NOTE!  THIS REQUIRES WINDOWS, it is a mistake to include this
+  file in other platforms.
+}
+
 uses System.Sysutils, debug, numbers, systemx, windows;
 
-type
-  TAlignedTempSpace = record
-    aligned: Pbyte;
-    procedure Allocate;
-    procedure Unallocate;
-  end;
 
-  PAlignedTempSpace = ^TalignedTempSpace;
 
 function FileReadPx(ats: PAlignedTempSpace; Handle: THandle; var Buffer; Count: LongWord): Integer;inline;
 function FileWritePx(ats: PAlignedTempSpace; Handle: THandle; const Buffer; Count: LongWord): Integer;inline;
@@ -27,10 +25,10 @@ const
   BAD_PATTERN: array [0..9] of byte = ($0f, $00, $00, $00, $00, $00, $00, $00, $00, $18);
 {$ENDIF}
 
-
+{$ENDIF}
 implementation
 
-
+{$IFDEF WINDOWS}
 function FileReadPx(ats: PAlignedTempSpace; Handle: THandle; var Buffer; Count: LongWord): Integer;inline;
 begin
 {$IFNDEF ATS}
@@ -87,16 +85,5 @@ begin
 end;
 
 
-procedure TAlignedTempSpace.Allocate;
-begin
-  aligned := VirtualAlloc(nil, 262144,  MEM_COMMIT or MEM_RESERVE, PAGE_READWRITE);
-end;
-
-procedure TAlignedTempSpace.Unallocate;
-begin
-  VirtualFree(aligned, 262144, MEM_RELEASE);
-end;
-
-
-
+{$ENDIF}
 end.

@@ -3,31 +3,32 @@ unit ConsoleLock;
 interface
 
 uses
-  Windows, orderlyinit;
+  orderlyinit, systemx;
+
 
 procedure LockConsole;
 
 procedure UnLockConsole;
 var
-  sectConsole: _RTL_CRITICAL_SECTION;
+  sectConsole: TCLXCriticalSection;
 implementation
 
 //------------------------------------------------------------------------------
 procedure LockConsole;
 begin
-  EnterCriticalSection(sectConsole);
+  ECS(sectConsole);
 //  showmessage('console locked');
 end;
 //------------------------------------------------------------------------------
 procedure UnLockConsole;
 begin
 //  showmessage('console unlocked');
-  LeaveCriticalSection(sectConsole);
+  LCS(sectConsole);
 end;
 //------------------------------------------------------------------------------
 procedure oinit;
 begin
-  InitializeCriticalSection(sectConsole);
+  ICS(sectConsole);
 end;
 //------------------------------------------------------------------------------
 procedure oprefinal;
@@ -41,7 +42,7 @@ end;
 
 procedure olatefinal;
 begin
-  DeleteCriticalSection(sectConsole);
+  DCS(sectConsole);
 end;
 
 

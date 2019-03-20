@@ -1397,7 +1397,7 @@ var
 begin
   result.Date := 0.0;
   result.Name := '';
-  d := TDirectory.create(sDir, '*.*', 0, FILE_ATTRIBUTE_HIDDEN, false, false, false);
+  d := TDirectory.create(sDir, '*.*', 0, 0, false, false, false);
   while d.GetNextFile(fil) do begin
     if fil.date > result.date then begin
       result.Date := fil.date;

@@ -40,6 +40,16 @@ uses
   sysutils;
 
 type
+  TAlignedTempSpace = record
+    aligned: Pbyte;
+    memsize: ni;
+    procedure Allocate;
+    procedure Unallocate;
+
+  end;
+
+  PAlignedTempSpace = ^TalignedTempSpace;
+
   TLogicalProcessorInformation = record
     LogicalProcessorCount : integer;
     NumaNodeCount : integer;
@@ -193,7 +203,9 @@ function Varsame(v1,v2: variant): boolean;
 function stridelength(p1,p2: pointer): ni;inline;
 function LocalTimeToGMT(dt: TDateTime): TDateTime;
 function GMTtoLocalTime(dt: TDateTime): TDatetime;
+{$IFDEF MSWINDOWS}
 function GetLogicalProcessorInfo : TLogicalProcessorInformation;
+{$ENDIF}
 
 function FileSeek64(Handle: THandle; offset: int64; origin: ni): int64;
 
@@ -202,9 +214,11 @@ function FindInMemory(patternPtr: Pbyte; patternSz: ni; poolPointer: Pbyte; pool
 
 
 function GetPhysicalMemory: int64;
+{$IFDEF MSWINDOWS}
 {$IFNDEF CPUX86}
 function WinGetPhysicallyInstalledSystemMemory(var TotalMemoryInKilobytes: int64): Boolean; stdcall;
 //{$EXTERNALSYM WinGetPhysicallyInstalledSystemMemory}
+{$ENDIF}
 {$ENDIF}
 
 
@@ -1178,12 +1192,18 @@ end;
 
 
 function GetNumberOfPhysicalProcessors: integer;
+{$IFDEF MSWINDOWS}
 var
   lpi: TLogicalProcessorInformation;
 begin
   lpi := GetLogicalProcessorInfo;
   result := lpi.ProcessorCoreCount;
 end;
+{$ELSE}
+begin
+  result := TThread.ProcessorCount;
+end;
+{$ENDIF}
 
 function GetCPUCount: integer;
 begin
@@ -1196,6 +1216,7 @@ begin
 end;
 
 function GetEnabledCPUCount: int64;
+{$IFDEF MSWINDOWS}
 var
   procafmask, sysafmask: int64;
   p,s: DWORD_PTR;
@@ -1205,6 +1226,11 @@ begin
   GetProcessAffinityMask( GetCurrentProcess, p,s);
   result := countsetbits(int64(p));
 end;
+{$ELSE}
+begin
+  result := GetNumberOfLogicalProcessors;
+end;
+{$ENDIF}
 
 function xGetProcessorCount: integer;
 begin
@@ -1212,12 +1238,18 @@ begin
 end;
 
 function GetNumberOfLogicalProcessors: integer;
+{$IFDEF MSWINDOWS}
 var
   lpi: TLogicalProcessorInformation;
 begin
   lpi := GetLogicalProcessorInfo;
   result := lpi.LogicalProcessorCount;
 end;
+{$ELSE}
+begin
+  result := TThread.ProcessorCount;
+end;
+{$ENDIF}
 
 
 function FileExists(sFile: string): boolean;
@@ -3000,17 +3032,24 @@ begin
 end;
 
 
+{$IFDEF MSWINDOWS}
 {$IFNDEF CPUx86}
 function WinGetPhysicallyInstalledSystemMemory; external kernel32 name 'GetPhysicallyInstalledSystemMemory';
+{$ENDIF}
 {$ENDIF}
 
 function GetPhysicalMemory: int64;
 begin
+{$IFDEF MSWINDOWS}
 {$IFDEF CPUx86}
   result := 2000000000;
 {$ELSE}
   if not WinGetPhysicallyInstalledSystemMemory(result) then
     exit(0);
+{$ENDIF}
+{$ELSE}
+  result := 2000000000;//todo 2: other platforms arbitrarily use 2GB for reported memory size
+                       //this does not create actual memory limits, but should be fixed
 {$ENDIF}
 
 end;
@@ -3028,6 +3067,7 @@ begin
   end;
 end;
 
+{$IFDEF MSWINDIOWS}
 function GetLogicalProcessorInfo : TLogicalProcessorInformation;
 var
   i: Integer;
@@ -3076,6 +3116,29 @@ begin
           raise Exception.Create('Error: Unsupported LOGICAL_PROCESSOR_RELATIONSHIP value: '+inttostr(ord(buffer[i].relationship)));
     end;
   end;
+end;
+{$ENDIF}
+
+{ TAlignedTempSpace }
+
+procedure TAlignedTempSpace.Allocate;
+begin
+  if memsize = 0 then
+    raise ECritical.create('temp space size is 0!');
+{$IFDEF WINDOWS}
+  aligned := VirtualAlloc(nil, memsize,  MEM_COMMIT or MEM_RESERVE, PAGE_READWRITE);
+{$ELSE}
+  aligned := getmemory(memsize);
+{$ENDIF}
+end;
+
+procedure TAlignedTempSpace.Unallocate;
+begin
+{$IFDEF WINDOWS}
+  VirtualFree(aligned, memsize, MEM_RELEASE);
+{$ELSE}
+  freemem(aligned);
+{$ENDIF}
 end;
 
 

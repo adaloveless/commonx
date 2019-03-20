@@ -151,7 +151,7 @@ procedure Log(targets: TLogTargets; sTypeName: string; ptr: pointer; s: string; 
 procedure ConsoleLog(s: string);
 
 function DebugLog: TDebugLog;
-
+function ESCSEQ(s: string): string;
 
 procedure SetDebugThreadVar(thr: TObject);
 procedure LogToThreadStatus(s: string);
@@ -605,6 +605,15 @@ begin
 {$ENDIF}
 end;
 
+function ESCSEQ(s: string): string;
+begin
+{$IFDEF NO_ESCAPE_LOGS}
+  result := s;
+{$ELSE}
+  result := ESCX+s+ESCX;
+{$ENDIF}
+end;
+
 
 { TThreadLog }
 
@@ -620,6 +629,8 @@ initialization
     deletefile('c:\consolelog.txt');
 
 {$ENDIF}
+
+
 
 end.
 

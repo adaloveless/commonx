@@ -4,7 +4,7 @@ unit WebProcessor;
 interface
 
 uses SharedObject, requestinfo, tickcount,beeper,
-    better_sockets, helpers.sockets, stringx, sockets,
+    better_sockets, helpers.sockets, stringx, sockfix,
     IPClientWrapper, httpclient, systemx, typex,
     MotherShipWebServer, classes, sysutils, exceptions, windows, webstring, stringx.ansi, webfunctions;
 

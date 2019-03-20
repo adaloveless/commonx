@@ -325,11 +325,13 @@ type
   end;
 
   TProcessorThread = class(TManagedThread)
-  private
-    function IsStartable: boolean;
-    procedure Start;override;
+  protected
     function GetComplete: boolean;
     procedure SetComplete(b: boolean);
+  public
+    function IsStartable: boolean;
+    procedure Start;override;
+
     property Complete: boolean read GetComplete write SetComplete;
   end;
 
@@ -795,7 +797,10 @@ begin
   if not realthread.terminated then begin
     realthread.terminate;
   end;
+  realthread.waitfor;
+{$IFDEF WINDOWS}
   waitforsingleobject(realthread.Handle, 0);
+{$ENDIF}
 
   poolloop := false;
   loop := false;
@@ -1659,7 +1664,10 @@ end;
 
 procedure TManagedThread.SetPlatformPriority(const Value: integer);
 begin
+//todo 2: setting of thread priorities doesn't do anything on alt platforms because we need to translate "platform priority" to platform specific numbers... else we get runtime errors
+{$IFDEF MSWINDOWS}
   realthread.Priority := TThreadPriority(value);
+{$ENDIF}
 end;
 
 procedure TManagedThread.SEtReady(const Value: boolean);

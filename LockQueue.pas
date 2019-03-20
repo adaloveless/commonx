@@ -3,7 +3,7 @@ unit LockQueue;
 interface
 
 {x$DEFINE FAKE_QUEUE}
-{$DEFINE SINGLETON_DEBUG}
+{x$DEFINE SINGLETON_DEBUG}
 
 
 uses

@@ -50,8 +50,8 @@ type
       function QueryMap(cache: TDataObjectCache;
                         out obj: TDataObject; sQuery: string; iSessionID, iTimeoutMS: integer;
                         bLazy: boolean; iIgnoreKeys: integer; sBaseType: string;
-                        vBaseKeys: variant; slDebug: TStringList; sSubType: string;
-                        iSubKeys: integer): boolean;
+                        vBaseKeys: variant; slDebug: TStringList; sSubType: string = '';
+                        iSubKeys: integer = 0): boolean;
 
 
       function LazyQueryMap(cache: TDataObjectCache;

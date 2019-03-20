@@ -721,7 +721,7 @@ begin
   Spin := (estimated_backlog_size+estimated_queue_size) > 0;
   if bForce or (GetTimeSInce(status_time) > 250) then begin
     Status := 'bcklg: '+inttostr(estimated_backlog_size)+' wrk:'+inttostr(estimated_queue_size)+' avg(us):'+round(rs.PeriodicAverage/10).ToString+' nwr:'+noworkruninterval.tostring+' sf:'+sidefetches.tostring+' hit:'+hits.tostring+' miss:'+misses.tostring;
-    Status_time := gettickcount;
+    Status_time := getticker;
   end;
 end;
 

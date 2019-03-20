@@ -4,28 +4,42 @@ unit helpers.stream;
 interface
 
 uses
-  classes, sysutils, debug, numbers, systemx, queuestream, typex, ios.stringx.iosansi;
+  classes, sysutils, debug, numbers, systemx,
+{$IFDEF MSWINDOWS}
+  queuestream,
+{$ENDIF}
+  typex, ios.stringx.iosansi;
 
 function Stream_GuaranteeWrite(const s: TStream; const p: PByte; const iSize: nativeint; iStartingPositionHint:int64 = 0; iAlign:int64 =65536): nativeint;overload;
 function Stream_GuaranteeWrite(const s: TStream; const p: PByte; const iSize: nativeint; prog: PProgress; iStartingPositionHint:int64 = 0; iAlign:int64 =65536): nativeint;overload;
+{$IFDEF MSWINDOWS}
 function Stream_GuaranteeWrite(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint): nativeint;overload;
 function Stream_GuaranteeWrite(const s: TAdaptiveQueuedSTream; const p: PByte; const iSize: nativeint): nativeint;overload;inline;
+{$ENDIF}
 
 function Stream_GuaranteeRead_NoExceptions(const s: TStream; const p: PByte; const iSize: nativeint): nativeint;
+{$IFDEF WINDOWS}
 function Stream_GuaranteeRead(const s: TUnbufferedFileStream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): nativeint;overload;inline;
+{$ENDIF}
 function Stream_GuaranteeRead(const s: TStream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): nativeint;overload;inline;
 function Stream_GuaranteeRead(const s: TStream; const p: PByte; const iSize: nativeint; prog: PProgress; const bThrowExceptions: boolean = true): nativeint;overload;
+{$IFDEF WINDOWS}
 function Stream_GuaranteeRead(const s: TAdaptiveQueuedSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): nativeint;overload;
 function Stream_GuaranteeRead(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): nativeint;overload;
 function Stream_GuaranteeRead_Begin(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): TObject;overload;inline;
 function Stream_GuaranteeRead_End(const s: TAdaptiveQueuedFileStream; const o: TObject): nativeint;
+{$ENDIF}
 
 function Stream_GuaranteeCopy(const sFrom: TStream; const sTo: Tstream; const iSize: int64 = -1): int64;overload;
 function Stream_GuaranteeCopy(const sFrom: TStream; const sTo: Tstream; prog: PPRogress; const iSize: int64 = -1): int64;overload;
+{$IFDEF WINDOWS}
 function Stream_GuaranteeCopy(const sFrom: TAdaptiveQueuedSTream; const sTo: TAdaptiveQueuedFileSTream; const iSize: int64): int64;overload;
 function Stream_GuaranteeCopy(const sFrom: TAdaptiveQueuedFileSTream; const sTo: TAdaptiveQueuedFileSTream; const iSize: int64): int64;overload;
+{$ENDIF}
 procedure Stream_Grow(const s: TStream; iSize: int64);overload;
+{$IFDEF WINDOWS}
 procedure Stream_Grow(const s: TAdaptiveQueuedFileStream; iSize: int64);overload;
+{$ENDIF}
 
 function stream_Compare(const s1, s2: TStream): integer;overload;
 function stream_Compare(const s1, s2: TStream; out dif_addr: int64): integer;overload;
@@ -41,10 +55,14 @@ function Stream_ReadString(const s: TStream; terminator: byte = 10; nobacktrack:
 
 
 
+{$IFDEF WINDOWS}
 procedure Stream_WriteZeros(const s: TUnbufferedFileStream; const iCount: int64);overload;
+{$ENDIF}
 procedure Stream_WriteZeros(const s: TStream; const iCount: int64);overload;
+{$IFDEF WINDOWS}
 procedure Stream_WriteZeros(const s: TAdaptiveQueuedFileSTream; const iCount: int64);overload;
 procedure Stream_WriteZerosXX(const s: TAdaptiveQueuedFileSTream; const iCount: int64);
+{$ENDIF}
 
 type
   EStreamGuarantee = class(Exception)
@@ -54,10 +72,12 @@ type
 implementation
 
 
+{$IFDEF MSWINDOWS}
 procedure Stream_WriteZeros(const s: TUnbufferedFileStream; const iCount: int64);overload;
 begin
   s.WriteBehindZeros(s.POsition, iCount);
 end;
+{$ENDIF}
 procedure Stream_WriteZeros(const s: TStream; const iCount: int64);
 var
   iJustWritten, iTotalWritten: int64;
@@ -274,19 +294,23 @@ begin
 end;
 
 
+{$IFDEF MSWINDOWS}
 function Stream_GuaranteeWrite(const s: TAdaptiveQueuedFileStream; const p: PByte; const iSize: nativeint): nativeint;overload;
 begin
   s.AdaptiveWrite(p, iSize);
   result := iSize;
 end;
+{$ENDIF}
 
+{$IFDEF MSWINDOWS}
 function Stream_GuaranteeWrite(const s: TAdaptiveQueuedStream; const p: PByte; const iSize: nativeint): nativeint;overload;
 begin
   s.AdaptiveWrite(p, iSize);
   result := iSize;
 end;
+{$ENDIF}
 
-
+{$IFDEF MSWINDOWS}
 function Stream_GuaranteeRead(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): nativeint;overload;inline;
 var
   qi: TReadCommand;
@@ -294,18 +318,24 @@ begin
   qi := s.BeginAdaptiveRead(p, iSize, false);
   result := s.EndAdaptiveRead(qi);
 end;
+{$ENDIF}
 
+{$IFDEF MSWINDOWS}
 function Stream_GuaranteeRead_Begin(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): TObject;overload;inline;
 begin
   result := s.BeginAdaptiveRead(p, iSize, true);
 end;
+{$ENDIF}
 
+{$IFDEF MSWINDOWS}
 function Stream_GuaranteeRead_End(const s: TAdaptiveQueuedFileStream; const o: TObject): nativeint;
 begin
   result := s.EndAdaptiveRead( TReadCommand(o));
 end;
+{$ENDIF}
 
 
+{$IFDEF MSWINDOWS}
 function Stream_GuaranteeRead(const s: TAdaptiveQueuedSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): nativeint;overload;
 var
   qi: TReadCommand;
@@ -315,9 +345,11 @@ begin
 
 
 end;
+{$ENDIF}
 
 
 
+{$IFDEF MSWINDOWS}
 function Stream_GuaranteeCopy(const sFrom: TAdaptiveQueuedFileSTream; const sTo: TAdaptiveQueuedFileSTream; const iSize: int64): int64;overload;
 const
   MOVESIZE: int64 = 262144;
@@ -338,12 +370,11 @@ begin
   finally
     FreeMemory(p);
   end;
-
-
-
 end;
+{$ENDIF}
 
 
+{$IFDEF MSWINDOWS}
 function Stream_GuaranteeCopy(const sFrom: TAdaptiveQueuedSTream; const sTo: TAdaptiveQueuedFileSTream; const iSize: int64): int64;overload;
 const
   MOVESIZE: int64 = 65536;
@@ -368,9 +399,10 @@ begin
 
 
 end;
+{$ENDIF}
 
 
-
+{$IFDEF MSWINDOWS}
 procedure Stream_WriteZeros(const s: TAdaptiveQueuedFileSTream; const iCount: int64);overload;
 begin
   if iCount > int64(500)*BILLION then
@@ -380,8 +412,9 @@ begin
 
 
 end;
+{$ENDIF}
 
-
+{$IFDEF MSWINDOWS}
 procedure Stream_WriteZerosXX(const s: TAdaptiveQueuedFileSTream; const iCount: int64);
 var
   iJustWritten, iTotalWritten: int64;
@@ -401,6 +434,7 @@ begin
 
 
 end;
+{$ENDIF}
 
 function Stream_ReadString(const s: TStream; terminator: byte = 10; nobacktrack: boolean = false): ansistring;
 var
@@ -463,10 +497,12 @@ begin
   end;
 end;
 
+{$IFDEF MSWINDOWS}
 procedure Stream_Grow(const s: TAdaptiveQueuedFileStream; iSize: int64);overload;
 begin
   s.GrowFile(iSize);
 end;
+{$ENDIF}
 
 function Stream_CalculateChecksum(const s: TStream): int64;
 var
@@ -592,6 +628,7 @@ begin
 
 end;
 
+{$IFDEF MSWINDOWS}
 function Stream_GuaranteeRead(const s: TUnbufferedFileStream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): nativeint;overload;inline;
 var
   iLeft, iRead, iJustRead: int64;
@@ -636,7 +673,7 @@ begin
     end;
   end;
 end;
-
+{$ENDIF}
 
 
 
