@@ -218,6 +218,10 @@ function MYSQLDateTimeToDateTime(s: string): TDateTime;
 function Abbreviate(s: string): string;
 function Scramble(s: string): string;
 function Unscramble(s: string): string;
+{$IFDEF MSWINDOWS}
+function ordEX(c: ansichar): nativeint;overload;
+function ordEX(c: widechar): nativeint;overload;
+{$ENDIF}
 {##############################################################################}
 implementation
 uses
@@ -4304,6 +4308,18 @@ begin
 
 
 end;
+
+{$IFDEF MSWINDOWS}
+function ordEX(c: ansichar): nativeint;overload;
+begin
+  result := ord(c);
+end;
+function ordEX(c: widechar): nativeint;overload;
+begin
+  result := ord(c);
+end;
+{$ENDIF}
+
 
 initialization
   UTF.RegisterClass(TUT_StringX);

@@ -6,7 +6,7 @@ unit FileProxy;
 {$DEFINE ATS}
 
 interface
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
 { NOTE!  THIS REQUIRES WINDOWS, it is a mistake to include this
   file in other platforms.
 }
@@ -28,7 +28,7 @@ const
 {$ENDIF}
 implementation
 
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
 function FileReadPx(ats: PAlignedTempSpace; Handle: THandle; var Buffer; Count: LongWord): Integer;inline;
 begin
 {$IFNDEF ATS}

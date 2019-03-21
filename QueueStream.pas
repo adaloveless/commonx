@@ -1,6 +1,6 @@
 unit QueueStream;
 interface
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
 //!!!!WINDOWS ONLY FOR NOW!!!!
 
 {$DEFINE DOUBLE_READ}
@@ -626,7 +626,7 @@ var
 
 implementation
 
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
 
 uses
 {$IFDEF BAD_USES}

@@ -17,7 +17,7 @@ uses
   Macapi.CoreFoundation, Macapi.CoreServices, macapi.mach,
   iosapi.foundation,
 {$ENDIF}
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
   windows,
   USock,
 {$ELSE}
@@ -204,8 +204,9 @@ function stridelength(p1,p2: pointer): ni;inline;
 function LocalTimeToGMT(dt: TDateTime): TDateTime;
 function GMTtoLocalTime(dt: TDateTime): TDatetime;
 {$IFDEF MSWINDOWS}
-function GetLogicalProcessorInfo : TLogicalProcessorInformation;
+function GetLogicalProcessorInfo: TLogicalProcessorInformation;
 {$ENDIF}
+
 
 function FileSeek64(Handle: THandle; offset: int64; origin: ni): int64;
 
@@ -233,7 +234,7 @@ type
   TBetterPriority = (bpIdle, bpLowest, bpLower, bpNormal, bpHigher, bpHighest,
     bpTimeCritical);
 
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
 const
   BetterPriorities: array[0..6] of Integer =
    (ord(tpIdle), ord(tpLowest), ord(tpLower), ord(tpNormal), ord(tpHigher), ord(tpHighest), ord(tpTimeCritical));
@@ -250,7 +251,7 @@ function PlatformToBetterPriority(ordval: ni): TBetterPriority;
 function BetterPriorityToPlatform(bp: TBetterPriority): integer;
 
 
-{$IFNDEF WINDOWS}
+{$IFNDEF MSWINDOWS}
 var
   ios_lock: TCLXCriticalSection;
 {$ENDIF}
@@ -265,13 +266,66 @@ implementation
 
 
 uses
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
   betterobject,
 {$ENDIF}
   orderlyinit,
   stringx,
   debug,
   tickcount;
+
+
+{$IFDEF MSWINDOWS}
+function GetLogicalProcessorInfo: TLogicalProcessorInformation;
+var
+  i: Integer;
+  ReturnLength: DWORD;
+  Buffer: array [0..2047] of TSystemLogicalProcessorInformation;
+  cnt: ni;
+  logicals: ni;
+begin
+  result.LogicalProcessorCount := 0;
+  result.NumaNodeCount := 0;
+  result.ProcessorCoreCount := 0;
+  result.ProcessorL1CacheCount := 0;
+  result.ProcessorL2CacheCount := 0;
+  result.ProcessorL3CacheCount := 0;
+  result.ProcessorPackageCount := 0;
+  returnlength := sizeof(buffer);
+  if not GetLogicalProcessorInformation(@Buffer[0], ReturnLength) then
+  begin
+    if GetLastError = ERROR_INSUFFICIENT_BUFFER then begin
+      if not GetLogicalProcessorInformation(@Buffer[0], ReturnLength) then
+        RaiseLastOSError;
+    end else
+      RaiseLastOSError;
+  end;
+
+  cnt := (ReturnLength div (SizeOf(TSystemLogicalProcessorInformation)));
+  for i := 0 to cnt-1 do begin
+    case Buffer[i].Relationship of
+        RelationNumaNode: Inc(result.NumaNodeCount);
+        RelationProcessorCore:
+          begin
+            logicals := CountSetBits(Buffer[i].ProcessorMask);
+            if logicals > 0 then begin
+              Inc(result.ProcessorCoreCount);
+              result.LogicalProcessorCount := result.LogicalProcessorCount + logicals;
+            end;
+          end;
+        RelationCache:
+          begin
+            if (Buffer[i].Cache.Level = 1) then Inc(result.ProcessorL1CacheCount)
+            else if (Buffer[i].Cache.Level = 2) then Inc(result.ProcessorL2CacheCount)
+            else if (Buffer[i].Cache.Level = 3) then Inc(result.ProcessorL3CacheCount);
+          end;
+        RelationProcessorPackage: Inc(result.ProcessorPackageCount);
+        else
+          raise Exception.Create('Error: Unsupported LOGICAL_PROCESSOR_RELATIONSHIP value: '+inttostr(ord(buffer[i].relationship)));
+    end;
+  end;
+end;
+{$ENDIF}
 
 
 function BetterPriorityToPlatform(bp: TBetterPriority): integer;
@@ -883,7 +937,7 @@ end;
 
 procedure FileSetAttr(sFileName: string; Attr: integer);
 begin
-  {$IFDEF WINDOWS}
+  {$IFDEF MSWINDOWS}
   Sysutils.FileSetAttr(sFileName, Attr);
   {$ELSE}
   //todo 3: implement?
@@ -898,7 +952,7 @@ end;
 function GetModuleFileName(hModule: HINST; lpFilename: PChar; nSize: DWORD): DWORD; stdcall;
 begin
 
-  {$IFDEF WINDOWS}
+  {$IFDEF MSWINDOWS}
   result := Windows.GetModuleFileName(hModule, lpFileName, nSize)
   {$ELSE}
   result := 0;//todo 3: implement?
@@ -943,7 +997,7 @@ end;
 function GetLogicalDrives: DWORD; stdcall;
 begin
 
-  {$IFDEF WINDOWS}
+  {$IFDEF MSWINDOWS}
   result := Windows.GetLogicalDrives;
   {$ELSE}
   result := 0;
@@ -958,7 +1012,7 @@ function GetVolumeInformation(lpRootPathName: PChar;
   var lpMaximumComponentLength, lpFileSystemFlags: DWORD;
   lpFileSystemNameBuffer: PChar; nFileSystemNameSize: DWORD): BOOL; stdcall;
 begin
-  {$IFDEF WINDOWS}
+  {$IFDEF MSWINDOWS}
   result := Windows.GetVolumeInformation(lpRootPathName, lpVolumeNameBuffer, nVolumeNameSize, lpVolumeSerialNumber, lpMaximumComponentLength, lpFileSystemFlags, lpFileSystemNamebuffer, nFileSystemNameSize);
   {$ELSE}
   result := false;
@@ -968,7 +1022,7 @@ end;
 
 function GetLastError: cardinal;
 begin
-  {$IFDEF WINDOWS}
+  {$IFDEF MSWINDOWS}
   result := Windows.GetLastError;
   {$ELSE}
   result := 0;
@@ -980,7 +1034,7 @@ function IsThreadTerminated: boolean;
 var
   iHandle: cardinal;
 begin
-  {$IFDEF WINDOWS}
+  {$IFDEF MSWINDOWS}
   iHandle := GetCurrentThreadID;
   result := WaitForSingleObject(iHandle, 0) = 0;
   {$ELSE}
@@ -1071,7 +1125,7 @@ end;
 
 function PathSeparator: char;
 begin
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
   result := '\'
 {$ELSE}
   result := '/';
@@ -1154,7 +1208,7 @@ end;
 
 
 function ExtractNetworkRoot(s: string): string;
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
 var
   ss,sLeft, sright, sJunk, sHost, sDrive: string;
 
@@ -1420,7 +1474,7 @@ end;
 
 function IsRelative(sFile: string): boolean;
 begin
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
   result := (not (copy(sFile, STRZ,2) = '\\')) and (not (pos(':', sFile) >= STRZ));
 {$ELSE}
   result := not ((copy(sFile, STRZ,1) = '/'));
@@ -1900,7 +1954,7 @@ end;
 
 
 function UTCToDateTime(d: TDateTime): TDateTime;
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
 var
   tz: TTimeZoneInformation;
 begin
@@ -1942,7 +1996,7 @@ end;
 
 
 function DateTimeToUTC(d: TDateTime): TDateTime;
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
 var
   tz: TTimeZoneInformation;
 begin
@@ -1971,14 +2025,14 @@ end;
 
 procedure ConsoleLog(s: string);
 begin
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
   windows.OutputDebugString(pchar(s));
 {$ENDIF}
 end;
 
 function FileNameCompare(const s1, s2: string): boolean;
 begin
-  {$IFDEF WINDOWS}
+  {$IFDEF MSWINDOWS}
     result := lowercase(s1) = lowercase(s2);
   {$ELSE}
     result := s1 = s2;
@@ -1986,7 +2040,7 @@ begin
 end;
 
 function GetSystemDir(bNative: boolean = false): string;
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
 var
   Buffer: array[0..MAX_PATH] of Char;
 begin
@@ -2037,7 +2091,7 @@ end;
 
 
 procedure FindClose(var sr: TSearchRec);
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
 begin
   windows.FindClose(sr.findhandle);
 end;
@@ -2050,7 +2104,7 @@ function GetFreeSpaceOnPath(sPath: string): int64;
 var
   totalspace, freeavailable: int64;
 begin
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
   result := 0;
   if SysUtils.GetDiskFreeSpaceEx(PChar(sPath), FreeAvailable, TotalSpace, nil) then begin
 //    Writeln(TotalSpace div (1024*1024*1024), 'GB total');
@@ -2067,12 +2121,12 @@ end;
 
 
 function GetKeyboardShiftState: TShiftSTate;
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
 var
   ks: TKeyboardState;
 {$endIF}
 begin
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
   GetKeyboardState(ks);
   result := [];
   if (ks[VK_SHIFT] and 128) <> 0 then
@@ -2094,7 +2148,7 @@ function DebugHeapStatus: string;
 var
   hs: THeapStatus;
 begin
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
   hs := GetHEapStatus;
 
   result := 'Total Allocated: '+inttostr(hs.TotalAllocated)+#13#10;
@@ -3067,57 +3121,7 @@ begin
   end;
 end;
 
-{$IFDEF MSWINDIOWS}
-function GetLogicalProcessorInfo : TLogicalProcessorInformation;
-var
-  i: Integer;
-  ReturnLength: DWORD;
-  Buffer: array [0..2047] of TSystemLogicalProcessorInformation;
-  cnt: ni;
-  logicals: ni;
-begin
-  result.LogicalProcessorCount := 0;
-  result.NumaNodeCount := 0;
-  result.ProcessorCoreCount := 0;
-  result.ProcessorL1CacheCount := 0;
-  result.ProcessorL2CacheCount := 0;
-  result.ProcessorL3CacheCount := 0;
-  result.ProcessorPackageCount := 0;
-  returnlength := sizeof(buffer);
-  if not GetLogicalProcessorInformation(@Buffer[0], ReturnLength) then
-  begin
-    if GetLastError = ERROR_INSUFFICIENT_BUFFER then begin
-      if not GetLogicalProcessorInformation(@Buffer[0], ReturnLength) then
-        RaiseLastOSError;
-    end else
-      RaiseLastOSError;
-  end;
 
-  cnt := (ReturnLength div (SizeOf(TSystemLogicalProcessorInformation)));
-  for i := 0 to cnt-1 do begin
-    case Buffer[i].Relationship of
-        RelationNumaNode: Inc(result.NumaNodeCount);
-        RelationProcessorCore:
-          begin
-            logicals := CountSetBits(Buffer[i].ProcessorMask);
-            if logicals > 0 then begin
-              Inc(result.ProcessorCoreCount);
-              result.LogicalProcessorCount := result.LogicalProcessorCount + logicals;
-            end;
-          end;
-        RelationCache:
-          begin
-            if (Buffer[i].Cache.Level = 1) then Inc(result.ProcessorL1CacheCount)
-            else if (Buffer[i].Cache.Level = 2) then Inc(result.ProcessorL2CacheCount)
-            else if (Buffer[i].Cache.Level = 3) then Inc(result.ProcessorL3CacheCount);
-          end;
-        RelationProcessorPackage: Inc(result.ProcessorPackageCount);
-        else
-          raise Exception.Create('Error: Unsupported LOGICAL_PROCESSOR_RELATIONSHIP value: '+inttostr(ord(buffer[i].relationship)));
-    end;
-  end;
-end;
-{$ENDIF}
 
 { TAlignedTempSpace }
 
@@ -3125,7 +3129,7 @@ procedure TAlignedTempSpace.Allocate;
 begin
   if memsize = 0 then
     raise ECritical.create('temp space size is 0!');
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
   aligned := VirtualAlloc(nil, memsize,  MEM_COMMIT or MEM_RESERVE, PAGE_READWRITE);
 {$ELSE}
   aligned := getmemory(memsize);
@@ -3134,7 +3138,7 @@ end;
 
 procedure TAlignedTempSpace.Unallocate;
 begin
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
   VirtualFree(aligned, memsize, MEM_RELEASE);
 {$ELSE}
   freemem(aligned);
