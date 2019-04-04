@@ -7,7 +7,7 @@ unit StorageEngineTypes;
 interface
 
 uses
-  debug, betterobject, sqlexpr, sysutils, DB, classes, stringx, systemx, variants, typex, MultiBufferMemoryFileStream, helpers.stream, numbers, btree, JSONHelpers;
+  debug, betterobject, sqlexpr, sysutils, DB, classes, stringx, systemx, variants, typex, MultiBufferMemoryFileStream, helpers.stream, numbers, btree, JSONHelpers, mysqlstoragestring;
 
 const
   SYSTEM_FIELD_COUNT = 1;
@@ -107,11 +107,13 @@ type
     function FindValue(sField: string; vValue: variant): ni;
     function Lookup(sLookupField: string; vLookupValue: variant; sReturnField: string): variant;
 
+
     procedure SetFieldCount(iCount: integer);
     procedure SetRowCount(iCount: integer);
 
     property Values[x,y: integer]: variant read GetValues write SetValues;
     property CurRecordFields[sFieldName: string]: variant read GetCurRecordFields write SetCurRecordFields;default;
+    property f[sFieldName: string]: variant read GetCurRecordFields write SetCurRecordFields;
     property CurRecordFieldsByIdx[idx: integer]: variant read GetCurRecordFieldsByIdx write SetCurRecordFieldsByIdx;
 
     procedure CopyFromDAtaSet(ds: TCustomSQLDataset; bAppend: boolean = false);
@@ -152,6 +154,8 @@ type
 
     procedure SavetoFile(f: string; bAppend: boolean = false);
     procedure LoadFromfile(f: string; filterfunc: TAnonRecFilter; startAtIndex: string = ''; startAtIndexValue: int64 = 0);
+    procedure LoadfromCSV(f: string);
+    procedure SavetoCSV(f: string);
     procedure AddrowFromString(s: string);
     function RowToString: string;
     function GetHeaderString: string;
@@ -167,6 +171,11 @@ type
     procedure AddDeltaColumn(sName: string; sSource: string; bSourceIsReverseTime: boolean);
     procedure FromCSV(csv: string; separator: string = ',');
     function ToJSONh: IHolder<TJSON>;
+    procedure Clear;
+    function ToMYSQLCreateTable(sTableName: string): string;
+    function ToMYSQLImport(sTableName: string): string;
+    function RowToMYSQLValues(r: TSERow): string;
+    function ToMYSQLValues: string;
   end;
 
 
@@ -655,6 +664,12 @@ begin
   self.SetRowCount(RowCount-1);
 end;
 
+procedure TSERowSet.Clear;
+begin
+  SetLength(FFieldDefs,0);
+  setlength(FRowset,0);
+end;
+
 procedure TSERowSet.CloseIndexes;
 var
   t: ni;
@@ -986,6 +1001,55 @@ begin
   high(FRowset);
 end;
 
+procedure TSERowSet.LoadfromCSV(f: string);
+var
+  sl: TStringlist;
+  sLine, sValue: string;
+  row,fld: ni;
+  h: IHolder<TStringlist>;
+begin
+  self.Clear;
+  sl := TStringlist.create;
+  try
+    sl.LoadFromFile(f);
+
+    if sl.count = 0 then
+      raise ECritical.create('Empty CSV file');
+    //header
+    sLine := sl[0];
+    h := stringx.ParseStringNotInH(sLine, ',', '"');
+    for fld := 0 to h.o.Count-1 do begin
+      sValue := h.o[fld];
+      if sValue <> '' then begin
+        sValue := stringreplace(sValue, ' ', '_', [rfReplaceAll]);
+        sValue := stringreplace(sValue, '-', '_', [rfReplaceAll]);
+        sValue := stringreplace(sValue, '/', '_per_', [rfReplaceAll]);
+        if svalue <> '' then begin
+          var pf := self.AddField;
+          pf.sName := sValue;
+          pf.vType := TFieldType.ftString;
+        end;
+      end;
+    end;
+
+    for row := 1 to sl.count-1 do begin
+      sLine := sl[row];
+      h := stringx.ParseStringNotInH(sLine, ',', '"');
+      if not stringlist_valuesblank(h.o) then begin
+        self.AddRow;
+        for fld := 0 to lesserof(h.o.Count, fieldcount)-1 do begin
+          sValue := h.o[fld];
+          self.CurRecordFieldsByIdx[fld] := sValue;
+        end;
+      end;
+    end;
+
+  finally
+    sl.free;
+  end;
+
+end;
+
 procedure TSERowSet.LoadFromfile(f: string; filterfunc: TAnonRecFilter; startAtIndex: string = ''; startAtIndexValue: int64 = 0);
 var
   sLine: string;
@@ -1174,6 +1238,30 @@ begin
   dec(FCursor);
 end;
 
+function TSERowSet.RowToMYSQLValues(r: TSERow): string;
+var
+  t: ni;
+  cell: TSECell;
+begin
+  result := '(';
+  for t:= 0 to high(r) do begin
+    cell := r[t];
+    case vartype(cell) of
+      varString, varUString, varOleStr:
+      begin
+        cell := StringReplace(cell, 'â„¢', '™', [rfReplaceAll]);
+      end;
+    end;
+    if t > 0 then
+      result := result + ',';
+
+    result := result + gvs(cell);
+
+
+  end;
+  result := result + ')';
+end;
+
 function TSERowSet.RowToString: string;
 var
   x,y: ni;
@@ -1185,6 +1273,11 @@ begin
     v := self.Values[x,y];
     result := result + (#1+fieldvaluetostring(v, self.FieldDefs[x].vType));
   end;
+end;
+
+procedure TSERowSet.SavetoCSV(f: string);
+begin
+
 end;
 
 procedure TSERowSet.SavetoFile(f: string; bAppend: boolean);
@@ -1303,6 +1396,49 @@ begin
     finally
       jrec.free;
     end;
+  end;
+end;
+
+function TSERowSet.ToMYSQLCreateTable(sTableName: string): string;
+var
+  t: ni;
+  sName: string;
+begin
+  result := 'create table '+sTableName+' (';
+
+  for t:= 0 to Self.FieldCount-1 do begin
+    if t> 0 then
+      result := result + ',';
+
+    sName := self.fields[t].sName;
+    if sName = '' then
+      sName := 'FLD'+inttostr(t);
+
+    sName := stringreplace(sName, ' ', '_', [rfReplaceAll]);
+    sName := stringreplace(sName, '-', '_', [rfReplaceAll]);
+    sName := stringreplace(sName, '/', '_', [rfReplaceAll]);
+    result := result + sName+' varchar(255) ';
+  end;
+
+  result := result + ');';
+
+
+end;
+
+function TSERowSet.ToMYSQLImport(sTableName: string): string;
+begin
+  result := 'insert into '+sTableName+' values '+ToMySQLValues+';';
+end;
+
+function TSERowSet.ToMYSQLValues: string;
+var
+  t: ni;
+begin
+  result := '';
+  for t:= 0 to rowcount-1 do begin
+    if t > 0 then
+      result := result + ',';
+    result := result + self.RowToMYSQLValues(self.FRowset[t]);
   end;
 end;
 

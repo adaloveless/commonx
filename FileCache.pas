@@ -69,11 +69,7 @@ begin
   end else
     sFileName := WebServerConfig.ExternalResourcePath+copy(rqInfo.Request.document, 2, length(rqInfo.Request.document)-1);*)
   if lowercase(ExtractFileExt(sFileName)) = '.png' then begin
-    try
-      if IsIE(rqInfo) and (strtofloat(GetIEVersion(rQInfo)) < 7.0) then
-        sFileName := ChangeFileExt(sFileName, '.gif');
-    except
-    end;
+
   end;
 
 

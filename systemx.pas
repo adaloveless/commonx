@@ -120,9 +120,9 @@ function LeaveCriticalSection(var sect: TCLXCriticalSection): Integer;stdcall;
 function TryEnterCriticalSection(var sect: TCLXCriticalSection): Boolean;stdcall;
 function DeleteCriticalSection(var sect: TCLXCriticalSection): Integer;stdcall;
 function PathSeparator: char;
-function ComplyFilePath(const sPath: string): string;
+function ComplyFilePath(const sPath: string; sSlash: string = ''): string;
 function ResolveRelativePath(const sPAth: string): string;
-function Slash(const sPath: string): string;
+function Slash(const sPath: string; sSlashType: string = ''): string;
 function UnSlash(const sPath: string): string;
 function ExtractNetworkRoot(s: string): string;
 function GetnumberofPhysicalProcessors: integer;
@@ -1167,30 +1167,44 @@ begin
 
 end;
 
-function ComplyFilePath(const sPath: string): string;
+function ComplyFilePath(const sPath: string; sSlash: string = ''): string;
 var
   sFrom: string;
   sTo: string;
 begin
-  sTo := PathSeparator;
-  if sTo = '/' then
-    sFrom := '\'
-  else
-    sFRom := '/';
+  if sSlash = '' then begin
+    sTo := PathSeparator;
+    if sTo = '/' then
+      sFrom := '\'
+    else
+      sFRom := '/';
+  end else begin
+    sTo := sSlash;
+    if sTo = '/' then
+      sFrom := '\'
+    else
+      sFrom := '/';
+  end;
+
 
   result := StringReplace(sPath, sFrom, sTo, [rfReplaceAll]);
 
 end;
-function Slash(const sPath: string): string;
+function Slash(const sPath: string; sSlashType: string = ''): string;
 begin
+  if sSlashType <> PathSeparator then
+    sSlashType := PathSeparator;
+
   if sPath = '' then
     result := ''
   else begin
-    result := ComplyFilePath(sPath);
-    if (result[high(result)] <> PathSeparator) then
-      result := result+PathSeparator;
+    result := ComplyFilePath(sPath, sSlashType);
+    if (result[high(result)] <> sSlashType) then
+      result := result+sSlashType;
   end;
 end;
+
+
 
 function UnSlash(const sPath: string): string;
 begin

@@ -10,7 +10,8 @@ const
   whitespace = operators + [' ', ';', '"'];
 
 type
-  ESCriptError = class (Exception);
+  EScriptError = class (Exception);
+  EScriptErrorEx = class (ENewException);
 
 
   TScriptParameterType = (sptNull, sptNumber, sptDatetime, sptString, sptBoolean, sptFunction, sptVariable, sptIdentifier);
@@ -302,8 +303,11 @@ begin
     result := vRight;
   except
     on E: ESocketsDisabled do raise;
-    on E: ENEwException do begin
-      raise ENewException.create(e.ErrorCode, 'Script Error', 'Error in:'+sTagBody+ '--'+E.Message);
+    on E: EScriptErrorEx do begin
+      raise EScriptErrorEx.create(e.ErrorCode, 'Script Error', 'Error in:'+sTagBody+ '--'+E.Message);
+    end;
+    on E: EScriptError do begin
+      raise EScriptError.create('Error in:'+sTagBody+ '--'+E.Message);
     end;
     on E: Exception do begin
       Debug.Log('In '+rqInfo.request.document+' Error in:'+sTagBody+ '--'+E.Message);
@@ -391,7 +395,7 @@ begin
   //if search string was found then
   if iPos <1  then begin
     //raise exception
-    raise ENewException.create(ERC_SCRIPT, ERR_INTERNAL, 'End tag not found for search -- '+StringReplace(sSearch,'[[[','[{{]', [rfReplaceAll]));
+    raise EScriptErrorEx.create(ERC_SCRIPT, ERR_INTERNAL, 'End tag not found for search -- '+StringReplace(sSearch,'[[[','[{{]', [rfReplaceAll]));
   end;
 
 end;
@@ -410,10 +414,10 @@ begin
   sCommand := '';
   iStart := -1;
   if params = nil then
-    raise ENewException.create(ERC_SCRIPT, ERR_INTERNAL, 'Nil params object passed to Decode Script Function');
+    raise EScriptErrorEx.create(ERC_SCRIPT, ERR_INTERNAL, 'Nil params object passed to Decode Script Function');
 
   if not (sTagBody[1]=':') then
-    raise ENewException.create(ERC_SCRIPT, ERR_INTERNAL, sTagbody+' is not a valid command');
+    raise EScriptErrorEx.create(ERC_SCRIPT, ERR_INTERNAL, sTagbody+' is not a valid command');
 
   ss := ssCommand;
   iParamRecursion:=0;
@@ -447,7 +451,7 @@ begin
         CASE ss OF
           //if in commmand state then BOMB
           ssCommand:
-            raise ENewException.create(ERC_SCRIPT, ERR_INTERNAL, 'Script syntax error in '+sTagBody);
+            raise EScriptErrorEx.create(ERC_SCRIPT, ERR_INTERNAL, 'Script syntax error in '+sTagBody);
           //ignore if in string state
           ssString: ;
           //if in parameter state
@@ -474,7 +478,7 @@ begin
         CASE ss OF
           //quote not allowed in command section
           ssCommand:
-            raise ENewException.create(ERC_SCRIPT, ERR_INTERNAL, 'Script syntax error in '+sTagBody);
+            raise EScriptErrorEx.create(ERC_SCRIPT, ERR_INTERNAL, 'Script syntax error in '+sTagBody);
           ssParameter: begin
             ss := ssString;
           end;
@@ -489,7 +493,7 @@ begin
         CASE ss OF
           //if in commmand state then BOMB
           ssCommand:
-            raise ENewException.create(ERC_SCRIPT, ERR_INTERNAL, 'Script syntax error in '+sTagBody);
+            raise EScriptErrorEx.create(ERC_SCRIPT, ERR_INTERNAL, 'Script syntax error in '+sTagBody);
           //ignore if in string state
           ssString: ;
           //if in parameter state
@@ -664,7 +668,7 @@ begin
       result := rqInfo.Response.VarPool[sTagBody];
     except
       on E: Exception do begin
-        raise ENewException.create(ERC_SCRIPT, ERR_INTERNAL, 'Variable '+sTagBody+' needed but undefined -- '+e.message);
+        raise EScriptErrorEx.create(ERC_SCRIPT, ERR_INTERNAL, 'Variable '+sTagBody+' needed but undefined -- '+e.message);
       end;
     end;
   END
@@ -728,7 +732,7 @@ begin
     strtofloat(sTagBody);
     result := sTagBody;
   except
-    raise ENewException.create(ERC_SCRIPT, ERR_INTERNAL, 'Invalid numeric constant: '+sTagBody);
+    raise EScriptErrorEx.create(ERC_SCRIPT, ERR_INTERNAL, 'Invalid numeric constant: '+sTagBody);
   end;
 end;
 //------------------------------------------------------------------------------

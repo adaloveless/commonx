@@ -443,7 +443,7 @@ begin
 
 end;
 
-function TMultiBufferMemoryFileStream.BaseRead(var Buffer; Count: integer): Longint;
+function TMultiBufferMemoryFileStream.BaseRead(var Buffer; Count: Longint): Longint;
 begin
   Result := FileRead(FHandle, Buffer, Count);
   if Result = -1 then Result := 0;
@@ -470,7 +470,7 @@ begin
   end;
 end;
 
-function TMultiBufferMemoryFileStream.BaseWrite(const Buffer; Count: integer): Longint;
+function TMultiBufferMemoryFileStream.BaseWrite(const Buffer; Count: longint): Longint;
 begin
   result := inherited Write(Buffer, Count);
 
@@ -905,7 +905,7 @@ begin
 
 end;
 
-function TMultiBufferMemoryFileStream.Read(var Buffer; Count: integer): Longint;
+function TMultiBufferMemoryFileStream.Read(var Buffer; Count: longint): Longint;
 var
   iCanRead: nativeint;
   pb: PByte;
@@ -1043,7 +1043,7 @@ begin
 
 end;
 
-function TMultiBufferMemoryFileStream.Write(const Buffer; Count: integer): Longint;
+function TMultiBufferMemoryFileStream.Write(const Buffer; Count: longint): Longint;
 var
   pb: PByte;
 begin

@@ -2617,6 +2617,7 @@ scriptfunctions.sf.registerfunction(':new', ScrNew);
 scriptfunctions.sf.registerfunction(':mysql_today', Scriptmysql_today);
 scriptfunctions.sf.registerfunction(':ghost', Scriptghost);
 scriptfunctions.sf.registerfunction(':farmrouter', Scriptfarmrouter);
+scriptfunctions.sf.registerfunction(':root', Scriptfarmrouter);
 scriptfunctions.sf.registerfunction(':umbrellaversion', Scriptumbrellaversion);
 scriptfunctions.sf.registerfunction(':serverversion', Scriptserverversion);
 scriptfunctions.sf.registerfunction(':isspan', Scriptisspan);

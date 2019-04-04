@@ -43,6 +43,7 @@ type
     FFileName: string;
     FSaveOnFree: boolean;
     modified: boolean;
+    FDelimiter: string;
     function GetItemByIndex(Index: integer): TNameValuePair;
     function GetItemCount: integer;
     function GetItem(sName: string): TNameValuePair;
@@ -77,6 +78,7 @@ type
     procedure loadFromString(sString: string; bAppend: boolean = false);
     property Changed: boolean read modified write modified;
     property SaveOnFree: boolean read FSaveOnFree write FSaveOnFree;
+    property Delimiter: string read FDelimiter write FDelimiter;
 
   end;
 
@@ -143,6 +145,7 @@ constructor TNameValuePairList.Create;
 // Standard.
 begin
   inherited Create;
+  Delimiter := '=';
   FList := TSTringList.Create;
   FList.sorted := true;
   FList.Duplicates := dupIgnore;
@@ -258,7 +261,7 @@ begin
     if fileexists(sFile) then
       sl.LoadFromFile(sFile);
     for t := 0 to sl.Count - 1 do begin
-      if SplitString(sl[t], '=', s1, s2) then begin
+      if SplitString(sl[t], delimiter, s1, s2) then begin
         Add(s1, s2);
       end;
     end;
@@ -278,8 +281,8 @@ begin
     ms := TMemoryStream.create;
     try
       stream_GuaranteeCopy(s, ms, len);
-      ms.Seek(0,0);
-      sl.LoadFromStream(ms);
+      ms.Seek(0,soBeginning);
+      sl.LoadFromStream(ms,TEncoding.UTF8);
       self.loadFromString(sl.text);
    finally
       ms.free;
@@ -307,7 +310,7 @@ begin
   try
     sl.Text := sString;
     for t := 0 to sl.Count - 1 do begin
-      if SplitString(sl[t], '=', s1, s2) then begin
+      if SplitString(sl[t], delimiter, s1, s2) then begin
         //if we're not appending
         if not bAppend then
           //add items (quicker than alternative)
@@ -363,7 +366,7 @@ begin
   sl := TStringlist.Create;
   try
     for t := 0 to FList.Count - 1 do begin
-      sl.Add(TNameValuePair(FList.objects[t]).Name + '=' + TNameValuePair(FList.objects[t])
+      sl.Add(TNameValuePair(FList.objects[t]).Name + delimiter + TNameValuePair(FList.objects[t])
           .Value);
     end;
 
@@ -383,7 +386,7 @@ begin
   sl := TStringlist.Create;
   try
     for t := 0 to FList.Count - 1 do begin
-      sl.Add(TNameValuePair(FList.objects[t]).Name + '=' + TNameValuePair(FList.objects[t])
+      sl.Add(TNameValuePair(FList.objects[t]).Name + delimiter + TNameValuePair(FList.objects[t])
           .Value);
     end;
 

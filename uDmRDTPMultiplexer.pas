@@ -4,7 +4,7 @@ interface
 
 uses
   SysUtils, Classes, better_Sockets, RDTPServerList, RDTPMultiplexerServer, applicationparams, rdtpprocessor,orderlyinit,
-  Web.Win.Sockets, simpleabstractprivateserversocket, simplereliableudp, typex, skill;
+  sockfix, simpleabstractprivateserversocket, simplereliableudp, typex, skill;
 
 type
   TdmRDTPMultiServer = class(TDataModule)

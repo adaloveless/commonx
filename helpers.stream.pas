@@ -512,7 +512,7 @@ var
   isz: int64;
   t: ni;
 begin
-  s.seek(0,0);
+  s.seek(0,soBeginning);
   iLeft := s.Size;
   iSZ := iLeft;
   result := 0;

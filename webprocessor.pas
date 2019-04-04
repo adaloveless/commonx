@@ -774,6 +774,7 @@ begin
   s := s+'Access-Control-Allow-Origin: *'+CRLF;
   s:=s+'Content-Type: '+rqInfo.Response.ContentType+#13#10;
   s:=s+'Last-Modified: '+FormatDateTime('ddd'','' d-mmm-yyyy hh:nn:ss', now)+' GMT'+#13#10;
+  s:=s+'Date: '+FormatDateTime('ddd'','' d-mmm-yyyy hh:nn:ss', now)+' GMT'+#13#10;
 //  s:=s+'Last-Modified: Wed, 25 Jul 2001 17:26:20 GMT'+#13#10;
 //  s:=s+'ETag: "b0a29beb2e15c11:b5d"'+#13#10;
 //  s:=s+'Accept-Ranges: bytes'+#13#10;
@@ -815,7 +816,7 @@ begin
 
 
 
-  s:=s+'Connection: '+sConn+#13#10;
+//  s:=s+'Connection: '+sConn+#13#10;
   s:=s+'Content:'+#13#10+#13#10;
 
 

@@ -5,12 +5,20 @@ interface
 uses
   variants, stringx, systemx;
 
-function GetStorageString(vT: integer; v: variant): ansistring;
+function GetStorageString(vT: integer; v: variant): string;
+function gss(vT: integer; v: variant): string;inline;
+function GetVariantStorage(v: variant): string;
+function gvs(v: variant): string;inline;
+
 
 implementation
 
+function gss(vT: integer; v: variant): string;inline;
+begin
+  result := GetStorageString(vT, v);
+end;
 
-function GetStorageString(vT: integer; v: variant): ansistring;
+function GetStorageString(vT: integer; v: variant): string;
 begin
 
   if (vt=varSTring) or (vt=varUString) or (vt=varOleStr) then begin
@@ -34,5 +42,15 @@ begin
 
 
 end;
+function GetVariantStorage(v: variant): string;
+begin
+  result := GetStorageString(vartype(v),v);
+end;
+function gvs(v: variant): string;inline;
+begin
+  result := GetVariantStorage(v);
+end;
+
+
 
 end.

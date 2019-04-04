@@ -39,12 +39,6 @@ type
 
   END;
 
-
-  TTwitterEvilRobot = class(TTwitterclient)
-  public
-    procedure Init;override;
-  end;
-
 function TwitterDateToDAteTimeGMT(s: string): TDateTime;
 
 implementation
@@ -232,16 +226,6 @@ end;
 
 { TTwitterEvilRobot }
 
-procedure TTwitterEvilRobot.Init;
-begin
-  inherited;
 
-
-  oauth_consumer_key:= 'yLfW78oDKMUEpC249wNMAMmNI';
-  oauth_consumer_secret := 'VKsNFKTPw1xLMJxLUToi0H5xuUORitsI98CZ9q3OTJ4FDYBvH4';
-  oauth_access_token := '45846522-q63snH6emJxyLJNx5g2oZZKYRLSDFbzm4JHNLAZ2J';
-  oauth_access_token_secret := 'Yg7Ky1ZgmviFlnXx757QNkU5PFXgiTwSopMsafKDnb3NT';
-
-end;
 
 end.

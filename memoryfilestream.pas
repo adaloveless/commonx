@@ -12,8 +12,9 @@ interface
 uses systemx, stringx, numbers, sysutils, classes, commandprocessor,typex,
 {$IFDEF WINDOWS}
   winapi.windows,
+  QueueStream,
 {$ENDIF}
-  debug, multibuffermemoryfilestream, QueueStream;
+  debug, multibuffermemoryfilestream;
 
 const
   MINIMUM_READ_GUARANTEE = 0;
@@ -212,14 +213,14 @@ begin
 end;
 
 
-function TTripleBufferMemoryFileStream.BaseRead(var Buffer; Count: integer): Longint;
+function TTripleBufferMemoryFileStream.BaseRead(var Buffer; Count: Longint): Longint;
 begin
   Result := FileRead(FHandle, Buffer, Count);
   if Result = -1 then Result := 0;
 
 end;
 
-function TTripleBufferMemoryFileStream.BaseWrite(const Buffer; Count: integer): Longint;
+function TTripleBufferMemoryFileStream.BaseWrite(const Buffer; Count: Longint): Longint;
 begin
   result := inherited Write(Buffer, Count);
 end;
@@ -565,7 +566,7 @@ begin
 
 end;
 
-function TTripleBufferMemoryFileStream.Read(var Buffer; Count: integer): Longint;
+function TTripleBufferMemoryFileStream.Read(var Buffer; Count: Longint): Longint;
 var
   iCanRead: integer;
   pb: PByte;
@@ -641,7 +642,7 @@ begin
 
 end;
 
-function TTripleBufferMemoryFileStream.Write(const Buffer; Count: integer): Longint;
+function TTripleBufferMemoryFileStream.Write(const Buffer; Count: Longint): Longint;
 var
   iCanWrite: integer;
   pb: PByte;

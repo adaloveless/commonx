@@ -100,7 +100,7 @@ function MakeSecureURL(sURL: HTTPString): HTTPString;
 function FindLinkInHTML(sBaseURL: HTTPString; sHTML: HTTPString; sLinkText: HTTPString; iInstance: integer=0): HTTPString;
 function FindIFrameInHTML(sBaseURL: HTTPString; sHTML: HTTPString; iInstanceOneBased: integer; out sSrc: HTTPString): boolean;
 function FindTagAttributeInHTML(sBaseURL: HTTPString; sHTML: HTTPString; sTag: HTTPString; sAttribute: HTTPString; iInstanceOneBased: integer; out sSrc: HTTPString): boolean;
-
+function StringListToHTML(sl: TStringList): string;
 
 
 
@@ -1748,6 +1748,14 @@ begin
 
 end;
 {$ENDIF}
+
+function StringListToHTML(sl: TStringList): string;
+begin
+  for var t := 0 to sl.count-1 do begin
+    var s := sl[t];
+    result := result + s+'<br/>';
+  end;
+end;
 
 
 

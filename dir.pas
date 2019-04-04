@@ -211,6 +211,8 @@ function IsAllHex(l: TBetterList<TFileInformation>): boolean;
 function GetNewestFile(sdir: string; bRecurse: boolean = true): TFileInfoRec;
 function GetFileList(dir: string; filespec: string; attrres, attrmask: ni; bRecurse: boolean): TStringlist;
 function GetFileListH(dir: string; filespec: string; attrres, attrmask: ni; bRecurse: boolean): IHolder<TStringlist>;
+function GetLastSequentialFileName(sdir: string; sExt: string): string;
+function GetNextSequentialFileName(sdir: string; sExt: string): string;
 
 var
   DirCommands: TCommandProcessor;
@@ -1421,6 +1423,36 @@ function TFileInfoRec.DebugString: string;
 begin
   result := name+' date='+datetimetostr(date);
 end;
+
+function GetLastSequentialFileName(sdir: string; sExt: string): string;
+var
+  t: ni;
+begin
+  t := 0;
+  while fileexists(slash(sdir)+PadString(inttostr(t),'0', 20)+sExt) do begin
+    inc(t);
+  end;
+
+  dec(t);
+  if t > 0 then
+    result := slash(sdir)+PadString(inttostr(t),'0', 20)+sExt
+  else
+    result := '';
+
+end;
+
+function GetNextSequentialFileName(sdir: string; sExt: string): string;
+var
+  t: ni;
+begin
+  t := 0;
+  while fileexists(slash(sdir)+PadString(inttostr(t),'0', 20)+sExt) do begin
+    inc(t);
+  end;
+
+  result := slash(sdir)+PadString(inttostr(t),'0', 20)+sExt;
+end;
+
 
 initialization
   init.RegisterProcs('Dir', oinit, oafterinit, nil, ofinal, nil, 'managedthread');

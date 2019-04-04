@@ -3,7 +3,7 @@ unit GUIHelpers;
 interface
 
 uses
-  system.rtti, debug, typex, classes, dbGrids, stdctrls, extctrls, comctrls, systemx, windows, vcl.forms, controls, numbers, json, jsonhelpers, sysutils, variants, fleximath, stringx, vcl.samples.spin, winapi.shellapi, richedit;
+  system.rtti, debug, typex, classes, dbGrids, stdctrls, extctrls, comctrls, systemx, windows, vcl.forms, controls, numbers, json, jsonhelpers, sysutils, variants, fleximath, stringx, vcl.samples.spin, winapi.shellapi, richedit, applicationparams;
 
 
 function Treenode_GetChildCount(tv: TTreeView; self: TTreenode): integer;
@@ -67,6 +67,11 @@ type
     procedure PositionRight(cLeft: TControl; gap: ni = 0; match_height: boolean = true);
     function PositionInsideParent(reference: TWinControl): TPoint;
   end;
+
+
+procedure RememberState(c: TEdit);
+procedure LoadState(c: TEdit; sDefault: string);
+
 
 
 
@@ -886,6 +891,18 @@ begin
   cf.crBackColor := c;
   re.Perform( EM_SETCHARFORMAT, SCF_SELECTION, lparam(@cf));
 end;
+
+procedure RememberState(c: TEdit);
+begin
+  APPut(c.Owner.Name+'.'+c.Name, c.Text);
+end;
+
+procedure LoadState(c: TEdit; sDefault: string);
+begin
+  c.Text := apget(c.Owner.Name+'.'+c.Name, sDefault)
+end;
+
+
 
 
 end.

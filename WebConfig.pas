@@ -125,6 +125,7 @@ type
     function HasConnection(sName: ansistring): boolean;
     property ConfigFile: ansistring read GetConfigFile write SetConfigFile;
     property FarmRouter: ansistring read GetFarmRouter write SetFarmRouter;
+    property Root: ansistring read GetFarmRouter write SetFarmRouter;
     property ExternalResourcePath: ansistring read GetExternalREsourcePath write SetExternalResourcePAth;
     property TemplateRoot: ansistring read GetExternalResourcePAth write SetExternalResourcePath;
     property conn[sDestName: ansistring]: TNetConnection read GetConn;
@@ -163,8 +164,11 @@ type
 
   function GetWindowsDir: ansistring;
 
+function WSC: TWebconfig;inline;
+
 var
   WebServerConfig: TWebConfig;
+
 
 
 {#############################################################################}
@@ -310,6 +314,7 @@ begin
     FExternalResourcePath := ini.ReadString('main', 'ExternalResourcePath', '');
     FExternalResourcePath := slash(FExternalResourcePath);
     FFarmRouter := ini.ReadString('main', 'FarmRouter', '');
+    FFarmRouter := slash(FFarmRouter,'/');
     FEnableAuditLog := lowercase(ini.ReadString('main', 'EnableAuditLog', 'false'))='true';
     FExcessiveAuditLog := lowercase(ini.ReadString('main', 'ExcessiveAuditLog', 'false'))='true';
     FDataCenterID := ini.ReadInteger('main', 'DataCenterID', 0);
@@ -852,6 +857,12 @@ procedure ofinal;
 begin
   //  WebServerConfig.free;
 
+end;
+
+
+function WSC: TWebconfig;inline;
+begin
+  result := WebServerConfig;
 end;
 
 initialization

@@ -7,7 +7,7 @@ interface
 
 uses
   DBXDynalink, DBXMySQL,SqlExpr, SysUtils, Classes, DB, better_Sockets, typex,inifiles, replaylog, exceptions, DBXCommon,
-  sharedobject, abstractrdtpdatamodule, storageenginetypes, managedthread, rdtpprocessor, beeper, inifile, systemx, namevaluepair, consolelock;
+  sharedobject, abstractrdtpdatamodule, storageenginetypes, managedthread, rdtpprocessor, beeper, inifile, systemx, namevaluepair, consolelock, betterobject;
 
 const
 //  DLL='dbexpmysql.2006.dll';
@@ -105,6 +105,8 @@ type
 
     function ContextVerified: boolean;inline;
     procedure VerifyContext;
+    function TableExists(sTable: string): boolean;
+    function CopyTable(sSource, sTarget: string): IHolder<TStringList>;
 
   end;
 
@@ -283,6 +285,8 @@ var
   sKeybotHost: string;
   sMainDatabase: string;
   sSessionDatabase: string;
+  sMainPort: string;
+  sSessionPort: string;
   i: integer;
   nvpl: TNameValuepairlist;
 begin
@@ -295,11 +299,13 @@ begin
       sSessionUserName := nvpl.GetItemEx('user', 'root');
       sSessionPassword := nvpl.GetItemEx('pass', '');
       sSessionDatabase := nvpl.GetItemEx('db', 'undefined');
+      sSessionPort := nvpl.GetItemEx('port', '3306');
 
       sMainHost := nvpl.GetItemEx('host', 'localhost');
       sMainUserName := nvpl.GetItemEx('user', 'root');
       sMainPassword := nvpl.GetItemEx('pass', '');
       sMainDatabase := nvpl.GetItemEx('db', 'undefined');
+      sMainPort := nvpl.GetItemEx('port', '3306');
 
       Fhost := sMainHost;
 
@@ -329,6 +335,7 @@ begin
       CHangeSQLConnectionParam(writes,'Password',sMainPassword);
 //      writes.Params.add('Password='+sMainPassword);
       CHangeSQLConnectionParam(writes,'Database',sMainDatabase);
+      CHangeSQLConnectionParam(writes,'Port',sMainPort);
 //      writes.params.add('Database='+sMainDatabase);
 
 
@@ -347,6 +354,7 @@ begin
       CHangeSQLConnectionParam(reads,'Password',sMainPassword);
 //      reads.Params.add('Password='+sMainPassword);
       CHangeSQLConnectionParam(reads,'Database',sMAinDatabase);
+      CHangeSQLConnectionParam(reads,'Port',sMainPort);
 //      reads.params.add('Database='+sMAinDatabase);
 
 //---------------------------------3
@@ -363,6 +371,7 @@ begin
       CHangeSQLConnectionParam(sessiondb,'Password',sSessionPassword);
 //      sessiondb.Params.add('Password='+sSessionPassword);
       CHangeSQLConnectionParam(sessiondb,'Database',sSessionDatabase);
+      CHangeSQLConnectionParam(sessiondb,'Port',sSessionPort);
 //      sessiondb.params.add('Database='+sSessionDatabase);
   finally
     nvpl.free;
@@ -610,12 +619,12 @@ begin
           reads.connected := false;
         end
         else begin
-          beeper.beep(700,300);
+//          beeper.beep(700,300);
           Debug.Log(self,reads.Params.Text);
           Debug.Log(self,reads.DriverName);
           Debug.Log(self,reads.LIbraryName);
           Debug.Log(self,reads.VendorLIb);
-          Debug.Log(self,'auto-retry on EXCEPTION');
+          Debug.Log(self,'auto-retry on EXCEPTION '+e.message);
           raise;
         end;
       end;
@@ -636,6 +645,25 @@ end;
 function TMYSQLRDTPDataModule.ContextVerified: boolean;
 begin
   result := FContextVErified;
+end;
+
+function TMYSQLRDTPDataModule.CopyTable(sSource, sTarget: string): IHolder<TStringLIst>;
+var
+  sQuery: string;
+begin
+  result := THolder<TStringList>.create;
+  result.o := TStringlist.create;
+
+  sQuery := 'create table '+sTarget+' like '+sSource;
+  ExecuteWrite(sQuery);
+  result.o.add(sQuery);
+
+  sQuery := 'insert into '+sTarget+' select * from '+sSource;
+  ExecuteWrite(sQuery);
+  result.o.add(sQuery);
+
+
+
 end;
 
 procedure TMYSQLRDTPDataModule.connectsystem;
@@ -907,6 +935,31 @@ begin
   result := 0;//todo 1: what is this for? who useds the result?
 end;
 
+
+function TMYSQLRDTPDataModule.TableExists(sTable: string): boolean;
+var
+  t: ni;
+  rs: TSERowSet;
+begin
+  rs := nil;
+  try
+    result := false;
+    ExecuteRead('show tables', rs);
+    if rs.RowCount = 0 then
+      exit;
+
+    for t:= 0 to rs.RowCount-1 do begin
+      if comparetext(rs.Values[0,t], sTable) = 0 then begin
+        exit(true);
+      end;
+    end;
+
+  finally
+    rs.Free;
+    rs := nil;
+  end;
+
+end;
 
 function TMYSQLRDTPDataModule.TryGetNextID(iKey: integer; out res: int64): boolean;
 var

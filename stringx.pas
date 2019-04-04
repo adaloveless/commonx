@@ -87,6 +87,7 @@ function StrIsBinary(s: string): boolean;
 function Unquote(s: string): string;
 function StartsWith(sMaster: string; sStartsWith: string): boolean;
 function StartsWithThenSkip(var sMaster: string; sStartsWith: string): boolean;
+function Stringlist_ValuesBlank(sl: TStringlist): boolean;
 
 function PairsToParams(sPairs: string): string;
 //function FloatPrecision(r: real; iDigits: integer): string;
@@ -178,6 +179,8 @@ procedure ParseString(src: string; sDelimiter: string; slList: TStringList);over
 function ParseString_Quick(src: string; sDelimiter: string):TStringList;overload;
 procedure ParseString(src: string; sDelimiter: char; slList: TStringList);overload;
 function ParseString(src: string; sDelimiter: char): TStringlist;overload;
+function ParseStringNotIn(src: string; sDelimiter: char; NotIn: char): TStringlist;
+function ParseStringNotInH(src: string; sDelimiter: char; NotIn: char): IHolder<TStringlist>;
 function ParseStringH(src: string; sDelimiter: char): IHolder<TStringlist>;overload;
 function ParseString(src: string; sDelimiter: string): TStringlist;overload;
 procedure ParseString2(src: string; sDelimiter: string; slList: TStringList);
@@ -484,6 +487,27 @@ begin
   result := TStringList.Create;
   ParseString(src, sDelimiter, result);
 end;
+
+function ParseStringNotIn(src: string; sDelimiter: char; NotIn: char): TStringlist;
+var
+  sLeft, sRight: string;
+begin
+  result := TStringlist.create;
+  sRight := src;
+  while SplitStringNoCAseEx(sRight, sDelimiter, sLeft, sRight, NotIn, Notin, false) do begin
+    result.Add(sLeft);
+  end;
+
+  result.Add(sLEft);
+
+end;
+
+function ParseStringNotInH(src: string; sDelimiter: char; NotIn: char): IHolder<TStringlist>;
+begin
+  result := THolder<TStringList>.create;
+  result.o := ParseStringNotIn(src, sDelimiter, NotIn);
+end;
+
 
 function ParseStringH(src: string; sDelimiter: char): IHolder<TStringlist>;overload;
 begin
@@ -1446,7 +1470,7 @@ begin
     fs := TFileStream.create(sFile, fmOpenReadWrite+fmShareExclusive);
     try
       fs.Size := 0;
-      fs.Seek(0,0);
+      fs.Seek(0,soBeginning);
       fs.Write(s[1], length(s));
       fs.Size := length(s);
     finally
@@ -1455,7 +1479,7 @@ begin
   end else begin
     fs := TFileStream.create(sFile, fmCreate);
     try
-      fs.Seek(0,0);
+      fs.Seek(0,soBeginning);
       Stream_GuaranteeWrite(fs, @s[strzero], length(s)*sizeof(char));
       fs.Write(s[1], length(s));
       fs.Size := length(s);
@@ -4319,6 +4343,19 @@ begin
   result := ord(c);
 end;
 {$ENDIF}
+
+
+function Stringlist_ValuesBlank(sl: TStringlist): boolean;
+var
+  t: ni;
+begin
+  result := true;
+  for t:= 0 to sl.count-1 do begin
+    if sl[t] <> '' then
+      exit(false);
+  end;
+
+end;
 
 
 initialization

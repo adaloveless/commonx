@@ -6,7 +6,7 @@ unit RDTPSQLConnectionServerImplib;
 interface
 
 uses
-   debug, hgt_sampler, rdtpprocessor, RDTPSQLConnectionServer, RDTPServerList, storageenginetypes;
+   debug, rdtpprocessor, RDTPSQLConnectionServer, RDTPServerList, storageenginetypes;
 
 
 type
@@ -24,7 +24,6 @@ type
 {INTERFACE_END}
   end;
 implementation
-{ TTerrainServer }
 
 
 function TRDTPSQLConnectionServer.RQ_ReadQuery(
