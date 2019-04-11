@@ -1910,6 +1910,7 @@ end;
 constructor TUnbufferedFileStream.Create(const AFileName: string; Mode: cardinal; Rights: Cardinal; Flags: cardinal);
 begin
   inherited Create(AfileName, Mode, Rights, Flags{$IFDEF ALLOW_UNBUFFERED_FLAG}  or FILE_FLAG_NO_BUFFERING{$ENDIF});
+  aligned_temp.MEMSIZE := UNBUFFERSIZE;
   aligned_temp.Allocate;
   rsIndividualRead := TRingStats.create;
   rsFetchPage := TRingSTats.create;

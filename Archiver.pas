@@ -1436,7 +1436,9 @@ begin
       ent.addr := recex.addr;
       ent.zoneidx := rebuilt_zone_idx;
       ent.logid := logid;
+      rec.logtime := now;
       rec.CalculateChecksum;
+
       Stream_GuaranteeWrite(fs, pbyte(@rec), sizeof(rec));
       Stream_GuaranteeWrite(fs, pbyte(pData), rec.compressedlength);
     end else

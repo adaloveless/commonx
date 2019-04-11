@@ -278,7 +278,7 @@ begin
   inherited;
   samplerate := 44100;
   betterPriority := bpTimeCritical;
-  DeviceID := WAVE_MAPPER;
+  DeviceID := integer(WAVE_MAPPER);
   DeviceName := 'WAVE_MAPPER';
 
 
@@ -299,7 +299,7 @@ end;
 procedure TSoundDevice_MM.ResolveDeviceName;
 begin
   inherited;
-  if DeviceID = WAVE_MAPPER then
+  if DeviceID = integer(WAVE_MAPPER) then
     FDeviceName := 'WAVE_MAPPER'
   else
     FDeviceName := 'Device ID '+inttostr(DeviceID);

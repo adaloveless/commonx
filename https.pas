@@ -2,9 +2,7 @@ unit https;
 
 interface
 
-uses MSXML2_TLB, sysutils, variants, typex, commandprocessor, classes, debug, IdSSLOpenSSL, systemx, IdSSLOpenSSLHeaders, betterobject;
-
-
+uses MSXML2_TLB, sysutils, variants, typex, commandprocessor, classes, debug, IdSSLOpenSSL, systemx, IdSSLOpenSSLHeaders, betterobject, helpers.stream;
 
 type
   THttpsMethod = (mGet, mPost);
@@ -195,11 +193,15 @@ begin
           htp.send(request.postBody);
 
         results.ResultCode := htp.status;
+        results.contentRange := htp.getResponseHeader('Content-Range');
         results.contentType := htp.getResponseHeader('Content-Type');
+        results.bodystream := THolder<TStream>.create;
+        self.Results.bodystream.o := olevarianttomemoryStream(htp.responsebody);
 
-        results.Body := htp.responsetext;
+//        results.Body := htp.responsetext;
       except
         on e: Exception do begin
+          ErrorMessage := e.message;
           results.Body := 'error '+e.message;
         end;
       end;

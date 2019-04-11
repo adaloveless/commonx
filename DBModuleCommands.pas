@@ -3,7 +3,7 @@ unit DBModuleCommands;
 interface
 
 uses
-  MYSQLRDTPDataModule, stringx, systemx, typex, commandprocessor, sysutils, dir, classes, storageenginetypes, debug, betterobject;
+  MYSQLRDTPDataModule, stringx, systemx, typex, commandprocessor, sysutils, dir, classes, storageenginetypes, debug, betterobject, variants;
 
 type
   TDBCommand = class(TCommand)
@@ -27,7 +27,8 @@ type
     procedure WriteQuery(sQuery: string);
     function ReadQuery(sQuery: string): TSERowSet;
     function ReadQueryH(sQuery: string): IHolder<TSERowSet>;
-    function FunctionQuery(sQuery: string; default: ni): ni;
+    function FunctionQuery(sQuery: string; default: ni): ni;overload;
+    function FunctionQuery(sQuery: string; default: string): string;overload;
     procedure Problem(sProblem: string);
   end;
 
@@ -79,6 +80,19 @@ begin
 
 end;
 
+
+function TDBCommand.FunctionQuery(sQuery, default: string): string;
+begin
+  var rows := ReadQueryH(sQuery);
+  if rows.o.RowCount < 1 then
+    exit(default)
+  else begin
+    if varisnull(rows.o.values[0,0]) then
+      exit('')
+    else
+      exit(rows.o.values[0,0]);
+  end;
+end;
 
 function TDBCommand.FunctionQuery(sQuery: string; default: ni): ni;
 begin

@@ -181,6 +181,7 @@ begin
     if BackgroundthreadMan.TryLockRead then
     try
       infos := BackgroundThreadMan.GetInfoList;
+      result := true;
     finally
       BackgroundThreadMan.UnlockRead;
     end;
@@ -290,13 +291,19 @@ begin
                 end;
 
                 if (thrDraw <> nil) and thrDraw.started and thrDraw.IsIdle then begin
-                  thrDraw.db.AssignToPicture(dbr.Picture);
-                  thrDraw.cprr := thr.CP.volState;
-                  thrDraw.height := dbr.height;
-                  thrDraw.width := dbr.width;
-                  thrDraw.Fire;
+                  var pic: TPicture;
+                  pic := dbr.picture;
+                  thrDraw.db.AssignToPicture(pic);
+                  if assigned(thr.cp) then begin
+                    thrDraw.cprr := thr.CP.volState;
+                    thrDraw.height := dbr.height;
+                    thrDraw.width := dbr.width;
+                    thrDraw.Fire;
+                    DrawDiskUsage(thr.CP);
+                  end;
+
                 end;
-                DrawDiskUsage(thr.CP);
+
               finally
                 thr.Unlock;
               end;

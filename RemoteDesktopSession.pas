@@ -63,9 +63,10 @@ type
     FClientImmediate: TNativeClient;
     FPingCmd: Tcmd_Ping;
     procedure SEtClientBandwidthParams;
-    property Client: TNativeclient read FClientImmediate;
+
     procedure CreateNativeClient;
   public
+    property Client: TNativeclient read FClientImmediate;
     constructor Create(aowner: TComponent);override;
 
     destructor Destroy;override;

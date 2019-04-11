@@ -1007,6 +1007,7 @@ var
   sLine, sValue: string;
   row,fld: ni;
   h: IHolder<TStringlist>;
+  var pf: PSERowsetFieldDef;
 begin
   self.Clear;
   sl := TStringlist.create;
@@ -1025,7 +1026,7 @@ begin
         sValue := stringreplace(sValue, '-', '_', [rfReplaceAll]);
         sValue := stringreplace(sValue, '/', '_per_', [rfReplaceAll]);
         if svalue <> '' then begin
-          var pf := self.AddField;
+          pf := self.AddField;
           pf.sName := sValue;
           pf.vType := TFieldType.ftString;
         end;

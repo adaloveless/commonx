@@ -206,7 +206,7 @@ type
 
   TAbstractSoundDevice = class(TManagedThread, ISoundOscillatorRenderer)
   private
-    procedure SetDeviceID(const Value: cardinal);
+    procedure SetDeviceID(const Value: integer);
     function GetDevice(idx: ni): string;
     function GetDeviceCount: ni;
     procedure SetDeviceName(const Value: string);
@@ -216,7 +216,7 @@ type
     FFrequency: cardinal;
     FEngineStartTime: int64;
     FBufferSize: integer;
-    FDeviceID: cardinal;
+    FDeviceID: integer;
     FPendingDeviceChange: boolean;
     FRemoteport: string;
     FRemoteHost: string;
@@ -294,7 +294,7 @@ type
     property Position_int64: int64 read GetPosition_int64;
     procedure ResetPlayOrigin;
     property EngineStartTime : int64 read GetEngineSTartTime write SetEngineStartTime;
-    property DeviceID: cardinal read FDeviceID write SetDeviceID;
+    property DeviceID: integer read FDeviceID write SetDeviceID;
     property Buffersize: nativeint read GetBufferSize write SetBufferSize;
     property SampleRate: nativeint read GEtSampleRate;
     property NyquistFrequency: nativeint read GEtNyquistFrequency;
@@ -2021,7 +2021,7 @@ begin
   end;
 end;
 
-procedure TAbstractSoundDevice.SetDeviceID(const Value: cardinal);
+procedure TAbstractSoundDevice.SetDeviceID(const Value: integer);
 begin
   FDeviceID := Value;
 end;

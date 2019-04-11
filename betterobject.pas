@@ -394,8 +394,8 @@ end;
 
 procedure THolder<T>.Set__Holding(const Value: T);
 begin
-  if assigned(Fo) then
-    Fo.free;
+//  if assigned(Fo) then
+//    Fo.free;
 
   FO := value;
 

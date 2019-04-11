@@ -274,7 +274,7 @@ begin
   CleanupExpiredCommands;
   //if you don't cleanup any commands that are potentially referencing
   //the form before shutting down, an Access Violation may likely occur.
-  CanClose := FMonitoringCommands.count = 0;
+  CanClose := (FMonitoringCommands = nil) or (FMonitoringCommands.count = 0);
 
 end;
 

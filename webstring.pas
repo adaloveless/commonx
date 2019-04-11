@@ -1750,9 +1750,12 @@ end;
 {$ENDIF}
 
 function StringListToHTML(sl: TStringList): string;
+var
+  t: nativeint;
+  s: string;
 begin
-  for var t := 0 to sl.count-1 do begin
-    var s := sl[t];
+  for t := 0 to sl.count-1 do begin
+    s := sl[t];
     result := result + s+'<br/>';
   end;
 end;

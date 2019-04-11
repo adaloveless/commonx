@@ -1192,7 +1192,7 @@ begin
 end;
 function Slash(const sPath: string; sSlashType: string = ''): string;
 begin
-  if sSlashType <> PathSeparator then
+  if sSlashType = '' then
     sSlashType := PathSeparator;
 
   if sPath = '' then
@@ -3158,6 +3158,7 @@ begin
   freemem(aligned);
 {$ENDIF}
 end;
+
 
 
 initialization

@@ -4,7 +4,7 @@ unit helpers.stream;
 interface
 
 uses
-  classes, sysutils, debug, numbers, systemx,
+  classes, sysutils, debug, numbers, systemx, variants,
 {$IFDEF MSWINDOWS}
   queuestream,
 {$ENDIF}
@@ -48,8 +48,7 @@ function stream_Compare(const s1, s2: TStream; out dif_addr: int64): integer;ove
 function Stream_CalculateChecksum(const s: TStream): int64;overload;
 function Stream_CalculateChecksum(const s: TStream; start, length: int64): int64;overload;
 function LoadFileAsByteArray(sFile: string): TDynByteArray;
-
-
+function OleVariantToMemoryStream(OV: OleVariant): TMemoryStream;
 
 function Stream_ReadString(const s: TStream; terminator: byte = 10; nobacktrack: boolean = false): ansistring;
 
@@ -63,6 +62,7 @@ procedure Stream_WriteZeros(const s: TStream; const iCount: int64);overload;
 procedure Stream_WriteZeros(const s: TAdaptiveQueuedFileSTream; const iCount: int64);overload;
 procedure Stream_WriteZerosXX(const s: TAdaptiveQueuedFileSTream; const iCount: int64);
 {$ENDIF}
+
 
 type
   EStreamGuarantee = class(Exception)
@@ -676,6 +676,58 @@ end;
 {$ENDIF}
 
 
+function OleVariantToMemoryStream(OV: OleVariant): TMemoryStream;
+{$IFDEF MINE}
+var
+  DataPtr : Pointer;
+  len: ni;
+begin
+   result:=TMemoryStream.Create;
+   try
+    result.Seek(0,0);
+//    if not (varType(data) = varArray) then
+//      raise ECritical.create('this is not an array');
+    len := length(data);
+    raise ECritical.create('len = '+length(data).tostring);
+    DataPtr :=VarArrayLock(Data);
+    try
+      result.WriteBuffer(DataPtr^,len); //Get the pointer to the variant variable.
+    finally
+      VarArrayUnlock(Data); //when you are done , you must call to VarArrayUnlock
+    end;
+  finally
+    result.Seek(0,soBeginning);
+  end;
+end;
+{$ELSE}
+var
+  Data: PByte;
+  Size: ni;
+  toWrite: ni;
+  thisWrite: ni;
+begin
+  Result := TMemoryStream.Create;
+  try
+
+    Size := VarArrayHighBound (OV, 1) - VarArrayLowBound
+      (OV, 1) + 1;
+    result.Size := size;
+    Data := VarArrayLock(OV);
+    try
+      Result.Position := 0;
+      towrite := size;
+      Result.WriteBuffer(Data^, Size);
+    finally
+      VarArrayUnlock(OV);
+    end;
+    result.Seek(0,soBeginning);
+  except
+    Result.Free;
+    Result := nil;
+    raise;
+  end;
+end;
+{$ENdif}
 
 end.
 

@@ -492,7 +492,7 @@ begin
         inc(t);
 
       until
-        (sl[t] = '') or (t>=sl.count);
+        (t>=sl.count) or (sl[t] = '');
     finally
       sl.free;
     end;
