@@ -2294,6 +2294,14 @@ end;
 
 
 function SplitStringIntoStringList(s: string; cDelimiter: char = ' '; bRespectQuote: char = #0): TStringList;
+begin
+  if bRespectQuote = #3 then
+    bRespectQuote := '"';
+  result := ParseSTringNotIn(s, cDelimiter, '"');
+
+end;
+
+function SplitStringIntoStringList_BAD(s: string; cDelimiter: char = ' '; bRespectQuote: char = #0): TStringList;
 var
   slocal: string;
   t: integer;

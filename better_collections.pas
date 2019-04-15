@@ -67,6 +67,8 @@ type
     property OwnsObjects: boolean read FOwnsObjects write FOwnsObjects;
   end;
 
+
+
   TStringObjectList<T_OBJECTTYPE: class> = class(TBetterObject)
   strict private
     FItems: TStringlist;

@@ -7,14 +7,16 @@ uses
 
 type
   EJSONNodeNotFound = class(Exception);
-  TJSONDictionary = class;//forward
+  TJSON = class;//forward
 
-  TIterateCalculateNewFieldProc = reference to procedure (recordNode: TJSONDictionary; newNode: TJSONDictionary);
-  TFilterProcRef = reference to procedure (recordNode: TJSONDictionary; var bAccept: boolean);
+  TIterateCalculateNewFieldProc = reference to procedure (recordNode: TJSON; newNode: TJSON);
+  TFilterProcRef = reference to procedure (recordNode: TJSON; var bAccept: boolean);
 
-  TJSONDictionary = class(TStringObjectList<TJSONDictionary>)
+  TJSON = class(TStringObjectList<TJSON>)
   private
     FjsonInput: string;
+    FAddr: string;
+    FParent: TJSON;
     procedure Parse(s: string; var iPosition: nativeint);
     procedure ParseObject(s: string; var iPosition: nativeint);
     procedure ParseArray(s: string; var iPosition: nativeint);
@@ -24,21 +26,24 @@ type
     procedure SetAsString(const Val: string);
     function GetiCount: ni;
     function GEtnCount: ni;
-    function GetnValuesByIndex(idx: ni): TJSONDictionary;
+    function GetnValuesByIndex(idx: ni): TJSON;
     function GetnNamesByIndex(idx: ni): string;
-    function valsByString(s: string): TJSONDictionary;
-    function valsByIndex(ii: ni): TJSONDictionary;
-    function ValsByVariant(v: variant): TJSONDictionary;
+    function valsByString(s: string): TJSON;
+    function valsByIndex(ii: ni): TJSON;
+    function ValsByVariant(v: variant): TJSON;
     function GetJSON: string;
     procedure SetJSONInput(const Value: string);
+    function GetAddr: string;
 
-    property nValuesByIndex[idx: ni]: TJSONDictionary read GetnValuesByIndex;
+    property nValuesByIndex[idx: ni]: TJSON read GetnValuesByIndex;
     property nNamesByIndex[idx: ni]: string read GetnNamesByIndex;
   public
 
+    name: string;
     value: variant;
-    named: TStringObjectList<TJSONDictionary>;
-    indexed: array of TJSONDictionary;
+    named: TStringObjectList<TJSON>;
+    indexed: array of TJSON;
+    parent: TJSON;
 
     expires: Tdatetime;
     constructor create;override;
@@ -49,35 +54,37 @@ type
     property nCount: ni read GEtnCount;
     procedure Sorti(sSubValue: string; bDesc: boolean = false);
     procedure Deletei(index: ni);
-    property s[s: string]: TJSONDictionary read valsByString;
-    property v[v: variant]: TJSONDictionary read ValsByVariant;default;
-    property a[ii: ni]: TJSONDictionary read valsByIndex;
+    property s[s: string]: TJSON read valsByString;
+    property v[v: variant]: TJSON read ValsByVariant;default;
+    property a[ii: ni]: TJSON read valsByIndex;
     function IndexOfSubValue(subkey: string; value: string): ni;
-    function FindSubKey(subkey: string; value: string): TJSONDictionary;
+    function FindSubKey(subkey: string; value: string): TJSON;
     function IsExpired: boolean;
-    function AddIndexed(v_will_copy: TJSONDictionary): ni;overload;
+    function AddIndexed(v_will_copy: TJSON): ni;overload;
     function AddIndexed(stringPrimitive: string): ni;overload;
-    function AddIndexed(): TJSONDictionary;overload;
-    function GetNode(sAddr: string): TJSONDictionary;
+    function AddIndexed(): TJSON;overload;
+    function GetNode(sAddr: string): TJSON;
     property ToJson: string read GetJSON write FJSonInput;
-    function ToHolder: IHolder<TJSONdictionary>;
+    function ToHolder: IHolder<TJSON>;
     property OriginalJSON: string read FjsonInput write SetJSONInput;
     procedure AddMemberJSON(const Key: string; value: string);overload;
     procedure AddMemberPrimitive(const Key: string; value: string);overload;
     procedure AddMemberPrimitive(const Key: string; value: double);overload;
     procedure AddMemberPrimitiveVariant(const Key: string; v: variant);overload;
-    function AddMember(const Key: string): TJSONDictionary;overload;
-    function LookUpBySubObjectField(fld: string; sSubValue: variant): TJSONDictionary;
-    procedure MergeFieldsFrom(o: TJSONDictionary);
+    function AddMember(const Key: string): TJSON;overload;
+    function LookUpBySubObjectField(fld: string; sSubValue: variant): TJSON;
+    procedure MergeFieldsFrom(o: TJSON);
     procedure Iterate_CalculateField(sNewFieldName: string; procref: TIterateCalculateNewFieldProc);
     procedure Iterate_Filter(procref: TFilterProcRef);
-    procedure AppendFieldsFrom(o: TJSONDictionary);
+    procedure AppendFieldsFrom(o: TJSON);
 
     function HasNode(sAddr: string): boolean;
     function TryGetValue(sKey: string; out sValue: string): boolean;
+    property CalcAddr: string read GetAddr;
+    property Addr: string read FAddr write FAddr;
+    property json: string read getJSON write FromString;
   end;
 
-  TJSON = TJSONDictionary;
   IJSONHolder = IHolder<TJSON>;
 
   TJSONCacheRec = record
@@ -101,7 +108,7 @@ type
   end;
 
 
-function JSONtoDictionary(sJSON: string): TJSONDictionary;
+function JSONtoDictionary(sJSON: string): TJSON;
 function StrtoJSON(sString: string): TJSON;
 
 function StrToJSONh(sString: string): IHolder<TJSON>;
@@ -121,7 +128,7 @@ implementation
 
 function StrtoJSON(sString: string): TJSON;
 begin
-  result := TJSONDictionary.create;
+  result := TJSON.create;
   result.FromString(sString);
 end;
 
@@ -144,7 +151,7 @@ begin
 
 end;
 
-function JSONtoDictionary(sJSON: string): TJSONDictionary;
+function JSONtoDictionary(sJSON: string): TJSON;
 begin
   result := strtojson(sJSON);
 end;
@@ -153,7 +160,7 @@ end;
   sl: TStringlist;
   t: ni;
 begin
-  result := TJSONDictionary.create;
+  result := TJSON.create;
   SplitString(sJSON, '{', s1,s2);
   SplitString(s2, '}', s1,s2);
   sl := SplitStringIntoStringList(s1, ',', '"');
@@ -170,24 +177,24 @@ begin
   end;
 end;*)
 
-{ TJSONDictionary }
+{ TJSON }
 
 
 
-function TJSONDictionary.AddIndexed(v_will_copy: TJSONDictionary): ni;
+function TJSON.AddIndexed(v_will_copy: TJSON): ni;
 begin
   result := length(indexed);
   setlength(self.indexed, result+1);
-//  self.i[high(indexed)] := TJSONDictionary.create;
+//  self.i[high(indexed)] := TJSON.create;
   self.indexed[high(indexed)] := StrToJson(v_will_copy.ToJSON);
 
 end;
 
-procedure TJSONDictionary.AddMemberPrimitive(const Key: string; value: double);
+procedure TJSON.AddMemberPrimitive(const Key: string; value: double);
 var
-  j: TJSONDictionary;
+  j: TJSON;
 begin
-  j := TJSONDictionary.create;
+  j := TJSON.create;
   try
     j.fromString(floatprecision(value, 12));
   except
@@ -197,17 +204,17 @@ begin
   self.named.Add(key, j);
 end;
 
-procedure TJSONDictionary.AddMemberPrimitiveVariant(const Key: string;
+procedure TJSON.AddMemberPrimitiveVariant(const Key: string;
   v: variant);
 var
-  j: TJSONDictionary;
+  j: TJSON;
 begin
-  j := TJSONDictionary.create;
+  j := TJSON.create;
   j.FromString(VArtoJSONStorage(v));
   self.named.Add(key, j);
 end;
 
-procedure TJSONDictionary.AppendFieldsFrom(o: TJSONDictionary);
+procedure TJSON.AppendFieldsFrom(o: TJSON);
 var
   f: ni;
   sKey: string;
@@ -221,11 +228,11 @@ begin
 
 end;
 
-procedure TJSONDictionary.ClearAndFree;
+procedure TJSON.ClearAndFree;
 var
-//  a: TArray<TPair<string,TJSONDictionary>>;
-  d: TJSONDictionary;
-  p: TPair<string,TJSONDictionary>;
+//  a: TArray<TPair<string,TJSON>>;
+  d: TJSON;
+  p: TPair<string,TJSON>;
 begin
   Fjsoninput := '';
   for d in indexed do begin
@@ -241,17 +248,17 @@ begin
 
 end;
 
-constructor TJSONDictionary.create;
+constructor TJSON.create;
 begin
   inherited create;
   setlength(indexed,0);
-  named := TStringObjectList<TJSONdictionary>.create;
+  named := TStringObjectList<TJSON>.create;
   named.takeownership := true;
 //  inc(cunt);
 //  Debug.Log(inttostr(cunt));
 end;
 
-procedure TJSONDictionary.Deletei(index: ni);
+procedure TJSON.Deletei(index: ni);
 var
   t: ni;
 begin
@@ -262,7 +269,7 @@ begin
 
 end;
 
-destructor TJSONDictionary.destroy;
+destructor TJSON.destroy;
 BEGIN
   ClearAndFree;
   named.free;
@@ -273,7 +280,7 @@ BEGIN
   inherited;
 end;
 
-function TJSONDictionary.FindSubKey(subkey, value: string): TJSONDictionary;
+function TJSON.FindSubKey(subkey, value: string): TJSON;
 var
   ii: ni;
 begin
@@ -284,7 +291,7 @@ begin
 
 end;
 
-procedure TJSONDictionary.FromString(s: string);
+procedure TJSON.FromString(s: string);
 var
   i: nativeint;
 begin
@@ -295,17 +302,24 @@ begin
 end;
 
 
-function TJSONDictionary.GetAsString: string;
+function TJSON.GetAddr: string;
+begin
+  result := name;
+  if parent <> nil then
+    result := parent.addr+'.'+result;
+end;
+
+function TJSON.GetAsString: string;
 begin
   result := vartostrex(value);
 end;
 
-function TJSONDictionary.GetiCount: ni;
+function TJSON.GetiCount: ni;
 begin
   result := length(indexed);
 end;
 
-function TJSONDictionary.GetJSON: string;
+function TJSON.GetJSON: string;
 var
   t: ni;
   a: TArray<String>;
@@ -352,7 +366,7 @@ begin
 
 end;
 
-function TJSONDictionary.GEtnCount: ni;
+function TJSON.GEtnCount: ni;
 begin
   result := named.Count;
 end;
@@ -360,12 +374,12 @@ end;
 
 
 
-function TJSONDictionary.GetnNamesByIndex(idx: ni): string;
+function TJSON.GetnNamesByIndex(idx: ni): string;
 begin
   result := named.Keys[idx];
 end;
 
-function TJSONDictionary.GetNode(sAddr: string): TJSONDictionary;
+function TJSON.GetNode(sAddr: string): TJSON;
 var
   s1,s2: string;
   i: nativeint;
@@ -393,13 +407,13 @@ begin
 
 end;
 
-function TJSONDictionary.GetnValuesByIndex(idx: ni): TJSONDictionary;
+function TJSON.GetnValuesByIndex(idx: ni): TJSON;
 begin
   result := named.ItemsByIndex[idx];
 end;
 
 
-function TJSONDictionary.HasNode(sAddr: string): boolean;
+function TJSON.HasNode(sAddr: string): boolean;
 var
   s1,s2: string;
 //  k: TArray<string>;
@@ -424,7 +438,7 @@ begin
 
 end;
 
-function TJSONDictionary.IndexOfSubValue(subkey, value: string): ni;
+function TJSON.IndexOfSubValue(subkey, value: string): ni;
 var
   t: ni;
 begin
@@ -435,16 +449,16 @@ begin
   exit(-1);
 end;
 
-function TJSONDictionary.IsExpired: boolean;
+function TJSON.IsExpired: boolean;
 begin
   result := (expires <> 0.0) and (now > expires);
 end;
 
-procedure TJSONDictionary.Iterate_CalculateField(sNewFieldName: string;
+procedure TJSON.Iterate_CalculateField(sNewFieldName: string;
   procref: TIterateCalculateNewFieldProc);
 var
   t: ni;
-  newnode: TJSONDictionary;
+  newnode: TJSON;
 begin
   for t:= 0 to Self.iCount-1 do begin
     if not self[t].HasNode(sNewFieldName) then begin
@@ -456,10 +470,10 @@ begin
 
 end;
 
-procedure TJSONDictionary.Iterate_Filter(procref: TFilterProcRef);
+procedure TJSON.Iterate_Filter(procref: TFilterProcRef);
 var
   t: ni;
-  newnode: TJSONDictionary;
+  newnode: TJSON;
   accept: boolean;
 begin
   t := 0;
@@ -473,8 +487,8 @@ begin
   end;
 end;
 
-function TJSONDictionary.LookUpBySubObjectField(fld: string;
-  sSubValue: variant): TJSONDictionary;
+function TJSON.LookUpBySubObjectField(fld: string;
+  sSubValue: variant): TJSON;
 var
   t: ni;
 begin
@@ -489,7 +503,7 @@ begin
 
 end;
 
-procedure TJSONDictionary.MergeFieldsFrom(o: TJSONDictionary);
+procedure TJSON.MergeFieldsFrom(o: TJSON);
 var
   t: ni;
 begin
@@ -498,7 +512,7 @@ begin
   end;
 end;
 
-procedure TJSONDictionary.Parse(s: string; var iPosition: nativeint);
+procedure TJSON.Parse(s: string; var iPosition: nativeint);
 type
   TParseState = (psStart, psValue, psName);
 var
@@ -542,10 +556,10 @@ begin
 
 
 end;
-procedure TJSONDictionary.ParseArray(s: string; var iPosition: nativeint);
+procedure TJSON.ParseArray(s: string; var iPosition: nativeint);
 var
   sValue: string;
-  jsn: TJSONDictionary;
+  jsn: TJSON;
   c: char;
   bWaitForNext: boolean;
 begin
@@ -560,7 +574,9 @@ begin
       if c = ']' then begin
         exit;
       end;
-      jsn := TJSONDictionary.create;
+      jsn := TJSON.create;
+      jsn.Addr := self.addr+'['+inttostr(length(indexed))+']';
+      jsn.Parent := self;
       jsn.Parse(s, iPosition);
       setlength(indexed, length(indexed)+1);
       indexed[high(indexed)] := jsn;
@@ -581,7 +597,7 @@ begin
   raise Exception.create('array not terminated @'+ demonstrateErrorPosition(s, iPosition));
 end;
 
-procedure TJSONDictionary.ParseConstant(s: string; var iPosition: nativeint);
+procedure TJSON.ParseConstant(s: string; var iPosition: nativeint);
 var
   bInQuotes: boolean;
   sValue: string;
@@ -639,7 +655,7 @@ begin
 
 end;
 
-procedure TJSONDictionary.ParseObject(s: string; var iPosition: nativeint);
+procedure TJSON.ParseObject(s: string; var iPosition: nativeint);
 type
   TParseState = (psName, psValue, psLimbo);
 var
@@ -648,7 +664,7 @@ var
   bEscape : boolean;
   c: char;
   ps : TParseState;
-  jsn: TJSONDictionary;
+  jsn: TJSON;
 begin
   sName := '';
   bEscape := false;
@@ -690,7 +706,9 @@ begin
         end;
       end;
       psValue: begin
-        jsn := TJSONDictionary.create;
+        jsn := TJSON.create;
+        jsn.Addr := self.addr+'.'+sName;
+        jsn.parent := self;
         jsn.Parse(s, iPosition);
         self.named.Add(sName, jsn);
         ps := psLImbo;
@@ -709,23 +727,23 @@ begin
 
 end;
 
-procedure TJSONDictionary.SetAsString(const Val : string);
+procedure TJSON.SetAsString(const Val : string);
 begin
   value := stringtotypedvariant(val);
 end;
 
-procedure TJSONDictionary.SetJSONInput(const Value: string);
+procedure TJSON.SetJSONInput(const Value: string);
 begin
   Self.FromString(value);
 end;
 
-procedure TJSONDictionary.Sorti(sSubValue: string; bDesc: boolean = false);
+procedure TJSON.Sorti(sSubValue: string; bDesc: boolean = false);
 var
   bDone: boolean;
   t: ni;
   procedure Swap(i1,i2: ni);
   var
-    js: TJSONDictionary;
+    js: TJSON;
   begin
     js := indexed[i1];
     indexed[i1] := indexed[i2];
@@ -752,14 +770,14 @@ begin
 
 end;
 
-function TJSONDictionary.ToHolder: IHolder<TJSONdictionary>;
+function TJSON.ToHolder: IHolder<TJSON>;
 begin
   result := THOLDER<TJSON>.create;
   result.o := StrtoJSON(self.GetJSON);
 
 end;
 
-function TJSONDictionary.TryGetValue(sKey: string; out sValue: string): boolean;
+function TJSON.TryGetValue(sKey: string; out sValue: string): boolean;
 begin
   if not self.HasNode(sKey) then
     exit(false);
@@ -767,19 +785,19 @@ begin
   result := true;
 end;
 
-function TJSONDictionary.valsByIndex(ii: ni): TJSONDictionary;
+function TJSON.valsByIndex(ii: ni): TJSON;
 begin
   if ii >= iCount then
     raise ECritical.create('Trying to chase index '+ii.tostring+' in JSON array of '+iCount.tostring+' elements.');
   result := indexed[ii];
 end;
 
-function TJSONDictionary.valsByString(s: string): TJSONDictionary;
+function TJSON.valsByString(s: string): TJSON;
 begin
   result := named[s];
 end;
 
-function TJSONDictionary.ValsByVariant(v: variant): TJSONDictionary;
+function TJSON.ValsByVariant(v: variant): TJSON;
 begin
   if varType(v) in [varInteger, varInt64, varSmallint, varByte, varUInt64] then
     exit(a[v])
@@ -807,23 +825,23 @@ begin
 
 end;
 
-procedure TJSONDictionary.AddMemberJSON(const Key: string;
+procedure TJSON.AddMemberJSON(const Key: string;
   value: string);
 var
-  j: TJSONDictionary;
+  j: TJSON;
 begin
-  j := TJSONDictionary.create;
+  j := TJSON.create;
   j.fromString(value);
   self.named.Add(key, j);
 
 end;
 
-procedure TJSONDictionary.AddMemberPrimitive(const Key: string;
+procedure TJSON.AddMemberPrimitive(const Key: string;
   value: string);
 var
-  j: TJSONDictionary;
+  j: TJSON;
 begin
-  j := TJSONDictionary.create;
+  j := TJSON.create;
   j.value := value;
   self.named.Add(key, j);
 
@@ -836,27 +854,27 @@ begin
   result := stringreplace(result, '"', '\"', [rfReplaceAll]);
 end;
 
-function TJSONDictionary.AddIndexed: TJSONDictionary;
+function TJSON.AddIndexed: TJSON;
 var
   len: ni;
 begin
   len := length(indexed);
   setlength(self.indexed, len+1);
-  result := TJSONDictionary.create;
+  result := TJSON.create;
   self.indexed[high(indexed)] := result;
 
 end;
 
-function TJSONDictionary.AddIndexed(stringPrimitive: string): ni;
+function TJSON.AddIndexed(stringPrimitive: string): ni;
 begin
 
   AddIndexed().value := stringPrimitive;
   result:= icount-1;
 end;
 
-function TJSONDictionary.AddMember(const Key: string): TJSONDictionary;
+function TJSON.AddMember(const Key: string): TJSON;
 begin
-  result := TJSONDictionary.create;
+  result := TJSON.create;
   self.named.Add(key, result);
 end;
 

@@ -1,5 +1,9 @@
 unit FlexiMath;
 
+{$IFNDEF ALLOW_FLEXIMATH}
+//{$ERROR FlexiMath is deprecated.  Use SpreadTree instead or force with ALLOW_FLEXIMATH}
+{$ENDIF}
+
 interface
 
 

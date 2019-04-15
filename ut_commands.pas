@@ -315,7 +315,7 @@ begin
         utresult := 'success}}time='+inttostr(GEtTimeSince(b,a));
       end;
       30: begin
-        VariationName := '2 Random Allocations ('+inttostr(GetProcessorCount)+' cpus available)';
+        VariationName := '2 Random Allocations ('+inttostr(GetEnabledCPUCount)+' cpus available)';
         a := GetTicker;
         c1 := Tcmd_RandomAllocations.Create;
         c1.Start;
@@ -342,7 +342,7 @@ begin
         utresult := 'success}}time='+inttostr(GEtTimeSince(b,a));
       end;
       50: begin
-        VariationName := '2 IsPrime ('+inttostr(GetProcessorCount)+' cpus available)';
+        VariationName := '2 IsPrime ('+inttostr(GetEnabledCPUCount)+' cpus available)';
         a := GetTicker;
         p1 := Tcmd_IsPrime.Create;
         p1.Subject := prime_subject;

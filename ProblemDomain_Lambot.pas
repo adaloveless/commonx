@@ -18,7 +18,7 @@ unit ProblemDomain_Lambot;
 interface
 
 uses
-  simplemail, tickcount, numbers, classes, debug, sharedobject, ShapeShiftDB, betterobject, storageenginetypes, typex, stringx, systemx, abstractDB, sysutils, consolelock, fft_easy, helpers.stream, MultiBufferMemoryFileStream, rdtpdb, bittrex, jsonhelpers, variants, managedthread, beeper, fiber, commandprocessor, speech, applicationparams, fleximath, commands_system, CommandIcons, orderlyinit, twitter, cryptocompare, rec2json, BackGroundCommandProcessor, enroyd;
+  simplemail, tickcount, numbers, classes, debug, sharedobject, ShapeShiftDB, betterobject, storageenginetypes, typex, stringx, systemx, abstractDB, sysutils, consolelock, fft_easy, helpers.stream, MultiBufferMemoryFileStream, rdtpdb, bittrex, jsonhelpers, variants, managedthread, beeper, fiber, commandprocessor, speech, applicationparams, fleximath, commands_system, CommandIcons, orderlyinit, twitter_evil_robot, cryptocompare, rec2json, BackGroundCommandProcessor, enroyd, twitter;
 
 const
 CMD_ICON_WATCHER: TCommandIcon = (BitDepth: 32; RDepth:8;GDepth:8;BDepth:8;ADepth:8;Height:32;Width:32;
