@@ -548,7 +548,7 @@ var
         //todo 1: recursive?
       end else begin
         result.value := '!@#$ '+code+' !@#$';
-        raise ESourceTreeExpression.create('cannot solve '+code);
+        //raise ESourceTreeExpression.create('cannot solve '+code);
       end;
     end;
   end;
