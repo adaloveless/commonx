@@ -58,6 +58,8 @@ function StringListFromNullTerminatedStrings(p: PByte; sz: nativeint): TStringli
 function StringsFromMemory(p: PByte; sz: nativeint): string;
 function Commaize(i: int64): string;
 function IsInteger(s: string): boolean;
+function IsSimpleFloat(s: string): boolean;
+function IsFloat(s: string): boolean;
 function IsHex(s: string): boolean;
 function StrToBool(s: string): boolean;
 function BoolToStrEx(b: boolean; sTrue: string ='TRUE'; sFalse:string = 'FALSE') : string;
@@ -2016,15 +2018,34 @@ var
   c: char;
 begin
   result := length(s) > 0;
-  for t:= 1 to length(s) do begin
+  for t:= STRZ to high(s) do begin
     c := s[t];
-    if not charinSet(c, ['0'..'9']) then begin
+    if not charinSet(c, ['-','0'..'9']) then begin
       result := false;
       break;
     end;
-
   end;
+end;
 
+function IsSimpleFloat(s: string): boolean;
+var
+  t: integer;
+  c: char;
+begin
+  result := length(s) > 0;
+  for t:= STRZ to high(s) do begin
+    c := s[t];
+    if not charinSet(c, ['-','.','0'..'9']) then begin
+      result := false;
+      break;
+    end;
+  end;
+end;
+
+function IsFloat(s: string): boolean;
+begin
+  result := IsSimpleFloat(s);
+  //todo 1: need to support complex floats, NaN even?
 end;
 
 function SplitQuote(sOrig: string; sQuoteDelimiter: string; var sLeft, sRight: string; out sInQuote: string): boolean;

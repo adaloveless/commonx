@@ -85,7 +85,7 @@ type
     FOnTestComplete: TOnTestComplete;
   public
     procedure RunAll;
-    procedure RunSingle(c: TClass);
+    procedure RunSingle(c: TClass; startvar: ni = -1; endvar: ni = -1);
     property OnMessage: TUnitTestMessage read FOnMessage write FOnMessage;
     property GiveCompletedTestsTo: TOnTestComplete read FOnTestComplete write FOnTestComplete;
   end;
@@ -264,18 +264,23 @@ begin
 
 end;
 
-procedure TUnitTestEngine.RunSingle(c: TClass);
+procedure TUnitTestEngine.RunSingle(c: TClass; startvar: ni = -1; endvar: ni = -1);
 var
   ut: TUnitTest;
   u: nativeint;
 begin
   try
     u := 1;
+    if startvar >=0 then
+      u := startvar;
     repeat
       ut := TUnitTest(c.Create);
       try
+        if (endvar >=0) and (u>endvar) then
+          break;
         ut.Variation := u;
         ut.Execute;
+
         if (ut.UTResult = 'no execution') then begin
           if ((u mod 10)=0) then
             break;

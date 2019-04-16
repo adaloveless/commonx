@@ -12,6 +12,12 @@ type
   TIterateCalculateNewFieldProc = reference to procedure (recordNode: TJSON; newNode: TJSON);
   TFilterProcRef = reference to procedure (recordNode: TJSON; var bAccept: boolean);
 
+  TFindNodeRes = record
+    success: boolean;
+    FoundAddr: string;
+    node: TJSON;
+    procedure Init;
+  end;
   TJSON = class(TStringObjectList<TJSON>)
   private
     FjsonInput: string;
@@ -77,8 +83,9 @@ type
     procedure Iterate_CalculateField(sNewFieldName: string; procref: TIterateCalculateNewFieldProc);
     procedure Iterate_Filter(procref: TFilterProcRef);
     procedure AppendFieldsFrom(o: TJSON);
-
     function HasNode(sAddr: string): boolean;
+    function FindNodeEx(sAddr: string; nParent: TJSON = nil): TFindNodeRes;
+
     function TryGetValue(sKey: string; out sValue: string): boolean;
     property CalcAddr: string read GetAddr;
     property Addr: string read FAddr write FAddr;
@@ -278,6 +285,45 @@ BEGIN
 //  Debug.Log(inttostr(cunt));
 
   inherited;
+end;
+
+
+function TJSON.FindNodeEx(sAddr: string; nParent: TJSON): TFindNodeRes;
+begin
+  result.init;
+  //check self as node first
+  if self.HasNode(sAddr) then begin
+    result.success := true;
+    result.node := self.GetNode(sAddr);
+    result.FoundAddr := result.node.Addr;
+  end;
+  if not result.success then begin
+    var t: ni;
+    for t:= 0 to named.Count-1 do
+    begin
+      var n := named.ItemsByIndex[t];
+      if n.HasNode(sAddr) then begin
+        result.success := true;
+        result.node := n.GetNode(sAddr);
+        result.FoundAddr := result.node.addr;
+        exit;
+      end;
+    end;
+  end;
+
+  if not result.success then begin
+    var t: ni;
+    for t:= 0 to high(indexed) do
+    begin
+      var n := indexed[t];
+      if n.HasNode(sAddr) then begin
+        result.success := true;
+        result.node := n.GetNode(sAddr);
+        result.FoundAddr := result.node.addr;
+        exit;
+      end;
+    end;
+  end;
 end;
 
 function TJSON.FindSubKey(subkey, value: string): TJSON;
@@ -1024,6 +1070,13 @@ begin
 
 
 
+end;
+
+{ TFindNodeRes }
+
+procedure TFindNodeRes.Init;
+begin
+  success := false;
 end;
 
 initialization
