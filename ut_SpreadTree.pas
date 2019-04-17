@@ -61,9 +61,34 @@ const
     '"Doc1":{ "C": "=2+3" }'+CRLF+
     '"Doc2":{ "A": "=C"}',
 
+    //resolution requires resolution
     'FM'+
     '"Doc1":{ "A": 3, "B": 7, "C": "=A+B" }'+CRLF+
-    '"Doc2":{ "A": "=C"}'
+    '"Doc2":{ "A": "=C"}',
+
+    //resolution requires resolution/reverse
+    'FM'+
+    '"Doc2":{ "A": "=C"}'+CRLF+
+    '"Doc1":{ "A": 3, "B": 7, "C": "=A+B" }',
+
+    //parens
+    'FM'+
+    '"Doc1":{ "A": "=2+(4/2)" }',
+    'FM'+
+    '"Doc2":{ "A": "=(4/2)+2" }',
+    'FM'+
+    '"Doc3":{ "A": "=(4/2)" }',
+    'FM'+
+    '"Doc4":{ "A": "=2+(4/2)+2" }',
+    'FM'+
+    '"Doc5":{ "A": "=2+((4/2)-2)" }',
+    'FM'+
+    '"Doc6":{ "A": "=(2-(4/2))+3" }'
+
+
+
+
+
 
 
 

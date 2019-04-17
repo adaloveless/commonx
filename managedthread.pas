@@ -3243,6 +3243,7 @@ begin
     setlength(result, count);
     for t:= 0 to count-1 do begin
       result[t] := threads[t].info;
+      result[t].status := threads[t].status;
       result[t].signaldebug := threads[t].GetSignalDebug;
     end;
   finally

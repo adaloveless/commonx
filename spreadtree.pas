@@ -10,17 +10,18 @@ type
   ESourceTreeExpression = class(Exception);
   TJSONScalar = TJSON;
   TJSONArray = TJSON;
-  TExpressionToken = class
-    text: string;
+
+  TTokenType = (ttNormal, ttOpenParen, ttCloseParen);
+
+  TExpressionToken = record
+    tokentype: TTokenType;
+    leftop: char;
+    code: string;
     value: variant;
-    //---
-    op: char;
-    //---
-    next: TExpressionToken;
+    procedure Init;
   end;
 
-  IExpressionToken = IHolder<TExpressionToken>;
-  TTokenArray = TArray<IExpressionToken>;
+  TTokenArray = TArray<TExpressionToken>;
   TTokenSolutionType = (tstValue, tstNode);
   TTokenSolution = record
     solved: boolean;
@@ -480,52 +481,101 @@ var
   end;
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<TSpreadTree.Solve
   const
+    parens = ['(',')'];
     operators = ['+','-','/','*'];
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<TSpreadTree.Solve
+  function IsParen(c: char): boolean;
+  begin
+    result := charinset(c, parens);
+  end;
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<TSpreadTree.Solve
   function IsOperator(c: char): boolean;
   begin
     result := charinset(c, operators);
   end;
+  function IsBreak(c: char): boolean;
+  begin
+    result := IsOperator(c) or IsParen(c);
+  end;
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<TSpreadTree.Solve
   function TokenizeExpression(code: string; n: TJSON): TTokenArray;
-    procedure CommitToken(code: string; break: char);
+  var
+    currenttok: TExpressionToken;
+    procedure CommitToken;
     begin
-      var h := THolder<TExpressionToken>.create;
-      h.o := TExpressionToken.create;
-      setlength(result, length(result)+1);
-      result[high(result)] := h;
-      h.o.text := code;
-      h.o.value := null;
-      h.o.op := break;
+      if (currenttok.code <> '') or (currenttok.leftop <> #0) or (currenttok.tokentype<>ttNormal) then begin
+        setlength(result, length(result)+1);
+        result[high(result)] := currenttok;
+        currenttok.init;
+      end;
     end;
   begin
-    var thistoken: string := '';
+    currenttok.init;
     var tokencharcount: ni := 0;
     for var t := low(code) to high(code) do begin
       var c := code[t];
       if c = ' ' then continue;//ignore whitespace
+      if c = '(' then begin
+        committoken;
+        currenttok.tokentype := ttOpenParen;
+        committoken;
+        continue;
+      end;
+      if c = ')' then begin
+        committoken;
+        currenttok.tokentype := ttCloseParen;
+        committoken;
+        continue;
+      end;
+
       if ((tokencharcount = 0) and (c = '-')) or (not IsOperator(c)) then begin
-        thistoken := thistoken + c;
+        currenttok.code := currenttok.code  + c;
         inc(tokencharcount);//increment changes the behavior of the '-' (becomes minus instead of negative)
       end else begin
-        thistoken := trim(thistoken);
-        if thistoken = '' then begin
-          CommitToken('0',c);
-        end else begin
-          CommitToken(thistoken, c);
-        end;
-        thistoken := '';
+        currenttok.code  := trim(currenttok.code);
+        CommitToken;
+        currenttok.leftop := c;
         tokencharcount := 0;
       end;
     end;
 
-    thistoken := trim(thistoken);
-    if thistoken <> '' then begin
-      CommitToken(thistoken, #0);
+    currenttok.code := trim(currenttok.code);
+    CommitToken;
+
+
+  end;
+  function ExtractSubExpression(n: TJSON; a: TTokenArray; var startidx_returns_end: ni): TTokenArray;
+  begin
+    var deep: ni := 0;
+    //find end index
+    var endidx: ni  := -1;
+    var startidx := startidx_returns_end;
+    for var t := startidx to high(a) do begin
+      var tok := a[t];
+      if tok.tokentype = ttOpenPAren then
+        inc(deep);
+      if tok.tokentype = ttClosePAren then begin
+        dec(deep);
+        if deep = 0 then begin
+          endidx := t;
+          break;
+        end;
+      end;
     end;
+
+    if endidx < 0 then
+      raise ECritical.Create('Expected '')''');
+
+    setlength(result, (endidx - startidx)-1);
+    var idx: ni := 0;
+    for var t:= (startidx+1) to (endidx-1) do begin
+      result[idx] := a[t];
+      inc(idx);
+    end;
+    startidx_returns_end := endidx + 1;
   end;
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<TSpreadTree.Solve
-  function TrySolveToken(code: string;n:TJSON): TTokenSolution;
+  function TrySolveCode(code: string;n:TJSON): TTokenSolution;
   begin
     result.Init;
     if code = '' then
@@ -552,16 +602,79 @@ var
       end;
     end;
   end;
+
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<TSpreadTree.Solve
   function Operate(v1: variant; op: char; v2: variant): variant;
   begin
+
     case op of
       '+': exit(v1+v2);
       '-': exit(v1-v2);
       '*': exit(v1*v2);
       '/': exit(v1/v2);
+      #0: begin
+        if varIsNull(v1) then
+          exit(v2)
+        else
+          exit(v1);
+      end;
+    else
+      raise ECritical.create('unhandled operator '+op);
     end;
     result := null;
+  end;
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<TSpreadTree.Solve
+  function TrySolveTokenArray(tokens: TTokenArray;scope: TJSON): TTokenSolution;
+  begin
+//    Debug.Log('>>>> TRY SOLVE TOKEN ARRAY');
+//    try
+    result.Init;
+    var t: ni := 0;
+    var val: variant := null;
+    var prevop: char := #0;
+    while t < length(tokens) do begin
+      var tok := tokens[t];
+      if tok.tokentype = ttOpenParen then begin
+        var subexpr := ExtractSubExpression(scope, tokens, {VAR}t);
+        var subsol := TrySolveTokenArray(subexpr, scope);
+        if t = 0 then begin
+          val := subsol.value;
+        end else begin
+          val := operate(val, prevop, subsol.value);
+        end;
+        continue;
+      end else begin
+        if tok.code = '' then begin //if there are TWO operators in a row code will be ''
+          prevop := tok.leftop;
+          inc(t);
+          continue;
+        end;
+      end;
+
+      var tokensolution := TrySolveCode(tok.code, scope);
+      if tokensolution.solved then begin
+        if tokensolution.solutiontype <> tstValue then begin
+          tokensolution := TokenAddrToValue(tokensolution);
+          if tokensolution.solutiontype <> tstValue then begin
+            exit;
+          end;
+        end;
+      end else begin
+        exit;
+      end;
+
+      if t = 0 then begin
+        val := tokensolution.value;
+      end else begin
+        val := operate(val, tok.leftop, tokensolution.value);
+      end;
+      inc(t);
+    end;
+    result.value := val;
+    result.solved := true;
+//    finally
+//      Debug.Log('<<<<<<< EXIT TRY SOLVE TOKEN ARRAY Solved = '+booltostr(result.solved)+' val='+vartojsonstorage(result.value));
+//    end;
   end;
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<TSpreadTree.Solve
   function TrySolveExpression(code: string; n: TJSON): boolean;
@@ -572,44 +685,11 @@ var
   begin
     lastop := #0;
     tokens := TokenizeExpression(code, n);
-    var t := 0;
-    var val: variant := null;
-    while t < length(tokens) do begin
-      var tok := tokens[t];
-      var tokensolution := TrySolveToken(tok.o.text, n);
-      if tokensolution.solved then begin
-        if tokensolution.solutiontype <> tstValue then begin
-          tokensolution := TokenAddrToValue(tokensolution);
-          if tokensolution.solutiontype <> tstValue then begin
-            exit(false);
-          end;
-        end;
-      end else begin
-        exit(false);
-      end;
+    var res := TrySolveTokenArray(tokens, n);
+    result := res.solved;
+    if result then
+      n.json := VArtoJSONStorage(res.value);
 
-      if t = 0 then begin
-        val := tokensolution.value;
-      end else begin
-        val := operate(val, lastop, tokensolution.value);
-      end;
-      lastop := tok.o.op;
-      inc(t);
-    end;
-
-    n.json := VArtoJSONStorage(val);
-    result := true;
-
-(*
-    result := TryResolveAddrToValue(code, n, nSolved);
-    if result then begin
-
-      if unsolved.IndexOfObject(nSolved) >= 0 then begin
-        result := false;//OOPS-- source node still needs to be solved
-      end else begin
-        n.JSON := nsolved.ToJson;
-      end;
-    end;*)
   end;
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<TSpreadTree.Solve
   function TrySolveNode(n: TJSON): boolean;
@@ -638,6 +718,7 @@ begin
       var unsolvedcount: ni := 0;
       var lastcount: ni := 0;
       repeat
+        unsolved.clear;
         for t:= 0 to Count-1 do begin
           var n := self.ItemsByIndex[t];
           FindUnsolvedNodes(self.Keys[t],n.results);
@@ -788,5 +869,15 @@ end;
 
 
 
+{ TExpressionToken }
+
+procedure TExpressionToken.Init;
+begin
+  tokentype := ttNormal;
+  code := '';
+  leftop := #0;
+  value := null;
+
+end;
 
 end.
