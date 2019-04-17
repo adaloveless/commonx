@@ -637,6 +637,9 @@ var
       if tok.tokentype = ttOpenParen then begin
         var subexpr := ExtractSubExpression(scope, tokens, {VAR}t);
         var subsol := TrySolveTokenArray(subexpr, scope);
+        if not subsol.solved then
+          exit;//can't solve now, subsolution did not solve
+
         if t = 0 then begin
           val := subsol.value;
         end else begin
