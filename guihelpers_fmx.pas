@@ -6,6 +6,8 @@ interface
 uses
   FMX.StdCtrls, FMX.ListView, FMX.ListView.Appearances, FMX.ListView.Types, typex, fmx.objects, fmx.controls, FMX.VirtualKeyboard, FMX.Platform, FMX.Types, classes, fmx.forms, debug, FMXTee.Chart, FMXTee.Series, FMX.ListBox;
 
+type
+  TChildIterator = reference to procedure (c: TFMXobject; var stop: boolean);
 
 function listview_GetSelectedAppearance(lv: TListView): TlistViewItem;
 
@@ -20,7 +22,12 @@ procedure Chart_AddValues(c: Tchart; yvalues, xvalues: TArray<Tarray<variant>>);
 procedure ListViewUpdateEmptyMessage(lv: TListView; sMessage: string = '');
 procedure ListBoxUpdateEmptyMessage(lb: TListBox; sMessageIfEmpty: string);
 procedure ControlUpdateEmptyMessage(c: TControl; sMessage: string = '');
+procedure CenterControl(c: TControl);
+procedure Control_DestroyChildren(c: TFMXobject);
+function Control_GetWidth(c: TFMXObject): single;
+function Control_GetHeight(c: TFMXObject): single;
 
+function Control_IterateChildren(c: TFMXObject; p: TChildIterator): boolean;
 
 
 type
@@ -314,6 +321,90 @@ begin
     end;
   end else begin
     raise ECritical.create('no TLabel found as child of '+lv.Name);
+  end;
+end;
+
+procedure CenterControl(c: TControl);
+var
+  w,h,pw,ph: single;
+begin
+  if c = nil then
+    exit;
+  if c.parent = nil then
+    exit;
+  w := c.width;
+  h := c.height;
+  if c.parent is Tcontrol then begin
+    pw := (c.parent as Tcontrol).width;
+    ph := (c.parent as TControl).height;
+  end else
+  if c.parent is TForm then begin
+    pw := (c.parent as TForm).width;
+    ph := (c.parent as TForm).height;
+  end else
+    exit;
+
+  c.Position.x := (pw / 2)-(w / 2);
+  c.position.y := (ph / 2) - (h / 2);
+
+end;
+
+procedure Control_DestroyChildren(c: TFMXobject);
+var
+  cc: TFMXobject;
+begin
+  while c.ChildrenCount > 0 do begin
+    cc := c.Children[c.ChildrenCount-1];
+    cc.parent := nil;
+{$IFDEF MSWINDOWS}
+    cc.free;
+{$ELSE}
+    cc.DisposeOf;
+{$ENDIF}
+    cc := nil;
+
+  end;
+
+end;
+function Control_GetWidth(c: TFMXObject): single;
+begin
+  if c = nil then
+    exit(0);
+  if c is TControl then
+    exit(TControl(c).width);
+
+  if c is TForm then
+    exit(TForm(c).Width);
+
+  exit(0);
+end;
+
+function Control_GetHeight(c: TFMXObject): single;
+begin
+  if c = nil then
+    exit(0);
+  if c is TControl then
+    exit(TControl(c).Height);
+
+  if c is TForm then
+    exit(TForm(c).Height);
+
+  exit(0);
+end;
+
+function Control_IterateChildren(c: TFMXObject; p: TChildIterator): boolean;
+var
+  stop: boolean;
+begin
+  result := true;
+  stop := false;
+  for var t:= 0 to c.childrencount-1 do begin
+    var cc := c.children[t];
+    p(cc, stop);
+    if stop then
+      exit(false);
+    Control_IterateChildren(cc,p);
+
   end;
 end;
 

@@ -1,0 +1,14 @@
+inherited frmMockMobile: TfrmMockMobile
+  Caption = 'Application'
+  ClientHeight = 555
+  ClientWidth = 445
+  Position = Designed
+  DesignerMasterStyle = 0
+  object PanelParent: TPanel
+    Align = Client
+    Size.Width = 445.000000000000000000
+    Size.Height = 555.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+  end
+end

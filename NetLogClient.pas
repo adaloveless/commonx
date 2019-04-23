@@ -9,9 +9,9 @@ uses
 const
   LOG_PAYLOAD_START = 4;
 {$IFDEF MSWINDOWS}
-  LOG_PACKET_LIMIT = 40000;
+  LOG_PACKET_LIMIT = 4000;//40000;
 {$ELSE}
-  LOG_PACKET_LIMIT = 255;
+  LOG_PACKET_LIMIT = 400;
 {$ENDIF}
   SEND_AHEAD_INC = 0.01;
 type
@@ -37,6 +37,8 @@ type
     nlc: TNetLogClient;
     bytes: TIdBytes;
     ABinding: TPeerInfo;
+    destructor Destroy;override;
+    constructor create;override;
   end;
 
 
@@ -74,6 +76,7 @@ type
     sendahead: single;
     queue: TSimpleQueue;
     queueout: TSimpleQueue;
+    Destroying: boolean;
     procedure DoUDPRead(AThread: TIdUDPListenerThread; const XData: TIdBytes; ABinding: TIdSocketHandle);override;
     procedure DoUDPRead_Sync(XData: TIdBytes; ABinding: TPeerInfo);
     procedure SendLogs;
@@ -88,9 +91,11 @@ type
     procedure HookIntoLog;
     procedure UnhookFromLog;
   public
-
     Connected: boolean;
+    NoMoreLogs: boolean;
     constructor Create;
+    procedure BeforeDestruction;override;
+
     destructor Destroy;override;
     property LogHost: string read FLogHost write SetLogHost;
     property LogPort: word read FLogPort write SetLogPort;
@@ -125,6 +130,9 @@ uses
 
 procedure TNetLogClient.AddLog(s: string);
 begin
+  if NoMoreLogs then
+    exit;
+
   ecs(lckIn);
   try
     setlength(FIncomingLogs, Length(FIncomingLogs)+1);
@@ -137,6 +145,13 @@ begin
     lcs(lckin);
   end;
 
+end;
+
+procedure TNetLogClient.BeforeDestruction;
+begin
+  Destroying := true;
+  NoMoreLogs := true;
+  inherited;
 end;
 
 procedure TNetLogClient.CheckForLogServer;
@@ -258,12 +273,20 @@ end;
 
 destructor TNetLogClient.Destroy;
 begin
+  Debug.ConsoleLog('Destroying NetLogClient');
+  Connected := false;
   thr.stop;
   thr.waitfor;
-  queue.Stop;
-  queueout.stop;
+  queue.BeginStop;
+  queueout.Beginstop;
+  queue.endStop;
+  queueout.Endstop;
   queue.WaitForFinish;
   queueout.WaitForFinish;
+  queueout.DropPending;
+  queue.DropPending;
+
+  TPM.NoNeedthread(queueout);
   TPM.NoNeedthread(queue);
   TPM.NoNeedthread(thr);
   thr := nil;
@@ -273,6 +296,7 @@ begin
   inherited;
 end;
 
+
 procedure Tnetlogclient.DoUDPRead(AThread: TIdUDPListenerThread;
   const XData: TIdBytes; ABinding: TIdSocketHandle);
 var
@@ -280,6 +304,9 @@ var
   dba: TIdBytes;
 begin
   inherited;
+  if noMOreLogs then
+    exit;
+
   if queue.estimated_queue_size > 4 then begin
 //    Debug.ConsoleLog('queue too full ! ' +queue.estimated_queue_size.tostring);
 //    exit;
@@ -306,6 +333,9 @@ var
   h: TLogPacketHeader;
 begin
   inherited;
+  if noMOreLogs then
+    exit;
+
   ecs(lck);
   try
     if length(xData) < sizeof(h) then
@@ -339,6 +369,8 @@ end;
 
 procedure TNetLogClient.DoWerk;
 begin
+  if NoMoreLogs then
+    exit;
   try
     Lock;
     try
@@ -435,13 +467,17 @@ procedure TNetLogClient.QueueSend(peerip: string; peerport: word;
 var
   qi: Tqi_UDPOut;
 begin
-  qi := Tqi_UDPOut.create;
-  qi.autodestroy := true;
-  qi.nlc := self;
-  qi.bytes := XData;
-  qi.ABinding.PeerIP := peerip;
-  qi.ABinding.PeerPort := peerport;
-  queueout.AddItem(qi);
+  if NoMoreLogs then
+    exit;
+  if not Destroying then begin
+    qi := Tqi_UDPOut.create;
+    qi.autodestroy := true;
+    qi.nlc := self;
+    qi.bytes := XData;
+    qi.ABinding.PeerIP := peerip;
+    qi.ABinding.PeerPort := peerport;
+    queueout.AddItem(qi);
+  end;
 
 end;
 
@@ -495,6 +531,7 @@ var
   sPacket: ansistring;
   sent: ni;
   lastp: ni;
+  sRemain: string;
 begin
   if length(FPendingLogs) = 0 then
     exit;
@@ -508,11 +545,14 @@ begin
   lastp := 0;
   sent := 0;
   while t <= high(FPendingLogs) do begin
+    if NoMoreLogs then exit;
     while p<= high(FPendingLogs) do begin
+      if NoMoreLogs then exit;
       if gettimesince(FPendingLogs[p].resendtime) > greaterof(bestAckTime,20) then begin
         sLine := #27+(FPendingLogs[p].id).tostring+','+extractfilename(dllname)+','+FPendingLogs[p].log;
         if (p = t) and (length(sLine)>(LOG_PACKET_LIMIT-4)) then begin
           sline := zcopy(sLine, 0, (LOG_PACKET_LIMIT-4));
+
         end else begin
           if length(sLIne) + length(sPacket) > LOG_PACKET_LIMIT then begin
             inc(p);
@@ -608,10 +648,25 @@ begin
 end;
 
 { Tqi_UDPOut }
+var
+  x: ni = 0;
+
+constructor Tqi_UDPOut.create;
+begin
+  inherited;
+  Debug.ConsoleLog('create '+self.ClassName+' @'+inttohex(integer(pointer(self)),1));
+end;
+
+destructor Tqi_UDPOut.Destroy;
+begin
+  Debug.ConsoleLog('destroy '+self.ClassName+' @'+inttohex(integer(pointer(self)),1));
+  inherited;
+end;
 
 procedure Tqi_UDPOut.DoExecute;
 begin
   inherited;
+  Debug.ConsoleLog('execute '+self.ClassName+' @'+inttohex(integer(pointer(self)),1));
   nlc.SendBuffer(ABinding.PeerIP, ABinding.PeerPort, Bytes);
 end;
 

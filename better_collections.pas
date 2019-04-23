@@ -21,6 +21,8 @@ type
 {$ELSE}
   TBetterList<T: class> = class(TList<T>)
 {$ENDIF}
+  private
+    function GetLast: T;
   public
     constructor Create;
     function Has(obj: T): boolean;
@@ -28,6 +30,7 @@ type
     procedure Replace(old, nu: T);
     procedure BetterRemove(obj: T);
     procedure AddList(list: TBetterList<T>);
+    property Last: T read GetLast;
   end;
 
   TBetterStack<T: class> = class(TStack<T>)
@@ -144,6 +147,11 @@ end;
 constructor TBetterList<T>.Create;
 begin
   inherited;
+end;
+
+function TBetterList<T>.GetLast: T;
+begin
+  result := self[self.count-1];
 end;
 
 function TBetterList<T>.Has(obj: T): boolean;

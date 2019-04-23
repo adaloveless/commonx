@@ -151,6 +151,11 @@ begin
   Janitor.Detach;
   TPM.NoNeedthread(Janitor);
   FJanitor := nil;
+  while (lstDeadCaches2.count > 0)
+  or (lstCaches.count > 0)
+  or (lstDecommisionedCaches.count > 0)
+  do
+    ExpireCaches;
   lstDeadCaches2.free;
   lstCaches.free;
   lstDecommisionedCaches.free;

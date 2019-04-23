@@ -36,6 +36,13 @@ begin
 end;
 procedure TDataObjectCacheJanitor.Detach;
 begin
+  if Started then begin
+    Stop;
+    WaitFor;
+  end;
+
+
+
   if detached then exit;
 
   if assigned(FCacheManager) then

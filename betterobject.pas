@@ -55,6 +55,7 @@ type
     fDetached: boolean;
     detachbegan, detachended: boolean;
     procedure SetFreeWithReferences(const Value: boolean);
+    function GetIsDead: boolean;
   protected
 {$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
     FRefSect: TCLXCriticalSection;
@@ -94,6 +95,7 @@ type
     function GetObjectDebug: string;
     function ToHolder<T: class>(): IHolder<T>;
     procedure FreeByInterface;
+    property IsDead: boolean read GetIsDead;
 
   end;
 
@@ -254,6 +256,11 @@ begin
   FreeAtRef := 1;
 end;
 
+function TBetterObject.GetIsDead: boolean;
+begin
+  result := FDead = $DEAD;
+end;
+
 function TBetterObject.GetObjectDebug: string;
 begin
   result := classname+'@'+inttostr(ni(pointer(self)));
@@ -298,6 +305,8 @@ begin
   FFreeWithReferences := Value;
 
 end;
+
+
 
 function TBetterObject.ToHolder<T>: IHolder<T>;
 begin

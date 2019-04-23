@@ -2736,7 +2736,7 @@ begin
     exit(strtoint64(s));
 end;
 
-function RAndomOrder(iItems: ni): TDynInt64Array;
+function RandomOrder(iItems: ni): TDynInt64Array;
 var
   t: ni;
   a,b,c: int64;
