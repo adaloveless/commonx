@@ -52,6 +52,7 @@ type
     FWaitSignal: TSignal;
     tmUSerMarker: ticker;
     onFinish_Anon: TQueueItemFinishedProc;
+    cancelled: boolean;
     constructor Create;override;
     procedure Init;override;
     procedure Detach;override;
@@ -111,6 +112,7 @@ type
     function CollectIncoming(bForce: boolean): boolean;
     function GetHold: boolean;
     procedure SetHold(const Value: boolean);
+    procedure CheckWorkingItems;inline;
   protected
     FIterations: nativeint;
     FIncomingItems, FWorkingItems{$IFDEF TRACK_COMPLETED}, FCompletedItems{$ENDIF}: TDirectlyLInkedList_Shared<TQueueItem>;
@@ -163,6 +165,7 @@ type
     property OnNotEmpty: TNotifyEvent read FOnNotEmpty write FOnNotEmpty;
     function QueueFull: boolean;
     property EnableItemDebug: boolean read FEnableItemDebug write FEnableItemDEbug;
+    procedure DropPending;
   end;
 
   TFakeCommand = class(TQueueItem)
@@ -230,6 +233,11 @@ var
   tm, tm2: ticker;
   sleeptime: ticker;
 begin
+
+{$IFDEF EXTRA_CHECKS}
+  if itm.IsDead then
+    raise Ecritical.create('trying to add a dead '+itm.classname);
+{$ENDIF}
 
 
   //Debug.Log(self, 'Add item to '+self.NameEx);
@@ -371,6 +379,17 @@ begin
   end;
 end;
 
+procedure TAbstractSimpleQueue.CheckWorkingItems;
+begin
+{$IFDEF EXTRA_CHECKS}
+  for var t:= 0 to FWorkingItems.count-1 do begin
+    var w := FWorkingItems[t];
+    if w.IsDead then
+      raise Ecritical.create('working items contains DEAD '+w.classname);
+  end;
+{$ENDIF}
+end;
+
 function TAbstractSimpleQueue.CollectIncoming(bForce: boolean): boolean;
 var
   t,i: ni;
@@ -409,9 +428,11 @@ begin
     result := FIncomingItems.TryLock;
     if result then begin
       FWorkingItems.AddList(FIncomingItems);
+      checkworkingItems;
       FincomingItems.Clear;
       FIncomingItems.Unlock;
       result := FWorkingItems.Count>0;
+
     end;
 {$ENDIF}
   end;
@@ -477,6 +498,40 @@ begin
   idleTick := GetTicker;
 end;
 
+procedure TAbstractSimpleQueue.DropPending;
+var
+  i: TQueueItem;
+  x: ni;
+begin
+  Lock;
+  try
+    while FIncomingItems.count > 0 do begin
+      x := FincomingItems.Count-1;
+      i := FIncomingItems[x];
+      i.cancelled := true;
+      FIncomingItems.Delete(x);
+      if i.AutoDestroy then begin
+        i.free;
+        i := nil;
+      end;
+    end;
+
+    while FWorkingItems.count > 0 do begin
+      x := FWorkingItems.Count-1;
+      i := FWorkingItems[x];
+      i.cancelled := true;
+      FWorkingItems.Delete(x);
+      if i.AutoDestroy then begin
+        i.free;
+        i := nil;
+      end;
+    end;
+
+  finally
+    Unlock;
+  end;
+end;
+
 procedure TAbstractSimpleQueue.ExecuteUnlock;
 begin
   LCS(FExecuteLock);
@@ -489,7 +544,9 @@ end;
 
 function TAbstractSimpleQueue.GetNextItem: TQueueItem;
 begin
+  //todo 1: this can be WAY more efficient
   repeat
+    CheckWorkingItems;
     result := FWorkingItems[0];//default, override me if you want to implement custom ordering
     if result = nil then
       FWorkingItems.delete(0);
@@ -618,18 +675,23 @@ begin
 
         //executing the item will signal it
 //        status := itm.ClassName;
-        if itm.Queue = nil then
+{$IFDEF EXTRA_CHECKS}
+        if itm.IsDead then
+          raise ECritical.create('trying to execute a '+itm.classname+' that is DEAD');
+        if itm.Queue = nil then begin
           raise Ecritical.Create('catastrophe! '+itm.classname+' Has no queue!'+self.Status );
-{$IFDEF QUeUE_DEBUG}Debug.Log('execute queue item '+itm.GetObjectDebug);{$ENDIF}
+        end;
+{$ENDIF}
+{$IFDEF QUEUE_DEBUG}Debug.Log('execute queue item '+itm.GetObjectDebug);{$ENDIF}
         if EnableItemDebug then
           Debug.Log(self.name+' Execute Item: '+itm.DebugString);
+        FWorkingItems.Remove(itm);
         itm.Execute;
         if enableitemdebug then
           Debug.Log(self.name+' Finish Item: '+itm.DebugString);
-        FWorkingItems.Remove(itm);
+
         dec(estimated_queue_size);
         UpdateStatus(false);
-
 
       finally
         ExecuteUnlock;
@@ -735,6 +797,9 @@ end;
 procedure TAbstractSimpleQueue.WaitForFinish;
 begin
   inherited;
+//  DropPending;
+  while not IsFinished do
+    sleep(1);
   ProcessAllSynchronously;
 end;
 
@@ -754,8 +819,10 @@ end;
 
 destructor TQueueItem.Destroy;
 begin
-  if not wasexecuted then
-    raise Ecritical.create(getobjectdebug+' was never executed!');
+  if not cancelled then begin
+    if not wasexecuted then
+      raise Ecritical.create(getobjectdebug+' was never executed!');
+  end;
   FWaitSignal.free;
   inherited;
 end;
