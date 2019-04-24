@@ -298,20 +298,24 @@ begin
 {$ENDIF}
 end;
 
-procedure ofinal;
+procedure oprefinal;
 begin
 {$IFNDEF DISABLE_RING_STATS}
   rsMon.Stop;
-  rsMon.WaitForFinish;
 {$ELSE}
   if not rsMon.Started then begin
     rsMon.Start;
-    sleep(4000);
+//    sleep(4000);
     rsMon.Stop;
     rsMon.WaitForFinish;
     Debug.Log(rsmon.nameex+' finished with signal state '+rsMon.getsignaldebug);
   end;
 {$ENDIF}
+end;
+
+procedure ofinal;
+begin
+  rsMon.WaitForFinish;
   TPM.NoNeedthread(rsMon);
 
   rsMon := nil;
@@ -405,7 +409,7 @@ end;
 
 initialization
 
-orderlyinit.init.RegisterProcs('RingStats', oinit, nil, ofinal, oLATEfinal,  'ManagedThread');
+orderlyinit.init.RegisterProcs('RingStats', oinit, oPreFinal, ofinal, oLATEfinal,  'ManagedThread');
 
 finalization
 
