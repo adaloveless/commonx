@@ -58,7 +58,7 @@ function RunProgram(var hands: TConsoleHandles;
 procedure WaitForEXE(var hProcessInfo: TBetterProcessInformation; bCloseHandle: boolean = true);
 function TryWaitForEXE(var hProcessInfo: TBetterProcessInformation): boolean;
 procedure ForgetExe(var hProcessInformation: TBetterProcessInformation);
-procedure RunAndCapture(DosApp: string; cc: TConsoleCaptureHook);
+procedure RunAndCapture(DosApp: string; cc: TConsoleCaptureHook; Timeout: ticker);
 
 type
   TWAitForExeThread = class(TProcessorThread)
@@ -138,6 +138,8 @@ type
 
   end;
 
+procedure KillTaskByName(sImageName: string);
+procedure KillTaskByID(pid: ni);
 
 
 var
@@ -153,6 +155,16 @@ implementation
 {$IFDEF MSWINDOWS}
 uses
   stringx, systemx;
+
+procedure KillTaskByName(sImageName: string);
+begin
+  exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'" /T /F', DLLPath, true, false);
+end;
+
+procedure KillTaskByID(pid: ni);
+begin
+  exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+pid.tostring+'" /T /F', DLLPath, true, false);
+end;
 
 procedure CreateElevateScripts(sDir: ansistring);
 var
@@ -631,9 +643,13 @@ begin
   inherited;
 
   if WaitForSingleObject(self.hProcessInfo.pi.hProcess, 1) = WAIT_TIMEOUT then begin
-    processlater;
-    exit;
+    KillTaskByID(self.hProcessInfo.pi.dwProcessId);
+    if WaitForSingleObject(self.hProcessInfo.pi.hProcess, 1) = WAIT_TIMEOUT then begin
+      processlater;
+      exit;
+    end;
   end;
+
   sDynamicFile := 'dynamic_' + inttostr(hCreatingThread) + '.bat';
   sDynamicFile := slash(GetTempPAth) + sDynamicFile;
   CloseExe(hProcessInfo);
@@ -958,11 +974,11 @@ end;
 
 procedure Tcmd_RunExe.UseConsoleRedirExecutionPath;
 begin
-  RunAndCapture(self.FProg+' '+self.FParams, cc);
+  RunAndCapture(self.FProg+' '+self.FParams, cc, Timeout);
 end;
 
 
-procedure RunAndCapture(DosApp: string; cc: TConsoleCaptureHook);
+procedure RunAndCapture(DosApp: string; cc: TConsoleCaptureHook; Timeout: ticker);
 // todo merge these capabilities into the other EXE thing
 const
   ReadBufferSize = 1048576; // 1 MB Buffer
@@ -1068,10 +1084,12 @@ begin
         TotalBytesRead := TotalBytesRead + BytesRead;
 
 
-      until (Apprunning <> WAIT_TIMEOUT) or (gettimesince(tmLAstAct)>300000);
+      until (Apprunning <> WAIT_TIMEOUT) or (gettimesince(tmLAstAct)>TimeOut);
 
-      if (gettimesince(tmLAstAct)>300000) then
+      if (gettimesince(tmLAstAct)>TimeOut) then begin
         Debug.Log('cancel because hang/no output');
+        KillTaskByID(processinfo.pi.dwProcessID);
+      end;
 
       // OemToChar(Buffer,Buffer);
 //      cc(ccProgress, strpas(buffer));

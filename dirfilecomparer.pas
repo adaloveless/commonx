@@ -47,6 +47,17 @@ type
     property f2: string read FF2 write SEtF2;
     property Result: TCompareFileResults read FResult write SetResult;
     procedure DoExecute; override;
+  end;
+
+
+  TCmd_CompareFile_AnyInFolder = class(TCommand)
+  protected
+    procedure DoExecute; override;
+  public
+    File1: string;
+    Dir2: string;
+    out_Matched: string;
+
 
   end;
 
@@ -57,6 +68,9 @@ function CompareFiles_Slow(f1,f2: string): TCompareFileResults;
 
 
 implementation
+
+uses
+  dir, dirfile;
 
 function CompareFiles_Slow(f1,f2: string): TCompareFileResults;
 begin
@@ -303,6 +317,48 @@ end;
 procedure Tcmd_CompareFiles_Slow.SetResult(const Value: TCompareFileResults);
 begin
   FResult := Value;
+end;
+
+{ TCmd_CompareFile_AnyInFolder }
+
+procedure TCmd_CompareFile_AnyInFolder.DoExecute;
+var
+  dir: TDirectory;
+  fil: TFileInformation;
+  t: ni;
+  cl: TCommandList<Tcmd_CompareFiles_Slow>;
+  cf: Tcmd_CompareFiles_Slow;
+begin
+  inherited;
+  dir := Tdirectory.create(dir2, '*.*', 0,0, false, false);
+  cl := TCommandList<Tcmd_CompareFiles_Slow>.create;
+  try
+    while dir.getnextfile(fil) do begin
+      cf := Tcmd_CompareFiles_Slow.create;
+      cf.f1 := File1;
+      cf.f2 := fil.fullname;
+      cf.Start;
+      cl.add(cf);
+    end;
+
+    while cl.count > 0 do begin
+      cf := cl[0];
+      cf.RaiseExceptions := false;
+      cf.WaitFor;
+      cl.delete(0);
+
+
+      if cf.Result.ContentsIdentical then begin
+        self.out_Matched := cf.f1;
+      end;
+      cf.Free;
+
+    end;
+  finally
+    cl.free;
+  end;
+
+
 end;
 
 end.

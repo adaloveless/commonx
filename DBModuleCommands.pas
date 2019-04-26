@@ -3,7 +3,7 @@ unit DBModuleCommands;
 interface
 
 uses
-  MYSQLRDTPDataModule, stringx, systemx, typex, commandprocessor, sysutils, dir, classes, storageenginetypes, debug, betterobject, variants;
+  RDTP_DatabaseConnection, stringx, systemx, typex, commandprocessor, sysutils, dir, classes, storageenginetypes, debug, betterobject, variants;
 
 type
   TDBCommand = class(TCommand)
@@ -12,7 +12,7 @@ type
     FDBcontext: string;
   protected
     slWriteLog, slProblemLog: TStringlist;
-    dbm: TMYSQLRDTPDataModule;
+    dbm: TBestDatabaseDM;
     procedure DoExecute; override;
     procedure DBExecute;virtual;abstract;
   public
@@ -57,7 +57,7 @@ begin
   inherited;
   slWriteLog := TStringlist.create;
   slProblemLog := TStringlist.create;
-  dbm := TMYSQLRDTPDataModule.create;
+  dbm := TBestDatabaseDM.create;
   try
 //  dbm.Context := 'simple;db=mmm_crimp_hd;host=crimp-hd.mysql.database.azure.com;user=crimpdbadmin@crimp-hd;pass=B@W@v}B5y^ue';
     dbm.Context := DBContext;

@@ -4,7 +4,7 @@ unit AbstractRDTPDataModule;
 interface
 
 uses
-  orderlyinit, tickcount, managedthread, SysUtils, Classes, DB, SqlExpr, better_Sockets, systemx,inifiles, commandprocessor,
+  typex, orderlyinit, tickcount, managedthread, SysUtils, Classes, SqlExpr, better_Sockets, systemx,inifiles, commandprocessor,
   sockfix, classfactory, sharedobject, betterobject, windows, stringx, genericRDTPClient, storageenginetypes, helpers.list;
 
 const
@@ -12,6 +12,7 @@ const
   MAX_DM_AGE = 300000;
 
 type
+  TSQLChannel = (sqlRead, sqlWrite, sqlSystem);
   TAbstractRDTPDataModule = class;
   TRDTPDataModuleClass= class of TAbstractRDTPDataModule;
   TRDTPExecutionTHread = class;
@@ -90,19 +91,17 @@ type
     function GetNextID(iKey: integer): int64;virtual;
     function SetNextID(iKey: integer; iValue: int64): int64;virtual;
 
-    //RETURNS CUSTOMSQLDATASET
-    function ExecuteSystem(sQuery: string; out dataset: TCustomSQLDataset ): integer;overload;virtual;
-    function ExecuteWrite(sQuery: string; out dataset: TCustomSQLDataset ): integer;overload;virtual;
-    procedure ExecuteRead(sQuery: string; out dataset: TCustomSQLDataset );overload;virtual;
+
+
 
     //RETURNS TSEROWSET
     function ExecuteSystem(sQuery: string; out dataset: TSERowSet): integer;overload;virtual;
     function ExecuteWrite(sQuery: string; out dataset: TSERowSet): integer;overload;virtual;
-    procedure ExecuteRead(sQuery: string; out dataset: TSERowSet);overload;virtual;
+    procedure ExecuteRead(sQuery: string; out dataset: TSERowSet);virtual;
 
     //RETURNS NOTHING
     function ExecuteSystem(sQuery: string): integer;overload;virtual;
-    function ExecuteWrite(sQuery: string): integer;overload;
+    function ExecuteWrite(sQuery: string): integer;overload;virtual;
     function ExecuteWriteRaw(sQuery: string): integer;overload;virtual;
     procedure ExecuteWriteBehind(sQuery: string);
 
@@ -252,84 +251,25 @@ end;
 
 
 procedure TAbstractRDTPDataModule.ExecuteRead(sQuery: string;
-  out dataset: TCustomSQLDataset);
-begin
-  CheckContextSet;
-//TODO -cunimplemented: unimplemented block
-end;
-
-procedure TAbstractRDTPDataModule.ExecuteRead(sQuery: string;
   out dataset: TSERowSet);
-var
-  ds: TCustomSQLDataSet;
 begin
-  ds := nil;
-  try
-    ExecuteRead(sQuery, ds);
-    dataset := TSERowSet.create;
-    dataset.CopyFromDAtaSet(ds);
-  finally
-    ds.free;
-  end;
+  raise ECritical.create('not implemented');
 end;
 
 
 
 function TAbstractRDTPDataModule.ExecuteSystem(sQuery: string;
-  out dataset: TCustomSQLDataset): integer;
+  out dataset: TSERowSet): integer;
 begin
-
-//TODO -cunimplemented: unimplemented block
-  raise Exception.create('not implemented');
+  raise ECritical.create('not implemented');
 end;
 
 function TAbstractRDTPDataModule.ExecuteSystem(sQuery: string): integer;
 begin
-  CheckContextSet;
-  WaitForcommands;
-//TODO -cunimplemented: unimplemented block
-  result := 0;
+  raise ECritical.create('not implemented');
 end;
 
 
-function TAbstractRDTPDataModule.ExecuteSystem(sQuery: string;
-  out dataset: TSERowSet): integer;
-var
-  ds: TCustomSQLDataSet;
-begin
-  ds := nil;
-  try
-    result := ExecuteSystem(sQuery, ds);
-    dataset := TSERowSet.create;
-    dataset.CopyFromDAtaSet(ds);
-  finally
-    ds.free;
-  end;
-end;
-
-function TAbstractRDTPDataModule.ExecuteWrite(sQuery: string;
-  out dataset: TSERowSet): integer;
-var
-  ds: TCustomSQLDataSet;
-begin
-  ds := nil;
-  try
-    result := ExecuteWrite(sQuery, ds);
-    dataset := TSERowSet.create;
-    dataset.CopyFromDAtaSet(ds);
-  finally
-    ds.free;
-  end;
-end;
-
-
-function TAbstractRDTPDataModule.ExecuteWrite(sQuery: string;
-  out dataset: TCustomSQLDataset): integer;
-begin
-
-//TODO -cunimplemented: unimplemented block
-  raise Exception.create('not implemented');
-end;
 
 function TAbstractRDTPDataModule.ExecuteWrite(sQuery: string): integer;
 begin
@@ -337,6 +277,12 @@ begin
   result := ExecuteWriteRaw(sQuery);
 end;
 
+
+function TAbstractRDTPDataModule.ExecuteWrite(sQuery: string;
+  out dataset: TSERowSet): integer;
+begin
+
+end;
 
 procedure TAbstractRDTPDataModule.ExecuteWriteBehind(sQuery: string);
 var
@@ -359,6 +305,8 @@ begin
   raise Exception.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
+
+
 
 function TAbstractRDTPDataModule.GetContext: string;
 begin

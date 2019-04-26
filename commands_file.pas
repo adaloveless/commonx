@@ -85,6 +85,10 @@ function CopyProgressRoutine(
     lpData: pointer): DWORD;stdcall;
 
 
+function UniquefileName(sFileName: string): string;
+
+
+
 
 
 
@@ -96,6 +100,19 @@ implementation
 
 uses
   sysutils;
+
+function UniquefileName(sFileName: string): string;
+var
+  sSuffix: string;
+  t: ni;
+begin
+  t := 0;
+  result := sFileName;
+  while FileExists(result) do begin
+    inc(t);
+    result := slash(extractfilepath(sFileName))+extractfilenamepart(sFileName)+inttostr(t)+extractfileext(sFilename);
+  end;
+end;
 
 procedure TFileCopyCommand.AssignStats;
 begin

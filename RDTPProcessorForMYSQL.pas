@@ -1,9 +1,10 @@
 unit RDTPProcessorForMYSQL;
 
+
 interface
 
 uses
-  better_sockets, windows, RDTPProcessor, packet, abstractrdtpdatamodule, MYSQLRDTPDataModule;
+  better_sockets, windows, RDTPProcessor, packet, abstractrdtpdatamodule, RDTP_DatabaseConnection;
 
 
 type
@@ -11,8 +12,6 @@ type
   protected
     function GetData: TAbstractRDTPDataModule; override;
   public
-
-
 
   end;
 
@@ -26,7 +25,7 @@ begin
 
 //  datapool.product := TMYSQLRDTPDataModule;
   CheckGetContext;
-  datapool.factory.RegisterClass(self.ClassType, TMYSQLRDTPDataModule);
+  datapool.factory.RegisterClass(self.ClassType, TBestDatabaseDM);
   result := inherited GetData;
 end;
 

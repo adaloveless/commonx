@@ -305,10 +305,9 @@ begin
 {$ELSE}
   if not rsMon.Started then begin
     rsMon.Start;
+
 //    sleep(4000);
-    rsMon.Stop;
-    rsMon.WaitForFinish;
-    Debug.Log(rsmon.nameex+' finished with signal state '+rsMon.getsignaldebug);
+    rsMon.BeginStop;
   end;
 {$ENDIF}
 end;
@@ -316,6 +315,8 @@ end;
 procedure ofinal;
 begin
   rsMon.WaitForFinish;
+  Debug.Log(rsmon.nameex+' finished with signal state '+rsMon.getsignaldebug);
+
   TPM.NoNeedthread(rsMon);
 
   rsMon := nil;

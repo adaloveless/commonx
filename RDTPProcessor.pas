@@ -6,7 +6,7 @@ interface
 {xLIMIT_PROGRESS} //puts a limit on how often progress packets are sent
 uses
   helpers_winsock,
-  numbers, simpleabstractconnection, packet, systemx, typex, sysutils, windows, classes, sharedobject, SQLExpr, stringx, AbstractRDTPDataModule, DtNetConst, simplewinsock, exceptions, commandprocessor,orderlyinit, helpers.list;
+  numbers, simpleabstractconnection, packet, systemx, typex, sysutils, windows, classes, sharedobject, SQLExpr, stringx, AbstractRDTPDataModule, DtNetConst, simplewinsock, exceptions, commandprocessor,orderlyinit, helpers.list, storageenginetypes;
 {x$DEFINE ALLOW_WRITEBEHIND}//<<---currently has problems when connection is terminated
 
 const
@@ -364,7 +364,7 @@ procedure TRDTPProcessor.ExpireSessions;
 var
   temp: TAbstractRDTPDataModule;
   sl: TstringList;
-  ds: TCustomSQLDataset;
+  ds: TSERowSet;
   sTable, sLeft, sRight: string;
   iAffected: integer;
 begin
@@ -378,7 +378,7 @@ begin
       try
         ds.first;
         while not ds.eof do begin
-          sl.Add(ds.fieldlist[0].AsString);
+          sl.Add(ds.CurRecordFieldsByIdx[0]);
           ds.next;
         end;
       finally
@@ -392,7 +392,7 @@ begin
 
         if ds <> nil then
         while not ds.eof do begin
-          sTable := ds.fieldlist[0].AsString;
+          sTable := ds.CurRecordFieldsByIdx[0];
           if SplitStringNoCase(sTable, 'Temp', sLeft, sRight) then begin
             if SplitString(sRight, '_', sLeft, sRight) then begin
               if sl.IndexOf(sLeft) < 0 then begin

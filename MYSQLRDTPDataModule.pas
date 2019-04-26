@@ -1,5 +1,6 @@
 unit MYSQLRDTPDataModule;
 {$IFNDEF VER160}{$INLINE AUTO}{$ENDIF}
+{$DEFINE STD_DRV}
 {x$DEFINE ALT_DRV}
 {x$DEFINE SAVE_MEMORY}
 interface
@@ -12,27 +13,23 @@ uses
 const
 //  DLL='dbexpmysql.2006.dll';
   DRIVERNAME='MySQL';//<---WORKING 32-bit
+{$IFDEF STD_DRV}
+  DLL='dbxmys.dll';
+  LIB='libmysql.dll';
+  FUNC='getSQLDriverMYSQL';
+{$ELSE}
 {$IFNDEF ALT_DRV}
   DLL='dbxopenmysql50.dll';//<---WORKING 32-bit
   LIB='libmysql.50.dll';//<---WORKING 32-bit
   FUNC='getSQLDriverMYSQL';//<---WORKING 32-bit
 {$ENDIF}
-//  DLL='dbx4mysql.dll';
-
-//last known good-->
-//  DLL='dbexpmysql.50.dll';
-//  LIB='libmysql.50.dll';
-
-//  DLL='dbexpmysql.50.dll';
-//  LIB='libmysql.50.dll';
-// FUNC='getSQLDriverMYSQL';
-
 //OLAP -- <--- DELPHI 2006 GOOD
 //*****************************
 {$IFDEF ALT_DRV}
   DLL='dbx4mysql.dll';
   LIB='libmysql.50.dll';
   FUNC='getSQLDriverDBXL4Mysql';
+{$ENDIF}
 {$ENDIF}
 
 
@@ -94,10 +91,17 @@ type
 
 
 
-    function ExecuteSystem(sQuery: string; out dataset: TCustomSQLDataset): integer;override;
-    procedure ExecuteRead(sQuery: string; out dataset: TCustomSQLDataset);override;
+    //RETURNS CUSTOMSQLDATASET
+    function ExecuteSystem_Platform(sQuery: string; out dataset: TCustomSQLDataset ): integer;
+    function ExecuteWrite_Platform(sQuery: string; out dataset: TCustomSQLDataset ): integer;
+    procedure ExecuteRead_Platform(sQuery: string; out dataset: TCustomSQLDataset );
+
+    //returns TSEROWSET
+    function ExecuteSystem(sQuery: string; out dataset: TSERowSet): integer;override;
+    function ExecuteWrite(sQuery: string; out dataset: TSERowSet): integer;override;
+    procedure ExecuteRead(sQuery: string; out dataset: TSERowSet);override;
     function ExecuteSystem(sQuery: string): integer;override;
-    function ExecuteWriteRaw(sQuery: string): integer;override;
+    function ExecuteWriteRaw(sQuery: string): integer;overload;
 
     procedure ConnectRead;override;
     procedure ConnectWrite;override;
@@ -891,7 +895,31 @@ begin
 end;
 
 
-procedure TMYSQLRDTPDataModule.ExecuteRead(sQuery: string; out dataset: TCustomSQLDataset);
+procedure TMYSQLRDTPDataModule.ExecuteRead(sQuery: string;
+  out dataset: TSERowSet);
+var
+  ds: TCUSTOMSQLDataset;
+begin
+  ds := nil;
+  WaitForCommands;
+  ConnectWrite;
+{$IFDEF SAVE_MEMORY}
+  LockConsole;
+{$ENDIF}
+  try
+    ExecuteRead_PLatform(sQuery, ds);
+    dataset := TSERowSet.create;
+    dataset.CopyFromDAtaSet(ds);
+
+
+  finally
+{$IFDEF SAVE_MEMORY}
+    UnlockConsole;
+{$ENDIF}
+  end;
+end;
+
+procedure TMYSQLRDTPDataModule.ExecuteRead_Platform(sQuery: string; out dataset: TCustomSQLDataset);
 begin
   inherited;
 
@@ -926,7 +954,7 @@ begin
 end;
 
 
-function TMYSQLRDTPDataModule.ExecuteSystem(sQuery: string;
+function TMYSQLRDTPDataModule.ExecuteSystem_Platform(sQuery: string;
   out dataset: TCustomSQLDataset): integer;
 begin
   WaitForCommands;
@@ -1118,21 +1146,47 @@ begin
 
 end;
 
-{ TSQLExecutionThread }
+function TMYSQLRDTPDataModule.ExecuteWrite_Platform(sQuery: string;
+  out dataset: TCustomSQLDataset): integer;
+begin
 
+end;
 
+function TMYSQLRDTPDataModule.ExecuteSystem(sQuery: string;
+  out dataset: TSERowSet): integer;
+var
+  ds: TCustomSQLDataSet;
+begin
+  ds := nil;
+  try
+    result := ExecuteSystem_Platform(sQuery, ds);
+    dataset := TSERowSet.create;
+    dataset.CopyFromDAtaSet(ds);
+  finally
+    ds.free;
+  end;
+end;
 
-
-
-
-
-
-{ TSQLExecutionThread }
-
+function TMYSQLRDTPDataModule.ExecuteWrite(sQuery: string; out dataset: TSERowSet): integer;
+var
+  ds: TCustomSQLDataSet;
+begin
+  ds := nil;
+  try
+    result := ExecuteWrite_Platform(sQuery, ds);
+    dataset := TSERowSet.create;
+    dataset.CopyFromDAtaSet(ds);
+  finally
+    ds.free;
+  end;
+end;
 
 
 
 initialization
 //TDBXConnectionFActory.GetConnectionFactory.GetDriverNames(itms);
+
+Debug.ConsoleLog('LIB='+lib);
+Debug.ConsoleLog('DBX='+DLL);
 
 end.
