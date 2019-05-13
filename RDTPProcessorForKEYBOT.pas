@@ -21,7 +21,6 @@ type
 
 implementation
 
-{ TRDTPProcessorForMYSQL }
 
 function TRDTPProcessorForKEYBOT.GetData: TAbstractRDTPDataModule;
 begin

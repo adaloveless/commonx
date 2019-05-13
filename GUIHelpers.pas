@@ -42,8 +42,8 @@ procedure JSONToControl(json: TJSON; c: TControl);
 procedure ControlToJSON(json: TJSON; c: TControl);
 procedure JSONtoListView(json: TJSON; lv: TListView);
 procedure JSONtoListViewColumns(json: TJSON; lv: TListView);
-procedure JSONtoTreeView(json: TJSON; tv: TTreeView);
-procedure JSONtoTreeNode(json: TJSON; tv: TTreeView; tn: TTreeNode);
+procedure JSONtoTreeView(json: TJSON; tv: TTreeView; expandlevels: ni = -1);
+procedure JSONtoTreeNode(json: TJSON; tv: TTreeView; tn: TTreeNode; expandlevels: ni = -1);
 procedure FlexiMathtoTreeView(fm: TFlexiMath; tv: TTreeView);
 function ListView_SelectByCaption(lv: TListView; scap: string): boolean;
 function Control_IsShowing(c: TControl): boolean;
@@ -76,6 +76,9 @@ procedure LoadState(c: TEdit; sDefault: string);
 
 
 implementation
+
+uses
+  jsontreeview;
 
 function SumDBGridColumnWidths(dbg: TDBGrid): integer;
 var
@@ -550,8 +553,9 @@ begin
   end;
 end;
 
-procedure JSONtoTreeNode(json: TJSON; tv: TTreeView; tn: TTreeNode);
+procedure JSONtoTreeNode(json: TJSON; tv: TTreeView; tn: TTreeNode; expandlevels: ni = -1);
 var
+  a: string;
   t: ni;
   idx, iValueindex, iMemberIndex, iArrayBaseIndex: ni;
   s, s1,s2: string;
@@ -559,7 +563,16 @@ var
   nRootSub: TTreenode;
   nArraySub: TTreeNode;
   nMemberSub: TTreeNode;
+  isJTV: boolean;
 begin
+  isJTV := tv is TJSONTreeView;
+  if isJTV then
+    TJsonTreeView(tv).AddNodeRelation(json.Addr, tn);
+
+  if expandlevels = 0 then
+    exit;
+
+
   idx := 0;
   iMemberIndex := -1;
   iArrayBaseIndex := -1;
@@ -577,6 +590,9 @@ begin
     iValueIndex := idx;
     inc(idx);
   end;
+
+  if expandlevels > 0 then
+    dec(expandlevels);
 
   //ROOTS of tree are handled differently than branches
   if tn = nil then begin
@@ -598,7 +614,7 @@ begin
       s := '{';
       for t:= 0 to json.nCount-1 do begin
         nRootSub.item[t].Text := json.named.keys[t]+': ';
-        JSONToTreenode(json[json.named.keys[t]], tv, nRootSub.item[t]);
+        JSONToTreenode(json[json.named.keys[t]], tv, nRootSub.item[t], expandlevels);
         if t> 0 then
           s := s + ',';
         s := s + nRootSub.item[t].text;
@@ -606,6 +622,8 @@ begin
       s := s + '}';
 
       nRootSub.text := s;
+      if isJTV then
+        TJsonTreeView(tv).AddNodeRelation(json.named.ItemsByIndex[t].Addr, nRootSub);
 
 
     end;
@@ -614,9 +632,16 @@ begin
       nArraySub := TreeView_FindRoot(tv, iArrayBaseIndex);
       nArraySub.Text := '['+inttostr(json.icount)+']';
       SyncTreeNode(tv, nArraySub, json.icount);
+      if isJTV then begin
+        TJsonTreeView(tv).AddNodeRelation('', nArraySub);
+      end;
       for t:= 0 to json.iCount-1 do begin
         nArraySub.item[t].text := '['+inttostr(t)+']: ';
-        JSONToTreenode(json[t], tv, nArraySub.item[t]);
+        if isJTV then begin
+          a := json[t].Addr;
+          TJsonTreeView(tv).AddNodeRelation(a, nArraySub.item[t]);
+        end;
+        JSONToTreenode(json[t], tv, nArraySub.item[t], expandlevels);
       end;
     end;
 
@@ -628,7 +653,8 @@ begin
       tn.Text := s1+': ';
     end;
 
-    tn.Text := tn.Text+vartostr(json.value);
+    if not VArIsNull(json.value) then
+      tn.Text := tn.Text+vartostr(json.value);
     tn.Data := json;
 
 //    Debug.Log(tn, 'subtext: '+tn.text);
@@ -646,16 +672,18 @@ begin
       SyncTreeNode(tv, nMemberSub, json.ncount);
       for t:= 0 to json.nCount-1 do begin
         nMemberSub.item[t].Text := json.named.keys[t]+': ';
-        JSONToTreenode(json[json.named.keys[t]], tv, nMemberSub.item[t]);
+        JSONToTreenode(json[json.named.keys[t]], tv, nMemberSub.item[t], expandlevels);
       end;
     end;
     if iArrayBaseIndex >=0 then begin
       SyncTreeNode(tv, tn, json.icount);
-      tn.Text := tn.Text+'['+inttostr(json.icount)+']';
+      tn.Text := '['+inttostr(json.icount)+']';
 {$IFDEF SUB_ARRAYS}
       nSub := tn.Item[iArrayBaseIndex];
       nsub.Text := '['+inttostr(json.icount)+']';
-      SyncTreeNode(tv, nsub, json.icount);
+
+      SyncTreeNode(tv, nsub, json.icount, expandlevels);
+
 {$ELSE}
       nArraySub := tn;
       SyncTreeNode(tv, nArraySub, json.icount);
@@ -663,19 +691,19 @@ begin
 
       for t:= 0 to json.iCount-1 do begin
         nArraySub.item[t].text := '['+inttostr(t)+']: ';
-        JSONToTreenode(json[t], tv, nArraySub.item[t]);
+        JSONToTreenode(json[t], tv, nArraySub.item[t], expandlevels);
       end;
     end;
 
   end;
 end;
 
-procedure JSONtoTreeView(json: TJSON; tv: TTreeView);
+procedure JSONtoTreeView(json: TJSON; tv: TTreeView; expandlevels: ni = -1);
 var
   rn: TTreeNode;
   t: ni;
 begin
-  JSONtoTreeNode(json, tv, nil);
+  JSONtoTreeNode(json, tv, nil, expandlevels);
 
 
 

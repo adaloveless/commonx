@@ -11,7 +11,7 @@ interface
 
 
 uses
-  PacketHelpers_VirtualDisk, VirtualDisk_Advanced, VirtualDisk_Status, Classes, VirtualDiskParams, typex, packet, systemx, betterobject, genericRDTPClient, sysutils, windows, variants, rdtpprocessor, rdtpprocessorformysql, packethelpers, debug, RDTPServerList;
+  PacketHelpers_VirtualDisk, VirtualDisk_Advanced, VirtualDisk_Status, Classes, VirtualDiskParams, typex, packet, systemx, betterobject, genericRDTPClient, sysutils, windows, variants, rdtpprocessor, packethelpers, debug, RDTPServerList;
 
 
 

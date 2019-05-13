@@ -4,10 +4,12 @@ unit better_collections;
 {$IFDEF MSWINDOWS}
 {$DEFINE USE_FAST_LIST}
 {$ENDIF}
+{$DEFINE DEBUG_ITEMS}
 interface
 
+
 uses
-  generics.collections.fixed, systemx, sharedobject, typex, betterobject, classes,
+  debug, generics.collections.fixed, systemx, sharedobject, typex, betterobject, classes,
 
 
 {$IFDEF USE_FAST_LIST}
@@ -76,12 +78,15 @@ type
   strict private
     FItems: TStringlist;
   private
+
     FTakeOwnership: boolean;
+    FDuplicates: TDuplicates;
     function GetItem(sKey: string): T_OBJECTTYPE;
     procedure SetItem(sKey: string; const Value: T_OBJECTTYPE);
     function GetKey(idx: ni): string;
     function GetItemByIndex(idx: ni): T_ObjectType;
   public
+    enable_debug: boolean;
     procedure Add(sKey: string; obj: T_OBJECTTYPE);
     procedure Clear;
     procedure Delete(i: ni);
@@ -97,13 +102,19 @@ type
     property ItemsByIndex[idx: ni]: T_ObjectType read GetItemByIndex;
     property Keys[idx: ni]: string read GetKey;
     property TakeOwnership: boolean read FTakeOwnership write FTakeOwnership;
+    property Duplicates: TDuplicates read FDuplicates write FDuplicates;
 
-
+    procedure DebugItems;
 
   end;
 
 
 implementation
+
+{$IFDEF DEBUG_ITEMS}
+uses
+  JSONHelpers;
+{$ENDIF}
 
 { TBetterList<T> }
 
@@ -351,7 +362,20 @@ end;
 
 procedure TStringObjectList<T_OBJECTTYPE>.Add(sKey: string; obj: T_OBJECTTYPE);
 begin
+  case duplicates of
+    Tduplicates.dupIgnore: begin
+
+      if FItems.IndexOf(sKey) >=0 then begin
+        self[sKey] := obj;
+        exit;
+      end;
+    end;
+    Tduplicates.dupError: begin
+      raise ECritical.create(classname+' already has item with key '+sKey);
+    end;
+  end;
   FItems.AddObject(sKey, obj);
+  DebugItems();
 end;
 
 procedure TStringObjectList<T_OBJECTTYPE>.Clear;
@@ -374,6 +398,25 @@ constructor TStringObjectList<T_OBJECTTYPE>.Create;
 begin
   inherited;
   FItems := TStringList.create;
+
+end;
+
+procedure TStringObjectList<T_OBJECTTYPE>.DebugItems;
+
+begin
+{$IFDEF DEBUG_ITEMS}
+  if not enable_debug then
+    exit;
+  var t: ni;
+  Debug.Log('----------------');
+  for t:= 0 to FItems.count-1 do begin
+    if FItems.Objects[t] is TJSON then begin
+      Debug.Log(FItems[t]+' = '+TJSON(FItems.Objects[t]).tojson);
+    end;
+
+  end;
+{$ENDIF}
+
 
 end;
 
@@ -449,9 +492,9 @@ end;
 procedure TStringObjectList<T_OBJECTTYPE>.SetItem(sKey: string;
   const Value: T_OBJECTTYPE);
 begin
-
-  raise ECritical.create('unimplemented');
-//TODO -cunimplemented: unimplemented block
+  var i := Fitems.IndexOf(sKey);
+  if i >= 0 then
+    FItems.Objects[i] := value;
 end;
 
 end.

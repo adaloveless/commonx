@@ -19,7 +19,6 @@ type
 
 implementation
 
-{ TRDTPProcessorForMYSQL }
 
 function TRDTPProcessorForLegacyMYSQL.GetData: TAbstractRDTPDataModule;
 begin

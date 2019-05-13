@@ -1,4 +1,5 @@
 unit dmx_objects;
+{$DEFINE DISABLE_VUE}
 // [ ]add stage to universe
 // [ ]load stage data loads all light data
 // [ ]include vector graphics for stage setup
@@ -3750,10 +3751,20 @@ end;
 procedure TDMXvue.WriteDMXData;
 begin
   inherited;
+{$IFDEF DISABLE_VUE}
   FLocalChannelData[6] := FSpeed;
   if MacroMode = 255 then
     FLocalChannelData[0] := MacroMode;
   FLocalChannelData[5] := 0;
+{$ELSE}
+  FLocalChannelData[0] := 0;
+  FLocalChannelData[1] := 0;
+  FLocalChannelData[2] := 0;
+  FLocalChannelData[3] := 0;
+  FLocalChannelData[4] := 0;
+  FLocalChannelData[5] := 0;
+{$ENDIF}
+
 end;
 
 { TDMXElan }

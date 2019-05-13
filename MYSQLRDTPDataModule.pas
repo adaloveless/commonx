@@ -1150,6 +1150,8 @@ function TMYSQLRDTPDataModule.ExecuteWrite_Platform(sQuery: string;
   out dataset: TCustomSQLDataset): integer;
 begin
 
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
 end;
 
 function TMYSQLRDTPDataModule.ExecuteSystem(sQuery: string;

@@ -253,7 +253,7 @@ end;
 procedure TAbstractRDTPDataModule.ExecuteRead(sQuery: string;
   out dataset: TSERowSet);
 begin
-  raise ECritical.create('not implemented');
+  raise ECritical.create('not implemented. implement ExecuteRead in '+self.classname);
 end;
 
 
@@ -281,7 +281,9 @@ end;
 function TAbstractRDTPDataModule.ExecuteWrite(sQuery: string;
   out dataset: TSERowSet): integer;
 begin
-
+  result := 0;
+  WaitForCommands;
+  //
 end;
 
 procedure TAbstractRDTPDataModule.ExecuteWriteBehind(sQuery: string);

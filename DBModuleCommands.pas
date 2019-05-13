@@ -29,6 +29,7 @@ type
     function ReadQueryH(sQuery: string): IHolder<TSERowSet>;
     function FunctionQuery(sQuery: string; default: ni): ni;overload;
     function FunctionQuery(sQuery: string; default: string): string;overload;
+    function GetCreateTable(sTable: string): string;overload;
     procedure Problem(sProblem: string);
   end;
 
@@ -91,6 +92,22 @@ begin
       exit('')
     else
       exit(rows.o.values[0,0]);
+  end;
+end;
+
+function TDBCommand.GetCreateTable(sTable: string): string;
+begin
+  var rows := ReadQueryH('show create table '+sTable);
+  if rows.o.RowCount < 1 then
+    exit('')
+  else begin
+    if rows.o.FieldCount < 2 then
+      exit('');
+
+    if varisnull(rows.o.values[1,0]) then
+      exit('')
+    else
+      exit(rows.o.values[1,0]);
   end;
 end;
 

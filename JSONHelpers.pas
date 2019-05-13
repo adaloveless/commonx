@@ -40,6 +40,8 @@ type
     function GetJSON: string;
     procedure SetJSONInput(const Value: string);
     function GetAddr: string;
+    function GetEnableDebug: boolean;
+    procedure SetEnableDebug(const Value: boolean);
 
     property nValuesByIndex[idx: ni]: TJSON read GetnValuesByIndex;
     property nNamesByIndex[idx: ni]: string read GetnNamesByIndex;
@@ -67,6 +69,7 @@ type
     function FindSubKey(subkey: string; value: string): TJSON;
     function IsExpired: boolean;
     function AddIndexed(v_will_copy: TJSON): ni;overload;
+    procedure ReAddr(newaddr: string);
     function AddIndexed(stringPrimitive: string): ni;overload;
     function AddIndexed(): TJSON;overload;
     function GetNode(sAddr: string): TJSON;
@@ -90,6 +93,7 @@ type
     property CalcAddr: string read GetAddr;
     property Addr: string read FAddr write FAddr;
     property json: string read getJSON write FromString;
+    property enable_debug: boolean read GetEnableDebug write SetEnableDebug;
   end;
 
   IJSONHolder = IHolder<TJSON>;
@@ -194,6 +198,8 @@ begin
   setlength(self.indexed, result+1);
 //  self.i[high(indexed)] := TJSON.create;
   self.indexed[high(indexed)] := StrToJson(v_will_copy.ToJSON);
+  indexed[high(indexed)].ReAddr(self.Addr+'['+inttostr(high(indexed))+']');
+
 
 end;
 
@@ -204,11 +210,13 @@ begin
   j := TJSON.create;
   try
     j.fromString(floatprecision(value, 12));
+    self.named.Add(key, j);
+    j.ReAddr(self.Addr+'.'+key);
   except
     j.free;
     raise;
   end;
-  self.named.Add(key, j);
+
 end;
 
 procedure TJSON.AddMemberPrimitiveVariant(const Key: string;
@@ -219,6 +227,7 @@ begin
   j := TJSON.create;
   j.FromString(VArtoJSONStorage(v));
   self.named.Add(key, j);
+  j.ReAddr(self.Addr+'.'+key);
 end;
 
 procedure TJSON.AppendFieldsFrom(o: TJSON);
@@ -271,6 +280,7 @@ var
 begin
   for t:= index to high(indexed)-1 do begin
     indexed[t] := indexed[t+1];
+    indexed[t].ReAddr(self.Addr+'['+inttostr(t)+']');
   end;
   SetLength(indexed, length(indexed)-1);
 
@@ -289,6 +299,9 @@ end;
 
 
 function TJSON.FindNodeEx(sAddr: string; nParent: TJSON): TFindNodeRes;
+var
+  t: ni;
+  n: TJSON;
 begin
   result.init;
   //check self as node first
@@ -298,10 +311,10 @@ begin
     result.FoundAddr := result.node.Addr;
   end;
   if not result.success then begin
-    var t: ni;
+
     for t:= 0 to named.Count-1 do
     begin
-      var n := named.ItemsByIndex[t];
+      n := named.ItemsByIndex[t];
       if n.HasNode(sAddr) then begin
         result.success := true;
         result.node := n.GetNode(sAddr);
@@ -312,10 +325,9 @@ begin
   end;
 
   if not result.success then begin
-    var t: ni;
     for t:= 0 to high(indexed) do
     begin
-      var n := indexed[t];
+      n := indexed[t];
       if n.HasNode(sAddr) then begin
         result.success := true;
         result.node := n.GetNode(sAddr);
@@ -352,12 +364,17 @@ function TJSON.GetAddr: string;
 begin
   result := name;
   if parent <> nil then
-    result := parent.addr+'.'+result;
+    result := parent.calcaddr+'.'+result;
 end;
 
 function TJSON.GetAsString: string;
 begin
   result := vartostrex(value);
+end;
+
+function TJSON.GetEnableDebug: boolean;
+begin
+  result := named.enable_debug;
 end;
 
 function TJSON.GetiCount: ni;
@@ -427,7 +444,7 @@ end;
 
 function TJSON.GetNode(sAddr: string): TJSON;
 var
-  s1,s2: string;
+  s1,s2,s3,s4: string;
   i: nativeint;
   s: string;
 begin
@@ -436,9 +453,20 @@ begin
       exit(self);
 
     splitString(sAddr, '.', s1,s2);
+    splitstring(sAddr, '[', s3,s4);
+    if (length(s3) < length(s1)) and (length(s3) > 0) then begin
+      s1 := s3;
+      s2 := '['+s4;
+
+    end;
     if s1 = '' then
       exit(self);
 
+    if zcopy(s1,0,1) = '[' then begin
+      if zcopy(s1,length(s1)-1, 1) <> ']' then
+        raise ECritical.create('Expecting '']''');
+      s1 := zcopy(s1, 1,length(s1)-2);
+    end;
     if IsInteger(s1) then begin
       i := strtoint64(s1);
       exit(self[i].GetNode(s2));
@@ -773,9 +801,27 @@ begin
 
 end;
 
+procedure TJSON.ReAddr(newaddr: string);
+var
+  t: ni;
+begin
+  Addr := newaddr;
+  for t := 0 to high(indexed) do begin
+    indexed[t].ReAddr(newaddr+'['+inttostr(t)+']');
+  end;
+  for t := 0 to named.Count-1 do begin
+    named.ItemsByIndex[t].ReAddr(newaddr+'.'+Self.nNamesByIndex[t]);
+  end;
+end;
+
 procedure TJSON.SetAsString(const Val : string);
 begin
   value := stringtotypedvariant(val);
+end;
+
+procedure TJSON.SetEnableDebug(const Value: boolean);
+begin
+  named.enable_debug := true;
 end;
 
 procedure TJSON.SetJSONInput(const Value: string);
@@ -879,6 +925,7 @@ begin
   j := TJSON.create;
   j.fromString(value);
   self.named.Add(key, j);
+  j.ReAddr(self.Addr+'.'+key);
 
 end;
 
@@ -890,7 +937,12 @@ begin
   j := TJSON.create;
   j.value := value;
   self.named.Add(key, j);
+  j.ReAddr(self.Addr+'.'+key);
+  if self.named[key].tojson <> j.tojson then
+    raise ECritical.create('WTF!');
 
+  if self.named[key].value <> j.value then
+    raise ECritical.create('WTF!');
 end;
 
 
@@ -908,6 +960,7 @@ begin
   setlength(self.indexed, len+1);
   result := TJSON.create;
   self.indexed[high(indexed)] := result;
+  result.ReAddr(self.Addr+'['+inttostr(high(indexed))+']');
 
 end;
 
@@ -922,6 +975,7 @@ function TJSON.AddMember(const Key: string): TJSON;
 begin
   result := TJSON.create;
   self.named.Add(key, result);
+  result.ReAddr(self.Addr+'.'+key);
 end;
 
 { TJSONCache }
@@ -937,7 +991,7 @@ begin
   rec.j := jh;
   rec.created := getticker;
   rec.doctype := docType;
-  fList.add(rec);
+  FList.add(rec);
 
 end;
 

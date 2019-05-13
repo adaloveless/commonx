@@ -26,11 +26,11 @@ implementation
 function GetPlatFormAudioDevice(bStartAutomatically: boolean = true): TAbstractSoundDevice;
 begin
 {$IFDEF MSWINDOWS}
-  result := TSoundDevice_PortAudio.Create(nil, nil);
+  result := TPM.Needthread<TSoundDevice_PortAudio>(nil);
   if bSTartAutomatically then
     result.Start;
 {$ELSE}
-  result := TSoundDevice_Android.Create(nil, nil);
+  result := TPM.Needthread<TSoundDevice_Android>(nil);
   if bSTartAutomatically then
     result.Start;
 {$ENDIF}

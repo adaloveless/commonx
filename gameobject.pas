@@ -86,7 +86,7 @@ type
   TRenderItem = class(TBTreeItem)
   public
     [unsafe] go: TGameObject;
-    function Compare(const ACompareTo:TBTreeItem):ni; override;
+    function Compare(const [unsafe] ACompareTo:TBTreeItem):ni; override;
   end;
 
   TLIghtItem = class(TBTreeItem)
@@ -96,7 +96,7 @@ type
     vec: TVector4;
     calced: boolean;
     calcres: single;
-    function Compare(const ACompareTo:TBTreeItem):ni; override;
+    function Compare(const [unsafe] ACompareTo:TBTreeItem):ni; override;
     procedure CheckCalced;
   end;
 //
@@ -2107,7 +2107,7 @@ begin
   locallights := TLightList.create;
   try
     if ll <> nil then begin
-      ll.Iterate(procedure(ABTreeItem:TBTreeItem)
+      ll.Iterate(procedure([unsafe] ABTreeItem:TBTreeItem)
         begin
           locallights.AddGameObject(TLightItem(AbtreeItem).light, self);
         end
@@ -2115,7 +2115,7 @@ begin
     end;
 
     game.TargetCanvas.ResetLights;
-    locallights.Iterate(procedure(ABTreeItem:TBTreeItem; var NeedStop: boolean)
+    locallights.Iterate(procedure([unsafe] ABTreeItem:TBTreeItem; var NeedStop: boolean)
       begin
         pxll := TLightItem(AbtreeItem).light.ToPXLLIght;
         pxll.pos := cam.WorldVectorToCameraSpace(TLightItem(AbtreeItem).light.TransForm.WorldPosition);
@@ -2682,7 +2682,7 @@ begin
       m := PerspectiveFOVXMtx4(2, 1/1.6, 0.1, 10000);
       game.TargetCanvas.ProjMatrix := m;
 
-      rl.Iterate(procedure(ABTreeItem:TBTreeItem)
+      rl.Iterate(procedure([unsafe] ABTreeItem:TBTreeItem)
         begin
 
           TRenderItem(ABTreeItem).go.Draw(cam,ll);
@@ -2887,7 +2887,7 @@ begin
   calced := true;
 end;
 
-function TLIghtItem.Compare(const ACompareTo: TBTreeItem): ni;
+function TLIghtItem.Compare(const [unsafe] ACompareTo: TBTreeItem): ni;
 var
   this,that: single;
 begin
@@ -2917,7 +2917,7 @@ begin
 end;
 
 
-procedure TLightList.AddGameObject(goLight: TLight; obj: TGameObject);
+procedure TLightList.AddGameObject([unsafe] goLight: TLight; [unsafe] obj: TGameObject);
 var
   itm: TLightItem;
 begin
@@ -3077,7 +3077,7 @@ begin
 //  Debug.Log('Draw portrait');
 end;
 
-function TRenderItem.Compare(const ACompareTo: TBTreeItem): ni;
+function TRenderItem.Compare(const [unsafe] ACompareTo: TBTreeItem): ni;
 var
   [unsafe] go: TGameObject;
   dfc: vectorfloat;

@@ -654,19 +654,19 @@ var
 constructor Tqi_UDPOut.create;
 begin
   inherited;
-  Debug.ConsoleLog('create '+self.ClassName+' @'+inttohex(integer(pointer(self)),1));
+//  Debug.ConsoleLog('create '+self.ClassName+' @'+inttohex(integer(pointer(self)),1));
 end;
 
 destructor Tqi_UDPOut.Destroy;
 begin
-  Debug.ConsoleLog('destroy '+self.ClassName+' @'+inttohex(integer(pointer(self)),1));
+//  Debug.ConsoleLog('destroy '+self.ClassName+' @'+inttohex(integer(pointer(self)),1));
   inherited;
 end;
 
 procedure Tqi_UDPOut.DoExecute;
 begin
   inherited;
-  Debug.ConsoleLog('execute '+self.ClassName+' @'+inttohex(integer(pointer(self)),1));
+//  Debug.ConsoleLog('execute '+self.ClassName+' @'+inttohex(integer(pointer(self)),1));
   nlc.SendBuffer(ABinding.PeerIP, ABinding.PeerPort, Bytes);
 end;
 

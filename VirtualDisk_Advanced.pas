@@ -3552,8 +3552,12 @@ var
 begin
 //  rs1.BeginTime;
 //  rs4.begintime;
-  if raidlock > 0 then
-    raise ECritical.create('shit is fucked up by '+inttostr(raidlock));
+  try
+  if raidlock > 0 then begin
+    result := TRaidFetchStatus.rsCritical;
+    exit;
+//    raise ECritical.create('shit is fucked up by '+inttostr(raidlock));
+  end;
 
   raidlock := getcurrentThreadid;
 
@@ -3672,9 +3676,40 @@ begin
   //  if rs7.NewBAtch then
   //    Debug.Log('Prefetch Setup Time: '+rs7.DebugTiming);
 
-
-
     rc.REset;
+
+    //make a quick pass.. are all of our addresses sane?
+    for t := 0 to localvat.FileCount - 1 do
+    begin
+      ps := nil;
+      // get the file-physical record
+      fp := @localvat.FPs[t];
+      // determine the block-size for the RAID pieces
+      bs := rc.GetPieceSizePAdded(localvat.FileCount);
+      a[t] := nil;
+      // get the payload stream
+      if fp.FileID < 0 then begin
+        rc.invalid_piece := t;
+        rc.invalid_determined := true;
+      end else
+      begin
+        ps := PayloadStreams[fp.FileID];
+        // determine the byte offset in the big-block
+        byte_off := bs * so;
+        if (byte_off < 0) then begin
+          rc.invalid_piece := t;
+          rc.invalid_determined := true;
+        end else begin
+           // seek to [start of the physical location] + [byte offset post raid]
+            seekpos := fp.PhysicalAddr_afterheader + byte_off;
+            if (seekpos < 0) or (seekpos >= ps.size) then begin
+              rc.invalid_piece := t;
+              rc.invalid_determined := true;
+            end;
+        end;
+      end;
+    end;
+
     for t := 0 to localvat.FileCount - 1 do
     begin
       ps := nil;
@@ -3960,6 +3995,9 @@ begin
     if raidlock <> GetCurrentThreadID then
       raise ECRitical.create('more shit is fucked up');
     raidlock := 0;
+  end;
+  except
+    result := rsCritical;
   end;
 
 end;
@@ -9604,6 +9642,12 @@ begin
       end;
 
       addr := self.FPs[u].PhysicalAddr_AfterHeader;
+      if addr < 0 then begin
+        zl.Log(myidx,'Self check reports that Physical Start is < 0 file for entry '+inttohex(myidx, 1));
+        self.FPs[u].FileID := -1;
+        result := scrSomeBad;
+        continue;//^^^^^^^^^^^^^^
+      end;
       if addr >= ps.Size then begin
         zl.Log(myidx,'Self check reports that Physical Start is beyond the end of the file for entry '+inttohex(myidx, 1));
         self.FPs[u].FileID := -1;

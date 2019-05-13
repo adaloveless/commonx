@@ -103,6 +103,7 @@ type
     FIsWindowed: boolean;
     function GetConsoleOutput: string;
     procedure SetIswindowed(const Value: boolean);
+    procedure SetProg(const Value: string);
   protected
     hands: TConsoleHandles;
     LAstACtiveTime: cardinal;
@@ -118,7 +119,7 @@ type
     procedure Preprocess;override;
     procedure DoExecute; override;
     property ExeHandle: THandle read FExehandle write FExehandle;
-    property Prog: string read FProg write FProg;
+    property Prog: string read FProg write SetProg;
     property Params: string read FParams write FParams;
     property WorkingDir: string read FWorkingdir write FWorkingdir;
     property Hide: boolean read FHide write FHide;
@@ -767,6 +768,7 @@ begin
     batchwrap := true;
   FDebugFile := 'dynamic_' + inttostr(GetCurrentThreadID()) + '.debug';
 
+
   if PipeDebug then
     Params := Params + '>' + FDebugFile;
 
@@ -970,6 +972,12 @@ begin
   ConsoleRedirect := false;
   CaptureConsoleoutput := false;
   batchwrap := false;
+end;
+
+procedure Tcmd_RunExe.SetProg(const Value: string);
+begin
+  FProg := Value;
+  Name := ExtractFileName(FProg+' '+FParams);
 end;
 
 procedure Tcmd_RunExe.UseConsoleRedirExecutionPath;

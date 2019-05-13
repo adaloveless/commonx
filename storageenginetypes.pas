@@ -1,4 +1,4 @@
-unit StorageEngineTypes;
+﻿unit StorageEngineTypes;
 //DONE: add mysql type for text
 //DONE 1: Allow TSERowset to navigate using alternate indexes
 //TODO 2: Return boolleans from database properly
@@ -105,6 +105,7 @@ type
 
     function IndexOfField(sName: string): integer;
     function FindValue(sField: string; vValue: variant): ni;
+    function SeekValue(sField: string; vValue: variant): boolean;
     function Lookup(sLookupField: string; vLookupValue: variant; sReturnField: string): variant;
 
 
@@ -1250,7 +1251,7 @@ begin
     case vartype(cell) of
       varString, varUString, varOleStr:
       begin
-        cell := StringReplace(cell, '™', '�', [rfReplaceAll]);
+        cell := StringReplace(cell, 'â„¢', '™', [rfReplaceAll]);
       end;
     end;
     if t > 0 then
@@ -1279,6 +1280,8 @@ end;
 procedure TSERowSet.SavetoCSV(f: string);
 begin
 
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
 end;
 
 procedure TSERowSet.SavetoFile(f: string; bAppend: boolean);
@@ -1318,6 +1321,37 @@ begin
     fs.free;
     fs := nil;
   end;
+end;
+
+function TSERowSet.SeekValue(sField: string; vValue: variant): boolean;
+//THIS Finds a value and syncs the cursor on the row
+//returns TRUE if found, else false
+var
+  t: ni;
+  f: ni;
+  v: variant;
+begin
+  result := false;
+  f := self.IndexOfField(sField);
+  if f< 0 then
+    raise ECritical.create('Rowset does not have field '+sField);
+
+  for t:= 0 to rowcount-1 do begin
+    v := values[f,t];
+    if varType(v) = varString then begin
+      if comparetext(values[f,t], vValue) = 0 then begin
+        self.Cursor := t;
+        exit(true);
+      end
+    end else begin
+      if Values[f,t] = vValue then begin
+        self.Cursor := t;
+        exit(true);
+      end;
+    end;
+
+  end;
+
 end;
 
 procedure TSERowSet.SetCurRecordFields(sFieldName: string;
@@ -1418,10 +1452,10 @@ begin
     sName := stringreplace(sName, ' ', '_', [rfReplaceAll]);
     sName := stringreplace(sName, '-', '_', [rfReplaceAll]);
     sName := stringreplace(sName, '/', '_', [rfReplaceAll]);
-    result := result + sName+' varchar(255) ';
+    result := result + sName+' varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci';
   end;
 
-  result := result + ');';
+  result := result + ') ;';
 
 
 end;

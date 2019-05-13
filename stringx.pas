@@ -2493,6 +2493,8 @@ var
   iTemp2: nativeint;
   s1,s2: string;
 begin
+  if iDecPlaces > 8 then
+    iDecPlaces := 8;
   iTemp := iDecPlaces;
   iPOw := round(power(10, iTemp));
   rTemp := r*iPow;

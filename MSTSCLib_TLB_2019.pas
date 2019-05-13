@@ -1,4 +1,4 @@
-unit MSTSCLib_TLB;
+unit MSTSCLib_TLB_2019;
 
 // ************************************************************************ //
 // WARNING                                                                    
@@ -971,7 +971,7 @@ type
     function Get_BitmapVirtualCache24BppSize: Integer; safecall;
     procedure Set_PerformanceFlags(pDisableList: Integer); safecall;
     function Get_PerformanceFlags: Integer; safecall;
-    procedure Set_ConnectWithEndpoint(const Param1: OleVariant); safecall;
+    procedure Set_ConnectWithEndpoint(const Param1: POleVariant1); safecall;
     procedure Set_NotifyTSPublicKey(pfNotify: WordBool); safecall;
     function Get_NotifyTSPublicKey: WordBool; safecall;
     property SmoothScroll: Integer read Get_SmoothScroll write Set_SmoothScroll;

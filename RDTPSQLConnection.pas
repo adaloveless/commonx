@@ -10,7 +10,7 @@ interface
 
 
 uses
-  StorageEngineTypes, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions;
+  StorageEngineTypes, RDTPProcessorForMySQL, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions;
 
 
 

@@ -214,7 +214,7 @@ end;
 procedure TShift.waitForShift;
 var
   bCompletE: boolean;
-  dict: TJsonDictionary;
+  dict: TJSON;
   s: string;
 begin
   inherited;
@@ -286,7 +286,7 @@ function TShift.BeginShiftPart(): boolean;
 var
   spost: string;
   sResult: string;
-  dict: TJsonDictionary;
+  dict: TJSON;
   sDep: string;
   sDepCoin: string;
   toSend: double;

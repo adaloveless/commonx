@@ -235,6 +235,7 @@ end;
 
 procedure TfrmBGThreadWatcher.Timer1Timer(Sender: TObject);
 var
+  pic: TPicture;
   thr: TCommandProcessorMainthread;
   s: string;
   slTemp: TStringlist;
@@ -291,7 +292,6 @@ begin
                 end;
 
                 if (thrDraw <> nil) and thrDraw.started and thrDraw.IsIdle then begin
-                  var pic: TPicture;
                   pic := dbr.picture;
                   thrDraw.db.AssignToPicture(pic);
                   if assigned(thr.cp) then begin

@@ -257,7 +257,7 @@ end;
 
 function TETHAccount.GetBalance: double;
 var
-  dict: TJSONdictionary;
+  dict: TJSON;
   res: THTTPResults;
   s: string;
 begin

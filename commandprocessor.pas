@@ -440,7 +440,7 @@ type
     function GetStep: NativeInt; override;
     function GetAutoSpin: boolean; override;
     function GEtSpin: boolean; override;
-    function GetName: string;override;
+    function GetName: string;override;//this probably doesn't work anymore because Tthreadinfo is a separatething
   public
     lastUsed: ticker;
     procedure InitFromPool;override;
@@ -4236,6 +4236,7 @@ begin
       try
         CmdPerfLog('CommandProcessorChildThread Execute.Command.Execute');
         try
+          self.Name := command.Name;
           Command.Execute;
         finally
           //cOmmand.IsComplete := true;

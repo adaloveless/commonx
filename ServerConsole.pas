@@ -11,6 +11,8 @@ uses
   newserversocketthread, advancedgraphics, easyimage, pngimage, formbase,
   consolelock, System.ImageList, colorblending;
 
+const
+  poop = CM_CURSORCHANGED;
 type
   TfrmWebConsole = class(TfrmBase)
     txtActiveConnections: TLabel;

@@ -410,6 +410,8 @@ end;
 procedure TSpreadTree.SetCodeJSON(s: string);
 begin
 
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
 end;
 
 

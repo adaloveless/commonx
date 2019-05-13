@@ -11,6 +11,8 @@ function GetVariantStorage(v: variant): string;
 function gvs(v: variant): string;inline;
 
 
+
+
 implementation
 
 function gss(vT: integer; v: variant): string;inline;
@@ -21,6 +23,9 @@ end;
 function GetStorageString(vT: integer; v: variant): string;
 begin
 
+  if VarIsNull(v) then begin
+    result := 'NULL';
+  end else
   if (vt=varSTring) or (vt=varUString) or (vt=varOleStr) then begin
     result := Quote(SQLEscape(vartostr(v)));
   end else

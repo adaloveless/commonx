@@ -307,6 +307,9 @@ type
     property ParamCount: Integer read GetParamCount;
   end;
 
+
+procedure ClearScreen;
+
 procedure Register;
 
 implementation
@@ -1271,5 +1274,6 @@ procedure TCustomConsole.SetOnPromptKeyPress(
 begin
   FOnPromptKeyPress := Value;
 end;
+
 
 end.

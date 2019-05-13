@@ -746,7 +746,7 @@ begin
   signal(evOutOfPool,true);//special case for when we DON'T use TPM.NeedThread to create threads
   realthread.start;
   if pool = nil then begin
-    raise ECritical.create('deprecated');
+    raise ECritical.create('creating '+classname+' is deprecated when pool is nil');
     signal(evSleeping,true);
     signal(evOutOfPool,false);
   end;
@@ -1392,7 +1392,7 @@ begin
   NoWorkRunInterval := -1;
   PoolLoop := true;
   Signal(evStart,false);
-  Signal(evSleeping, false);
+  //Signal(evSleeping, false);
 
 
 

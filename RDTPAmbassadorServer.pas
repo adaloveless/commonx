@@ -1,4 +1,5 @@
 unit RDTPAmbassadorServer;
+xxx
 {GEN}
 {TYPE SERVER}
 {CLASS TRDTPAmbassadorServer}
@@ -11,7 +12,7 @@ interface
 
 
 uses
-  typex, packet, systemx, betterobject, genericRDTPClient, sysutils, windows, variants, rdtpprocessor, rdtpprocessorformysql, packethelpers, debug, RDTPServerList;
+  typex, packet, systemx, betterobject, genericRDTPClient, sysutils, windows, variants, rdtpprocessor, packethelpers, debug, RDTPServerList;
 
 
 

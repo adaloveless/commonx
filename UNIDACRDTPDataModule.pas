@@ -62,10 +62,9 @@ type
 
     function ExecuteSystem(sQuery: string): integer;override;
     function ExecuteWriteRaw(sQuery: string): integer;override;
-
-    function ExecuteSystem(sQuery: string; out dataset: TSERowSet): integer;overload;virtual;
-    function ExecuteWrite(sQuery: string; out dataset: TSERowSet): integer;overload;virtual;
-    procedure ExecuteRead(sQuery: string; out dataset: TSERowSet);virtual;
+    function ExecuteSystem(sQuery: string; out dataset: TSERowSet): integer;override;
+    function ExecuteWrite(sQuery: string; out dataset: TSERowSet): integer;override;
+    procedure ExecuteRead(sQuery: string; out dataset: TSERowSet);override;
 
     procedure ConnectRead;override;
     procedure ConnectWrite;override;
@@ -641,12 +640,14 @@ function TUniDACRDTPDataModule.ExecuteSystem(sQuery: string;
   out dataset: TSERowSet): integer;
 begin
 
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
 end;
 
 function TUniDACRDTPDataModule.ExecuteSystem_Platform(sQuery: string;
   out dataset: TCustomDADataset): integer;
 begin
-
+  result := 1;
   WaitForCommands;
   ConnectSystem;
 {$IFDEF SAVE_MEMORY}
@@ -825,6 +826,7 @@ function TUniDACRDTPDataModule.ExecuteWrite(sQuery: string;
 var
   ds: TCustomDADataSet;
 begin
+  result := 1;
   dataset := nil;
 
   ExecuteWrite_Platform(sQuery, ds);

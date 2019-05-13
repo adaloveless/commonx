@@ -125,8 +125,8 @@ type
     function Add(const [unsafe] AItem:TUnsafeBTreeItem):boolean;virtual;
     function Remove(const [unsafe] AItem:TBTreeItem; const bDontFree: boolean = false):boolean;inline;
     function RemoveTI(const [unsafe] AItem:TBTreeItem; const bDontFree: boolean = false):boolean;inline;
-    function Search(const [unsafe] AItem:TBTreeItem):boolean; overload;inline;
-    function Search(const [unsafe] AItem:TBTreeItem; var [unsafe] ASearchResult:TBTreeItem):boolean; overload;inline;
+//    function Search(const [unsafe] AItem:TBTreeItem):boolean; overload;inline;
+//    function Search(const [unsafe] AItem:TBTreeItem; var [unsafe] ASearchResult:TBTreeItem):boolean; overload;inline;
     function SlowSearch(const [unsafe] Aitem:TBtreeItem):ni;
     procedure Iterate(const AProcedure:TSimpleIterateProcedure); overload;
     procedure Iterate(AProcedure:TIterateProcedure); overload;
@@ -193,6 +193,8 @@ Begin
         else
         begin // double lr rotation
           p2 := p1.FRightNode;
+          if p2=nil then
+            raise Ecritical.create('p2 is nil!');
           p1.FRightNode := p2.FLeftNode;
           p2.FLeftNode := p1;
           p.FLeftNode := p2.FRightNode;
@@ -733,16 +735,16 @@ begin
 end;
 
 
-function TBTree.Search(const [unsafe] AItem: TBTreeItem): boolean;
-begin
-  Result := SearchItem(AItem, FRoot) <> nil;
-end;
-
-function TBTree.Search(const [unsafe] AItem:TBTreeItem; var [unsafe] ASearchResult:TBTreeItem):boolean;
-begin
-  ASearchResult := SearchItem(AItem, FRoot);
-  Result := ASearchResult <> nil;
-end;
+//function TBTree.Search(const [unsafe] AItem: TBTreeItem): boolean;
+//begin
+//  Result := SearchItem(AItem, FRoot) <> nil;
+//end;
+//
+//function TBTree.Search(const [unsafe] AItem:TBTreeItem; var [unsafe] ASearchResult:TBTreeItem):boolean;
+//begin
+//  ASearchResult := SearchItem(AItem, FRoot);
+//  Result := ASearchResult <> nil;
+//end;
 
 { TBTreeItem }
 

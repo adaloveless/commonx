@@ -18,7 +18,7 @@ unit ProblemDomain_Lambot;
 interface
 
 uses
-  simplemail, tickcount, numbers, classes, debug, sharedobject, ShapeShiftDB, betterobject, storageenginetypes, typex, stringx, systemx, abstractDB, sysutils, consolelock, fft_easy, helpers.stream, MultiBufferMemoryFileStream, rdtpdb, bittrex, jsonhelpers, variants, managedthread, beeper, fiber, commandprocessor, speech, applicationparams, fleximath, commands_system, CommandIcons, orderlyinit, twitter_evil_robot, cryptocompare, rec2json, BackGroundCommandProcessor, enroyd, twitter;
+  simplemail, tickcount, numbers, classes, debug, sharedobject, ShapeShiftDB, betterobject, storageenginetypes, typex, stringx, systemx, abstractDB, sysutils, consolelock, fft_easy, helpers.stream, MultiBufferMemoryFileStream, rdtpdb, bittrex, jsonhelpers, variants, managedthread, beeper, fiber, commandprocessor, speech, applicationparams, fleximath, commands_system, CommandIcons, orderlyinit, twitter_evil_robot, cryptocompare, rec2json, BackGroundCommandProcessor, enroyd, twitter, binance;
 
 const
 CMD_ICON_WATCHER: TCommandIcon = (BitDepth: 32; RDepth:8;GDepth:8;BDepth:8;ADepth:8;Height:32;Width:32;
@@ -279,6 +279,7 @@ type
   public
     ssdb: TShapeShiftDB;
     btx: TBTXclient;
+    bin: TBinanceclient;
     property simulated: boolean read FSimulated write SetSimulated;
     procedure Init;override;
     procedure Detach;override;
@@ -1611,6 +1612,8 @@ begin
   prov.noneed(ssdb);
   btx.free;
   btx := nil;
+  bin.free;
+  bin := nil;
   inherited;
 
 end;
@@ -1625,6 +1628,7 @@ begin
   inherited;
   ssdb := prov.need(false);
   btx := TBTXClient.create;
+  bin := TBinanceClient.create;
 
 end;
 
@@ -2483,7 +2487,7 @@ begin
   Debug.Log(CLRD+'Enroyd='+hEnroydMarkets.o.ToJson);
 
   hEnroydMarkets.o.Iterate_Filter(
-    procedure (recordNode: TJSONDictionary; var bAccept: boolean)
+    procedure (recordNode: TJSON; var bAccept: boolean)
     begin
       bAccept := comparetext(recordNode['Coin'].value,'BTC') = 0;
     end
@@ -2491,7 +2495,7 @@ begin
 
   //determine if it is an inverse market (only applies to TUSD, USDT)
   hEnroydMarkets.o.Iterate_CalculateField('Inverse',
-    procedure (recordNode: TJSONDictionary; newNode: TJSONDictionary)
+    procedure (recordNode: TJSON; newNode: TJSON)
     begin
       if comparetext(recordNode['Coin'].value,'BTC') = 0 then begin
         newNode.value := true;
@@ -2501,7 +2505,7 @@ begin
     end
   );
   hEnroydMarkets.o.Iterate_CalculateField('PriceCoin',
-    procedure (recordNode: TJSONDictionary; newNode: TJSONDictionary)
+    procedure (recordNode: TJSON; newNode: TJSON)
     begin
       if recordNode['Inverse'].value then begin
         newNode.value := 'BTC';
@@ -2512,7 +2516,7 @@ begin
   );
   //calculate market names
   hEnroydMarkets.o.Iterate_CalculateField('BTXMarketName',
-    procedure (recordNode: TJSONDictionary; newNode: TJSONDictionary)
+    procedure (recordNode: TJSON; newNode: TJSON)
     begin
       if comparetext(recordNode['Coin'].value,'BTC') = 0 then begin
         newNode.value := 'BTC-TUSD';

@@ -121,6 +121,9 @@ begin
   database := sDatabase;
   DBuser := sUser;
   DBpassword := sPassword;
+  DbPort := sPort;
+  if sPort = '' then
+    DBPort := '3306';
 
   Connect;
 

@@ -1904,7 +1904,6 @@ begin
     sfthread.stepcount := allowed_prefetches;
     sfthread.runhot := true;
     sfthread.haswork := true;
-
 end;
 
 constructor TUnbufferedFileStream.Create(const AFileName: string; Mode: cardinal; Rights: Cardinal; Flags: cardinal);
