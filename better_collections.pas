@@ -362,6 +362,8 @@ end;
 
 procedure TStringObjectList<T_OBJECTTYPE>.Add(sKey: string; obj: T_OBJECTTYPE);
 begin
+  if skey = '' then
+    Debug.log('key ''''');
   case duplicates of
     Tduplicates.dupIgnore: begin
 

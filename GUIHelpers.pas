@@ -565,11 +565,13 @@ var
   nMemberSub: TTreeNode;
   isJTV: boolean;
 begin
+  if json = nil then
+    exit;
   isJTV := tv is TJSONTreeView;
   if isJTV then
     TJsonTreeView(tv).AddNodeRelation(json.Addr, tn);
 
-  if expandlevels = 0 then
+  if (expandlevels = 0) and ((json.ncount>0) or (json.icount>0)) then
     exit;
 
 
@@ -608,6 +610,7 @@ begin
 //      nSub := TreeView_FindRoot(tv, iMemberIndex);
 //      nSub.Text := 'Members: ';
       nRootSub := TreeView_FindRoot(tv, iMemberIndex);
+
       nRootSub.Text := '{..}';
       SyncTreeNode(tv, nRootSub, json.ncount);
 
@@ -615,15 +618,17 @@ begin
       for t:= 0 to json.nCount-1 do begin
         nRootSub.item[t].Text := json.named.keys[t]+': ';
         JSONToTreenode(json[json.named.keys[t]], tv, nRootSub.item[t], expandlevels);
+        if isJTV then
+          TJsonTreeView(tv).AddNodeRelation(json.named.ItemsByIndex[t].Addr, nRootSub.item[t]);
         if t> 0 then
           s := s + ',';
         s := s + nRootSub.item[t].text;
       end;
       s := s + '}';
 
-      nRootSub.text := s;
-      if isJTV then
-        TJsonTreeView(tv).AddNodeRelation(json.named.ItemsByIndex[t].Addr, nRootSub);
+      nRootSub.text := 'root:'+s;
+      TJsonTreeView(tv).AddNodeRelation('', nRootSub);
+
 
 
     end;

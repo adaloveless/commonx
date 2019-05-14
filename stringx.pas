@@ -80,6 +80,9 @@ function StringTohex(s: string): string;
 function DelimitIfNotEmpty(sInput: string; sDelimiter: string): string;
 function StringRepeat(s: string; iCount: ni): string;
 procedure AppendTextToFile(sFile: string; sText: string);
+function AppendURLParam(bStandAlone: boolean; sURLorExistingParams: string; sParam: string): string;
+function AppendOrReplace(sBase, sDelimit, sAppend: string): string;
+function AOR(sBase, sDelimit, sAppend: string): string;inline;
 function IPToBytes(sIP: string): TDynByteArray;
 function CountChar(s: string; c: char): ni;
 function StrIsBinary(s: string): boolean;
@@ -93,7 +96,7 @@ function Stringlist_ValuesBlank(sl: TStringlist): boolean;
 
 function PairsToParams(sPairs: string): string;
 //function FloatPrecision(r: real; iDigits: integer): string;
-function FloatPrecision(r: nativefloat; iDecPLaces: integer; bCollapseIntegers: boolean = false): string;
+function FloatPrecision(r: double; iDecPLaces: integer; bCollapseIntegers: boolean = false): string;
 procedure TrimStringList(sl: tStringlist);
 
 function IntToRank(i: integer): string;
@@ -2485,14 +2488,16 @@ begin
 
 end;
 
-function FloatPrecision(r: nativefloat; iDecPLaces: integer; bCollapseIntegers: boolean = false): string;
+function FloatPrecision(r: double; iDecPLaces: integer; bCollapseIntegers: boolean = false): string;
 var
-  iTemp: nativeint;
-  iPow: nativeint;
-  rTemp: nativefloat;
-  iTemp2: nativeint;
+  iTemp: int64;
+  iPow: int64;
+  rTemp: double;
+  iTemp2: int64;
   s1,s2: string;
+  bNeg: boolean;
 begin
+  bNeg := r < 0;
   if iDecPlaces > 8 then
     iDecPlaces := 8;
   iTemp := iDecPlaces;
@@ -2500,6 +2505,10 @@ begin
   rTemp := r*iPow;
   iTemp2 := round(rTemp);
   rTemp := iTemp2 / iPow;
+
+  if (not bNeg) and (rTemp < 0) then
+    raise ECritical.create('wtf');
+
 
   result := FormatFloat('0.########', rTemp);
 
@@ -4386,6 +4395,45 @@ begin
       exit(false);
   end;
 
+end;
+
+function AppendURLParam(bStandAlone: boolean; sURLorExistingParams: string; sParam: string): string;
+var
+  hasquestion: boolean;
+  s: string;
+begin
+  if bStandalone then
+    hasquestion := true //forces it to not append a '?' you'll do that on your own
+  else
+    hasquestion := zpos('?', sURLorExistingParams) >=0;
+
+  s := zCopy (sParam, 0,1);
+  if (s = '&') or (s = '?') then
+    sParam := zcopy(sParam,1,length(sParam)-1);
+
+  if sURLorExistingParams = '' then begin
+    result := sParam;
+  end else begin
+    if hasquestion then
+      result := sURLorExistingParams + '&'+sParam
+    else
+      result := sURLorExistingParams + '?'+sParam;
+  end;
+
+
+end;
+
+function AOR(sBase, sDelimit, sAppend: string): string;
+begin
+  result := AppendOrReplace(sBase, sDelimit, sAppend);
+end;
+
+function AppendOrReplace(sBase, sDelimit, sAppend: string): string;
+begin
+  if sBase = '' then
+    result := sAppend
+  else
+    result := sBase + sDelimit + sAppend;
 end;
 
 

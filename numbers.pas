@@ -76,6 +76,7 @@ procedure Swap(var x: int64; var y: int64);overload;
 function MinArray(a: array of nativeint): nativeint;
 function IsNumber(s: string): boolean;
 
+
 type
   TGiantFuckingInt = record
     i1,i2,i3,i4: Uint64;

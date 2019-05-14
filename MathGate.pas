@@ -30,13 +30,13 @@ type
     cache: TDictionary<string, TValueCacheRec>;
     function GetItems(key: string): TValueCacheRec;
   protected
-    function DoAcquire_Sync(name: string; params: TStringlist; nonce: string): string; virtual; abstract;
+    function DoAcquire_Sync(name: string; params: TStringlist; nonceparam: string; nonce: string): string; virtual; abstract;
     property Items[key: string]: TValueCacheRec read GetItems;
     procedure ExpireOld;
   public
     constructor Create; override;
     destructor Destroy; override;
-    function Acquire(urn_SPACE_params: string; nonce: string; ttl: ticker): string;
+    function Acquire(urn_SPACE_params: string; nonceparam: string; nonce: string; ttl: ticker): string;
 
   end;
 
@@ -49,7 +49,7 @@ implementation
 
 { TAbstractValueCache }
 
-function TAbstractValueCache.Acquire(urn_SPACE_params: string; nonce: string; ttl: ticker): string;
+function TAbstractValueCache.Acquire(urn_SPACE_params: string; nonceparam: string; nonce: string; ttl: ticker): string;
 var
   sl: TSTringlist;
   urn: string;
@@ -71,7 +71,8 @@ begin
       vcr.key := urn;
       vcr.filename := dllpath+'datacache\'+inttostr(getticker)+'-'+inttostr(random(999999999))+'-'+inttostr(getcurrentthreadid)+'.dat';
       forcedirectories(extractfilepath(vcr.filename));
-      SaveStringAsFile(vcr.filename, DoAcquire_Sync(urn, sl, nonce));
+      SaveStringAsFile(vcr.filename, DoAcquire_Sync(urn, sl, nonceparam, nonce));
+                                    //^^^ HEY LOOK HERE
       result := LoadFileAsString(vcr.filename);
       Lock;
       try

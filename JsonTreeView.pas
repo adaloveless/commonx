@@ -34,8 +34,9 @@ begin
   var s := 'nil';
   if tn <> nil then
     s := tn.text;
-//  Debug.Log('adding tn '+s+' for addr '+addr);
-  FNodeRelations.add(addr, tn);
+  if tn <> nil then begin
+    FNodeRelations.add(addr, tn);
+  end;
 end;
 
 constructor TJSONTreeView.Create(AOwner: TComponent);
@@ -63,6 +64,10 @@ end;
 
 procedure TJSONTreeView.LoadNodeChildren(tn: TTreeNode; deep: ni);
 begin
+  if json = nil then
+    exit;
+  if json.o = nil then
+    exit;
   if deep = 0 then
     exit;
   var idx := fnodeRelations.IndexOfObject(tn);
@@ -77,7 +82,8 @@ begin
       LoadNodeChildren(ttn,deep-1);
     end;
   end else begin
-    guihelpers.JSONtoTreeNode(json.o.GetNode(nodeAddr), self, tn,deep);
+    var n := json.o.GetNode(nodeAddr);
+    guihelpers.JSONtoTreeNode(n, self, tn,deep);
   end;
 
 

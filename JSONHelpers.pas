@@ -211,7 +211,7 @@ begin
   try
     j.fromString(floatprecision(value, 12));
     self.named.Add(key, j);
-    j.ReAddr(self.Addr+'.'+key);
+    j.ReAddr(AOR(self.Addr,'.',key));
   except
     j.free;
     raise;
@@ -227,7 +227,7 @@ begin
   j := TJSON.create;
   j.FromString(VArtoJSONStorage(v));
   self.named.Add(key, j);
-  j.ReAddr(self.Addr+'.'+key);
+  j.ReAddr(AOR(self.Addr,'.',key));
 end;
 
 procedure TJSON.AppendFieldsFrom(o: TJSON);
@@ -364,7 +364,7 @@ function TJSON.GetAddr: string;
 begin
   result := name;
   if parent <> nil then
-    result := parent.calcaddr+'.'+result;
+    result := AOR(parent.calcaddr,'.',result);
 end;
 
 function TJSON.GetAsString: string;
@@ -781,7 +781,7 @@ begin
       end;
       psValue: begin
         jsn := TJSON.create;
-        jsn.Addr := self.addr+'.'+sName;
+        jsn.Addr := AOR(self.addr,'.',sName);
         jsn.parent := self;
         jsn.Parse(s, iPosition);
         self.named.Add(sName, jsn);
@@ -810,7 +810,10 @@ begin
     indexed[t].ReAddr(newaddr+'['+inttostr(t)+']');
   end;
   for t := 0 to named.Count-1 do begin
-    named.ItemsByIndex[t].ReAddr(newaddr+'.'+Self.nNamesByIndex[t]);
+    if newAddr = '' then
+      named.ItemsByIndex[t].ReAddr(Self.nNamesByIndex[t])
+    else
+      named.ItemsByIndex[t].ReAddr(AOR(newaddr,'.',Self.nNamesByIndex[t]));
   end;
 end;
 
@@ -925,7 +928,7 @@ begin
   j := TJSON.create;
   j.fromString(value);
   self.named.Add(key, j);
-  j.ReAddr(self.Addr+'.'+key);
+  j.ReAddr(AOR(self.Addr,'.',key));
 
 end;
 
@@ -937,7 +940,7 @@ begin
   j := TJSON.create;
   j.value := value;
   self.named.Add(key, j);
-  j.ReAddr(self.Addr+'.'+key);
+  j.ReAddr(AOR(self.Addr,'.',key));
   if self.named[key].tojson <> j.tojson then
     raise ECritical.create('WTF!');
 
@@ -975,7 +978,7 @@ function TJSON.AddMember(const Key: string): TJSON;
 begin
   result := TJSON.create;
   self.named.Add(key, result);
-  result.ReAddr(self.Addr+'.'+key);
+  result.ReAddr(AOR(self.Addr,'.',mkey));
 end;
 
 { TJSONCache }
