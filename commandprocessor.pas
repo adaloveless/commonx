@@ -363,6 +363,7 @@ type
     function IsComplete: boolean;
     function FirstIncomplete: T;
     procedure WaitForAll;
+    procedure WaitForAll_DestroyWhileWaiting;
     procedure ClearAndDestroyCommands;
     procedure RemoveCompleted;
     procedure DestroyCompleted;
@@ -4882,6 +4883,20 @@ begin
     self[t].waitfor;      //todo 1: cannot wait on a fire-forget command
   end;
 
+end;
+
+procedure TCommandList<T>.WaitForAll_DestroyWhileWaiting;
+var
+  t: nativeint;
+  c: TCommand;
+begin
+  while count > 0 do begin
+    c := self[0];
+    c.waitfor;      //todo 1: cannot wait on a fire-forget command
+    delete(0);
+    c.free;
+    c := nil;
+  end;
 end;
 
 procedure oinit;

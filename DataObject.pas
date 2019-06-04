@@ -6,7 +6,7 @@ interface
 
 uses
 
-	TickCount, Classes, Sysutils, sharedobject, webstring, numbers,
+	TickCount, Classes, Sysutils, betterobject, sharedobject, webstring, numbers,
   InterfaceList, PersistentInterfacedObject, stringx, variants, typex, systemx, better_collections;
 
 var

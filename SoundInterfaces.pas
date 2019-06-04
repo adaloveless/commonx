@@ -10,7 +10,7 @@ interface
 
 uses
   system.types,
-  typex, sharedobject, classes, generics.collections.fixed,
+  typex, betterobject, sharedobject, classes, generics.collections.fixed,
   commandprocessor, math, geometry, multibuffermemoryfilestream,
   memoryfilestream, commandicons, sysutils, soundconversions_commandline,
 {$IFDEF MSWINDOWS}

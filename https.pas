@@ -2,9 +2,18 @@ unit https;
 
 interface
 
+{$IFDEF MSWINDOWS}
 uses MSXML2_TLB, sysutils, variants, typex, commandprocessor, classes, debug, IdSSLOpenSSL, systemx, IdSSLOpenSSLHeaders, betterobject, helpers.stream;
 
+
+const
+  DEFAULT_CONTENT_TYPE = 'application/x-www-form-urlencoded';
 type
+  TExtraHeader = record
+    name: string;
+    value: string;
+    class function make(n,v: string): TExtraHeader;static;
+  end;
   THttpsMethod = (mGet, mPost);
   THTTPSRequest = record
     addHead: string;
@@ -42,8 +51,10 @@ type
   end;
 
 //function QuickHTTPSGet(sURL: ansistring): ansistring;
-function QuickHTTPSGet(sURL: ansistring; out sOutREsponse: string; addHead: string =''; addHeadValue: string = ''): boolean;
-function QuickHTTPSPost(sURL: ansistring; PostData: ansistring; ContentType: ansistring = 'application/x-www-form-urlencoded'): ansistring;
+function QuickHTTPSGet(sURL: ansistring; out sOutREsponse: string; addHead: string =''; addHeadValue: string = ''): boolean;overload;
+function QuickHTTPSGet(sURL: ansistring; out sOutREsponse: string; addHeaders: TArray<TExtraHeader>): boolean;overload;
+function QuickHTTPSPost(sURL: ansistring; sPostBody: ansistring; out sOutREsponse: string; contentType: string = DEFAULT_CONTENT_TYPE; addHead: string =''; addHeadValue: string = ''; method: string = 'POST'): boolean;
+function QuickHTTPSPostOld(sURL: ansistring; PostData: ansistring; ContentType: ansistring = 'application/x-www-form-urlencoded'): ansistring;
 
 function HTTPSGet(sURL: string; referer: string = ''): THTTPResults;
 function HTTPSPost(sURL: string; PostData: string; ContentType: string = 'application/x-www-form-urlencoded'): THTTPResults;
@@ -51,8 +62,72 @@ function HTTPSPost(sURL: string; PostData: string; ContentType: string = 'applic
 procedure https_SetHeaderIfSet(htp: IXMLHttpRequest; sheader: string; sValue: string);
 
 
-
+{$ENDIF}
 implementation
+{$IFDEF MSWINDOWS}
+
+function QuickHTTPSPost(sURL: ansistring; sPostBody: ansistring; out sOutREsponse: string; contentType: string = DEFAULT_CONTENT_TYPE; addHead: string =''; addHeadValue: string = ''; method: string = 'POST'): boolean;
+var
+  htp: IXMLhttprequest;
+begin
+{$IFDEF LOG_HTTP}
+  Debug.Log(sURL);
+{$ENDIF}
+
+  htp := ComsXMLHTTP30.create();
+  try
+    htp.open(method, sURL, false, null, null);
+    htp.setRequestHeader('Content-Type', ContentType);
+    if addHead <> '' then
+      htp.setRequestHeader(addHead, addHeadValue);
+    htp.send(sPostBody);
+
+    result := htp.status = 200;
+    if result then
+      sOutREsponse := htp.responsetext
+    else begin
+      soutResponse := htp.responsetext;
+    end;
+  except
+    on e: Exception do begin
+      result := false;
+      sOutResponse := 'error '+e.message;
+    end;
+  end;
+
+end;
+
+
+function QuickHTTPSGet(sURL: ansistring; out sOutREsponse: string; addHeaders: TArray<TExtraHeader>): boolean;
+var
+  t: ni;
+  htp: IXMLhttprequest;
+begin
+{$IFDEF LOG_HTTP}
+  Debug.Log(sURL);
+{$ENDIF}
+
+  htp := ComsXMLHTTP30.create();
+  try
+    htp.open('GET', sURL, false, null, null);
+    for t := 0 to high(addHeaders) do begin
+      htp.setRequestHeader(addHeaders[t].name, addHeaders[t].value);
+    end;
+    htp.send('');
+    result := htp.status = 200;
+    if result then
+      sOutREsponse := htp.responsetext
+    else begin
+      soutResponse := htp.responsetext;
+    end;
+  except
+    on e: Exception do begin
+      result := false;
+      sOutResponse := 'error '+e.message;
+    end;
+  end;
+
+end;
 
 function QuickHTTPSGet(sURL: ansistring; out sOutREsponse: string; addHead: string =''; addHeadValue: string = ''): boolean;
 var
@@ -84,7 +159,7 @@ begin
 end;
 
 
-function QuickHTTPSPost(sURL: ansistring; PostData: ansistring; ContentType: ansistring = 'application/x-www-form-urlencoded'): ansistring;
+function QuickHTTPSPostOld(sURL: ansistring; PostData: ansistring; ContentType: ansistring = 'application/x-www-form-urlencoded'): ansistring;
 var
   htp: IXMLhttprequest;
 begin
@@ -233,6 +308,14 @@ end;
 
 
 
+{ TExtraHeader }
+
+class function TExtraHeader.make(n, v: string): TExtraHeader;
+begin
+  result.name := n;
+  result.value := v;
+end;
+
 initialization
 
 
@@ -242,5 +325,5 @@ if fileexists(dllpath+'ssleay32.dll') then begin
 end;
 
 
-
+{$ENDIF}
 end.

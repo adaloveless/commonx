@@ -4,7 +4,7 @@ unit RDTPProcessorForMYSQL;
 interface
 
 uses
-  better_sockets, windows, RDTPProcessor, packet, abstractrdtpdatamodule, RDTP_DatabaseConnection;
+  better_sockets, windows, RDTPProcessor, packet, abstractrdtpdatamodule, DatabaseConnectionDM;
 
 
 type

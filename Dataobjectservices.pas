@@ -4,7 +4,7 @@ interface
 uses
   PersistentInterfacedObject, DataObjectCache, typex,
   SysUtils, ThreadManager, classes,
-  DataObjectCacheManager, DataObjectFactory, SharedObject, ManagedThread, backgroundthreads,
+  DataObjectCacheManager, DataObjectFactory, betterobject, SharedObject, ManagedThread, backgroundthreads,
   Variants, stringx,  debug, orderlyinit,
 
 

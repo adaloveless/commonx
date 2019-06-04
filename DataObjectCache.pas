@@ -4,7 +4,7 @@ interface
 
 uses
   DataObjectXref, classes, sysutils, Dataobject, generics.collections,
-  PersistentInterfacedObject, sharedobject, stringx;
+  PersistentInterfacedObject, betterobject, sharedobject, stringx;
 
 const
   XREF_STRING_CACHE_SIZE = 5;

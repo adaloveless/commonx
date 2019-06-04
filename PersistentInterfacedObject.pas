@@ -10,7 +10,7 @@ uses
 {$ENDIF}
   systemx,typex,
   CommonInterfaces,
-  SharedObject;
+  SharedObject, betterobject;
 
 {$D+}
 

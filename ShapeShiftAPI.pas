@@ -297,7 +297,7 @@ begin
   RESULT := true;
   //setup trade
   sPost := '{"withdrawal":"'+toAddr+'", "pair":"'+lowercase(fromCoin)+'_'+lowercase(tocoin)+'", "returnAddress":"'+returnAddress+'"}';
-  sResult := QuickHTTPSPost('https://shapeshift.io/shift', sPost, 'text/json');
+  sResult := QuickHTTPSPostOld('https://shapeshift.io/shift', sPost, 'text/json');
   dict := nil;
   try
     //send to address

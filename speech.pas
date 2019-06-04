@@ -2,7 +2,7 @@ unit Speech;
 
 interface
 
-uses commandprocessor, winapi.activex, soundtools, https, httpclient, winapi.MMSystem, sysutils, stringx, typex, winapi.windows, beeper, sharedobject,
+uses commandprocessor, winapi.activex, soundtools, https, httpclient, winapi.MMSystem, sysutils, stringx, typex, winapi.windows, beeper, betterobject, sharedobject,
   backgroundcommandprocessor, speechlib_TLB,orderlyinit, systemx, booger, soundconversion_windows;
 
 {$DEFINE SPEECHFALLBACK}

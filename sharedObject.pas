@@ -1,9 +1,14 @@
 unit SharedObject;
+
 {$INCLUDE DelphiDefs.inc}
 //The classes contained in sharedobject.pas provide solid, foundations upon which
 //to build a thread-safe classes.  See each class for more info.
 {$D+}
 interface
+{$IFNDEF OLD_UNIT}
+uses
+  betterobject;
+{$ELSE}
 {$DEFINE FREEDICT}
 {x$DEFINE THREAD_BLOCKING_DIAGNOSTICS}
 {x$DEFINE LOCK_DEBUG}
@@ -270,17 +275,25 @@ type
 
 
 
+const
+  WRITE_LOCK = 2;
+  READ_LOCK = 1;
+
+
+{$ENDIF}
 
 var
   MasterMonitor: TStandardMonitor;
   nodebug: boolean;
 
-const
-  WRITE_LOCK = 2;
-  READ_LOCK = 1;
+
+
+
 
 implementation
-
+{$IFNDEF OLD_UNIT}
+uses orderlyinit;
+{$ELSE}
 uses Debug, tickcount, orderlyinit;
 
 { TSharedObject }
@@ -1328,6 +1341,8 @@ begin
 end;
 
 
+{$ENDIF}
+
 
 procedure oinit;
 begin
@@ -1346,5 +1361,6 @@ initialization
   init.registerprocs('SharedObject', oinit, ofinal);
 
 finalization
+
 
 end.

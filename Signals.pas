@@ -7,7 +7,7 @@ uses
 {$ifdef WINDOWS}
   windows,
 {$endif}
-  syncobjs, sharedobject, typex, sysutils, tickcount, numbers;
+  syncobjs, betterobject, sharedobject, typex, sysutils, tickcount, numbers;
 
 type
   TArrayOfEvent = array of TEvent;

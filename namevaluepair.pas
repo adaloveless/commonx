@@ -4,7 +4,7 @@ unit namevaluepair;
 
 interface
 
-uses sysutils, classes, stringx, generics.collections.fixed, systemx, betterobject, typex;
+uses sysutils, classes, stringx, generics.collections.fixed, systemx, betterobject, typex, sharedobject;
 
 type
   TNameValuePairList = class;//forward
@@ -35,7 +35,7 @@ type
     // A Value
   end;
 
-  TNameValuePairList = class(TBetterObject)
+  TNameValuePairList = class(TSharedObject)
   // r: Maintains a list of TNameValuePair instances
   private
     FList: TStringList;

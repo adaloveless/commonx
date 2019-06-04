@@ -30,8 +30,10 @@ implementation
 { TJSONTreeView }
 
 procedure TJSONTreeView.AddNodeRelation(addr: string; tn: TTreeNode);
+var
+  s: string;
 begin
-  var s := 'nil';
+  s := 'nil';
   if tn <> nil then
     s := tn.text;
   if tn <> nil then begin
@@ -63,6 +65,12 @@ begin
 end;
 
 procedure TJSONTreeView.LoadNodeChildren(tn: TTreeNode; deep: ni);
+var
+  idx: ni;
+  nodeAddr: string;
+  t, cnt: ni;
+  n: TJSON;
+  ttn: TTreeNode;
 begin
   if json = nil then
     exit;
@@ -70,19 +78,19 @@ begin
     exit;
   if deep = 0 then
     exit;
-  var idx := fnodeRelations.IndexOfObject(tn);
+  idx := fnodeRelations.IndexOfObject(tn);
   if idx < 0 then
     exit;
-  var nodeAddr := FNodeRelations.Keys[idx];
+  nodeAddr := FNodeRelations.Keys[idx];
 //  Debug.Log('Expanding '+nodeAddr);
-  var cnt := Treenode_GetChildCount(self, tn);
+  cnt := Treenode_GetChildCount(self, tn);
   if cnt > 0 then begin
-    for var t := 0 to cnt-1 do begin
-      var ttn := TreeNode_GetChild(self, tn, t);
+    for t := 0 to cnt-1 do begin
+      ttn := TreeNode_GetChild(self, tn, t);
       LoadNodeChildren(ttn,deep-1);
     end;
   end else begin
-    var n := json.o.GetNode(nodeAddr);
+    n := json.o.GetNode(nodeAddr);
     guihelpers.JSONtoTreeNode(n, self, tn,deep);
   end;
 

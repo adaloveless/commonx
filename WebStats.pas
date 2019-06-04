@@ -2,7 +2,7 @@ unit WebStats;
 
 interface
 
-uses Classes, Windows, SharedObject;
+uses Classes, Windows, betterobject, SharedObject;
 
 type
   TWebStats = class; //forward declaration

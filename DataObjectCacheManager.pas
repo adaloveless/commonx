@@ -10,7 +10,7 @@ unit DataObjectCacheManager;
 interface
 uses
   DataObjectCache, PersistentInterfacedObject, classes, Dataobjectfactory, tickcount, systemx,
-  DataObject, DataObjectCacheJanitor, backgroundthreads, sharedobject, stringx, orderlyinit, managedthread;
+  DataObject, DataObjectCacheJanitor, backgroundthreads, betterobject, sharedobject, stringx, orderlyinit, managedthread;
 
 
 type

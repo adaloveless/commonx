@@ -58,6 +58,7 @@ type
   EClassException = class(Exception);
   EBetterException = class(Exception);
   ENotImplemented = class(Exception);
+  EDeprecated = class(Exception);
   ECritical = class(Exception);
   ENetworkError = class(Exception);
   EUserError = class(Exception);
@@ -197,6 +198,9 @@ function IsVarString(v: variant): boolean;
 
 function rect_notdumb(x1,y1,x2,y2: int64): TRect;
 function PixelRect(x1,y1,x2,y2: int64): TPixelRect;
+procedure Deprecate;
+procedure NotImplemented;
+function Null20(v: variant): variant;
 
 
 
@@ -205,6 +209,17 @@ implementation
 
 uses
   systemx, numbers;
+
+function Null20(v: variant): variant;
+begin
+  if varisnull(v) then
+    exit(0);
+
+  if VarIsStr(v) then
+    if v = '' then
+      exit(0);
+end;
+
 
 function STRZ(): nativeint;
 //Returns the index of the first element of a string based on current configuration
@@ -411,6 +426,18 @@ begin
   result.Width := (x2-x1)+1;
   result.Height := (y2-y1)+1;
 end;
+
+
+procedure Deprecate;
+begin
+  raise EDeprecated.create('deprecated');
+end;
+
+procedure NotImplemented;
+begin
+  raise EnotImplemented.create('not implemented');
+end;
+
 
 
 

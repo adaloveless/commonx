@@ -6,7 +6,7 @@ unit sockfix;
 interface
 
 {$IFDEF MSWINDOWS}
-uses Winapi.Windows, Winapi.WinSock, System.SysUtils, System.Classes;
+uses Winapi.Windows, Winapi.WinSock, System.SysUtils, System.Classes, activex;
 
 type
   TSocketDomain = (pfUnspec, pfUnix, pfInet,
@@ -1124,10 +1124,16 @@ end;
 procedure TServerSocketThread.Execute;
 var
   T: TClientSocketThread;
+  bytes_available: integer;
 begin
   while not Terminated and Assigned(FServerSocket) and FServerSocket.Listening do
   begin
     if FServerSocket.WaitForConnection then
+//      ioctlsocket(FServerSocket.Handle,FIONREAD,bytes_available);
+//      if bytes_available = 0 then begin
+//        raise ESocketError.Create('disconnect');
+//      end;
+
       if not Terminated then
       begin
         T := FetchClientSocketThread;

@@ -3,7 +3,7 @@ unit Fiber;
 interface
 
 uses
-  signals,managedthread, typex, simplequeue, sharedobject, better_collectIons, tickcount, consolelock, orderlyinit, systemx;
+  signals,managedthread, typex, betterobject, simplequeue, sharedobject, better_collectIons, tickcount, consolelock, orderlyinit, systemx;
 
 type
   TFiberWeaver = class;//forward

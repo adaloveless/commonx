@@ -10,7 +10,7 @@ interface
 
 
 uses
-  StorageEngineTypes, RDTPProcessorForMySQL, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions;
+  StorageEngineTypes, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions;
 
 
 
@@ -313,7 +313,8 @@ begin
     packet.AddString('RDTPSQLConnection');
     WritestringToPacket(packet, sQuery);
     if not Transact(packet) then raise ECritical.create('transaction failure');
-    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    if not packet.result then
+      raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
     GetTSERowSetFromPacket(packet, result);
   except

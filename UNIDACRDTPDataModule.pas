@@ -8,12 +8,12 @@ interface
 //TODO 1:Should not export TCustomDADataset
 
 uses
-  MySQLUniProvider, uni,
+  MySQLUniProvider, uni, SQLServerUniProvider,
   SysUtils, Classes, DBAccess, variants,
   DB, better_Sockets, typex,inifiles, replaylog, exceptions,
   sharedobject, abstractrdtpdatamodule, storageenginetypes,
   managedthread, rdtpprocessor, beeper, inifile, systemx,
-  namevaluepair, consolelock, betterobject;
+  namevaluepair, consolelock, betterobject, tickcount;
 
 type
   TUniDACRDTPDataModule = class(TAbstractRDTPDataModule)
@@ -28,6 +28,16 @@ type
     procedure Execute(sQuery:string; connection: TUNIConnection; out ds: TCustomDADataset);
     function ExecuteDirect(sQuery: string; connection: TUNIConnection): integer;
     procedure SetContext(const Value: string);
+
+  protected
+    function TryGetNextID(iKey: integer; out res: int64): boolean;
+    function TrySetNextID(iKey: integer; value: int64): boolean;
+    procedure ConfigureFromContext;override;
+    procedure ConfigureFromContext_SE;
+    procedure ConfigureFromContext_Simple;
+    procedure ConnectRead;override;
+    procedure ConnectWrite;override;
+    procedure ConnectSystem;override;
 
   public
 
@@ -47,11 +57,7 @@ type
     procedure Rollback;override;
     function GetNextID(iKey: integer): int64;override;
     function SetNextID(iKey: integer; iValue: int64): int64;override;
-    function TryGetNextID(iKey: integer; out res: int64): boolean;
-    function TrySetNextID(iKey: integer; value: int64): boolean;
-    procedure ConfigureFromContext;override;
-    procedure ConfigureFromContext_SE;
-    procedure ConfigureFromContext_Simple;
+
     procedure IncWrite;
     procedure ChangeUniConnectionParam(conn: TUniConnection; sParamName: string; sVAlue: string);
 
@@ -59,16 +65,11 @@ type
     procedure ExecuteRead_Platform(sQuery: string; out dataset: TCustomDADataset);
     procedure ExecuteWrite_Platform(sQuery: string; out dataset: TCustomDADataset);
 
-
     function ExecuteSystem(sQuery: string): integer;override;
     function ExecuteWriteRaw(sQuery: string): integer;override;
     function ExecuteSystem(sQuery: string; out dataset: TSERowSet): integer;override;
     function ExecuteWrite(sQuery: string; out dataset: TSERowSet): integer;override;
     procedure ExecuteRead(sQuery: string; out dataset: TSERowSet);override;
-
-    procedure ConnectRead;override;
-    procedure ConnectWrite;override;
-    procedure ConnectSystem;override;
 
     function ContextVerified: boolean;inline;
     procedure VerifyContext;
@@ -198,9 +199,6 @@ begin
   end else begin
     ConfigureFromContext_SE;
   end;
-
-
-
 end;
 
 procedure TUniDACRDTPDataModule.ConfigureFromContext_Simple;
@@ -210,12 +208,14 @@ var
   h: IHolder<TSTringlist>;
   nvp: TNameValuePairList;
   s: string;
+  sWrites, sReads, ssessiondb: string;
 begin
+  sWrites := ''; sReads := ''; sSessiondb := '';
   var applyAll := procedure (name,val: string)
                   begin
-                    writes.connectstring := writes.ConnectString + ';'+name+'='+val+';';
-                    reads.connectstring := reads.ConnectString + ';'+name+'='+val+';';
-                    sessiondb.connectstring := sessiondb.ConnectString + ';'+name+'='+val+';';
+                    sWrites := AOR(sWrites, ';', name+'='+val);
+                    sReads := AOR(sReads, ';', name+'='+val);
+                    sSessionDB := AOR(sSessionDB, ';', name+'='+val);
                   end;
   h := ParseStringH(context,';');
   h.o.delete(0);
@@ -226,12 +226,30 @@ begin
     sessiondb.ConnectString :='';
 
     nvp.loadFromString(h.o.Text);
-    applyAll('Provider Name', 'MySQL');
-    applyAll('Database', nvp.GetItemEx('db',''));
-    applyAll('port', nvp.GetItemEx('port','3306'));
+    var prov := nvp.GetItemEx('Provider','MySQL');
+    applyAll('Provider Name', prov);
+    if comparetext(prov, 'mysql') = 0 then begin
+      applyAll('Database', nvp.GetItemEx('db',''));
+      applyAll('port', nvp.GetItemEx('port','3306'));
+    end
+    else
+    begin
+      applyAll('Database', nvp.GetItemEx('db',''));
+      applyAll('Initial Catalog', nvp.GetItemEx('db',''));
+      var port := nvp.GetItemEx('port','1433');
+      if port <> '1433' then
+       applyAll('port', port );
+    end;
     applyAll('Data Source', nvp.GetItemEx('host',''));
     applyAll('User ID', nvp.GetItemEx('user',''));
     applyAll('password', nvp.GetItemEx('pass',''));
+
+    //commit string
+
+    writes.ConnectString := sWrites;
+    Debug.Log(writes.ConnectString);
+    reads.ConnectString := sreads;
+    sessiondb.ConnectString := sSessiondb;
 
   finally
     nvp.free;
@@ -243,6 +261,9 @@ procedure TUniDACRDTPDataModule.ConnectRead;
 var
   bRetry: boolean;
 begin
+  if gettimesince(lastused) > 300000 then begin
+    reads.Connected := false;
+  end;
   repeat
     bRetry := false;
     try
@@ -344,7 +365,7 @@ end;
 
 procedure TUniDACRDTPDataModule.DataModuleCreate(Sender: TObject);
 begin
-
+  inherited;
   //NOP
 //TODO -cunimplemented: unimplemented block
 end;
@@ -353,7 +374,9 @@ procedure TUniDACRDTPDataModule.ConnectWrite;
 var
   bRetry: boolean;
 begin
-
+  if gettimesince(lastused) > 300000 then begin
+    writes.Connected := false;
+  end;
   repeat
     bRetry := false;
     try
@@ -418,6 +441,9 @@ procedure TUniDACRDTPDataModule.connectsystem;
 var
   bRetry: boolean;
 begin
+  if gettimesince(lastused) > 300000 then begin
+    sessiondb.Connected := false;
+  end;
   repeat
     bRetry := false;
     try
@@ -493,8 +519,8 @@ begin
     bREtry := false;
     try
       Debug.Log(self,'Execute:'+sQuery);
-      squery := StringReplace(sQuery, '''', '\''', [rfReplaceAll]);
-      squery := StringReplace(sQuery, '"', '''', [rfReplaceAll]);
+//      squery := StringReplace(sQuery, '''', '\''', [rfReplaceAll]);
+//      squery := StringReplace(sQuery, '"', '''', [rfReplaceAll]);
       ds := connection.CreateDataSet(nil);
       try
         ds.SQL.text := sQuery;
@@ -587,6 +613,7 @@ begin
   try
     dataset := TSERowset.create;
     UniSetToRowSet(dataset, ds, false);
+    lastused := getticker;
   finally
     ds.free;
   end;
@@ -631,8 +658,10 @@ begin
   sRight := sQuery;
   while SplitString(sRight, '--execute--', sLeft, sRight) do begin
     ExecuteDirect(sLeft, sessiondb);
+    lastused := getticker;
   end;
   result := ExecuteDirect(sLeft, sessiondb);
+  lastused := getticker;
 end;
 
 
@@ -830,12 +859,15 @@ begin
   dataset := nil;
 
   ExecuteWrite_Platform(sQuery, ds);
+
   try
     dataset := TSERowset.create;
     UniSetToRowSet(dataset, ds, false);
+    lastused := getticker;
   finally
     ds.free;
   end;
+
 end;
 
 function TUniDACRDTPDataModule.ExecuteWriteRaw(sQuery: string): integer;
@@ -856,7 +888,7 @@ begin
       ExecuteDirect(sLeft,writes);
     end;
     ExecuteDirect(sLeft, writes);
-
+    lastused := getticker;
 
 //    ConnectWrite;
 //    for t:= 0 to slParsed.count-1 do begin

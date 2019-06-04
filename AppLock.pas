@@ -3,7 +3,7 @@ unit AppLock;
 interface
 
 uses
-  sharedobject;
+  betterobject, sharedobject;
 
 
 

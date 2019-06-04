@@ -16,10 +16,18 @@ object framTotalDebug: TframTotalDebug
       Caption = 'Commands'
       ImageIndex = 1
       OnShow = TabSheet2Show
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
     end
     object TabSheet3: TTabSheet
       Caption = 'Memory'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Chart1: TChart
         Left = 0
         Top = 0
@@ -63,6 +71,10 @@ object framTotalDebug: TframTotalDebug
     object TabSheet4: TTabSheet
       Caption = 'Master Monitor'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object ListView1: TListView
         Left = 0
         Top = 0

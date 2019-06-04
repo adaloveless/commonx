@@ -3,7 +3,7 @@ unit SimpleAbstractConnection;
 {$DEFINE READ_AHEAD}
 
 interface
-uses SysUtils, systemx, sharedobject, debug, numbers, typex, tickcount, signals, ringbuffer, commandprocessor;
+uses SysUtils, systemx, betterobject, sharedobject, debug, numbers, typex, tickcount, signals, ringbuffer, commandprocessor;
 
 type
   ETransportError = class(Exception);

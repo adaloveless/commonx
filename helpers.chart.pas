@@ -3,8 +3,8 @@ unit helpers.chart;
 interface
 
 uses
-  stringx, typex, classes, sysutils,
-  VclTee.TeeGDIPlus, VCLTee.TeEngine,
+  stringx, typex, classes, sysutils, debug,
+  VclTee.TeeGDIPlus, VCLTee.TeEngine, jsonhelpers,
   VCLTee.Series, VCLTee.TeeProcs, VCLTee.Chart;
 
 procedure ExportChart(c: TChart; sFile: string);
@@ -15,6 +15,9 @@ function GetPointAverageByX(c: TChart; xvalue: double; iSeries: ni): double;
 procedure GenerateAverageSeries(c: TChart; iTargetSeries, iSourceSeries: ni);
 procedure chart_ClearData(c: TChart);
 procedure LimitValues(c: TChart; iSeriesIndex: ni; limit: int64);
+
+procedure JSONToSeries(j: TJSON; s: TChartSeries; xField,yField: string);
+procedure JSONToSeriesXTime(j: TJSON; s: TChartSeries; xField,yField: string);
 
 
 
@@ -171,6 +174,35 @@ begin
     c.Series[iSeriesIndex].XValues.Delete(0);
 
 
+end;
+
+procedure JSONToSeries(j: TJSON; s: TChartSeries; xField,yField: string);
+var
+  t: ni;
+begin
+  s.Clear;
+  for t:= 0 to j.IndexedCount-1 do begin
+//    var ss := j[t].ToJson;
+    var x := j[t][xField].value;
+    var y := j[t][yField].value;
+//    Debug.Log(vartostrex(x)+','+vartostrex(y));
+    s.AddXY(y{+(random(1000)/1000000)},x);
+  end;
+end;
+
+
+procedure JSONToSeriesXTime(j: TJSON; s: TChartSeries; xField,yField: string);
+var
+  t: ni;
+begin
+  s.Clear;
+  for t:= 0 to j.IndexedCount-1 do begin
+//    var ss := j[t].ToJson;
+    var x := j[t][xField].value;
+    var y := j[t][yField].value;
+//    Debug.Log(vartostrex(x)+','+vartostrex(y));
+    s.AddXY(y{+(random(1000)/1000000)},TDateTime(x));
+  end;
 end;
 
 

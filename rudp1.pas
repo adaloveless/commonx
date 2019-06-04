@@ -1474,11 +1474,11 @@ begin
         lastIncomingAckTime := getticker;
         inc(_nextexpectedsequencenumber);
         if r.h.Flag_AckType <> ackNone then begin
-//          if gettimesince(r.acktime) > STALE_RETRANS_TIME then begin
-          r.acktime := r.acktime;
-          acksince := greaterof(acksince, gettimesince(r.acktime));
-          bSend := true;
-//          end;
+          if gettimesince(r.acktime) > (self.bestAckTime shl r.retranscount) then begin
+            r.acktime := r.acktime;
+            acksince := greaterof(acksince, gettimesince(r.acktime));
+            bSend := true;
+          end;
 
         end;
         r.Acked := true;

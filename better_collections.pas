@@ -72,6 +72,25 @@ type
     property OwnsObjects: boolean read FOwnsObjects write FOwnsObjects;
   end;
 
+  TSharedStringList = class(TSharedObject)
+  strict private
+    FList: TStringList;
+  private
+    function GetItem(idx: ni): string;
+    procedure Setitem(idx: ni; const Value: string);
+    function GetText: string;
+    procedure SetText(const Value: string);
+  public
+    property Text: string read GetText write SetText;
+    procedure Add(s: string);
+    procedure Remove(s: string);
+    property Items[idx: ni]: string read GetItem write Setitem;default;
+    procedure Delete(i: ni);
+    function IndexOf(s: string): ni;
+
+
+  end;
+
 
 
   TStringObjectList<T_OBJECTTYPE: class> = class(TBetterObject)
@@ -362,8 +381,6 @@ end;
 
 procedure TStringObjectList<T_OBJECTTYPE>.Add(sKey: string; obj: T_OBJECTTYPE);
 begin
-  if skey = '' then
-    Debug.log('key ''''');
   case duplicates of
     Tduplicates.dupIgnore: begin
 
@@ -400,16 +417,18 @@ constructor TStringObjectList<T_OBJECTTYPE>.Create;
 begin
   inherited;
   FItems := TStringList.create;
+  Fitems.CaseSensitive := true;
 
 end;
 
 procedure TStringObjectList<T_OBJECTTYPE>.DebugItems;
 
+var
+  t: ni;
 begin
 {$IFDEF DEBUG_ITEMS}
   if not enable_debug then
     exit;
-  var t: ni;
   Debug.Log('----------------');
   for t:= 0 to FItems.count-1 do begin
     if FItems.Objects[t] is TJSON then begin
@@ -446,7 +465,7 @@ begin
   if i >=0 then
     result := T_OBJECTTYPE(FItems.Objects[i])
   else
-    raise ECritical.create('no objected named '+sKey+' was found in '+self.ClassName);
+    raise ECritical.create('no object named '+sKey+' was found in '+self.ClassName);
 
 end;
 
@@ -493,10 +512,84 @@ end;
 
 procedure TStringObjectList<T_OBJECTTYPE>.SetItem(sKey: string;
   const Value: T_OBJECTTYPE);
+var
+  i: ni;
 begin
-  var i := Fitems.IndexOf(sKey);
+  i := Fitems.IndexOf(sKey);
   if i >= 0 then
     FItems.Objects[i] := value;
+end;
+
+{ TSharedStringList }
+
+procedure TSharedStringList.Add(s: string);
+var
+  l : ILock;
+begin
+  l := self.LockI;
+  FList.add(s);
+end;
+
+procedure TSharedStringList.Delete(i: ni);
+var
+  l: ILock;
+begin
+  l := self.LockI;
+  FList.delete(i);
+end;
+
+function TSharedStringList.GetItem(idx: ni): string;
+var
+  l: ILock;
+begin
+  l := self.LockI;
+  result := FList[idx];
+end;
+
+function TSharedStringList.GetText: string;
+var
+  l: ILock;
+begin
+  l := self.LockI;
+  result := Flist.Text;
+end;
+
+function TSharedStringList.IndexOf(s: string): ni;
+var
+  l: ILock;
+begin
+  l := self.LockI;
+  result := Flist.IndexOf(s);
+
+end;
+
+procedure TSharedStringList.Remove(s: string);
+var
+  l: ILock;
+  i: ni;
+begin
+  l := self.LockI;
+  i := FList.IndexOf(s);
+  if i>=0 then
+    FList.delete(i);
+
+end;
+
+procedure TSharedStringList.Setitem(idx: ni; const Value: string);
+var
+  l: ILock;
+begin
+  l := self.LockI;
+  Flist[idx] := value;
+
+end;
+
+procedure TSharedStringList.SetText(const Value: string);
+var
+  l: ILock;
+begin
+  l := self.LockI;
+  Flist.Text := value;
 end;
 
 end.

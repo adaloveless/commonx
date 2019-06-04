@@ -6,7 +6,7 @@ interface
 {xLIMIT_PROGRESS} //puts a limit on how often progress packets are sent
 uses
   helpers_winsock,
-  numbers, simpleabstractconnection, packet, systemx, typex, sysutils, windows, classes, sharedobject, SQLExpr, stringx, AbstractRDTPDataModule, DtNetConst, simplewinsock, exceptions, commandprocessor,orderlyinit, helpers.list, storageenginetypes;
+  numbers, simpleabstractconnection, packet, systemx, typex, sysutils, windows, classes, betterobject, sharedobject, SQLExpr, stringx, AbstractRDTPDataModule, DtNetConst, simplewinsock, exceptions, commandprocessor,orderlyinit, helpers.list, storageenginetypes;
 {x$DEFINE ALLOW_WRITEBEHIND}//<<---currently has problems when connection is terminated
 
 const
@@ -512,6 +512,7 @@ begin
 //    status := 'In MAsterDispatch:$'+inttohex(iREquest,4);
 //    Debug.Log(status);
     try
+      Debug.Log('RQ'+inttohex(iRequest, 4));
       result := Dispatch;
       if not result then begin
         result := true;
@@ -946,6 +947,9 @@ end;
 function TRDTPProcessor.callback(var Packet: TRDTPPacket; iTimeOutMS: integer;
   slDebug: TStringList; bForget: boolean): boolean;
 begin
+{$IFNDEF ALLOW_CALLBACKS}
+  raise ECritical.Create('callbacks are disabled/deprecated');
+{$ENDIF}
   WaitForPendingWrite;
 
   //send the packet

@@ -3,7 +3,7 @@ unit TextSocket;
 interface
 
 uses
-  systemx, ScktComp, sharedobject, classes, sysutils, sockfix;
+  systemx, ScktComp, betterobject, sharedobject, classes, sysutils, sockfix;
 
 type
   TTextSocket = class (TSharedObject)

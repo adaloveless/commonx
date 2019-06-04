@@ -3,7 +3,7 @@ unit MothershipWebserver;
 
 interface
 uses
-  WebConfig, WebStats, DataObjectServices, sysutils, windows, REquestManager, classes, sharedobject, webdispatch, RequestInfo, backgroundthreads, versioninfo, systemx, simplewinsock, stringx, stringx.ansi, helplookup, dir, dirfile;
+  WebConfig, WebStats, DataObjectServices, sysutils, windows, REquestManager, classes, betterobject, sharedobject, webdispatch, RequestInfo, backgroundthreads, versioninfo, systemx, simplewinsock, stringx, stringx.ansi, helplookup, dir, dirfile;
 
 type
   Tmothershipwebserver = class;//forward

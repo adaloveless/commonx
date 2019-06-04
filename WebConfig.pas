@@ -7,7 +7,7 @@ unit WebConfig;
 
 
 interface
-uses {registry, }sysutils, windows, classes, SharedObject, SimpleWinsock,orderlyinit;
+uses {registry, }sysutils, windows, classes, SharedObject, SimpleWinsock,orderlyinit, betterobject;
 const
   DT_INDEX_PWLN = 0;
   DT_INDEX_ISRN = 1;

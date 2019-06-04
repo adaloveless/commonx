@@ -2,7 +2,7 @@ unit RequestManager;
 
 interface
 
-uses classes, windows, requestInfo, exceptions, sysutils, sharedobject, stringx, beeper,orderlyinit;
+uses classes, windows, requestInfo, exceptions, sysutils, betterobject, sharedobject, stringx, beeper,orderlyinit;
 type
   TUserAgents = class;
 

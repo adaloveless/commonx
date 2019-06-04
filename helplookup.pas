@@ -3,7 +3,7 @@ unit Helplookup;
 interface
 
 uses
-  sharedobject, sysutils, RequestInfo, webstring, stringx, stringx.ansi, classes,orderlyinit;
+  betterobject, sharedobject, sysutils, RequestInfo, webstring, stringx, stringx.ansi, classes,orderlyinit;
 
 type
   THelplookup = class (TFakeLockQueuedObject)

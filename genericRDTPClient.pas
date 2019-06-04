@@ -3,14 +3,14 @@ unit GenericRDTPClient;
 //--SYSTEM THREAD is waiting for USER ACTIONS to complete and connection times out - receive AV
 
 {$DEFine ENABLE_RDTP_COMPRESSION}
-
+{x$DEFINE ALLOW_CALLBACKS}
 
 {x$DEFINE PACKET_DEBUG_MESSAGES}
 interface
 
 uses
   tickcount, stringx,
-  simplereliableudp, simplebufferedconnection, sharedobject, packet,
+  simplereliableudp, simplebufferedconnection, betterobject, sharedobject, packet,
   classes,
   sysutils, exceptions,
 {$IFDEF WINDOWS}
@@ -19,6 +19,8 @@ uses
 {$ENDIF}
   simpleabstractconnection, simplewinsock,
   managedthread, DtNetConst, networkbuffer, debug, typex, systemx;
+
+const DEFAULT_TIMEOUT = 300000;
 
 const ERC_SERVER_BUSY = 932;
 
@@ -161,7 +163,7 @@ type
   end;
 
 var
-  RDTP_USE_TCP: boolean = true;
+  RDTP_USE_TCP: boolean = false;
   RDTP_USE_SOCKS: boolean = false;
 
 implementation
@@ -408,6 +410,9 @@ function TGenericRDTPClient.DispatchCallback: boolean;
 var
   iRQ: integer;
 begin
+{$IFNDEF ALLOW_CALLBACKS}
+  raise ECritical.Create('callbacks are disabled/deprecated');
+{$ENDIF}
   result := false;
 
   iRQ := callback.request.data[0];
@@ -1078,6 +1083,9 @@ var
 //  bLegitResponse: boolean;
   iMarker: cardinal;
 begin
+  if iTimeoutMS = 0  then
+    iTimeoutMS := DEFAULT_TIMEOUT;
+
   Lock;
   try
   //  bLegitResponse := false;

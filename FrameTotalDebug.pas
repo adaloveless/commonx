@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, ExtCtrls, StdCtrls, debug,  FormBGThreadWatcher,
   VCLTee.Series, VCLTee.TeeProcs, VCLTee.Chart, VCLTee.TeEngine,
-  VclTee.TeeGDIPlus, GUIHelpers, sharedobject, typex;
+  VclTee.TeeGDIPlus, GUIHelpers, sharedobject, typex, betterobject;
 
 type
   TframTotalDebug = class(TFrame)

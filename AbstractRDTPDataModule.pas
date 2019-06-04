@@ -91,8 +91,9 @@ type
     function GetNextID(iKey: integer): int64;virtual;
     function SetNextID(iKey: integer; iValue: int64): int64;virtual;
 
-
-
+    //RETURNS IHolder<TSERowSet>
+    function ReadQuery(sQuery: string): IHolder<TSERowset>;
+    function SystemReadQuery(sQuery: string): IHolder<TSERowset>;
 
     //RETURNS TSEROWSET
     function ExecuteSystem(sQuery: string; out dataset: TSERowSet): integer;overload;virtual;
@@ -337,6 +338,20 @@ begin
 
 end;
 
+function TAbstractRDTPDataModule.ReadQuery(sQuery: string): IHolder<TSERowset>;
+var
+  se: TSERowSet;
+begin
+  result := nil;
+  ExecuteRead(sQuery, se);
+  if se <> nil then begin
+    result := THolder<TSERowSet>.create();
+    result.o := se;
+  end;
+
+
+end;
+
 procedure TAbstractRDTPDataModule.Rollback;
 begin
 
@@ -362,6 +377,19 @@ end;
 procedure TAbstractRDTPDataModule.SetProgress(const Value: TRDTPProgressEvent);
 begin
   FProg := Value;
+end;
+
+function TAbstractRDTPDataModule.SystemReadQuery(
+  sQuery: string): IHolder<TSERowset>;
+var
+  se: TSERowSet;
+begin
+  result := nil;
+  ExecuteSystem(sQuery, se);
+  if se <> nil then begin
+    result := THolder<TSERowSet>.create;
+    result.o := se;
+  end;
 end;
 
 function TAbstractRDTPDataModule.TryGetNextID(iKey: integer;

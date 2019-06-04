@@ -3,7 +3,7 @@ unit IPClientWrapper;
 //TODO 1: If wrapper is created then immediately freed -- AV occurs.
 
 interface
-uses helpers.sockets, helpers.stream, systemx, typex, SharedObject, better_sockets, sysutils, managedthread, classes, winsock, windows, beeper, tickcount;
+uses helpers.sockets, helpers.stream, systemx, typex, betterobject, SharedObject, better_sockets, sysutils, managedthread, classes, winsock, windows, beeper, tickcount;
 
 type
   TMyIPClient = class;

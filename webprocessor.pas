@@ -3,7 +3,7 @@ unit WebProcessor;
 {x$define ALWAYS_CLOSE}
 interface
 
-uses SharedObject, requestinfo, tickcount,beeper,
+uses betterobject, SharedObject, requestinfo, tickcount,beeper,
     better_sockets, helpers.sockets, stringx, sockfix,
     IPClientWrapper, httpclient, systemx, typex,
     MotherShipWebServer, classes, sysutils, exceptions, windows, webstring, stringx.ansi, webfunctions;

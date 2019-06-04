@@ -3,7 +3,7 @@ unit RingStats;
 interface
 
 uses
-  typex, tickcount, sysutils, orderlyinit, managedthread, generics.collections.fixed, sharedobject, threadmanager, debug, stringx, numbers;
+  typex, tickcount, betterobject, sysutils, orderlyinit, managedthread, generics.collections.fixed, sharedobject, threadmanager, debug, stringx, numbers;
 {$DEFINE DISABLE_RING_STATS}
 type
   TRingStat = record
@@ -32,6 +32,9 @@ type
     function GetAverage: nativefloat;
     function GetMax: nativefloat;
     function GetMin: nativefloat;
+    function GetAverageMS: nativefloat;
+    function GetMaxMS: nativefloat;
+    function GetMinMS: nativefloat;
     procedure BeginTime;inline;
     procedure EndTime;inline;
     function DebugString: string;
@@ -148,6 +151,11 @@ begin
   result := result / length(FArray);
 end;
 
+function TRingStats.GetAverageMS: nativefloat;
+begin
+  result := GEtAverage/10000;
+end;
+
 function TRingStats.GetMax: nativefloat;
 var
   x: nativeint;
@@ -159,6 +167,11 @@ begin
   end;
 end;
 
+function TRingStats.GetMaxMS: nativefloat;
+begin
+  result := GetMax/10000;
+end;
+
 function TRingStats.GetMin: nativefloat;
 var
   x: nativeint;
@@ -168,6 +181,11 @@ begin
     if FArray[x].value < result then
       result := FArray[x].value;
   end;
+end;
+
+function TRingStats.GetMinMS: nativefloat;
+begin
+  result := GEtMin/10000;
 end;
 
 function TRingStats.GetName: string;

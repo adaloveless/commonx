@@ -202,11 +202,12 @@ type
   protected
     FWaitBeforeAbortTime: ticker;
     evHot, evIdle, evHasWork, evStart, evStarted, evStop, evFinished, evOutOfPool, evSleeping, evPoolReady, evConcluded: TManagedSignal;
-    function StopREquested: boolean;
+
     function IdleBreak: boolean;virtual;
     function GetThreadID: cardinal;
 
   public
+
     realthread: TRealManagedThread;
     NeverStarted: boolean;
     FromPool: TThreadPoolBase;
@@ -216,6 +217,7 @@ type
     StatusUpdated: boolean;
     NoWorkRunInterval: single;
 
+    function StopREquested: boolean;
     property Info: TThreadInfo read Getinfo;
     property AutoCountCycles: boolean read FAutoCycle write FAutoCycle;
     procedure Terminate;
@@ -355,6 +357,16 @@ type
     procedure SetResult(const Value: string);
   public
     property Result: string read GetResult write SetResult;
+  end;
+
+  TAnonTaskProc = reference to procedure(mt: TManagedThread);
+
+  TAnonTask = class(TManagedThread)
+  protected
+    procedure DoExecute; override;
+  public
+    proc: TAnonTaskProc;
+
   end;
 
   TExternalEventThread = class(TManagedThread)
@@ -3517,6 +3529,14 @@ end;
 function TThreadInfo.GetAge: ticker;
 begin
   result := GetTimeSince(LastUsed);
+end;
+
+{ TAnonTask }
+
+procedure TAnonTask.DoExecute;
+begin
+  inherited;
+  proc(self);
 end;
 
 initialization

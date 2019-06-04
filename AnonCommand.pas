@@ -15,6 +15,8 @@ type
     procedure DoExecute;override;
   end;
 
+
+
   TAnonymousCommand<T> = class(TCommand)
   private
     Err: Exception;
@@ -35,14 +37,30 @@ type
     procedure InitExpense; override;
     procedure Detach; override;
     property SynchronizeFinish: boolean read FSynchronizeFinish write FSynchronizeFinish;
+    property SynchronizeExecute: boolean read FSynchronizeExecute write FSynchronizeExecute;
     constructor Create(AThreadFunc: TFunc<T>; AOnFinishedProc: TProc<T>;AOnErrorProc: TProc<Exception>; ACreateSuspended: Boolean = False;
       FreeOnComplete: Boolean = True);reintroduce;
     destructor Destroy;override;
-
-
 //    class constructor Create;
 //    class destructor Destroy;
  end;
+  TAnonymousGUICommand<T>  = class(TAnonymousCommand<T>)
+  //THIS is an ANONYMOUs COMMAND that uses SYNCHRONIZE in OnFinish
+  //by default.  You can choose to synchronize Execution and Finish of any anonymous
+  //command.  This derivative simply has a different default for SynchronizeFinish
+  public
+    constructor Create(AThreadFunc: TFunc<T>; AOnFinishedProc: TProc<T>;AOnErrorProc: TProc<Exception>; ACreateSuspended: Boolean = False;
+      FreeOnComplete: Boolean = True);reintroduce;
+  end;
+
+
+
+  TAnonymousFunction = class(TAnonymousCommand<boolean>)
+  public
+    constructor CreateInline(AThreadFunc: TProc; ACreateSuspended: Boolean = False;
+      FreeOnComplete: Boolean = false);reintroduce;
+  end;
+
   TAnonTimerProc = reference to procedure();
 
   TAnonymousTimer = class(TAnonymousCommand<boolean>)
@@ -53,8 +71,12 @@ type
 
 { TAnonymousTimer }
 
+function InlineProc(proc: TProc): TAnonymousCommand<boolean>;
+//function InlineProc<T>(proc: TProc): TAnonymousCommand<T,boolean>;
+
 
 function SetTimer(interval: ni; ontimerproc: TAnonTimerProc): TAnonymousTimer;
+function SetTimerGUI(interval: ni; ontimerproc: TAnonTimerProc): TAnonymousTimer;
 
 implementation
 
@@ -88,6 +110,12 @@ begin
 
 end;
 
+function InlineProc(proc: TProc): TAnonymousCommand<boolean>;
+begin
+  var res := TAnonymousFunction.createinline(proc, false, false);
+  result := res;
+end;
+
 constructor TAnonymousCommand<T>.Create(AThreadFunc: TFunc<T>; AOnFinishedProc: TProc<T>;
   AOnErrorProc: TProc<Exception>; ACreateSuspended: Boolean = False; FreeOnComplete: Boolean = True);
 begin
@@ -108,6 +136,7 @@ begin
   if not ACreateSuspended then
     Start;
 end;
+
 
 destructor TAnonymousCommand<T>.Destroy;
 begin
@@ -202,6 +231,27 @@ begin
   CPuExpense := 0;
 end;
 
+function SetTimerGUI(interval: ni; ontimerproc: TAnonTimerProc): TAnonymousTimer;
+begin
+  result := TAnonymousTimer.create(
+    function : boolean
+    begin
+      sleep(interval);
+      exit(true);
+    end,
+    procedure (b: boolean)
+    begin
+      ontimerproc();
+    end,
+    procedure (e: exception)
+    begin
+    end
+  );
+  result.SynchronizeFinish := true;
+  result.FireForget := true;
+  result.start;
+end;
+
 function SetTimer(interval: ni; ontimerproc: TAnonTimerProc): TAnonymousTimer;
 begin
   result := TAnonymousTimer.create(
@@ -218,9 +268,35 @@ begin
     begin
     end
   );
+  result.SynchronizeFinish := false;
   result.FireForget := true;
   result.start;
 end;
 
+
+{ TAnonymousGUICommand<T> }
+
+constructor TAnonymousGUICommand<T>.Create(AThreadFunc: TFunc<T>;
+  AOnFinishedProc: TProc<T>; AOnErrorProc: TProc<Exception>; ACreateSuspended,
+  FreeOnComplete: Boolean);
+begin
+  inherited;
+  SynchronizeFinish := true;
+end;
+
+{ TAnonymousFunction }
+
+constructor TAnonymousFunction.CreateInline(AThreadFunc: TProc;
+  ACreateSuspended, FreeOnComplete: Boolean);
+begin
+  var funct:TFunc<boolean> := function (): boolean
+                begin
+                  AthreadFunc();
+                  result := true;
+                end;
+
+
+  Create(funct, procedure (b: boolean) begin end, procedure (e: exception) begin end);
+end;
 
 end.

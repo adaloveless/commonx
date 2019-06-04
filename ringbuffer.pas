@@ -3,7 +3,7 @@ unit ringbuffer;
 interface
 {$DEFINE OPTIMIZED}
 uses
-  sysutils, sharedobject, classes, typex, systemx, ios.stringx.iosansi,
+  sysutils, betterobject, sharedobject, classes, typex, systemx, ios.stringx.iosansi,
   {$IFDEF WINDOWS}
    {$IFDEF FPC}
       windows,

@@ -635,7 +635,7 @@ begin
 
     if iArrayBaseIndex >=0 then begin
       nArraySub := TreeView_FindRoot(tv, iArrayBaseIndex);
-      nArraySub.Text := '['+inttostr(json.icount)+']';
+      nArraySub.Text := {'['+inttostr(tn.index)+']'+}'[]('+inttostr(json.icount)+' items)';
       SyncTreeNode(tv, nArraySub, json.icount);
       if isJTV then begin
         TJsonTreeView(tv).AddNodeRelation('', nArraySub);
@@ -682,13 +682,13 @@ begin
     end;
     if iArrayBaseIndex >=0 then begin
       SyncTreeNode(tv, tn, json.icount);
-      tn.Text := '['+inttostr(json.icount)+']';
+      tn.Text := '['+inttostr(tn.index-iArrayBaseIndex)+']('+inttostr(json.icount)+' items)';
 {$IFDEF SUB_ARRAYS}
       nSub := tn.Item[iArrayBaseIndex];
       nsub.Text := '['+inttostr(json.icount)+']';
 
       SyncTreeNode(tv, nsub, json.icount, expandlevels);
-
+      inc(iArrayBaseIndex);
 {$ELSE}
       nArraySub := tn;
       SyncTreeNode(tv, nArraySub, json.icount);
@@ -699,7 +699,6 @@ begin
         JSONToTreenode(json[t], tv, nArraySub.item[t], expandlevels);
       end;
     end;
-
   end;
 end;
 

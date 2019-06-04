@@ -3,7 +3,7 @@ unit HTTPClient;
 interface
 {$DEFINE DISABLE_AUTOLOG}
 uses
-  tickcount, stringx.ansi, systemx, WideStrUtils, SimpleWinsock, sysutils, winapi.windows, classes, stringx, debug, sharedobject, exe, beeper, webstring,orderlyinit, typex;
+  tickcount, betterobject, stringx.ansi, systemx, WideStrUtils, SimpleWinsock, sysutils, winapi.windows, classes, stringx, debug, sharedobject, exe, beeper, webstring,orderlyinit, typex;
 //const
  // rar = 'G:\Archives\util\gzip-1.3.5-3-bin\bin\gunzip.exe';
 type

@@ -161,8 +161,10 @@ begin
 end;
 
 procedure JSONToRec(s: string; inst: pointer; TypeInfoOfRec: pointer);overload;
+var
+  j: TJSON;
 begin
-  var j := TJSON.Create;
+  j := TJSON.Create;
   try
     j.FromString(s);
     JSONToRec(s, inst, TypeInfoOfRec);

@@ -495,7 +495,11 @@ end;
 function TServerInterface.LazyFetch(cache: TDataObjectCache; out obj: TDataObject; sType: string;
   params: variant; iSessionID: integer; iTimeoutMS: integer = 300000): boolean;
 begin
-  raise ECritical.create('unimplemented');
+  obj := cache.GetExistingObject(sType, params ,0,0);
+  if obj <> nil then
+    exit(true);
+
+  result := Fetch(cache, obj, sType, params, iSessionid, iTimeoutMS);
 end;
 
 //------------------------------------------------------------------------------

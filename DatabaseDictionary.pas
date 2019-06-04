@@ -7,7 +7,7 @@ unit DatabaseDictionary;
 interface
 {xDEFINE FREEDICT}
 uses
-  SharedObject, sysutils, typex, systemx, classes, db, stringx, inifiles,
+  betterobject, SharedObject, sysutils, typex, systemx, classes, db, stringx, inifiles,
   inifile, debug, webstring, exceptions, miscinterfaces, storageEngineTypes, helpers.list;
 
 const

@@ -3,7 +3,7 @@ unit WebThread;
 interface
 
 uses
-  Classes,ScktComp, RequestInfo, ErrorHandler, WebSTring, dialogs, SharedObject, mothershipwebserver, WebFunctions, stringx, stringx.ansi, windows{$ifdef DELPHI7},SOCKETS{$ENDIF},orderlyinit;
+  Classes,ScktComp, RequestInfo, ErrorHandler, WebSTring, dialogs, betterobject, SharedObject, mothershipwebserver, WebFunctions, stringx, stringx.ansi, windows{$ifdef DELPHI7},SOCKETS{$ENDIF},orderlyinit;
 
 type
   TRequestState = (rqsInit, rqsRegister, rqsExecute, rqsClientExecute, rqsInheritedExecute, rqsReadHeader, rqsReadBody, rqsDispatch, rqsScript, rqsWriteHeader, rqsWriteBody, rqsClosed);

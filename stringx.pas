@@ -13,8 +13,6 @@ const
 type
   TSplitSet = array of string;
 
-
-
   TDynStringArray = array of string;
 
   TPosDetails = record
@@ -86,7 +84,8 @@ function AOR(sBase, sDelimit, sAppend: string): string;inline;
 function IPToBytes(sIP: string): TDynByteArray;
 function CountChar(s: string; c: char): ni;
 function StrIsBinary(s: string): boolean;
-
+function Capitalize(s: string): string;
+function AmpEncode(s: string): string;
 
 
 function Unquote(s: string): string;
@@ -158,6 +157,7 @@ procedure SaveStringAsFile(sFile: string; data: string);
 function LoadFileAsString(sFile: string; iLimitLength: integer = 0): string;
 function LoadStreamAsString(s: TStream): string;
 function LoadStringFromFile(sFile: string; iLimitLength: integer = 0): string;
+function LoadStringFromStream(s: TStream; iLimitLength: integer = 0): string;
 function SortStringCompare(s1,s2: string): integer;
 function CleanString(s: string): string;
 function CleanInjection(s: string): string;
@@ -2506,8 +2506,10 @@ begin
   iTemp2 := round(rTemp);
   rTemp := iTemp2 / iPow;
 
-  if (not bNeg) and (rTemp < 0) then
-    raise ECritical.create('wtf');
+  if (not bNeg) and (rTemp < 0) then begin
+    rTemp := 0.0;
+//    raise ECritical.create('wtf');
+  end;
 
 
   result := FormatFloat('0.########', rTemp);
@@ -4402,6 +4404,9 @@ var
   hasquestion: boolean;
   s: string;
 begin
+  if sParam = '' then
+    exit(sURLorExistingParams);
+
   if bStandalone then
     hasquestion := true //forces it to not append a '?' you'll do that on your own
   else
@@ -4423,6 +4428,55 @@ begin
 
 end;
 
+function AmpEncode(s: string): string;
+var
+  sEscapeChar: string;
+  t: ni;
+  u: ni;
+  sNum: string;
+begin
+  u := 1;
+
+  setlength(result, length(s)*6+1);
+
+  //cycle through the HTTPString
+  for t:= STRZ to high(s) do begin
+    //if  the character is anything other than a standard letter or number
+    if (s[t]='[') or (ord(s[t])<48) or (ord(s[t])>122) or ((ord(s[t])>57) and (ord(s[t])<65))then begin
+      if (NOT (charinset(s[t], [' ', '?', '[',']','!','.',',',';','(',')', '%'])) or (charinset(s[t],['[']) and (t<length(s)) and charinset(s[t+1], ['[']))) then begin
+        //encode the character as a special hex job
+        if ord(s[t]) <10 then
+          sNum := '00'+inttostr(ord(s[t]))
+        else if ord(s[t]) <100 then
+          sNum := '0'+inttostr(ord(s[t]))
+        else
+          sNum := inttostr(ord(s[t]));
+
+        result[u] := '&';
+        result[u+1] := '#';
+        result[u+2] := sNum[1];
+        result[u+3] := sNum[2];
+        result[u+4] := sNum[3];
+        result[u+5] := ';';
+        inc(u, 6);
+
+      end else begin
+        result[u] := s[t];
+        inc(u);
+      end;
+    end else begin
+      result[u] := s[t];
+      inc(u);
+    end;
+  end;
+  //tag a 0 on the end
+
+  result := copy(result, 1, u-1);
+
+
+end;
+
+
 function AOR(sBase, sDelimit, sAppend: string): string;
 begin
   result := AppendOrReplace(sBase, sDelimit, sAppend);
@@ -4434,6 +4488,19 @@ begin
     result := sAppend
   else
     result := sBase + sDelimit + sAppend;
+end;
+
+function LoadStringFromStream(s: TStream; iLimitLength: integer = 0): string;
+begin
+  raise ECritical.create('not implemented .. needs unicode consideration');
+end;
+
+function Capitalize(s: string): string;
+begin
+  if s = '' then
+    exit(s);
+
+  result := uppercase(zcopy(s,0,1))+zcopy(s,1,length(s)-1);
 end;
 
 

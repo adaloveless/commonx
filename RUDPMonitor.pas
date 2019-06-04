@@ -3,7 +3,7 @@ unit RUDPMonitor;
 interface
 
 uses
-  simplereliableudp, sharedobject, typex, systemx, generics.collections.fixed, classes, orderlyinit, sysutils;
+  simplereliableudp, betterobject, sharedobject, typex, systemx, generics.collections.fixed, classes, orderlyinit, sysutils;
 
 
 type

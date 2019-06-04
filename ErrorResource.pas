@@ -6,7 +6,7 @@ unit ErrorResource;
 interface
 
 uses
-  SharedObject, classes, stringx, orderlyinit;
+  betterobject, SharedObject, classes, stringx, orderlyinit;
 
 const
   //orphan

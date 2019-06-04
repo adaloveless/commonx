@@ -5,14 +5,30 @@ interface
 uses
   zip, typex;
 
-
-function CompressStr(s: ansistring): RawByteString;
+type
+  //!!! NOTE... I don't really do anything with this.  Just for interface compatibilitiy
+  TZCompressionLevel = (
+    zcNone,
+    zcFastest,
+    zcDefault,
+    zcMax,
+    zcLevel1,
+    zcLevel2,
+    zcLevel3,
+    zcLevel4,
+    zcLevel5,
+    zcLevel6,
+    zcLevel7,
+    zcLevel8,
+    zcLevel9
+  );
+function CompressStr(s: ansistring; level: TZCompressionLevel = zcDefault): RawByteString;
 function DecompressStr(bs: RawByteString): ansistring;
 
 
 implementation
 
-function CompressStr(s: ansistring): RawByteString;
+function CompressStr(s: ansistring; level: TZCompressionLevel = zcDefault): RawByteString;
 var
   sz: nativeint;
 begin

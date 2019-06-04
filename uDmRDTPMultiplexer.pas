@@ -3,6 +3,9 @@ unit uDmRDTPMultiplexer;
 interface
 
 uses
+{$IFDEF MSWINDOWS}
+  ActiveX,
+{$ENDIF}
   SysUtils, Classes, better_Sockets, RDTPServerList, RDTPMultiplexerServer, applicationparams, rdtpprocessor,orderlyinit,
   sockfix, simpleabstractprivateserversocket, simplereliableudp, typex, skill;
 
@@ -69,7 +72,9 @@ var
   proc: TRDTPMultiplexerProcessor;
   ac: TSimpleAbstractPrivateServerSocket;
 begin
-
+{$IFDEF MSWINDOWS}
+  Coinitialize(nil);
+{$ENDIF}
   proc := TRDTPMultiplexerProcessor.create;
   try
     ac := TSimpleAbstractPrivateServerSocket.create;
@@ -84,6 +89,9 @@ begin
   finally
     proc.free;
   end;
+{$IFDEF MSWINDOWS}
+  COUnInitialize();
+{$ENDIF}
 
 end;
 

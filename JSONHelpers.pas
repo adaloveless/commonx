@@ -1,9 +1,10 @@
 unit JSONHelpers;
 
 interface
+{$DEFINE MT_ITERATORS}
 
 uses
-  generics.collections.fixed, classes, typex, stringx, sysutils, https, json, betterobject, debug, variants, systemx,numbers, tickcount, sharedobject, better_collections;
+  generics.collections.fixed, classes, typex, stringx, sysutils, https, json, betterobject, debug, variants, systemx,numbers, tickcount, sharedobject, better_collections, commandprocessor, anoncommand;
 
 type
   EJSONNodeNotFound = class(Exception);
@@ -18,11 +19,25 @@ type
     node: TJSON;
     procedure Init;
   end;
+
+  TSimpleJSONIterateProc = reference to procedure (n: TJSON);
+
+  Tcmd_JSONIterate = class(TCommand)
+  protected
+    procedure DoExecute; override;
+
+  public
+    n: TJSON;
+    proc: TSimpleJSONIterateProc;
+    procedure InitExpense; override;
+  end;
+
   TJSON = class(TStringObjectList<TJSON>)
   private
     FjsonInput: string;
     FAddr: string;
     FParent: TJSON;
+    FLock: TCLXCriticalSection;
     procedure Parse(s: string; var iPosition: nativeint);
     procedure ParseObject(s: string; var iPosition: nativeint);
     procedure ParseArray(s: string; var iPosition: nativeint);
@@ -46,25 +61,28 @@ type
     property nValuesByIndex[idx: ni]: TJSON read GetnValuesByIndex;
     property nNamesByIndex[idx: ni]: string read GetnNamesByIndex;
   public
-
+    exportPretty: boolean;
     name: string;
     value: variant;
     named: TStringObjectList<TJSON>;
     indexed: array of TJSON;
     parent: TJSON;
-
     expires: Tdatetime;
+    procedure Lock;inline;
+    procedure Unlock;inline;
     constructor create;override;
     destructor destroy;override;
     procedure FromString(s: string);
     property AsString: string read GetAsString write SetAsString;
-    property iCount: ni read GetiCount;
-    property nCount: ni read GEtnCount;
+    property iCount: ni read GetiCount;//deprecated alias use member count
+    property nCount: ni read GEtnCount;//deprecated alias, use membercount
+    property MemberCount: ni read Getncount;
+    property IndexedCount: ni read GEtiCount;
     procedure Sorti(sSubValue: string; bDesc: boolean = false);
     procedure Deletei(index: ni);
-    property s[s: string]: TJSON read valsByString;
+    property members[s: string]: TJSON read valsByString;
     property v[v: variant]: TJSON read ValsByVariant;default;
-    property a[ii: ni]: TJSON read valsByIndex;
+    property indexedNodes[ii: ni]: TJSON read valsByIndex;
     function IndexOfSubValue(subkey: string; value: string): ni;
     function FindSubKey(subkey: string; value: string): TJSON;
     function IsExpired: boolean;
@@ -81,7 +99,7 @@ type
     procedure AddMemberPrimitive(const Key: string; value: double);overload;
     procedure AddMemberPrimitiveVariant(const Key: string; v: variant);overload;
     function AddMember(const Key: string): TJSON;overload;
-    function LookUpBySubObjectField(fld: string; sSubValue: variant): TJSON;
+    function LookUpBySubObjectField(fld: string; sSubValue: variant; bIgnoreCase: boolean = false): TJSON;
     procedure MergeFieldsFrom(o: TJSON);
     procedure Iterate_CalculateField(sNewFieldName: string; procref: TIterateCalculateNewFieldProc);
     procedure Iterate_Filter(procref: TFilterProcRef);
@@ -94,6 +112,9 @@ type
     property Addr: string read FAddr write FAddr;
     property json: string read getJSON write FromString;
     property enable_debug: boolean read GetEnableDebug write SetEnableDebug;
+    procedure ForEachIndexed(proc: TSimpleJSONIterateProc);
+    procedure ForEachMember(proc: TSimpleJSONIterateProc);
+    procedure ForEachChild(proc: TSimpleJSONIterateProc);
   end;
 
   IJSONHolder = IHolder<TJSON>;
@@ -270,6 +291,7 @@ begin
   setlength(indexed,0);
   named := TStringObjectList<TJSON>.create;
   named.takeownership := true;
+  ics(Flock);
 //  inc(cunt);
 //  Debug.Log(inttostr(cunt));
 end;
@@ -291,6 +313,7 @@ BEGIN
   ClearAndFree;
   named.free;
   named := nil;
+  DCS(FLock);
 //  dec(cunt);
 //  Debug.Log(inttostr(cunt));
 
@@ -349,6 +372,64 @@ begin
 
 end;
 
+procedure TJSON.ForEachChild(proc: TSimpleJSONIterateProc);
+begin
+  ForEachIndexed(proc);
+  ForEachMember(proc);
+end;
+
+procedure TJSON.ForEachIndexed(proc: TSimpleJSONIterateProc);
+{$IFNDEF MT_ITERATORS}
+begin
+  for var n in indexed do
+    proc(n);
+end;
+{$ELSE}
+var
+  cl: TCommandList<Tcmd_JSONIterate>;
+  ac: Tcmd_JSONIterate;
+  t: ni;
+begin
+  cl := nil;
+  try
+    cl := TCommandList<Tcmd_JSONIterate>.create;
+    for t:= 0 to High(indexed) do begin
+      ac := Tcmd_JSONIterate.create;
+      ac.n := indexed[t];
+      ac.proc := proc;
+      ac.RaiseExceptions := false;
+      ac.Start;
+      cl.add(ac);
+    end;
+  finally
+    cl.WaitForAll;
+    cl.ClearAndDestroyCommands;
+  end;
+end;
+{$ENDIF}
+
+procedure TJSON.ForEachMember(proc: TSimpleJSONIterateProc);
+var
+  cl: TCommandList<Tcmd_JSONIterate>;
+  ac: Tcmd_JSONIterate;
+  t: ni;
+begin
+  cl := nil;
+  try
+    cl := TCommandList<Tcmd_JSONIterate>.create;
+    for t:= 0 to High(indexed) do begin
+      ac := Tcmd_JSONIterate.create;
+      ac.n := named.ItemsByIndex[t];
+      ac.proc := proc;
+      ac.RaiseExceptions := false;
+      ac.Start;
+    end;
+  finally
+    cl.WaitForAll;
+    cl.ClearAndDestroyCommands;
+  end;
+end;
+
 procedure TJSON.FromString(s: string);
 var
   i: nativeint;
@@ -388,7 +469,12 @@ var
   a: TArray<String>;
   v: TArray<variant>;
   s: string;
+  prettiness: string;
 begin
+  prettiness := '';
+  if exportPretty then
+    prettiness := NEWLINE;
+
   result := '';
 
   if iCount > 0 then begin
@@ -396,12 +482,12 @@ begin
 
     for t:= 0 to iCount-1 do begin
       if t > 0 then
-        s := s + ',';
+        s := s + ','+prettiness;
       s := s + indexed[t].GetJSON;
       if (t and 15)=0 then
-        s := s + CRLF;
+        s := s + prettiness;
     end;
-    s := s + ']'+CRLF;
+    s := s + ']'+prettiness;
     result := result + s;
 
   end else begin
@@ -409,10 +495,10 @@ begin
       s := '{';
       for t:= 0 to GEtnCount-1 do begin
         if t > 0 then
-          s := s + ',';
+          s := s + ','+prettiness;
         s := s + quote(self.nNamesByIndex[t])+':'+nValuesByIndex[t].GetJSON;
       end;
-      s := s+'}';
+      s := s+'}'+prettiness;
       result := s;
     end else begin
 //      debug.Log(inttostr(vartype(value))+'='+vartostr(value));
@@ -447,21 +533,33 @@ var
   s1,s2,s3,s4: string;
   i: nativeint;
   s: string;
+  bArray: boolean;
+  bDotFound, bArrayfound: boolean;
 begin
   try
     if sAddr = '' then
       exit(self);
 
-    splitString(sAddr, '.', s1,s2);
-    splitstring(sAddr, '[', s3,s4);
-    if (length(s3) < length(s1)) and (length(s3) > 0) then begin
-      s1 := s3;
-      s2 := '['+s4;
-
+    bArray := false;
+    bDotFound := splitString(sAddr, '.', s1,s2);
+    if length(s1) = 0 then begin
+      sAddr := zcopy(sAddr, 1, length(sAddr)-1);
+      bDotFound := splitString(sAddr, '.', s1,s2);
     end;
-    if s1 = '' then
+    bArrayFound := splitstring(sAddr, '[', s3,s4);
+    if (length(s3) < length(s1)) {and (length(s3) > 0)} then begin
+      s1 := s3;
+      s2 := s4;
+      bArray := true;
+    end;
+    if (not bArray) and (s1 = '') and (not bDotFound) then
       exit(self);
 
+    if bArray then begin
+      if not splitString(s2, ']', s1,s2) then begin
+        raise ECritical.create('Expecting '']''');
+      end;
+    end else
     if zcopy(s1,0,1) = '[' then begin
       if zcopy(s1,length(s1)-1, 1) <> ']' then
         raise ECritical.create('Expecting '']''');
@@ -561,16 +659,31 @@ begin
   end;
 end;
 
+procedure TJSON.Lock;
+begin
+  ecs(Flock);
+end;
+
 function TJSON.LookUpBySubObjectField(fld: string;
-  sSubValue: variant): TJSON;
+  sSubValue: variant; bIgnoreCase: boolean): TJSON;
 var
   t: ni;
+  ssub: string;
+  n: TJSON;
 begin
+  ssub := vartostrex(sSubValue);
   result := nil;
   for t:= 0 to High(indexed) do begin
     if self.indexed[t].HasNode(fld) then begin
-      if self.indexed[t][fld].value = sSubValue then
-        exit(indexed[t]);
+      if bIgnoreCase then begin
+        n := self.indexed[t].GetNode(fld);
+        if (n<>nil) and (comparetext(n.AsString, ssub)=0) then
+          exit(indexed[t]);
+      end else begin
+        n := self.indexed[t].GetNode(fld);
+        if (n<>nil) and (comparestr(n.AsString, ssub)=0) then
+          exit(indexed[t]);
+      end;
     end;
   end;
 
@@ -836,6 +949,7 @@ procedure TJSON.Sorti(sSubValue: string; bDesc: boolean = false);
 var
   bDone: boolean;
   t: ni;
+  n1, n2: TJSON;
   procedure Swap(i1,i2: ni);
   var
     js: TJSON;
@@ -849,13 +963,17 @@ begin
   while not bDone do begin
     bDone := true;
     for t:= 0 to icount-2 do begin
+      n1 := self.indexed[t].GetNode(sSubValue);
+      n2 := self.indexed[t+1].GetNode(sSubValue);
+      if (n1 = nil) or (n2 = nil) then
+        raise ECritical.create('subvalue not found: '+sSubValue);
       if bDesc then begin
-        if self.indexed[t].named[sSubValue].Value > self.indexed[t+1].named[sSubValue].Value then begin
+        if n1.value < n2.value then begin
           Swap(t,t+1);
           bDone := false;
         end;
       end else begin
-        if self.indexed[t].named[sSubValue].Value < self.indexed[t+1].named[sSubValue].Value then begin
+        if n1.value > n2.value then begin
           Swap(t,t+1);
           bDone := false;
         end;
@@ -880,6 +998,11 @@ begin
   result := true;
 end;
 
+procedure TJSON.Unlock;
+begin
+  lcs(Flock);
+end;
+
 function TJSON.valsByIndex(ii: ni): TJSON;
 begin
   if ii >= iCount then
@@ -895,9 +1018,9 @@ end;
 function TJSON.ValsByVariant(v: variant): TJSON;
 begin
   if varType(v) in [varInteger, varInt64, varSmallint, varByte, varUInt64] then
-    exit(a[v])
+    exit(indexedNodes[v])
   else
-    exit(s[v]);
+    exit(members[v]);
 
 end;
 
@@ -978,7 +1101,7 @@ function TJSON.AddMember(const Key: string): TJSON;
 begin
   result := TJSON.create;
   self.named.Add(key, result);
-  result.ReAddr(AOR(self.Addr,'.',mkey));
+  result.ReAddr(AOR(self.Addr,'.',key));
 end;
 
 { TJSONCache }
@@ -1136,9 +1259,24 @@ begin
   success := false;
 end;
 
+{ Tcmd_JSONIterate }
+
+procedure Tcmd_JSONIterate.DoExecute;
+begin
+  inherited;
+  proc(n);
+end;
+
+procedure Tcmd_JSONIterate.InitExpense;
+begin
+  inherited;
+  cpuexpense := 0;
+  Resources.SetResourceUsage('btx', 1/16);
+end;
+
 initialization
   cunt := 0;
 
 
-
 end.
+

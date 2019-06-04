@@ -16,7 +16,7 @@ type
   TCellCarrier = (ccTMobile, ccVirgin, ccCingular, ccSprint, ccVerizon, ccNextel, ccUsCellular, ccSunCom, ccPowerTel, ccAtt, ccAlltel, ccMetroPCS);
 
 const
-  DEFAULT_GLOBAL_MAIL_SENDER = '192.168.101.8';
+  DEFAULT_GLOBAL_MAIL_SENDER = '192.168.101.125';
 
 
 procedure RaiseSMTPError(sCode, sMessage: string);
@@ -219,7 +219,7 @@ end;
 
 procedure SendSMS(sPhoneNumber: string; sMessage: string; carrier: TCellCarrier);
 begin
-  SendMail('e@e', sPhonenumber+GetEmailSuffixforcarrier(carrier), '', sMessage);
+  SendMail('', sPhonenumber+GetEmailSuffixforcarrier(carrier), '', sMessage);
 end;
 
 
