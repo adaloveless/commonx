@@ -1234,7 +1234,9 @@ procedure TCustomTcpServer.Close;
 begin
   if (BlockMode = bmThreadBlocking) and Assigned(FServerSocketThread) then
   begin
+    FServerSocketThread.freeonterminate := false;
     FServerSocketThread.Terminate;
+    FServerSocketThread.waitFor;
     FServerSocketThread := nil;
 {$IFDEF LINUX}
     EnterCriticalSection(FThreadLock);

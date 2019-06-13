@@ -1,5 +1,5 @@
 unit JSONHelpers;
-
+{$I DelphiDefs.inc}
 interface
 {$DEFINE MT_ITERATORS}
 
@@ -111,7 +111,7 @@ type
     property CalcAddr: string read GetAddr;
     property Addr: string read FAddr write FAddr;
     property json: string read getJSON write FromString;
-    property enable_debug: boolean read GetEnableDebug write SetEnableDebug;
+    property enable_debug_json: boolean read GetEnableDebug write SetEnableDebug;
     procedure ForEachIndexed(proc: TSimpleJSONIterateProc);
     procedure ForEachMember(proc: TSimpleJSONIterateProc);
     procedure ForEachChild(proc: TSimpleJSONIterateProc);
@@ -1279,4 +1279,5 @@ initialization
 
 
 end.
+
 

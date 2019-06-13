@@ -1,15 +1,16 @@
-unit rudp1;
+unit rudp1exp;
 {xDEFINE USE_FIBERS}
 {$INLINE AUTO}
 {$DEFINE USE_SHARED_QUEUES}
 {$DEFINE SHARED_MULTIQUEUES}
 {$DEFINE ENDPOINT_REFERENCES}
-{$DEFINE FLOODCHECK}
+{xx$DEFINE FLOODCHECK}
 {x$DEFINE EXTRA_DEAD_CHECKS}
 {$DEFINE SEPARATE_SEND_LOCK}
 {x$DEFINE DO_INTERVALS}
 {x$DEFINE VERBOSE_REFERENCES}
 {x$DEFINE USE_REGISTERED_MEMORY}
+{x$DEFINE WAIT_EMPTY_ON_SEND}
 
 //{$Message Error 'I forgot... definition of LOOP changed.  I still need to be able to handle "one shot" threads.... the definition of LOOP is going to be all squirley... fuck!'}
 //todo 1: Since ChangeConnID is sent without requiring ACK, who is to say if it isn't lost?  Special case, retrans?
@@ -50,7 +51,7 @@ unit rudp1;
 {$DEFINE QUEUE_INCOMING_UDP}
 {$DEFINE STRUCTURED_INCOMING_UDP}
 {x$DEFINE DEBUG_RETRANS}
-{x$DEFINE UDP_DEBUG}
+ {x$DEFINE UDP_DEBUG}
 {$DEFINE MTU_TESTS}
 {x$DEFINE MULTI_QUEUE_IN}
 {x$DEFINE FORCE_SMALL_MTU}
@@ -61,9 +62,9 @@ unit rudp1;
 {x$DEFINE USE_FEC}
 {$DEFINE FUTURE_ACKS} //causes Internal error C2359 in 32-bit!
 {x$DEFINE NEVER_WALK_DOWN_MTU}
-{$DEFINE DUMB}
+{x$DEFINE DUMB}
 {x$DEFINE CLEAR_DEBUG}
-{$DEFINE OUT_QUEUE}
+{x$DEFINE OUT_QUEUE}
 {$DEFINE HIGH_PRIORITY_QUEUES}
 {x$DEFINE ALWAYS_SPLIT_ASS}
 {x$DEFINE PACKET_COMBINATION}
@@ -126,12 +127,14 @@ uses
   standardlist, netbytes, sysutils, tickcount, betterobject,
   generics.collections.fixed, SimpleAbstractConnection, managedthread,
   sharedobject, idglobal, idudpserver, idsockethandle, orderlyinit,
-  stringx, simplequeue, idtcpserver, idcontext,
+  stringx, simplequeue, idtcpserver, idcontext, idstack,
   helpers.indy, better_indy;
 
 
 
 const
+  PACKET_QUEUE_TIMER_INTERVAL = 1;
+  RECEIVE_CAPACITY = 32;
   MAX_SPLIT_PARTS = 256;
   MTU_TEST_SIZES : array of ni =   [390,1250,2000, 3000, 4000,8500, 9500, 10500, 11500, 12000,16000,24000,32000,48000,64000];
 //W  MTU_TEST_PING_REQ: array of ni=[99990,9999,  99,   99,   99,  99,   99,    99,    99,    99,    5,    4,    3,    2,    1];
@@ -145,12 +148,12 @@ const
   MTU_RETEST_TIME = 10000;
   STALE_RETRANS_TIME = 200;
   MAX_STALE_RETRANS_TIME = 500;
-  INITIAL_PACKET_WRITE_AHEAD = 0;
+  INITIAL_PACKET_WRITE_AHEAD = 32;
   STALL_WALK_INC = 0.5;
   STALL_WALK_DEC = 0.5;
   WA_SHIFT = 5;
-  MIN_PACKET_WRITE_AHEAD = 4; //
-  MAX_PACKET_WRITE_AHEAD = 20; //
+  MIN_PACKET_WRITE_AHEAD = 1; //
+  MAX_PACKET_WRITE_AHEAD = 32; //
   MAX_OUTSTANDING_PACKETS = MAX_PACKET_WRITE_AHEAD+1;//this should probably be low because, setting it too high will make changes to the MTU size less responsive
   DEFAULT_RETRANS_TIMEOUT = 200;
   MIN_MTU = 1400;//<<--only used for FEC stuff, cutting into parts
@@ -331,6 +334,7 @@ type
     expected_sequencenumber: int64;
     argument: int64;
     parts: byte;
+    capacity: byte;
     {$IFDEF DUMB}SendersBackLog: byte;{$ENDIF}
     procedure Init(ep: TReliableUDPEndpoint);
     property Flag_Create: boolean read GetFlagCreate write SetFlagCReate;//
@@ -676,6 +680,9 @@ type
     lastperiodicack: ticker;
     processpacketqueuetime: ticker;
     noMorePacketsAllowed: boolean;
+{$IFDEF XONXOFF}
+    xon: boolean;
+{$ENDIF}
     procedure DispatchInput_Sync(itm: TEndpointInputQueueItem);
     procedure ChangeConnectionIDInLogs(iOldID,
       iNewID: int64; from: boolean);
@@ -765,6 +772,7 @@ type
     property QueueTime: ticker read GetQueueTime write SetQueueTime;
 //    property connectionid: cardinal read Getconnectionid;
     function SmartLock: boolean;inline;
+    function IsSystemThread: boolean;
   end;
 
   TReliableUDPClientEndpoint = class(TReliableUDPEndpoint)
@@ -1077,9 +1085,10 @@ begin
 {$IFDEF USE_SHARED_QUEUES}
   q := nil;
 {$ELSE}
-  q.Stop;
-  q.SafeWaitFor;
-  TPM.NoNeedthread(q);
+  if q.Stop then begin
+    q.SafeWaitFor;
+    TPM.NoNeedthread(q);
+  end;
 {$ENDIF}
 end;
 
@@ -1088,9 +1097,10 @@ begin
 {$IFDEF USE_SHARED_QUEUES}
   q := nil;
 {$ELSE}
-  q.Stop;
-  q.SafeWaitFor;
-  TPM.NoNeedthread(q);
+  if q.Stop then begin
+    q.SafeWaitFor;
+    TPM.NoNeedthread(q);
+  end;
 {$ENDIF}
 end;
 
@@ -1231,6 +1241,8 @@ begin
   tcid := ep.TOconnectionid;
   fcid := ep.FROMConnectionId;
   expected_sequencenumber := ep._nextexpectedSequenceNumber;//<--- this should always be included
+  capacity := greaterof(RECEIVE_CAPACITY-ep.rxDataLog.Count,0);
+//  Debug.Log('capacity='+capacity.tostring);
   if Flag_AckType <> ackNone then begin
     sequencenumber := ep.NextSequenceNumber;
   end else
@@ -1433,7 +1445,9 @@ begin
       end;
       setlength(da, dax);
       if dax > 0 then
-        SendFutureAck(da);
+        SendFutureAck(da)
+      else
+        AckIncoming(true);
 
     end;
 
@@ -1600,6 +1614,13 @@ begin
   self.CloseOrigin := coServer;
 end;
 
+function TReliableUDPEndpoint.IsSystemThread: boolean;
+begin
+  if eet = nil then
+    exit(false);
+  result := TThread.CurrentThread.ThreadID = eet.threadid;
+end;
+
 procedure TReliableUDPEndpoint.InitiateCloseDueToUserExeception;
 begin
   self.CloseOrigin := coClient;
@@ -1632,6 +1653,13 @@ end;
 
 procedure TReliableUDPEndpoint.BeforeDestruction;
 begin
+  if assigned(user_thread) then begin
+    if user_thread.Stop then begin
+      user_thread.WaitFor;
+      user_thread.endpoint := nil;
+      TPM.NoNeedthread(user_thread);
+    end;
+  end;
 //  if not CloseMe then
 //    raise ECritical.Create('You cannot destroy a '+classname+' that is connected.   Disconnect it first.');
 
@@ -1640,17 +1668,13 @@ begin
 {$IFDEF USE_FIBERS}
     FIB.NoNeedFiber(eet);
 {$ELSE}
-    eet.stop;
-    eet.WaitFor;
-    TPM.NoNeedthread(eet);
+    if eet.stop then begin
+      eet.WaitFor;
+      TPM.NoNeedthread(eet);
+    end;
 {$ENDIF}
   end;
-  if assigned(user_thread) then begin
-    user_thread.Stop;
-    user_thread.WaitFor;
-    user_thread.endpoint := nil;
-    TPM.NoNeedthread(user_thread);
-  end;
+
 
 
 
@@ -1836,7 +1860,7 @@ begin
     while ti <> nil do begin
       r := ti.packet;
       if seq >= _unclearedsequencenumber then
-        _unclearedsequencenumber := seq+1;
+        _unclearedsequencenumber := seq;
       if r.h.sequencenumber < seq then begin
         if txLog.Has(ti) then begin
 {$IFDEF SEND_RECEIVE_DEBUG}
@@ -1862,6 +1886,8 @@ begin
             bestAckTime := tm;
 
           txLog.remove(r);
+//          if txLog.count = 0 then
+//            Debug.Log(self, 'all cleared');
           ti := TtreeItem_ReliableUDPPacketLogRecord(txLog.FirstItem);
           EvalFloodSignal;
           net_stats_clear_rate_tx.Accumulate(1);
@@ -1966,6 +1992,9 @@ var
   t: ni;
 begin
   inherited CReate;
+{$IFDEF XONXOFF}
+  xon := true;
+{$ENDIF}
   splitass.seq := -1;
   for t := low(MTU_TEST_SIZES) to high(MTU_TEST_SIZES) do begin
     mtu_test_results[t].sz := MTU_TEST_SIZES[t];
@@ -2277,8 +2306,8 @@ begin
     //complete its actions because we don't have a clue what's
     //going on in there...
     if co <> coServer then begin
-      ut.Stop;
-      ut.WaitForFinish;
+      if ut.Stop then
+        ut.WaitForFinish;
     end;
 
     ut.endpoint := nil;
@@ -2289,10 +2318,13 @@ begin
 
 //    if not InSystemThreadStop then begin
 {$IFNDEF USE_FIBERS}
-      st.stop(getcurrentthreadid=thr.threadid);
-      st.WaitForFinish;
-      st.endpoint := nil;
-      TPM.NoNeedThread(st);
+      if not IsSystemThread then begin
+        if st.stop(getcurrentthreadid=thr.threadid) then begin
+          st.WaitForFinish;
+          st.endpoint := nil;
+          TPM.NoNeedThread(st);
+        end;
+      end;
 {$ELSE}
       st.stop;
       st.Endpoint := nil;
@@ -2304,10 +2336,13 @@ begin
   end;
 
 
-  if assigned(ut) then begin
-    if ut.threadid <> GetcurrentThreadID then
-      TPM.NoNeedThread(ut);
-  end;
+//  if assigned(ut) then begin
+//    if ut.threadid <> GetcurrentThreadID then begin
+//      ut.Stop;
+//      ut.WaitFor;
+//      TPM.NoNeedThread(ut);
+//    end;
+//  end;
 
   user_thread := nil;
   eet := nil;
@@ -2369,8 +2404,12 @@ begin
     PrepareForDestruction(coClient);
 
 
-  queue_out.WaitForEmptyQueue;
-  queue_pipe_in.WaitForEmptyQueue;
+  queue_out.deadcheck;
+  queue_pipe_in.deadcheck;
+  if queue_Out <> nil then
+    queue_out.WaitForEmptyQueue;
+  if queue_pipe_in <> nil then
+    queue_pipe_in.WaitForEmptyQueue;
 
 
 
@@ -2522,7 +2561,9 @@ begin
   while iTotalRead < len do begin
     if WaitForData(1000) then begin
       iJustRead := self.ReadData(@p[iTotalRead], len-iTotalREad);
+
       inc(iTotalREad, iJustRead);
+//      Debug.Log(self, 'Read '+iTotalRead.tostring+' of '+len.tostring);
     end;
   end;
   exit(iTotalRead);
@@ -2534,11 +2575,17 @@ end;
 procedure TReliableUDPEndpoint.GuaranteeSendData(p: pbyte; len: nativeint);
 var
   iJust: ni;
+  lenlen: ni;
+  iTotal: ni;
 begin
+  lenlen := len;
+  iTotal := 0;
   while len > 0 do begin
     iJust := self.SendDAta(p, len);
+    inc(iTotal, iJust);
     dec(len, iJust);
     inc(p, iJust);
+//    Debug.Log(self, 'Send '+iTotal.tostring+' of '+lenlen.tostring);
   end;
 
 end;
@@ -2714,6 +2761,7 @@ begin
         self.CloseMe := true;
       end;
       rxDataLog.Add(ifo);
+      FevUserDataIncoming.Signal(true);
       if not multiplexer.stufftodo then
         AckFutureGAps;
       if assigned(OnDataAvailable) then begin
@@ -2814,9 +2862,10 @@ procedure TReliableUDPEndpoint.HandleIncomingPacket(ifo: TReliableUDPPacketLogRe
 begin
 
   ResetKeepaliveTimer;
+
   if (ifo.h.command <> RUDP_CMD_REQUEST_RETRANS) then begin
 //    Debug.ConsoleLog('Clearing in reference to: ' + ifo.DebugString);
-    ClearTxLogsUpTo(ifo.h.expected_sequencenumber-1);
+    ClearTxLogsUpTo(ifo.h.expected_sequencenumber);
   end;
   //
   if ifo.h.Flag_System then begin
@@ -2826,6 +2875,17 @@ begin
     HandleIncomingCommandPacket(ifo);
   end else
   begin
+{$IFDEF XONXOFF}
+    var b := xon;
+//  debug.log('incapacity='+ifo.h.capacity.tostring);
+    xon := ifo.h.capacity > 0;
+    if xon <> b then begin
+      if xon then
+        Debug.Log('xon')
+      else
+        Debug.Log('xoff');
+    end;
+{$ENDIF}
     HandleIncomingDataPacket(ifo);
   end;
 
@@ -3004,8 +3064,9 @@ procedure TReliableUDPEndpoint.EvalFloodSignal;
 var
   bYes: boolean;
 begin
-  //bYes := (txLog.count < greaterof(lesserof(bestAckTime,FLOODED_AT_MAX),FLOODED_AT_MIN)) or (CloseState <> csnotClosed);
+  //OLD bYes := (txLog.count < greaterof(lesserof(bestAckTime,FLOODED_AT_MAX),FLOODED_AT_MIN)) or (CloseState <> csnotClosed);
   bYes := (txLog.count < greaterof(lesserof((bestAckTime*10)/(FlexMTU/1250),FLOODED_AT_MAX),FLOODED_AT_MIN)) or (CloseState <> csnotClosed);
+//  bYEs := true;
 //  if not byes then
 //    debug.consolelog('flood');
   Signal(evNotFlooded, bYes);
@@ -4125,6 +4186,11 @@ var
   tm: ticker;
 begin
   result := false;
+{$IFDEF XONXOFF}
+  if (not xon) and (h.Flag_AckType <> ackNone) then
+    exit;
+{$EndiF}
+
 {$IFDEF SEND_RECEIVE_DEBUG}
   if h.Flag_Retrans then
     Debug.Log(self, '[ReSend] '+h.DebugString)
@@ -4391,6 +4457,8 @@ begin
     end;
     thr.slept := false;
 {$else}
+    ProcessPAcketQueue;
+    processpacketqueuetime := getticker;
     sleep(st);
 {$ENDIF}
   end;
@@ -4460,7 +4528,7 @@ begin
 {$IFDEF SLOW_ACK}
     end;
 {$ENDIF}
-    if gettimesince(processpacketqueuetime) > 0 then begin
+    if gettimesince(processpacketqueuetime) > PACKET_QUEUE_TIMER_INTERVAL then begin
       ProcessPAcketQueue;
       processpacketqueuetime := getticker;
     end;
@@ -4592,6 +4660,7 @@ begin
 
         h.PrepareToSend(self);
         SendPacket(h, pp, result);
+        Debug.Log(self, 'data sent');
 
         //windows.beep(1000,30);
         SystemThreadSignal := true;
@@ -4751,8 +4820,8 @@ begin
       inc(t);
       inc(pp);
     end;
-    SendPacket(h, p,l);
-    net_stats_clear_rate_rx.Accumulate(1);
+    if SendPacket(h, p,l) then
+      net_stats_clear_rate_rx.Accumulate(1);
   finally
     Unlock;
 //    if p <> nil then
@@ -6250,6 +6319,7 @@ begin
 //        ifo.Free;
 //        ifo := nil;
       end;
+      SendAck(ifo.h.sequencenumber, nil);
       {$IFDEF REF_DEBUG}Debug.log('RElease from ReadData2');{$ENDIF}
       ifo._Release;
       ifo := nil;
@@ -6399,7 +6469,7 @@ begin
           ep.queue_out.QUeueSendData(ep, ep.queuetime, ep.RemoteHost, ep.RemotePort, buf, seq, WalkToMTU(h.parts));
           ep.queuetime := ep.queuetime + ((round((length(buf) * ep.queue_out.ticks_per_byte))));
         {$ELSE}
-          result := self.ReSendEx(ep.RemoteHost, ep.RemotePort, buf, seq, WalkToMTU(h.parts));
+          result := self.ReSendEx(0, 0, ep.RemoteHost, ep.RemotePort, buf, seq, WalkToMTU(h.parts));
         {$ENDIF}
 
       finally
@@ -7509,6 +7579,9 @@ begin
   itm.peerip :=  Ahost;
   itm.peerport := aport;
   itm.qt := basetm;
+{$IFDEF WAIT_EMPTY_ON_SEND}
+  WaitForEmptyQueue(100);
+{$ENDIF}
   addItem(itm);
 
 end;
@@ -7542,6 +7615,9 @@ begin
   itm.peerip := Ahost;
   itm.peerport := aport;
   itm.qt := basetm;
+{$IFDEF WAIT_EMPTY_on_SEND}
+  WaitForEmptyQueue(100);
+{$ENDIF}
   addItem(itm);
 end;
 
@@ -7601,6 +7677,7 @@ var
   buf: TIdbytes;
   hrt: ticker;
   wt: ticker;
+//  dat: TIDBytes;
 begin
   inherited;
   try
@@ -7621,13 +7698,42 @@ begin
       hrt := gethighresticker;
     end;
   {$ENDIF}
-    ep.totalTX := ep.totalTX + length(buf);
+    ep.totalTX := ep.totalTX + length(buf);//debug.log(self, 'TX:'+length(buf).tostring);
   {$IFDEF USE_FEC}
     ep.Multiplexer.ReSendBufferWithFec(qt, round(ep.queue_out.ticks_per_byte*fec),  peerip, peerport, buf, fec, seq);
   {$ELSE}
     ecs(ep.Multiplexer.sectUDPsend);
     try
+{x$define NEWSEND}
+{$IFDEF NEWSEND}
+      var
+        LIP : String;
+      begin
+        LIP := GStack.ResolveHost(Fep.Remotehost, Id_IPv4);
+        var res: integer := -1;
+        repeat
+          res := datalen;
+//          ep.Multiplexer.SendBuffer(Peerip, peerport, buf);
+            ep.Multiplexer.FIsServerid
+
+
+
+
+          res := gstack.SendTo(Fep.Multiplexer.Binding.Handle, buf, 0, datalen, LIP, Fep.remoteport, Id_IPv4);
+          if res <= 0 then
+            sleep(1);
+        until res > 0;
+
+
+      end;
+{$ELSE}
+      if (length(buf) = 1+SizeOf(TReliableUDPHeader)) then
+        Debug.Log(self, 'sending');
       ep.Multiplexer.SendBuffer(Peerip, peerport, buf);
+      if (length(buf) = 1+SizeOf(TReliableUDPHeader)) then
+        Debug.Log(self, 'actually sent');
+
+{$ENDIF}
     finally
       lcs(ep.MultiPlexer.sectUDPsend);
     end;

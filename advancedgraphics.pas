@@ -1,5 +1,6 @@
 unit advancedgraphics;
 {$MESSAGE '*******************COMPILING advancedgraphics.pas'}
+{$INCLUDE DelphiDefs.inc}
 {$INLINE auto}
 {x$DEFINE USE_SSE3}
 

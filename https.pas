@@ -1,7 +1,7 @@
 unit https;
 
 interface
-
+{$I DelphiDefs.inc}
 {$IFDEF MSWINDOWS}
 uses MSXML2_TLB, sysutils, variants, typex, commandprocessor, classes, debug, IdSSLOpenSSL, systemx, IdSSLOpenSSLHeaders, betterobject, helpers.stream;
 

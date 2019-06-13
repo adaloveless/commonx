@@ -92,10 +92,14 @@ end;
 function CheckForUpdates(paramsfile: string; bShow: boolean): boolean;
 begin
   if frmUpdateProgress = nil then begin
-    application.CreateForm(TfrmUpdateProgress, frmUpdateProgress);
+    frmUpdateProgress := TfrmUpdateProgress.create(nil);
+//    application.CreateForm(TfrmUpdateProgress, frmUpdateProgress);
   end;
 
   result := frmUpdateProgress.CheckForUpdates(paramsfile);
+
+  if not result then
+    frmUpdateProgress.free;
 
 end;
 
@@ -240,6 +244,21 @@ begin
     if comparetext(sl,'kill')=0 then begin
       sleep(8000);
       exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
+      sleep(1000);
+      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
+      sleep(1000);
+      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
+      sleep(1000);
+      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
+      sleep(1000);
+      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
+      sleep(1000);
+      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
+      sleep(1000);
+      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
+      sleep(1000);
+      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
+      sleep(1000);
     end;
 
 

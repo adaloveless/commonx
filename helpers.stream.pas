@@ -13,7 +13,7 @@ uses
 function Stream_GuaranteeWrite(const s: TStream; const p: PByte; const iSize: nativeint; iStartingPositionHint:int64 = 0; iAlign:int64 =65536): nativeint;overload;
 function Stream_GuaranteeWrite(const s: TStream; const p: PByte; const iSize: nativeint; prog: PProgress; iStartingPositionHint:int64 = 0; iAlign:int64 =65536): nativeint;overload;
 {$IFDEF MSWINDOWS}
-function Stream_GuaranteeWrite(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint): nativeint;overload;
+function Stream_GuaranteeWrite(const s:  TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint): nativeint;overload;
 function Stream_GuaranteeWrite(const s: TAdaptiveQueuedSTream; const p: PByte; const iSize: nativeint): nativeint;overload;inline;
 {$ENDIF}
 

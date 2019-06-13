@@ -3,12 +3,14 @@ unit AbstractDB;
 interface
 
 uses
-  consolelock, betterobject, classes, stringx, typex, systemx, sysutils, storageenginetypes, commandprocessor, commandicons, namevaluepair;
+  tickcount, consolelock, betterobject, classes, stringx, typex, systemx, sysutils, storageenginetypes, commandprocessor, commandicons, namevaluepair;
 
 type
   TAbstractDBCursor = class;//forward
 
   TAbstractdb = class(TBetterObject)
+  private
+    function GetAge: ticker;
   protected
     FMWhost, FMWendPoint: string;
     function GetMWEndPoint: string;
@@ -19,6 +21,8 @@ type
 {$IFNDEF CONTEXT_ONLY}
     database, DBHost, DBuser, DBpassword, DBPort: string;
 {$ENDIF}
+    Created: ticker;
+    LastUsed: ticker;
     accumulator: TStringBuilder;
     procedure Init;override;
     destructor Destroy;override;
@@ -43,7 +47,7 @@ type
     function Connected: boolean;virtual;abstract;
     property MWHost: string read GetMWHost write SetMWHost;
     property MWEndPoint: string read GetMWEndPoint write SetMWEndpoint;
-
+    property Age: ticker read GetAge;
   end;
 
   TAbstractFieldDef =   TSERowsetFieldDef;
@@ -217,6 +221,11 @@ begin
   finally
     UnlockConsole;
   end;
+end;
+
+function TAbstractdb.GetAge: ticker;
+begin
+  result := getTimeSince(Created);
 end;
 
 function TAbstractdb.GetMWEndPoint: string;

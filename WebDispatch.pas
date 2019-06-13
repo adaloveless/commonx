@@ -464,7 +464,6 @@ begin
       rqInfo.response.content.add('<HTML><FONT face="Helvetica, Arial" size = "2">There was a problem dispatching your request:<BR>');
       rqInfo.response.content.add('<B>'+E.Message+'</B></FONT></HTML>');
       rqInfo.response.contentlength := length(rqInfo.response.content.text);
-
     end;
   end;
 

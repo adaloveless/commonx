@@ -52,14 +52,27 @@ procedure SleepEx(tm: ticker; bAlertable: boolean = true);
 //    procedure DoExecute;override;
 //  end;
 
-
+function FormatHRT(i: int64): string;
 var
   GTC: TStopWatch;
 
 implementation
 
 uses
-  orderlyinit;
+  orderlyinit,stringx;
+
+function FormatHRT(i: int64): string;
+var
+  s, s1,s2,s3: string;
+begin
+  s := i.tostring;
+  s1 := zcopy(s, 0, length(s)-7);
+  s2 := zcopy(s, length(s)-7,3);
+  s3 := zcopy(s, length(s)-4,4);
+  result := s1+'.'+s2+'.'+s3;
+
+
+end;
 
 function GetTicker: ticker;
 begin

@@ -213,7 +213,7 @@ begin
     sObj := sender.classname+'@'+inttohex(ni(pointer(sender)), sizeof(ni)*2)+': ';
   end;
   DebugLog.Log(ltAll, getcurrentthreadid.tostring+'::'+
-    DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+    DateToStr(Date)+', '+TimeToStr(Now)+'_'+formatHRT(GethighResTicker)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
     sFilter
   );
 

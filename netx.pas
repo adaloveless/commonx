@@ -3,7 +3,7 @@ unit netx;
 interface
 
 uses
-  sockets, scktcomp, winapi.winsock, sysutils;
+  sockfix, scktcomp, winapi.winsock, sysutils;
 
 function DNSLookup(sHost: string): string;
 function ReverseIP(sIp: string): string;

@@ -3,7 +3,7 @@ unit bayesian;
 interface
 
 uses
-  numbers, tickcount, dirfile, windows, memoryfilestream, debug, simplemail, backgroundcommandprocessor, generics.collections, dir, beeper,httpclient,commandprocessor, systemx, sharedobject, classes, sysutils, stringx, orderlyinit;
+  numbers, tickcount, dirfile, windows, memoryfilestream, debug, simplemail, backgroundcommandprocessor, generics.collections, dir, beeper,httpclient,commandprocessor, systemx, sharedobject, classes, sysutils, stringx, orderlyinit, betterobject;
 
 const
   MINIMUM_TOKEN_INSTANCES = 500;

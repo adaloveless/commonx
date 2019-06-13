@@ -1,4 +1,5 @@
 unit RDTPProcessor;
+{$INCLUDE DelphiDefs.inc}
 
 interface
 {$INLINE AUTO}

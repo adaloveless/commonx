@@ -18,6 +18,11 @@ interface
 uses SysUtils, betterobject, dtnetconst, NetworkBuffer, typex, Classes, stringx, variants, debug, exceptions, systemx, numbers, zip;
 
 const
+  CK : array of byte =
+    [55,33,77,88,22,56,34,24,77,134,245,234,123,234,255,245,67,45,34,23,12,
+     34,56,45,34,23,12,123,45,234,243,132,98,76,43,65,32,21,76,65,54,43,87,76,32];
+
+
 //  PACKET_MARKER = $119B92A8;
 //  PACKET_ADDRESS_MARKER = 0;
 //  PACKET_ADDRESS_LENGTH = 4;
@@ -241,8 +246,8 @@ function VerbBool(b: boolean) : string;
 function BoolToStr(b: boolean) : string;
 function VArBoolToStr(v: variant) : string;
 procedure xorCrypt(buffer: PByte; iLength: integer; key: string);
-var
-  DefEncKey : string;
+(*var
+  DefEncKey : string;*)
 
 implementation
 
@@ -847,7 +852,7 @@ end;
 procedure TRDTPPacket.Encrypt;
 var
   pfrom, pto: Pbyte;
-  sfrom, sto: ni;
+  szfrom, szto: ni;
 begin
   if encrypted then exit;
   if unpackedlength = 0 then begin
@@ -866,15 +871,22 @@ begin
 
   if 0<>(PlatformOptions and PACKET_PLATFORM_OPTION_SUPPORTS_COMPRESSION) then begin
     pfrom := self.FBuffer.FRealBuffer;
-    sFrom := self.UnpackedLength;
-    if sFrom <= 0 then
-      raise ETransportError.create('cannot encrypt a packet that is '+inttostr(sFrom)+' length.');
-    pto := GetMemory(sFrom);
-    sto := zip.ZipRam(@pFrom[sizeof(TRDTPHEader)], @pTo[sizeof(TRDTPHEader)], sFrom-sizeof(TRDTPHEADER), sFrom-sizeof(TRDTPHEADER), nil);
-    if sto > 0 then begin
+    szFrom := self.UnpackedLength;
+    if szFrom <= 0 then
+      raise ETransportError.create('cannot encrypt a packet that is '+inttostr(szFrom)+' length.');
+    pto := GetMemory(szFrom);
+    //zip ram starting BEYOND header
+    szto := zip.ZipRam(@pFrom[sizeof(TRDTPHEader)], @pTo[sizeof(TRDTPHEader)], szFrom-sizeof(TRDTPHEADER), szFrom-sizeof(TRDTPHEADER), nil);
+    //if compression successful
+    if szto > 0 then begin
+      //move header
       movemem32(pto, pFrom, sizeof(TRDTPHEader));
-      self.FBuffer.AssignBuffer(pto, sTo+sizeof(TRDTPHEADER));
-      FBuffer.PokeLong(sTo+sizeof(TRDTPHEADER), PACKET_ADDRESS_PACKED_LENGTH);
+
+      //encrypt everything AFTER header
+      XOREncrypt(@pto[sizeof(TRDTPHeader)], szTo, @CK[0], length(CK));
+
+      self.FBuffer.AssignBuffer(pto, szTo+sizeof(TRDTPHEADER));
+      FBuffer.PokeLong(szTo+sizeof(TRDTPHEADER), PACKET_ADDRESS_PACKED_LENGTH);
       Encryption := ENCRYPT_RLE;
       FEncrypted := true;
     end else begin
@@ -893,8 +905,8 @@ end;
 //---------------------------------------------------------------------------
 procedure TRDTPPacket.Decrypt;
 var
-  sFrom, sTo, sNew: ni;
-  pFrom, pTo: pbyte;
+  szFrom, szTo, szNew: ni;
+  pFrom, pCopy, pTo: pbyte;
 begin
   if not encrypted then exit;
 
@@ -912,14 +924,29 @@ begin
   case Encryption of
     ENCRYPT_RLE:
     begin
-      sFrom := Self.Packedlength;
-      sTo := self.UnPackedLength;
-      pTo := GetMemory(sTo);
-      pFrom := Fbuffer.FRealBuffer;
-      sNew := UnZipRam(@pFrom[sizeof(TRDTPHEADER)], @pTo[sizeof(TRDTPHEADER)], sFrom-sizeof(TRDTPHEADER), sTo-sizeof(TRDTPHEADER), nil);
-      Movemem32(pTo, pFrom, sizeof(TRDTPHEADER));
-      self.FBuffer.AssignBuffer(pTo, sNew+sizeof(TRDTPHEADER), sTo+sizeof(TRDTPHEADER));//destroys pFrom
-      Encryption := ENCRYPT_VERBATIM;
+      szFrom := Self.Packedlength;
+      szTo := self.UnPackedLength;
+      pTo := GetMemory(szTo);
+      try
+        pFrom := Fbuffer.FRealBuffer;
+        pCopy := GetMemory(szTo);
+        try
+          movemem32(pCopy, pFrom, szFrom);
+          //decrypt everything AFTER header
+          XORDecrypt(@pcopy[sizeof(TRDTPHeader)], szFrom-sizeof(TRDTPHEADER), @CK[0], length(CK));
+          //unzip decrypted results
+          szNew := UnZipRam(@pCopy[sizeof(TRDTPHEADER)], @pTo[sizeof(TRDTPHEADER)], szFrom-sizeof(TRDTPHEADER), szTo-sizeof(TRDTPHEADER), nil);
+          Movemem32(pTo, pCopy, sizeof(TRDTPHEADER));
+          self.FBuffer.AssignBuffer(pTo, szNew+sizeof(TRDTPHEADER), szTo+sizeof(TRDTPHEADER));//destroys pFrom
+          pTo := nil;//pTO is consumed by AssignBuffer
+          Encryption := ENCRYPT_VERBATIM;
+        finally
+          FreeMemory(pCopy);
+        end;
+      finally
+        if pTo <> nil then
+          FreeMemory(pTo);
+      end;
     end;
     ENCRYPT_VERBATIM:
     begin
@@ -1607,7 +1634,7 @@ end;
 
 
 initialization
-  DefEncKey :=
+(*  DefEncKey :=
     #$4f+#$5f+#$f8+#$40+#$e1+#$82+#$3e+#$9e+#$74+#$06+#$3e+#$39+#$12+
     #$1a+#$7c+#$51+#$90+#$8c+#$9c+#$ce+#$c3+#$32+#$2f+#$ca+#$f1+#$88+
     #$cd+#$4f+#$86+#$9a+#$64+#$62+#$08+#$25+#$cf+#$40+#$4d+#$f9+#$ab+
@@ -1618,7 +1645,7 @@ initialization
     #$10+#$3d+#$8a+#$55+#$4c+#$14+#$a8+#$58+#$73+#$4c+#$31+#$64+#$98+
     #$42+#$65+#$cd+#$8f+#$05+#$5f+#$4f+#$f5+#$52+#$3e+#$a2+#$70+#$c3+
     #$83+#$4e+#$38+#$43+#$ba+#$c1+#$d7+#$c5+#$5d+#$9f+#$2d+#$36+#$f5+
-    #$59+#$b6+#$af+#$82+#$01+#$10+#$f0;
+    #$59+#$b6+#$af+#$82+#$01+#$10+#$f0;*)
 
 end.
 

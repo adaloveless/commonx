@@ -1032,7 +1032,7 @@ type
     property BitmapVirtualCache16BppSize: Integer read Get_BitmapVirtualCache16BppSize write Set_BitmapVirtualCache16BppSize;
     property BitmapVirtualCache24BppSize: Integer read Get_BitmapVirtualCache24BppSize write Set_BitmapVirtualCache24BppSize;
     property PerformanceFlags: Integer read Get_PerformanceFlags write Set_PerformanceFlags;
-    property ConnectWithEndpoint: POleVariant1 write Set_ConnectWithEndpoint;
+    property ConnectWithEndpoint: OleVariant write Set_ConnectWithEndpoint;
     property NotifyTSPublicKey: WordBool read Get_NotifyTSPublicKey write Set_NotifyTSPublicKey;
   end;
 

@@ -1,4 +1,5 @@
 unit tor;
+{$I DelphiDefs.inc}
 
 interface
 

@@ -1,5 +1,4 @@
 unit FileServiceServer;
-xxx
 {GEN}
 {TYPE SERVER}
 {CLASS TFileServiceServer}

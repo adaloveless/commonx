@@ -4,7 +4,7 @@ interface
 
 
 uses
-  FMX.StdCtrls, FMX.ListView, FMX.ListView.Appearances, FMX.ListView.Types, typex, fmx.objects, fmx.controls, FMX.VirtualKeyboard, FMX.Platform, FMX.Types, classes, fmx.forms, debug, FMXTee.Chart, FMXTee.Series, FMX.ListBox;
+  FMX.StdCtrls, FMX.ListView, FMX.ListView.Appearances, FMX.ListView.Types, typex, fmx.objects, fmx.controls, FMX.VirtualKeyboard, FMX.Platform, FMX.Types, classes, fmx.forms, debug, FMXTee.Chart, FMXTee.Series, FMX.ListBox, fmx.layouts;
 
 type
   TChildIterator = reference to procedure (c: TFMXobject; var stop: boolean);
@@ -29,13 +29,14 @@ function Control_GetHeight(c: TFMXObject): single;
 
 function Control_IterateChildren(c: TFMXObject; p: TChildIterator): boolean;
 
-
 type
   TGuiHelper = class
     class function control_GetControl<TC: TControl>(parent: fmx.controls.TControl; bRecurse: boolean = true): TC;
     class procedure DestroySubControls(parent: fmx.controls.TControl);
     class procedure DestroySubComponents(owner: TComponent; cc: TComponentClass);
   end;
+
+
 
 
 
@@ -407,6 +408,10 @@ begin
 
   end;
 end;
+
+
+
+
 
 
 end.

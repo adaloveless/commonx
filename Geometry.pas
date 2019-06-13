@@ -1,5 +1,5 @@
 unit Geometry;
-
+{$INCLUDE DelphiDefs.inc}
 interface
 
 uses

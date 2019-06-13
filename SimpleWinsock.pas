@@ -311,7 +311,7 @@ begin
   TimeVal.tv_usec := (Timeout mod 1000) * 1000;
   FD_ZERO(FDSet);
   FD_SET(hSocket, FDSet);
-  Result := select(0, @FDSet, nil, nil, @TimeVal) > 0;
+  Result := (select(0, @FDSet, nil, nil, @TimeVal) > 0)
 end;
 
 { TSocksHeader }

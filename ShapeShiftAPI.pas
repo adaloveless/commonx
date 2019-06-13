@@ -1,4 +1,5 @@
 unit ShapeShiftAPI;
+{$I DelphiDefs.inc}
 
 interface
 

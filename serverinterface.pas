@@ -173,6 +173,9 @@ type
 
 
       property PoolTime: ticker read GetPoolTime write SetPoolTime;
+      function PingRDTP: boolean;
+      function PingDB: boolean;
+
     end;
 
 function RSTypeToDOType(rs: data.db.TFieldType): TDataFieldClass;
@@ -598,6 +601,18 @@ begin
 end;
 
 
+
+function TServerInterface.PingDB: boolean;
+begin
+  result := true;
+end;
+
+function TServerInterface.PingRDTP: boolean;
+begin
+  result := FunctionQuery('select 1', 0);
+
+
+end;
 
 function TServerInterface.Post(obj: TDataObject; iSessionID: integer;
   bIncludeSubFields: boolean): boolean;

@@ -8,7 +8,7 @@ interface
 {x$DEFINE SUSPEND_ACK}
 {x$DEFINE DEBUG_THREAD_NAMES}
 {x$DEFINE DISABLE_THREAD_POOL}
-{x$DEFINE DETAILED_DEBUG}
+{$DEFINE DETAILED_DEBUG}
 {x$DEFINE QUICK_THREAD_DEBUG}
 
 uses
@@ -24,7 +24,7 @@ uses
 {$ENDIF}
   ThreadManager, typex, systemx, sysutils, sharedobject, Generics.collections.fixed, orderlyinit;
 const
-  DEFAULT_THREAD_POOL_TIME = 60000;
+  DEFAULT_THREAD_POOL_TIME = 1000;
 type
   EThreadViolation = class(Exception);
 //  TManagedThreadState = (mtsInit, mtsNotStarted, mtsStartRequested, mtsRunning, mtsFinished, mtsTerminated);
@@ -224,8 +224,8 @@ type
     procedure WaitForFinish;virtual;
     procedure WaitFor;reintroduce;virtual;
     procedure WaitForLowLevel;
-    procedure Stop(bySelf: boolean=false);virtual;
-    procedure BeginStop(bySelf: boolean=false);
+    function Stop(bySelf: boolean=false): boolean;virtual;
+    function BeginStop(bySelf: boolean=false): boolean;
     procedure EndStop(bySelf: boolean=false);
     function GetSignalDebug: string;
     property WAitBEforeAbortTime: ticker read FWaitBeforeAbortTime write FWaitBEforeAbortTime;
@@ -1542,10 +1542,17 @@ begin
     exit;
   end;
 
+  if IsSignaled(evSleeping) then
+    exit;
+
   if PoolLoop then begin
+
     if IsSignaled(evStarted) then begin
       Signal(evHasWork);
       while not WaitForSignal(evFinished, 1000) do begin
+        if not IsCurrentThread then begin
+          Debug.Log('Current thread is : '+TThread.currentthread.threadid.tostring);
+        end;
         Debug.Log(self, 'Safe Wait For '+self.classname+' #'+threadid.tostring+' '+getsignaldebug+' '+inttostr(getticker));
         Signal(evHasWork);
         if (WAitBEforeAbortTime > 0 ) and  (GetTimeSince(beginstoptime) > WAitBeforeAbortTime) then begin
@@ -1813,7 +1820,8 @@ begin
 
 end;
 
-procedure TManagedThread.BeginStop(bySelf: boolean=false);
+function TManagedThread.BeginStop(bySelf: boolean=false) : boolean;
+//RETURNS FALSE IF ALREADY STOPPING.
 var
   bWasSTarted: boolean;
 begin
@@ -1827,14 +1835,24 @@ begin
 
   bWasStarted := IsSignaled(evSTarted);
 //  Debug.Log('Signal evStop '+GetSignalDebug);
-  Signal(evStop);
+
+  Lock;
+  try
+    result := not IsSignaled(evStop);
+    if result then
+      Signal(evStop)
+    else
+      exit;
+  finally
+    Unlock;
+  end;
 
   if not bWasStarted then begin
-    while not evStarted.IsSignaled do begin
+    //while not evStarted.IsSignaled do begin
       Debug.log(NameEx+' Was not in a started state '+GetSignalDebug);
       sleep(1000);
       Signal(evStart);//you have to start it before it can reach the stop state
-    end;
+    //end;
   end;
   Signal(evHasWork, true);
   Signal(evHot,true);
@@ -1893,7 +1911,7 @@ begin
 {$IFDEF QUICK_THREAD_DEBUG}  Debug.Log('At END of STOP signal '+self.GetSignalDebug);{$ENDIF}
 end;
 
-procedure TManagedThread.Stop(bySelf: boolean=false);
+function TManagedThread.Stop(bySelf: boolean=false): boolean;
 begin
 //  if IsSignaled(self.ev) then begin
 //    Debug.Log('WARNING: Why are you calling "Stop" on a thread that is already pooled?');
@@ -1907,11 +1925,13 @@ begin
 //  if NeverStarted then begin
 //    Signal(evFinished,true);
 //  end else begin
-  if bySelf then
+  if bySelf then begin
+    result := false;
     Loop := false
-  else begin
-    BeginSTop(byself);
-    EndStop(bySelf);
+  end else begin
+    result := BeginStop(byself);
+    if result then
+      EndStop(bySelf);
   end;
 //  end;
 end;

@@ -103,6 +103,8 @@ function Get7BitEncodedBuffer8bitLength(i7BitLength: nativeint): nativeint;
 function Get8BitEncodedBufferLength(i7BitLength: nativeint): nativeint;
 procedure Convert7BitsTo8Bits(input: pbyte; output: pbyte; InputLength: nativeint);
 function Convert8BitsTo7Bits(input: PByte; inputSize: ni; output: PByte; outputSize: ni): boolean;
+procedure XOREncrypt(d: PByte; sz: ni; key: Pbyte; keysize: ni);
+procedure XORDecrypt(d: PByte; sz: ni; key: Pbyte; keysize: ni);
 
 function GetLogicalDrives: DWORD; stdcall;
 function GetVolumeInformation(lpRootPathName: PChar;
@@ -429,6 +431,25 @@ begin
 
 end;
 
+
+
+
+procedure XOREncrypt(d: PByte; sz: ni; key: Pbyte; keysize: ni);
+begin
+  var k := 0;
+  for var t := 0 to sz-1 do begin
+    d[t] := d[t] xor key[k];
+    inc(k);
+    if k >= keysize then
+      k := 0;
+  end;
+end;
+
+procedure XORDecrypt(d: PByte; sz: ni; key: Pbyte; keysize: ni);
+begin
+  //SAME as encrypt
+  XOREncrypt(d,sz, key, keysize);
+end;
 
 procedure MoveMem32(const D,S: pointer; const Size: ni);
 //a: Jason Nelson

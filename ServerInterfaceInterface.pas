@@ -92,6 +92,8 @@ type
     property Timeout: integer read GetTimeOut write SetTimeout;
 
     function GetStructureFromEngine(id: integer): string;
+    function PingRDTP: boolean;
+    function PingDB: boolean;
   end;
 
 

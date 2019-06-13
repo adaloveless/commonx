@@ -148,7 +148,7 @@ type
     function TryExecuteLock: boolean;inline;
     procedure ProcessAllSynchronously;
     procedure WaitForAll;
-    procedure Stop(bySelf: boolean=false); override;
+    function Stop(bySelf: boolean=false): boolean; override;
     property MaxItemsInQueue: ni read FMaxItemsInQueue write FMaxItemsInQueue;
     procedure OptimizeIncoming(incomingitem: TQueueItem);virtual;
     procedure WaitForFinish;override;
@@ -756,10 +756,10 @@ begin
 
 end;
 
-procedure TAbstractSimpleQueue.Stop;
+function TAbstractSimpleQueue.Stop(bySelf: boolean=false): boolean;
 begin
   shutdown := true;
-  inherited;
+  result := inherited;
 
 end;
 

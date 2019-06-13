@@ -1,4 +1,5 @@
 unit GenericRDTPClient;
+{$INCLUDE DelphiDefs.inc}
 //SERVER SCENARIOS
 //--SYSTEM THREAD is waiting for USER ACTIONS to complete and connection times out - receive AV
 
@@ -17,7 +18,7 @@ uses
   simplewinsock,
   windows,
 {$ENDIF}
-  simpleabstractconnection, simplewinsock,
+  simpleabstractconnection,
   managedthread, DtNetConst, networkbuffer, debug, typex, systemx;
 
 const DEFAULT_TIMEOUT = 300000;

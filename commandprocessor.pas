@@ -16,6 +16,7 @@ unit commandprocessor;
 {x$DEFINE PERFORMANCE_LOGGING}
 {$DEFINE DONT_USE_DQ}
 {$DEFINE FIRE_FORGET_CONTROLLED_BY_CP}
+{$DEFINE CLEAN_STALE}
 interface
 
 uses
@@ -228,17 +229,9 @@ type
   protected
     OptGRoupset: boolean;
     FOptimizationGRoup: string;
-//    FNext: TCommand;
-//    FPrev: TCommand;
     procedure ResetOPtimzationGRoup;
     procedure InitOptimizationGRoup;virtual;
     property Processor: TCommandProcessor read GetProcessor write SetProcessor;
-//    procedure SetNext(const obj: TCommand);
-//    procedure SetPrev(const obj: TCommand);
-//    function GetNext: TCommand;
-//    function GetPrev: TCommand;
-//    property Next: TCommand read GEtNext write SetNext;
-//    property Prev: TCommand read GetPrev write SEtPrev;
 
     procedure DoExecute; virtual; abstract;
   public
@@ -1407,116 +1400,122 @@ var
   hadprocessor: boolean;
   p: TCommandProcessor;
 begin
-  hadprocessor := false;
-  if self = nil then
-    exit;
   try
-    self.CResult := true;
-    FprocessLater := false;
-    IsExecutingNow := true;
-    if assigned(self.Thread) then
-      self.Thread.Transitioning := false;
-
-
+    hadprocessor := false;
+    if self = nil then
+      exit;
     try
+      self.CResult := true;
+      FprocessLater := false;
+      IsExecutingNow := true;
+      if assigned(self.Thread) then
+        self.Thread.Transitioning := false;
+
 
       try
-        threadCommand := self;
-        FActiveThreadID := GetCurrentThreadID();
-{$IFDEF WINDOWS}
-        //SetThreadPriority(FActiveThreadID, self.Priority);
-{$ENDIF}
-//        SyncAffinity;
-        PreProcess;
-        if not IsCancelled then begin
-          DoExecute;
-          PostProcess;
-          if assigned(onFinish_Anon) then
-            onFinish_Anon(self);
-        end;
-        threadcommand := nil;
-        FCompletelyFinished := true;
-        FTimeOfCompletion := tickcount.GetTicker;
-      finally
-//        IsComplete := true;
-        threadCommand := nil;
-      end;
 
-    except
-      on E: exception do begin
-        self.Cresult := false;
-        Debug.Log(self,'Error Executing command ' + self.ClassName + '... ' +
-            E.message);
-        Error := true;
-        ErrorMessage := E.message;
-        Status := Status + E.Message;
-      end;
-    end;
-  finally
-
-    thr := self.Thread;
-
-//    self.Thread := nil;
-//    if Assigned(thr) then
-//      thr.Command := nil; // <--HEY! THIS HAS TO BE DONE **BEFORE** marking the command COMPLETE
-
-    Step := StepCount;
-
-    // CAREFUL HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    IsExecutingNow := false;
-    p := processor;
-    if assigned(p) then begin
-      p.Lock;
-      hadprocessor := true;
-    end;
-    try
-      try
         try
-          {$IFDEF ALLOW_EARLY_THREADDONE_SIGNAL}
-            thr.Parent.ThreadDone(thr);
-          {$ENDIF}
-          Lock;
-          try
-            OkToFree := false;
-            Running := false;
-          finally
-            Unlock;
+          threadCommand := self;
+          FActiveThreadID := GetCurrentThreadID();
+  {$IFDEF WINDOWS}
+          //SetThreadPriority(FActiveThreadID, self.Priority);
+  {$ENDIF}
+  //        SyncAffinity;
+          PreProcess;
+          if not IsCancelled then begin
+            DoExecute;
+            PostProcess;
+            if assigned(onFinish_Anon) then
+              onFinish_Anon(self);
           end;
-
-          if Assigned(p) then begin
-            p.lock;
-            try
-
-              p.CommandDeactivated(self);
-            finally
-              p.Unlock;
-            end;
-          end
-          else begin
-            if hadprocessor then
-              raise EBasicException.Create('Processor was pulled');
-          end;
-
-
-          IsComplete := not FProcessLater;//dead lock risk
-          //AlertCommandChange(FProcessor);
+          threadcommand := nil;
+          FCompletelyFinished := true;
+          FTimeOfCompletion := tickcount.GetTicker;
         finally
-          if assigned(p) then
-            p.Unlock;
+  //        IsComplete := true;
+          threadCommand := nil;
         end;
-      finally
-        IsExecutingNow := false;
+
+      except
+        on E: exception do begin
+          self.Cresult := false;
+          Debug.Log(self,'Error Executing command ' + self.ClassName + '... ' +
+              E.message);
+          Error := true;
+          ErrorMessage := E.message;
+          Status := Status + E.Message;
+        end;
       end;
     finally
-      OkToFree := true;
 
-      //IsComplete := not FProcessLater;//dead lock risk
+      thr := self.Thread;
+
+  //    self.Thread := nil;
+  //    if Assigned(thr) then
+  //      thr.Command := nil; // <--HEY! THIS HAS TO BE DONE **BEFORE** marking the command COMPLETE
+
+      Step := StepCount;
+
+      // CAREFUL HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      IsExecutingNow := false;
+      p := processor;
+      if assigned(p) then begin
+        p.Lock;
+        hadprocessor := true;
+      end;
+      try
+        try
+          try
+            {$IFDEF ALLOW_EARLY_THREADDONE_SIGNAL}
+              thr.Parent.ThreadDone(thr);
+            {$ENDIF}
+            Lock;
+            try
+              OkToFree := false;
+              Running := false;
+            finally
+              Unlock;
+            end;
+
+            if Assigned(p) then begin
+              p.lock;
+              try
+
+                p.CommandDeactivated(self);
+              finally
+                p.Unlock;
+              end;
+            end
+            else begin
+              if hadprocessor then
+                raise EBasicException.Create('Processor was pulled');
+            end;
+
+
+            IsComplete := not FProcessLater;//dead lock risk
+            //AlertCommandChange(FProcessor);
+          finally
+            if assigned(p) then
+              p.Unlock;
+          end;
+        finally
+          IsExecutingNow := false;
+        end;
+      finally
+        OkToFree := true;
+
+        //IsComplete := not FProcessLater;//dead lock risk
+      end;
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+      OkToFree := true;
     end;
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
     OkToFree := true;
+  except
+    on E: Exception do begin
+      Status := 'Uncontrolled Exception: '+e.message;
+    end;
   end;
-  OkToFree := true;
 
 
 
@@ -4936,11 +4935,13 @@ procedure TCPThreadPoolGrowthManager.CleanStale;
 var
   thr: TCommandProcessorChildThread;
 begin
+{$IFDEF CLEANSTALE}
   Lock;
   try
+
     if Flist.count > 0 then begin
       thr := FList[0];
-      if gettimeSince(thr.lastused) > 60000 then begin
+      if gettimeSince(thr.lastused) > 1000 then begin
         FList.remove(thr);
         thr.loop := false;
         thr.stop;
@@ -4951,6 +4952,7 @@ begin
   finally
     Unlock;
   end;
+{$ENDIF}
 end;
 
 procedure TCPThreadPoolGrowthManager.Detach;
@@ -4972,7 +4974,6 @@ begin
     expanded := TPM.Needthread<TCommandProcessorChildThread>(nil);
     expanded.loop := true;
     expanded.haswork := false;
-    expanded.beginstart;
 
     //Debug.Log('got thread waiting for out of pool');
     WaitForSignal(expanded.evOutOfPool);
@@ -4983,6 +4984,8 @@ begin
     finally
       Unlock;
     end;
+    expanded.beginstart;
+    expanded.endstart;
     runHot := true;
   end else
     runHot := false;

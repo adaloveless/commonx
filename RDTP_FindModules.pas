@@ -7,7 +7,7 @@ unit RDTP_FindModules;
 interface
 
 uses
-  typex, classes, managedthread, tickcount, commandprocessor, dir, dirfile, rdtpserverlist, sharedobject, stringx, commonconstants, sysutils, windows, generics.collections.fixed, systemx, orderlyinit, debug;
+  betterobject, typex, classes, managedthread, tickcount, commandprocessor, dir, dirfile, rdtpserverlist, sharedobject, stringx, commonconstants, sysutils, windows, generics.collections.fixed, systemx, orderlyinit, debug;
 
 
 type

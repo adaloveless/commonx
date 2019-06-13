@@ -1,4 +1,5 @@
 unit rdtpdb;
+{$I DelphiDefs.inc}
 {$DEFINE DO_WRITE_BEHIND}
 
 interface
@@ -149,6 +150,7 @@ end;
 constructor Trdtpdb.CopyCreate(source: TRDTPDB);
 begin
   inherited Create;
+  Created := getticker;
   FMWHost := source.MWHost;
   FMWEndpoint := source.MWEndpoint;
   if source.Context <> '' then begin
