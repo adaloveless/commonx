@@ -115,7 +115,11 @@ begin
       finally
         cs.free;
       end;
+{$IFDEF IOS}
+      ms.Seek(int64(0),TSeekOrigin.soBeginning);
+{$ELSE}
       ms.Seek(0,0);
+{$ENDIF}
       if destlen >= ms.size then begin
         movemem32(pDest, pbyte(ms.memory), ms.Size);
         result := ms.Size;
@@ -145,7 +149,7 @@ begin
       finally
         cs.free;
       end;
-      ms2.Seek(0,0);
+      ms2.Seek(int64(0),TSeekOrigin.soBeginning);
       if destlen >= ms2.size then begin
         movemem32(pDest, pbyte(ms2.memory), ms2.Size);
         result := ms2.Size;

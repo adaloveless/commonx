@@ -1,12 +1,14 @@
 unit Speech;
+{$DEFINE SPEECHFALLBACK}
+{$DEFINE NOSPEECH}
 
 interface
 
+{$IFNDEF NOSPEECH}
 uses commandprocessor, winapi.activex, soundtools, https, httpclient, winapi.MMSystem, sysutils, stringx, typex, winapi.windows, beeper, betterobject, sharedobject,
   backgroundcommandprocessor, speechlib_TLB,orderlyinit, systemx, booger, soundconversion_windows;
 
-{$DEFINE SPEECHFALLBACK}
-{x$DEFINE NOSPEECH}
+
 
 type
   TTextToSpeechEngine = class (TLockQueuedObject)
@@ -67,7 +69,11 @@ var
 
 procedure LockSpeech;inline;
 procedure UnlockSpeech;inline;
+
+{$ENDIF}
 implementation
+
+{$IFNDEF NOSPEECH}
 
 uses WebString;
 procedure LockSpeech;inline;
@@ -451,4 +457,5 @@ initialization
   init.RegisterProcs('Speech', oinit, ofinal);
 
 finalization
+{$ENDIF}
 end.

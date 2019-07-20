@@ -4,11 +4,24 @@ inherited frmMockMobile: TfrmMockMobile
   ClientWidth = 445
   Position = Designed
   DesignerMasterStyle = 0
-  object PanelParent: TPanel
+  object q: TPanel
+    Touch.GestureManager = gm
+    Touch.InteractiveGestures = [Pan]
     Align = Client
     Size.Width = 445.000000000000000000
     Size.Height = 555.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 3
+    TabOrder = 2
+  end
+  object TempMessageTimer: TTimer
+    Interval = 50
+    OnTimer = TempMessageTimerTimer
+    Left = 120
+    Top = 248
+  end
+  object gm: TGestureManager
+    Sensitivity = 80.000000000000000000
+    Left = 208
+    Top = 264
   end
 end

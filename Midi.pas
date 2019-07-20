@@ -19,7 +19,7 @@ unit Midi;
 interface
 
 uses
-  typex, debug, classes, SysUtils, mmsystem, Math, Windows, Contnrs, systemx,orderlyinit, stringx, sharedobject, generics.collections.fixed;
+  typex, betterobject, debug, classes, SysUtils, mmsystem, Math, Windows, Contnrs, systemx,orderlyinit, stringx, sharedobject, generics.collections.fixed;
 
 const
   // size of system exclusive buffer

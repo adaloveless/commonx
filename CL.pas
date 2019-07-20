@@ -55,7 +55,6 @@ unit CL;
 interface
 
 {$INCLUDE 'CL.inc'}
-
 uses
   {$IFDEF WINDOWS}
   Windows;
@@ -2144,8 +2143,7 @@ begin
   @clUnloadCompiler:=GetOpenCLFuncAddress('clUnloadCompiler');
 
 //////////
-{cl_ext.h}
-  CL_PARTITION_BY_NAMES_LIST_END_EXT:=CL_PARTITION_BY_NAMES_LIST_END_EXT-1;
+  CL_PARTITION_BY_NAMES_LIST_END_EXT:=integer(CL_PARTITION_BY_NAMES_LIST_END_EXT)-1;
   @clSetMemObjectDestructorAPPLE:=GetOpenCLFuncAddress('clSetMemObjectDestructorAPPLE');
   @clLogMessagesToSystemLogAPPLE:=GetOpenCLFuncAddress('clLogMessagesToSystemLogAPPLE');
   @clLogMessagesToStdoutAPPLE:=GetOpenCLFuncAddress('clLogMessagesToStdoutAPPLE');

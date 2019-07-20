@@ -10,6 +10,10 @@ unit rudp1;
 {x$DEFINE DO_INTERVALS}
 {x$DEFINE VERBOSE_REFERENCES}
 {x$DEFINE USE_REGISTERED_MEMORY}
+{$IFNDEF MSWINDOWS}
+{$DEFINE SMALL_MTU}
+{$DEFINE FORCE_SMALL_MTU}
+{$ENDIF}
 
 //{$Message Error 'I forgot... definition of LOOP changed.  I still need to be able to handle "one shot" threads.... the definition of LOOP is going to be all squirley... fuck!'}
 //todo 1: Since ChangeConnID is sent without requiring ACK, who is to say if it isn't lost?  Special case, retrans?
@@ -167,11 +171,15 @@ const
   CHAIN_SIZE_LIMIT = 8400;
 {$ENDIF}
 {$IFDEF SMALL_MTU}
-  DEFAULT_MTU = 390;
+  DEFAULT_MTU = 450;
 {$ELSE}
   DEFAULT_MTU = 16000;
 {$ENDIF}
+{$IFDEF SMALL_MTU}
+  MAX_MTU = 450;
+{$ELSE}
   MAX_MTU = 9000;
+{$ENDIF}
 //  DEFAULT_MTU = 1350;
 //  DEFAULT_MTU = 3400;
 
@@ -397,6 +405,8 @@ type
     function _AddRef: integer;override;
     function _Release: integer;override;
 {$ENDIF}
+    function AddPacketRef: integer;inline;
+    function ReleasePacketRef: integer;inline;
 
   end;
 
@@ -1492,7 +1502,7 @@ begin
 {$ELSE}
           SendAck(r.h.sequencenumber, nil);
 {$ENDIF}
-          r._Release;
+          r.ReleasePacketRef;
           EvalSYstemThreadSignal;
           EvalUserThreadSignal;
         end;
@@ -1683,7 +1693,7 @@ begin
     p  := ti.packet;
     txLog.Remove(p);
     {$IFDEF REF_DEBUG}Debug.log('RElease from ClearAckedTX');{$ENDIF}
-    p._Release;
+    p.ReleasePacketRef;
   end;
 
   if assigned(rxLog) then
@@ -1696,7 +1706,7 @@ begin
     rxLog.Remove(ti.packet);
     p  := ti.packet;
     {$IFDEF REF_DEBUG}Debug.log('RElease from ClearAckedTX1');{$ENDIF}
-    p._Release;
+    p.ReleasePacketRef;
   end;
 
   if assigned(rxDataLog) then
@@ -1709,7 +1719,7 @@ begin
     rxDataLog.Remove(ti.packet);
     p  := ti.packet;
     {$IFDEF REF_DEBUG}Debug.log('RElease from ClearAckedTX2');{$ENDIF}
-    p._Release;
+    p.ReleasePacketRef;
   end;
 
   if assigned(rxQueue) then
@@ -1722,7 +1732,7 @@ begin
     rxQUeue.Remove(ti.packet);
     p  := ti.packet;
     {$IFDEF REF_DEBUG}Debug.log('RElease from ClearAckedTX3');{$ENDIF}
-    p._Release;
+    p.ReleasePacketRef;
   end;
 
   inherited;
@@ -1814,7 +1824,7 @@ begin
   end;
 
   if p <> nil then
-    p._Release();
+    p.ReleasePacketRef();
 end;
 
 procedure TReliableUDPEndpoint.ClearTXLogsUpTo(seq: int64);
@@ -1867,7 +1877,7 @@ begin
           net_stats_clear_rate_tx.Accumulate(1);
           r.deadcheck;
           {$IFDEF REF_DEBUG}Debug.log('Release from ClearTXLogsUpTo');{$ENDIF}
-          r._Release();
+          r.ReleasePacketRef();
         end;
 
       end else
@@ -2324,6 +2334,8 @@ var
 begin
   noMorePacketsAllowed := true;
   if Detached then exit;
+  RUDPMon.UnRegisterEndpoint(self);
+
 {$DEFINE DEREGISTER_EARLIER}
 {$IFDEF DEREGISTER_EARLIER}
 {$IFDEF UDP_DEBUG}  Debug.Log(self,'Deregistering endpoint');{$ENDIF}
@@ -2360,7 +2372,6 @@ begin
 
 
 {$ENDIF}
-  RUDPMon.UnRegisterEndpoint(self);
 
   //this kills the threads
   if assigned(user_thread) then
@@ -2709,7 +2720,7 @@ begin
 //    UDPDebug('Adding '+inttostr(ifo.h.sequencenumber)+' to data log.');
     if not rxDataLog.Has(ifo.h.sequencenumber) then begin
       {$IFDEF REF_DEBUG}Debug.log('AddRef from HandleIncomingDataPacket');{$ENDIF}
-      ifo._AddRef;
+      ifo.AddPacketRef;
       IF rxDataLog.count > 10000 then begin
         self.CloseMe := true;
       end;
@@ -2735,7 +2746,7 @@ end;
 procedure TReliableUDPEndpoint.QueueIncomingPacket(ifo: TReliableUDPPacketLogRecord);
 //!!IFOREF - changed - transitions packets to other threads
 begin
-  ifo._AddRef;
+  ifo.AddPacketRef;
   try
 
 
@@ -2750,7 +2761,7 @@ begin
 //      ACkIncoming(false);
       latent_ack := true;//force a ack to be send when receiver becomes idle
 
-//      ifo._Release; //should get released in upper laters
+//      ifo.ReleasePacketRef; //should get released in upper laters
       exit;
     end;
 
@@ -2801,7 +2812,7 @@ begin
     end;
   finally
     EvalSYstemThreadSignal;
-    ifo._Release;
+    ifo.ReleasePacketRef;
   end;
 
 
@@ -2843,7 +2854,7 @@ begin
       if (ifo.h.sequencenumber >= _nextexpectedSequenceNumber)
       and (not (rxLog.Has(ifo.h.sequencenumber))) then begin
         {$IFDEF REF_DEBUG}Debug.log('AddRef from HandleIncomingSystemPacket');{$ENDIF}
-        ifo._AddRef;
+        ifo.AddPacketRef;
         rxLog.Add(ifo);
 
         if ifo.h.Flag_AckType = ackImmediate then begin
@@ -2922,7 +2933,7 @@ var
   bComplete: boolean;
   itm: TPacketQueueItem;
 begin
-  ifo._AddRef;
+  ifo.AddPacketRef;
   try
     //split header will be at the start of the payload
     sh := PRUDPSplitHEader(ifo.payload);
@@ -2958,7 +2969,7 @@ begin
       splitass.Init;
     end;
   finally
-    ifo._Release;
+    ifo.ReleasePacketRef;
   end;
 
 
@@ -3108,7 +3119,7 @@ begin
 
   if not txLog.Has(r.h.sequencenumber) then begin
     {$IFDEF REF_DEBUG}Debug.log('AddRef from TxLogPacketIfRequired');{$ENDIF}
-    r._AddRef;
+    r.AddPacketRef;
 //    r.sendtime := getticker;
 
     txLog.Add(r);
@@ -3149,7 +3160,7 @@ end;
 
 procedure TReliableUDPEndpoint.UserThreadExecute(thr: TRUDPUserThread);
 begin
-//  thr.Endpoint._AddRef;
+//  thr.Endpoint.AddPacketRef;
   try
   //  Debug.Log('User Thread Execute');
     if CloseMe then begin
@@ -3171,7 +3182,7 @@ begin
       Unlock;
     end;
   finally
-//    thr.Endpoint._Release;
+//    thr.Endpoint.ReleasePacketRef;
   end;
 
 
@@ -3190,7 +3201,7 @@ begin
 
   if not rxLog.Has(r.h.sequencenumber) then begin
     {$IFDEF REF_DEBUG}Debug.log('AddRef from RxLogPacketIfRequired');{$ENDIF}
-    r._AddRef;
+    r.AddPacketRef;
     rxLog.Add(r);
 //    if r.h.Flag_AckType = ackImmediate then begin
 //      if r.h.sequencenumber >= _nextexpectedSequenceNumber then
@@ -3201,7 +3212,7 @@ begin
 
   if not rxQueue.Has(r.h.sequencenumber) then begin
     {$IFDEF REF_DEBUG}Debug.log('AddRef from RxLogPacketIfRequired1');{$ENDIF}
-    r._AddRef;
+    r.AddPacketRef;
     rxQueue.Add(r);
 
   end;
@@ -3419,7 +3430,7 @@ begin
 
   if not rxQueue.Has(ifo.h.sequencenumber) then begin
       {$IFDEF REF_DEBUG}Debug.log('AddRef from AddToRXQueue');{$ENDIF}
-      ifo._AddRef;
+      ifo.AddPacketRef;
       rxQueue.Add(ifo);
 
     end;
@@ -3488,7 +3499,7 @@ begin
         if rxQueue.Has(ifo.h.sequencenumber) then begin
           rxQueue.Remove(ifo);
           {$IFDEF REF_DEBUG}Debug.log('RElease from ProcessPacketQUEUE');{$ENDIF}
-          ifo._Release;
+          ifo.ReleasePacketRef;
         end;
 
         EvalUserThreadSignal;
@@ -4101,7 +4112,7 @@ begin
             dec(cx);
             ANeedStop := cx = 0;
           finally
-            l._Release;
+            l.ReleasePacketRef;
           end;
         end
 
@@ -4161,7 +4172,7 @@ begin
 //      Debug.log('refs:'+inttostr(r.refcount));
 {$IFDEF MORE_REFS2}
       {$IFDEF REF_DEBUG}Debug.log('AddRef from SendPacket');{$ENDIF}
-      r._AddRef;
+      r.AddPacketRef;
 {$ENDIF}
       try
 //        Debug.log('refs:'+inttostr(r.refcount));
@@ -4205,7 +4216,7 @@ begin
       finally
 //        Debug.log('refs:'+inttostr(r.refcount));
         {$IFDEF REF_DEBUG}Debug.log('Release from SendPacket2');{$ENDIF}
-        r._Release;
+        r.ReleasePacketRef;
 
       end;
     end;
@@ -4616,6 +4627,10 @@ begin
 {$IFNDEF MTU_TESTS}
   exit;
 {$ENDIF}
+
+if sz > MAX_MTU then
+  exit;
+
   if not connected then
     exit;
 
@@ -4879,7 +4894,7 @@ end;
 function TReliableUDPPacketLogRecord._AddRef: integer;
 begin
 
-  inherited;
+  result := inherited;
   Debug.log('@'+inttohex(int64(pointer(self)),8)+'++('+inttostr(_RefCount)+')');
 
 end;
@@ -4887,7 +4902,7 @@ end;
 function TReliableUDPPacketLogRecord._Release: integer;
 begin
   Debug.log('@'+inttohex(int64(pointer(self)),8)+'--('+inttostr(_RefCount-1)+')');
-  inherited;
+  result := inherited;
 
 
 end;
@@ -5216,7 +5231,7 @@ begin
   hint_stuff_to_do := true;
   Lock;
   try
-    ifo._AddRef;    //<<---local hold
+    ifo.AddPacketRef;    //<<---local hold
     try
       FEndpoints.Lock;
       try
@@ -5252,7 +5267,7 @@ begin
 
       end;
     finally
-      ifo._Release;//<<---local hold
+      ifo.ReleasePacketRef;//<<---local hold
       ifo := nil;
     end;
     finally
@@ -5564,7 +5579,7 @@ begin
   ifo := TReliableUDPPacketLogRecord.Create;
 {$IFDEF MORE_REFS}
   {$IFDEF REF_DEBUG}Debug.log('AddRef from DoUDPRead');{$ENDIF}
-  ifo._AddRef;//<<---Local hold
+  ifo.AddPacketRef;//<<---Local hold
 {$ENDIF}
   try
     ifo.RemoteOrigin := true;
@@ -5612,7 +5627,7 @@ begin
     ifo.FreeWithReferences := true;
     ifo.DeadCheck;
     {$IFDEF REF_DEBUG}Debug.log('RElease from DoUDPRead');{$ENDIF}
-    ifo._Release;//<<--Local hold
+    ifo.ReleasePacketRef;//<<--Local hold
     ifo := nil;
   end;
 end;
@@ -5724,10 +5739,10 @@ begin
   try
   ADAta :=itm.data;
   ifo := TReliableUDPPacketLogRecord.Create;
-  ifo._AddRef;//<<--Local hold
+  ifo.AddPacketRef;//<<--Local hold
 {$IFDEF MORE_REFS}
   {$IFDEF REF_DEBUG}Debug.log('AddRef from ProcessUDPReadAD');{$ENDIF}
-  ifo._AddRef;
+  ifo.AddPacketRef;
 {$ENDIF}
 
 {$IFDEF USE_FEC}
@@ -5781,11 +5796,11 @@ begin
     ifo.FreeWithReferences := true;
     ifo.DeadCheck;
     {$IFDEF REF_DEBUG}Debug.log('RElease from ProcessUDPReadAD');{$ENDIF}
-    ifo._Release;//<<--- not sure why, but we release here ( I think to drop ref count of 1 that is implicit on creation)
+    ifo.ReleasePacketRef;//<<--- not sure why, but we release here ( I think to drop ref count of 1 that is implicit on creation)
   end;
   finally
     if ifo <> nil then
-      ifo._Release;//<--Local hold
+      ifo.ReleasePacketRef;//<--Local hold
 //    Unlock;
   end;
 end;
@@ -5832,7 +5847,7 @@ var
   p:  PMTUTestResult;
 begin
 {$IFDEF FORCE_SMALL_MTU}
-  exit(mtu_test_results[0].sz);
+  exit(lesserof(MAX_MTU, mtu_test_results[0].sz));
 {$ENDIF}
 
 {$IFDEF MTU_TESTS}
@@ -5841,11 +5856,11 @@ begin
     if MTU_TEST_PING_REQ[t] > Self.bestAckTime then begin
       p := @mtu_test_results[t];
       if p.CanUse then
-        exit(p.sz);
+        exit(lesserof(MAX_MTU,p.sz));
     end;
   end;
 {$ELSE}
-  exit(WAlkToMTU(FWalkingMTU));
+  exit(lesserof(MAX_MTU,WAlkToMTU(FWalkingMTU)));
 {$ENDIF}
 
 
@@ -5998,7 +6013,7 @@ begin
   //if shutting down the drop all creates
   if shuttingdown then begin
     {$IFDEF REF_DEBUG}Debug.log('RElease from HandleSystemCreatePacket');{$ENDIF}
-    ifo._release;
+    ifo.ReleasePacketRef;
     exit;
   end;
 
@@ -6085,11 +6100,11 @@ begin
       if assigned(result) then begin
         result.QueueIncomingPacket(ifo);
       end else begin
-//        ifo._Release;   //reference is held in outer function
+//        ifo.ReleasePacketRef;   //reference is held in outer function
         ifo := nil;
       end;
     end else begin
-//      ifo._Release;     //reference is held in outer function
+//      ifo.ReleasePacketRef;     //reference is held in outer function
       ifo := nil;
     end;
   finally
@@ -6246,12 +6261,12 @@ begin
       if (ifo.needsack and ifo.acked) then begin
 //        rxLog.Remove(ifo);
 //        {$IFDEF REF_DEBUG}Debug.log('RElease from ReadData');{$ENDIF}
-//        ifo._Release;
+//        ifo.ReleasePacketRef;
 //        ifo.Free;
 //        ifo := nil;
       end;
       {$IFDEF REF_DEBUG}Debug.log('RElease from ReadData2');{$ENDIF}
-      ifo._Release;
+      ifo.ReleasePacketRef;
       ifo := nil;
 
     end;
@@ -6703,6 +6718,15 @@ end;
 { TReliableUDPPacketLogRecord }
 
 
+function TReliableUDPPacketLogRecord.AddPacketRef: integer;
+begin
+{$IFNDEF AUTOREFCOUNT}
+  result := self._AddRef;
+{$ELSE}
+  result := 0;
+{$ENDIF}
+end;
+
 function TReliableUDPPacketLogRecord.CompleteSize: ni;
 begin
   result := payload_length + sizeof(h);
@@ -6763,22 +6787,22 @@ begin
     if owningendpoint.rxLog.Has(self) then begin
       owningendpoint.rxLog.Remove(self);
       {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint1');{$ENDIF}
-      _Release;
+      ReleasePacketRef;
     end;
     if owningendpoint.txLog.Has(self) then begin
       owningendpoint.txLog.Remove(self);
       {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint2');{$ENDIF}
-      _Release;
+      ReleasePacketRef;
     end;
     if owningendpoint.rxDataLog.Has(self) then begin
       owningendpoint.rxDataLog.Remove(self);
       {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint3');{$ENDIF}
-      _Release;
+      ReleasePacketRef;
     end;
     if owningendpoint.rxQueue.Has(self) then begin
       owningendpoint.rxQueue.Remove(self);
       {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint4');{$ENDIF}
-      _Release;
+      ReleasePacketRef;
     end;
   end;
 
@@ -6793,7 +6817,7 @@ begin
   DeadCheck;
   if not destroying then begin
     {$IFDEF REF_DEBUG}Debug.log('AddRef from Destroy');{$ENDIF}
-    _addref;
+    AddPacketRef;
   end;
   destroying := true;
 //  DeregisterFromEndpoint;
@@ -6832,6 +6856,15 @@ end;
 function TReliableUDPPacketLogRecord.NeedsAck: boolean;
 begin
   result := h.Flag_AckType <> ackNone;
+end;
+
+function TReliableUDPPacketLogRecord.ReleasePacketRef: integer;
+begin
+{$IFNDEF AUTOREFCOUNT}
+  result := self._Release;
+{$ELSE}
+  result := 0;
+{$ENDIF}
 end;
 
 { TMultiplexedUDPClient }
@@ -7349,7 +7382,7 @@ begin
   FEp := Value;
 
   if Fep <> nil then
-    Fep._addref;
+    Fep._AddRef;
 end;
 
 { TReliableUDPPacketDataLog }
@@ -7490,6 +7523,8 @@ begin
   itm := TRUDPOutQueueItem.Create;
   itm.ep := ep;
   l := length(DATA);
+  if l > MAX_MTU then
+    raise ECritical.create('cannot queue packet.. packet size '+l.tostring+' > MAX_MTU');
   p := nil;
   if l > 0 then begin
 {$IFDEF USE_REGISTERED_MEMORY}
@@ -7505,7 +7540,7 @@ begin
   itm.seq := seq;
   UniqueString(AHost);
   if ahost = '' then
-    raise ECritical.create('you can''t send data to nil host!');
+    raise ECritical.create('you can''t send data to a nil host!');
   itm.peerip :=  Ahost;
   itm.peerport := aport;
   itm.qt := basetm;
@@ -7627,6 +7662,8 @@ begin
   {$ELSE}
     ecs(ep.Multiplexer.sectUDPsend);
     try
+      if length(buf) > MAX_MTU then
+        raise ECritical.create('packet size '+length(buf).tostring+' > MAX_MTU');
       ep.Multiplexer.SendBuffer(Peerip, peerport, buf);
     finally
       lcs(ep.MultiPlexer.sectUDPsend);
@@ -7743,7 +7780,7 @@ procedure TEndPOintInputQueueItem.SetIfo(
 begin
   if value <> FIfo then begin
     if Fifo <> nil then
-      FIfo._release;
+      FIfo.ReleasePacketRef;
     if value <> nil then
       value._addref;
 

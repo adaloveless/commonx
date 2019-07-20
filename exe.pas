@@ -1094,7 +1094,7 @@ begin
 
       until (Apprunning <> WAIT_TIMEOUT) or (gettimesince(tmLAstAct)>TimeOut);
 
-      if (gettimesince(tmLAstAct)>TimeOut) then begin
+      if ((gettimesince(tmLAstAct)>TimeOut) and (Timeout>0)) then begin
         Debug.Log('cancel because hang/no output');
         KillTaskByID(processinfo.pi.dwProcessID);
       end;

@@ -8,7 +8,7 @@ unit RDTPVirtualDiskServerImplib;
 interface
 
 uses
-  orderlyinit, lockqueue, typex, RDTPVirtualDiskServer, RDTPSocketServer, windows, videomarshall, virtualdisk_advanced, virtualdisk_status, classes, sysutils, RDTPServerList, virtualdiskparams;
+  orderlyinit, lockqueue, typex, RDTPVirtualDiskServer, RDTPSocketServer, windows, videomarshall, virtualdisk_advanced, virtualdisk_status, classes, sysutils, RDTPServerList, virtualdiskparams, betterobject;
 
 type
   TVirtualDiskServer = class(TVirtualDiskServerBase)
@@ -70,15 +70,13 @@ function TVirtualDiskServer.RQ_AddPayload(iDiskID:integer; sFile:string; max_siz
 var
   t: ni;
   vd: TVirtualDisk;
+  il: ILock;
 begin
-  vdh.lock;
-  try
-    if iDISKID >= vdh.vdlist.count then
-      raise Exception.create('VAT not found.');
-    vd := vdh.vdlist[iDISKID];
-  finally
-    vdh.Unlock;
-  end;
+  il := vdh.locki;
+  if iDISKID >= vdh.vdlist.count then
+    raise Exception.create('VAT not found.');
+  vd := vdh.vdlist[iDISKID];
+  il := nil;
 
   vd.AddPayload(sFile, max_size, physical, priority, flags);
 
@@ -86,9 +84,11 @@ begin
 end;
 
 procedure TVirtualDiskServer.RQ_ClearRepairLog(iDISKID: integer);
+var
+  il: ILock;
 begin
   inherited;
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -96,21 +96,23 @@ begin
     vdh.vdlist[iDISKID].ClearRepairLog;
     //windows.beep(100,100);
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
 end;
 
 function TVirtualDiskServer.RQ_Decommissionpayload(iDiskID: integer;
   sFile: string): boolean;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
     vdh.vdlist[iDISKID].DecommissionPayload(sFile);
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   result := true;
@@ -125,8 +127,10 @@ begin
 end;
 
 function TVirtualDiskServer.RQ_DrainRepairLog(iDISKID: integer): string;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -134,15 +138,17 @@ begin
     result := vdh.vdlist[iDISKID].DrainRepairLog;
     //windows.beep(100,100);
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
 end;
 
 function TVirtualDiskServer.RQ_DumpBigBlock(diskid: integer;
   bbid: int64): boolean;
+var
+  il: Ilock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if DISKID >= vdh.vdlist.count then
       raise Exception.create('vd not found.');
@@ -150,16 +156,17 @@ begin
     vdh.vdlist[DISKID].DumpBigBlock(bbid);
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   result := true;
 end;
 
 procedure TVirtualDiskServer.RQ_ForceRepair(iDISKID: integer);
+var
+  il: Ilock;
 begin
-  inherited;
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -167,7 +174,7 @@ begin
     vdh.vdlist[iDISKID].BeginRepair;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
 end;
@@ -176,9 +183,10 @@ end;
 function TVirtualDiskServer.RQ_GetCachedStripes(iDISKID: integer): integer;
 var
   l: TLock;
+  il: ILock;
 begin
   result := 0;
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -192,14 +200,16 @@ begin
     end;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
 end;
 
 function TVirtualDiskServer.RQ_GetDebugInfo(iDISKID: integer): string;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -207,28 +217,32 @@ begin
     result := vdh.vdlist[iDISKID].DebugVatStructure;
     //windows.beep(100,100);
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
 end;
 
 function TVirtualDiskServer.RQ_GetPayloadConfiguration(
   iDiskID: integer): PVirtualDiskPayloadConfiguration;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
     result := vdh.vdlist[iDISKID].GetPayloadConfig;
     //windows.beep(100,100);
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 end;
 
 function TVirtualDiskServer.RQ_GetRepairLog(iDISKID: integer): string;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -236,7 +250,7 @@ begin
     result := vdh.vdlist[iDISKID].GetRepairLog;
     //windows.beep(100,100);
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
 end;
@@ -247,8 +261,10 @@ var
   stat: TVirtualDiskStatus;
   vd: TVirtualDisk;
   l: TLock;
+var
+  il: ILock;
 begin
-  vdh.Lock;
+  il := vdh.Locki;
   try
     setlength(result, vdh.vdlist.count);
     for t:= 0 to vdh.vdlist.count-1 do begin
@@ -268,19 +284,21 @@ begin
     end;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 //  raise Exception.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 
 function TVirtualDiskServer.RQ_NewDisk(di: TNewDiskParams): boolean;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     vdh.NewDisk(di);
   finally
-    vdh.unlock;
+//    vdh.unlock;
   end;
   exit(true);
 
@@ -299,8 +317,10 @@ end;
 procedure TVirtualDiskServer.RQ_QuickOnline(iDISKID: integer);
 var
   vd: TVirtualDisk;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('vd not found.');
@@ -308,7 +328,7 @@ begin
     vd := vdh.vdlist[iDISKID];
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   vd.QuickOnline;
@@ -319,8 +339,9 @@ function TVirtualDiskServer.RQ_RefunctPayload(iDISKID: integer; iPayloadID: inte
   sNewSource: string): boolean;
 var
   vd: TVirtualDisk;
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('vd not found.');
@@ -328,7 +349,7 @@ begin
     vd := vdh.vdlist[iDISKID];
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   vd.RefunctPayload(iPayloadID, sNewSource);
@@ -340,8 +361,9 @@ function TVirtualDiskServer.RQ_RepairArcZone(iDiskID: integer;
   zoneidx: int64): boolean;
 var
   l: Tlock;
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -355,7 +377,7 @@ begin
     end;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 end;
 
@@ -364,8 +386,10 @@ function TVirtualDiskServer.RQ_ResetAndRepairFromTargetArchive(
   iDiskID: integer): boolean;
 var
   vd: TVirtualDisk;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('vd not found.');
@@ -373,7 +397,7 @@ begin
     vd := vdh.vdlist[iDISKID];
     vd.ResetRepair;
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   vd.ResetRepair;
@@ -381,8 +405,10 @@ begin
 end;
 
 function TVirtualDiskServer.RQ_ResetDisk(iDiskID: integer): boolean;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('vd not found.');
@@ -390,7 +416,7 @@ begin
     vdh.vdlist[iDISKID].ResetRepair;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   result := true;
@@ -398,8 +424,10 @@ end;
 
 function TVirtualDiskServer.RQ_ResetZone(iDiskID: integer;
   iZoneID: int64): boolean;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('vd not found.');
@@ -407,7 +435,7 @@ begin
 //    vdh.vdlist[iDISKID].ResetZone(iZoneID);
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   result := true;
@@ -417,9 +445,9 @@ function TVirtualDiskServer.RQ_ReSourcePayload(iDISKID: integer; iPayloadID: int
   sNewSource: string): boolean;
 var
   vd: TVirtualDisk;
-
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('vd not found.');
@@ -427,7 +455,7 @@ begin
     vdh.vdlist[iDISKID].ResourcePayload(iPayloadID, sNewSource);
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   result := true;
@@ -438,8 +466,9 @@ function TVirtualDiskServer.RQ_SelfTest(iDiskID: integer;
   testid: int64): boolean;
 var
   l: Tlock;
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -453,7 +482,7 @@ begin
     end;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
   exit(true);
 end;
@@ -461,8 +490,9 @@ end;
 function TVirtualDiskServer.RQ_SetCachedStripes(iDISKID: integer; value: integer): boolean;
 var
   l: TLock;
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -476,7 +506,7 @@ begin
     end;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   result := true;
@@ -485,8 +515,10 @@ end;
 
 function TVirtualDiskServer.RQ_SetDefaultPayloadCacheParams(iDiskID: integer;
   iSegmentSize, iSegmentCount: int64; bReadAhead: boolean): boolean;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -494,7 +526,7 @@ begin
 
     vdh.vdlist[iDISKID].SetDefaultCacheParams(iSegmentSize, iSegmentCount, bReadAhead);
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   result := true;
@@ -502,24 +534,26 @@ end;
 
 
 procedure TVirtualDiskServer.RQ_SetMaxDriveSpan(iDISKID, ival: integer);
+var
+  il: ILock;
 begin
-  inherited;
-  vdh.Lock;
+  il := vdh.Locki;
   try
     vdh.vdlist[idiskid].vat.MaxDiskSpan := iVal;
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 end;
 
 procedure TVirtualDiskServer.RQ_SetMinDriveSpan(iDISKID, ival: integer);
+var
+  il: ILock;
 begin
-  inherited;
-  vdh.Lock;
+  il := vdh.Locki;
   try
     vdh.vdlist[idiskid].vat.MinDiskSpan := iVal;
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
 end;
@@ -536,8 +570,9 @@ function TVirtualDiskServer.RQ_SetPayloadPhysical(iDiskID, iFileID: integer;
   physical: int64): boolean;
 var
   l: TLock;
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -551,7 +586,7 @@ begin
     end;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   result := true;
@@ -562,8 +597,9 @@ function TVirtualDiskServer.RQ_SetPayloadPriorty(iDiskID, iFileID: integer;
   priority: int64): boolean;
 var
   l: TLock;
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -577,7 +613,7 @@ begin
     end;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   result := true;
@@ -588,8 +624,9 @@ function TVirtualDiskServer.RQ_SetPayloadQuota(iDiskID, iFileID: integer;
   max_size: int64): boolean;
 var
   l: TLock;
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -603,7 +640,7 @@ begin
     end;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   result := true;
@@ -613,21 +650,23 @@ end;
 
 function TVirtualDiskServer.RQ_SetTargetArchive(sArchive, sTargetHost,
   sEndPoint: string): string;
+var
+  il: ILock;
 begin
-  inherited;
-  vdh.Lock;
+  il := vdh.Locki;
   try
     //
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 end;
 
 procedure TVirtualDiskServer.RQ_UnpauseScrubber(iDISKID: integer);
 var
   l: Tlock;
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -641,7 +680,7 @@ begin
     end;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
 
@@ -650,8 +689,10 @@ begin
 end;
 
 function TVirtualDiskServer.RQ_VerifyAgainstArchive(diskid:integer; zone:int64; out csa:int64; out csb:int64; out difstart:int64):boolean;
+var
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if DISKID >= vdh.vdlist.count then
       raise Exception.create('vd not found.');
@@ -659,7 +700,7 @@ begin
     vdh.vdlist[DISKID].VerifyAgainstArchive(zone, csa,csb, difstart);
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 
   result := true;
@@ -669,8 +710,9 @@ function TVirtualDiskServer.RQ_VerifyArcZone(iDiskID: integer;
   zoneidx: int64): boolean;
 var
   l: Tlock;
+  il: ILock;
 begin
-  vdh.lock;
+  il := vdh.locki;
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
@@ -684,7 +726,7 @@ begin
     end;
 
   finally
-    vdh.Unlock;
+//    vdh.Unlock;
   end;
 end;
 

@@ -32,7 +32,7 @@ const
 type
 {$IFDEF FMX}
   TColor = TAlphaColor;
-  TPixelFormat = (pf8bit, pf16bit, pf24Bit, pf32bit);
+  TPixelFormat = (gpf8bit, gpf16bit, gpf24Bit, gpf32bit);
 {$ELSE}
   TColor = graphics.TColor;
   TPixelFormat = graphics.Tpixelformat;
@@ -46,10 +46,17 @@ implementation
 function PixelSize(pf: TPixelFormat): ni;
 begin
   case pf of
+{$IFDEF FMX}
+    gpf8Bit: exit(1);
+    gpf16bit: exit(2);
+    gpf24bit: exit(3);
+    gpf32bit: exit(4);
+{$ELSE}
     pf8Bit: exit(1);
     pf16bit: exit(2);
     pf24bit: exit(3);
     pf32bit: exit(4);
+{$ENDIF}
   else
     raise ECritical.create('pixel format not byte size. '+inttostr(ord(pf)));
   end;

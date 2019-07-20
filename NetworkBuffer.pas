@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils,
 {$IFDEF IOS}
-  stringx.ios.ansi,
+//  stringx.ios.ansi,
 {$ENDIF}
   variants, stringx, typex, systemx, tickcount;
 
@@ -260,7 +260,7 @@ var
 begin
 
   SetLength(result, lLength);
-  for t:= STRZ to lLength do begin
+  for t:= STRZ to ((lLength-1)+STRZ) do begin
     ch := PWideChar(@FRealbuffer[iPos])[(t-STRZ)];
     result[t] := char(ch);
   end;

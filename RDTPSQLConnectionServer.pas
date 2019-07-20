@@ -13,7 +13,7 @@ interface
 
 
 uses
-  StorageEngineTypes, RDTPProcessorForMySQL, typex, packet, systemx, betterobject, genericRDTPClient, sysutils, windows, variants, rdtpprocessor, packethelpers, debug, RDTPServerList;
+  StorageEngineTypes, classes, RDTPProcessorForMySQL, typex, packet, systemx, betterobject, genericRDTPClient, sysutils, windows, variants, rdtpprocessor, packethelpers, debug, RDTPServerList;
 
 
 
@@ -26,6 +26,7 @@ type
     procedure RQ_HANDLE_ReadyToWriteBehind(proc: TRDTPProcessorForMYSQL);
     procedure RQ_HANDLE_WriteBehind_string(proc: TRDTPProcessorForMYSQL);
     procedure RQ_HANDLE_ReadQuery_string(proc: TRDTPProcessorForMYSQL);
+    procedure RQ_HANDLE_BackProc_string_string_string_string_string(proc: TRDTPProcessorForMYSQL);
 
   protected
     
@@ -42,6 +43,7 @@ type
     function RQ_ReadyToWriteBehind():boolean;overload;virtual;abstract;
     procedure RQ_WriteBehind(sQuery:string);overload;virtual;abstract;
     function RQ_ReadQuery(sQuery:string):TSERowSet;overload;virtual;abstract;
+    function RQ_BackProc(exe_no_path:string; commandlineparams:string; backinputstringcontent:string; backinputfile:string; backoutputfile:string):TStream;overload;virtual;abstract;
 
 
     function Dispatch: boolean;override;
@@ -96,6 +98,24 @@ begin
   GetstringFromPacket(proc.request, sQuery);
   res := RQ_ReadQuery(sQuery);
   WriteTSERowSetToPacket(proc.response, res);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TRDTPSQLConnectionServerBase.RQ_HANDLE_BackProc_string_string_string_string_string(proc: TRDTPProcessorForMYSQL);
+var
+  res: TStream;
+  exe_no_path:string;
+  commandlineparams:string;
+  backinputstringcontent:string;
+  backinputfile:string;
+  backoutputfile:string;
+begin
+  GetstringFromPacket(proc.request, exe_no_path);
+  GetstringFromPacket(proc.request, commandlineparams);
+  GetstringFromPacket(proc.request, backinputstringcontent);
+  GetstringFromPacket(proc.request, backinputfile);
+  GetstringFromPacket(proc.request, backoutputfile);
+  res := RQ_BackProc(exe_no_path, commandlineparams, backinputstringcontent, backinputfile, backoutputfile);
+  WriteTStreamToPacket(proc.response, res);
 end;
 
 
@@ -197,6 +217,19 @@ begin
         RQ_HANDLE_ReadQuery_string(self);
 {$IFDEF RDTP_LOGGING}
         LocalDebug('End Server Handling of ReadQuery','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //BackProc
+    $1115:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of BackProc','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_BackProc_string_string_string_string_string(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of BackProc','RDTPCALLS');
 {$ENDIF}
       end;
 

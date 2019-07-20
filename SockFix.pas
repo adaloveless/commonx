@@ -2,9 +2,12 @@
 unit sockfix;
 
 {$WARN SYMBOL_DEPRECATED OFF}
+{$IFDEF MSWINDOWS}
+{$DEFINE ENABLETHIS}
+{$ENDIF}
 
 interface
-
+{$IFDEF ENABLETHIS}
 {$IFDEF MSWINDOWS}
 uses Winapi.Windows, Winapi.WinSock, System.SysUtils, System.Classes, activex;
 
@@ -17,6 +20,9 @@ type
                 pfDli, pfLat, pfHylink,
                 pfAppleTalk, pfVoiceView, pfFireFox,
                 pfUnknown1, pfBan, pfMax);
+{$ELSE}
+  XXX not supported on this platform
+
 {$ENDIF}
 {$IFDEF LINUX}
 uses Libc, SysUtils, Classes;
@@ -357,8 +363,9 @@ type
     property OnDestroyHandle;
   end;
 
+{$ENDIF}
 implementation
-
+{$IFDEF ENABLETHIS}
 threadvar
   ThreadObject: TClientSocketThread;
 
@@ -1375,7 +1382,7 @@ begin
   end
   else
 {$ENDIF}
-    if Select(@ReadReady, nil, @ExceptFlag, -1) then
+    if Select(@ReadReady, nil, @ExceptFlag, 1000) then
       Result := ReadReady and not ExceptFlag;
 end;
 
@@ -1407,5 +1414,5 @@ initialization
 finalization
   Cleanup;
 {$ENDIF}
-
+{$ENDIF}
 end.

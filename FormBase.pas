@@ -152,7 +152,7 @@ type
 
 implementation
 
-uses FrameBase, FormWindowManager,
+uses FrameBaseVCL, FormWindowManager,
 {$IFNDEF LOCALCOMMANDWAIT}
   progressform,
 {$ENDIF}

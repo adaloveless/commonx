@@ -6,6 +6,7 @@ uses
 {$IFDEF MSWINDOWS}
   windows, Winapi.Messages, Winapi.IpTypes, fmx.platform.win, fmx.platform,
 {$ENDIF}
+  guihelpers_fmx, SCALEDlayoutproportional,
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, fmx_messages,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, system.messaging;
 
@@ -28,11 +29,18 @@ type
     mock: TForm;
     { Public declarations }
 
+    function GetControl<T: TControl>(parent: TControl): T;
+
     procedure ActivateOrTransplant;virtual;
     procedure UnregisterWithMockMobile;
     procedure UpdateMouseCursor;
     constructor Create(AOwner: TComponent); override;
+    procedure SetBounds(ALeft: Integer; ATop: Integer; AWidth: Integer;
+      AHeight: Integer); override;
     property Transplanted: boolean read FTransplanted write FTransplanted;
+    procedure DoBoundsSet;virtual;
+
+
   end;
 
 var
@@ -66,6 +74,19 @@ begin
 
 end;
 
+procedure TfrmFMXBase.DoBoundsSet;
+begin
+  Control_IterateChildren(self, procedure (c: TFMXobject; var stop: boolean)
+    begin
+      stop := false;
+      if c is TScaledLayoutProportional then
+        TScaledLayoutProportional(C).ForceRealign;
+    end);
+
+
+
+end;
+
 procedure TfrmFMXBase.DoClose(var CloseAction: TCloseAction);
 begin
   inherited;
@@ -77,6 +98,18 @@ procedure TfrmFMXBase.DoHide;
 begin
   inherited;
   UnregisterWithMockMobile;
+end;
+
+function TfrmFMXBase.GetControl<T>(parent: TControl): T;
+begin
+  result := TGuiHelper.control_Getcontrol<T>(parent);
+end;
+
+procedure TfrmFMXBase.SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
+begin
+  inherited;
+  DoBoundsSet;
+
 end;
 
 procedure TfrmFMXBase.UnregisterWithMockMobile;

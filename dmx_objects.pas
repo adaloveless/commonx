@@ -1725,6 +1725,32 @@ type
     procedure DefineParameters; override;
   end;
 
+  TFXAudioIntensity = class(TDMXEffect)
+  private
+    FIntensity: single;
+    fcoolRate: single;
+    FBurnRate: single;
+  public
+    procedure Init; override;
+    procedure UpdatePhysicsforlight(iGroupID, iGroupOf: integer;
+      l: TDMXChannelCluster; iTriggerNumber: integer; rTime: NativeFloat;
+      rAmplitude: single); override;
+    procedure DefineParameters; override;
+  end;
+
+  TFXBrownout = class(TDMXEffect)
+  private
+    FIntensity: single;
+    fcoolRate: single;
+    FBurnRate: single;
+  public
+    procedure Init; override;
+    procedure UpdatePhysicsforlight(iGroupID, iGroupOf: integer;
+      l: TDMXChannelCluster; iTriggerNumber: integer; rTime: NativeFloat;
+      rAmplitude: single); override;
+    procedure DefineParameters; override;
+  end;
+
   TDMXLIghtGroup = class(TUniverseList<TDMXChannelCluster>)
   private
     FName: string;
@@ -6496,6 +6522,8 @@ begin
   Multiverse.EffectLibrary.RegisterClass(TFXStaticColor);
   Multiverse.EffectLibrary.RegisterClass(TFXStaticStripes);
   Multiverse.EffectLibrary.RegisterClass(TFXStaticIntensity);
+  Multiverse.EffectLibrary.RegisterClass(TFXAudioIntensity);
+  Multiverse.EffectLibrary.RegisterClass(TFXBrownout);
   Multiverse.EffectLibrary.RegisterClass(TFXGridPong);
   Multiverse.EffectLibrary.RegisterClass(TFXGridFill);
   Multiverse.EffectLibrary.RegisterClass(TFXStrobe);
@@ -8164,6 +8192,124 @@ begin
   FDimensionsBase := point(12, 12);
 end;
 
+
+{ TFXAudioIntensity }
+
+procedure TFXAudioIntensity.DefineParameters;
+var
+  def: TDMXEffectParameterDefinition;
+begin
+  inherited;
+
+  def := TDMXEffectParameterDefinition.Create;
+  def.Name := 'Intensity';
+  def.Steps := 256;
+  def.Min := 0;
+  def.Max := 1;
+  def.imptyp := eptFloat;
+  FParamDefinitions.Add(def);
+
+  def := TDMXEffectParameterDefinition.Create;
+  def.Name := 'Burnrate';
+  def.Steps := 256;
+  def.Min := 0;
+  def.Max := 64;
+  def.imptyp := eptFloat;
+  FParamDefinitions.Add(def);
+
+  def := TDMXEffectParameterDefinition.Create;
+  def.Name := 'CoolRate';
+  def.Steps := 256;
+  def.Min := 0;
+  def.Max := 64;
+  def.imptyp := eptFloat;
+  FParamDefinitions.Add(def);
+
+  Params['Intensity'].rValue := 1.0;
+  Params['BurnRate'].rValue := Multiverse.DefaultBurn;
+  Params['CoolRate'].rValue := Multiverse.DefaultCool;
+
+end;
+
+procedure TFXAudioIntensity.Init;
+begin
+  inherited;
+
+end;
+
+procedure TFXAudioIntensity.UpdatePhysicsforlight(iGroupID, iGroupOf: integer;
+  l: TDMXChannelCluster; iTriggerNumber: integer; rTime: NativeFloat;
+  rAmplitude: single);
+begin
+  inherited;
+
+  if not l.IsInterface(IDMXIntensity) then
+    exit;
+
+  (l as IDMXIntensity).BURNRATE := Params['burnrate'].rValue;
+  (l as IDMXIntensity).COOLRATE := Params['coolrate'].rValue;
+  (l as IDMXIntensity).Intensity := Params['intensity'].rValue*rAmplitude;
+
+end;
+
+{ TFXBrownout }
+
+procedure TFXBrownout.DefineParameters;
+var
+  def: TDMXEffectParameterDefinition;
+begin
+  inherited;
+
+  def := TDMXEffectParameterDefinition.Create;
+  def.Name := 'Intensity';
+  def.Steps := 256;
+  def.Min := 0;
+  def.Max := 1;
+  def.imptyp := eptFloat;
+  FParamDefinitions.Add(def);
+
+  def := TDMXEffectParameterDefinition.Create;
+  def.Name := 'Burnrate';
+  def.Steps := 256;
+  def.Min := 0;
+  def.Max := 64;
+  def.imptyp := eptFloat;
+  FParamDefinitions.Add(def);
+
+  def := TDMXEffectParameterDefinition.Create;
+  def.Name := 'CoolRate';
+  def.Steps := 256;
+  def.Min := 0;
+  def.Max := 64;
+  def.imptyp := eptFloat;
+  FParamDefinitions.Add(def);
+
+  Params['Intensity'].rValue := 1.0;
+  Params['BurnRate'].rValue := Multiverse.DefaultBurn;
+  Params['CoolRate'].rValue := Multiverse.DefaultCool;
+
+end;
+
+procedure TFXBrownout.Init;
+begin
+  inherited;
+
+end;
+
+procedure TFXBrownout.UpdatePhysicsforlight(iGroupID, iGroupOf: integer;
+  l: TDMXChannelCluster; iTriggerNumber: integer; rTime: NativeFloat;
+  rAmplitude: single);
+begin
+  inherited;
+
+  if not l.IsInterface(IDMXIntensity) then
+    exit;
+
+  (l as IDMXIntensity).BURNRATE := Params['burnrate'].rValue;
+  (l as IDMXIntensity).COOLRATE := Params['coolrate'].rValue;
+  (l as IDMXIntensity).Intensity := Params['intensity'].rValue*(1.0-rAmplitude);
+
+end;
 
 initialization
 

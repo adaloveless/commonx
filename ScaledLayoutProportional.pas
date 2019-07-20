@@ -162,32 +162,23 @@ begin
       if (w>0) and (h>0) then begin
         var original_proportions := FFirstWidth / FFirstHeight;
         var this_proportions := w/h;
-
+        var sx,sy: single;
         if (this_proportions / original_proportions) >= 1.0 then begin
-          Debug.Log('props : '+floatprecision(original_proportions,2)+','+floatprecision(this_proportions,2));
-          Debug.Log('dimensions : '+floatprecision(w,2)+','+floatprecision(h,2));
-          last_proportions := this_proportions;
-          for var t := 0 to self.ChildrenCount-1 do begin
-            if children[t] is TControl then begin
-              TAnotherFuckingHackedDelphiControl(children[t]).scale.x := original_proportions / this_proportions;
-              TAnotherFuckingHackedDelphiControl(children[t]).scale.y := 1;
-            end;
-          end;
-          Debug.Log('scale x,y: '+floatprecision(scale.x,2)+','+floatprecision(scale.y,2));
+          sx := original_proportions / this_proportions;
+          sy := 1.0;
         end else begin
-          Debug.Log('props : '+floatprecision(original_proportions,2)+','+floatprecision(this_proportions,2));
-          Debug.Log('dimensions : '+floatprecision(w,2)+','+floatprecision(h,2));
-          last_proportions := this_proportions;
-          for var t := 0 to ChildrenCount-1 do begin
-            if children[t] is TControl then begin
-              TAnotherFuckingHackedDelphiControl(children[t]).scale.x := 1;
-              TAnotherFuckingHackedDelphiControl(children[t]).scale.y := this_proportions * original_proportions;
-            end;
-          end;
-//          scale.y := this_proportions * original_proportions;
-//          scale.x := 1;
-          Debug.Log('scale x,y: '+floatprecision(scale.x,2)+','+floatprecision(scale.y,2));
+          sx := 1;
+          sy := this_proportions / original_proportions;
+        end;
 
+        Debug.Log('props : '+floatprecision(original_proportions,2)+','+floatprecision(this_proportions,2));
+        Debug.Log('dimensions : '+floatprecision(w,2)+','+floatprecision(h,2));
+        last_proportions := this_proportions;
+        for var t := 0 to self.ChildrenCount-1 do begin
+          if children[t] is TControl then begin
+            TAnotherFuckingHackedDelphiControl(children[t]).Scale.x := sx;
+            TAnotherFuckingHackedDelphiControl(children[t]).Scale.y := sy;
+          end;
         end;
       end;
 
@@ -255,18 +246,22 @@ procedure TScaledLayoutProportional.SetHeight(const Value: Single);
 begin
   inherited;
   if csDesigning in ComponentState then
-    OriginalHeight := Height
+    OriginalHeight := value
   else
     RecalcAbsolute;
+
+  ReAlign;
 end;
 
 procedure TScaledLayoutProportional.SetWidth(const Value: Single);
 begin
   inherited;
   if csDesigning in ComponentState then
-    OriginalWidth := Width
+    OriginalWidth := value
   else
     RecalcAbsolute;
+
+  ReAlign;
 end;
 
 end.

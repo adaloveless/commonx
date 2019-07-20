@@ -4,7 +4,7 @@ interface
 
 
 uses
-  FMX.StdCtrls, FMX.ListView, FMX.ListView.Appearances, FMX.ListView.Types, typex, fmx.objects, fmx.controls, FMX.VirtualKeyboard, FMX.Platform, FMX.Types, classes, fmx.forms, debug, FMXTee.Chart, FMXTee.Series, FMX.ListBox, fmx.layouts;
+  FMX.StdCtrls, FMX.ListView, FMX.ListView.Appearances, FMX.ListView.Types, typex, fmx.objects, fmx.controls, FMX.VirtualKeyboard, FMX.Platform, FMX.Types, classes, fmx.forms, debug, FMXTee.Chart, FMXTee.Series, FMX.ListBox, fmx.layouts, types, stringx;
 
 type
   TChildIterator = reference to procedure (c: TFMXobject; var stop: boolean);
@@ -26,20 +26,17 @@ procedure CenterControl(c: TControl);
 procedure Control_DestroyChildren(c: TFMXobject);
 function Control_GetWidth(c: TFMXObject): single;
 function Control_GetHeight(c: TFMXObject): single;
+function Control_GetPosition(c: TFMXObject): TPointF;
 
 function Control_IterateChildren(c: TFMXObject; p: TChildIterator): boolean;
 
 type
   TGuiHelper = class
     class function control_GetControl<TC: TControl>(parent: fmx.controls.TControl; bRecurse: boolean = true): TC;
+    class function control_GetParentOfType<TC: TFMXObject>(startingcontrol: TFMXObject): TC;
     class procedure DestroySubControls(parent: fmx.controls.TControl);
     class procedure DestroySubComponents(owner: TComponent; cc: TComponentClass);
   end;
-
-
-
-
-
 
 implementation
 
@@ -97,6 +94,20 @@ begin
     end;
 end;
 
+class function TGuiHelper.control_GetParentOfType<TC>(
+  startingcontrol: TFMXObject): TC;
+begin
+  if startingcontrol = nil then
+    exit(nil);
+
+  if startingcontrol is TC then
+    exit(TC(startingcontrol))
+  else
+    exit(control_GetParentOfType<TC>(startingcontrol.parent));
+
+
+end;
+
 class procedure TGuiHelper.DestroySubComponents(owner: TComponent; cc: TComponentClass);
 var
   c: TComponent;
@@ -122,10 +133,10 @@ class procedure TGuiHelper.DestroySubControls(parent: fmx.controls.TControl);
 var
   c: TControl;
 begin
-  Debug.Log(ESCSEQ('cF')+'Destroying sub controls of '+parent.name);
+  Debug.Log('Destroying sub controls of '+parent.name);
   while parent.Controls.count > 0 do begin
     c := parent.controls[0];
-    Debug.Log(ESCSEQ('cE')+' -'+c.classname);
+    Debug.Log(' -'+c.classname);
     parent.Controls.delete(0);
     c.free;
     c := nil;
@@ -367,6 +378,22 @@ begin
   end;
 
 end;
+function Control_GetPosition(c: TFMXObject): TPointF;
+begin
+  result.x := 0.0;
+  result.y := 0.0;
+  if c = nil then
+    exit;
+  if c is TControl then
+    exit(TControl(c).Position.Point);
+
+  if c is TForm then begin
+    result.x := TForm(c).Left;
+    result.y := TForm(c).Top;
+  end;
+
+end;
+
 function Control_GetWidth(c: TFMXObject): single;
 begin
   if c = nil then

@@ -9,7 +9,7 @@ interface
 {$IFDEF DEAD_LOCK_DEBUG}
   {$DEFINE DEBUG_BLOCKING}
 {$ENDIF}
-{$DEFINE ALWAYS_SINGLE_BYTE_MASK_MOVE}
+{x$DEFINE ALWAYS_SINGLE_BYTE_MASK_MOVE}
 
 uses
   typex, numbers,
@@ -435,9 +435,11 @@ end;
 
 
 procedure XOREncrypt(d: PByte; sz: ni; key: Pbyte; keysize: ni);
+var
+  t, k: ni;
 begin
-  var k := 0;
-  for var t := 0 to sz-1 do begin
+  k := 0;
+  for t := 0 to sz-1 do begin
     d[t] := d[t] xor key[k];
     inc(k);
     if k >= keysize then
@@ -642,6 +644,13 @@ VAR
   t: NativeInt;
   dd,ss,mm: PNativeInt;
   bd,bs,bm: PByte;
+  sz: nativeint;
+const
+{$IFDEF CPUX64}
+  andmask: nativeint = 7;
+{$ELSE}
+  andmask: nativeint = 3;
+{$ENDIF}
 begin
   if size = 0  then
     exit;
@@ -653,7 +662,7 @@ begin
   bm := PByte(pbyte(M)+size);
 
   //move single bytes until we're aligned on an 8 or 4 byte boundary (depending on x86/x64)
-  if (t > 0) {$IFNDEF ALWAYS_SINGLE_BYTE_MASK_MOVE}and ((t mod sizeof(nativeint)) > 0){$ENDIF} then
+  if (t > 0) {$IFNDEF ALWAYS_SINGLE_BYTE_MASK_MOVE}and ((t and andMask) > 0){$ENDIF} then
   repeat
     dec(t);
     bd := bd-1;
@@ -661,7 +670,7 @@ begin
     bm := bm-1;
     bd^ := ((bd^) and (bm^)) or ((bs^) and not (bm^));
 
-  until (t {$IFNDEF ALWAYS_SINGLE_BYTE_MASK_MOVE}mod sizeof(nativeint){$ENDIF}) = 0;
+  until (t {$IFNDEF ALWAYS_SINGLE_BYTE_MASK_MOVE}and andMask{$ENDIF}) = 0;
 
 
 {$IFNDEF ALWAYS_SINGLE_BYTE_MASK_MOVE}
@@ -669,13 +678,14 @@ begin
   dd := PNativeInt(bd);
   ss := PNativeInt(bs);
   mm := PNativeInt(bm);
+  sz := sizeof(Nativeint);
   //move bigger chunks until 0
   if t >= SizeOf(NativeInt) then
   repeat
-    dec(t,SizeOf(NativeInt));
-    dd := PNativeInt(pbyte(dd)-SizeOf(NativeInt));
-    ss := PNativeInt(pbyte(ss)-SizeOf(NativeInt));
-    mm := PNativeInt(pbyte(mm)-SizeOf(NativeInt));
+    dec(t,sz);
+    dd := PNativeInt(pbyte(dd)-sz);
+    ss := PNativeInt(pbyte(ss)-sz);
+    mm := PNativeInt(pbyte(mm)-sz);
     dd^ := ((dd^) and (mm^)) or ((ss^) and not (mm^));//destination will be ANDed with Mask, then ORed with source
   until t = 0;
 {$ENDIF}
@@ -690,6 +700,13 @@ VAR
   t: NativeInt;
   dd,ss,mm: PNativeInt;
   bd,bs,bm: PByte;
+  sz: nativeint;
+const
+{$IFDEF CPUX64}
+  andmask: nativeint = 7;
+{$ELSE}
+  andmask: nativeint = 3;
+{$ENDIF}
 begin
   if size = 0  then
     exit;
@@ -701,7 +718,7 @@ begin
   bm := PByte(pbyte(M)+size);
 
   //move single bytes until we're aligned on an 8 or 4 byte boundary (depending on x86/x64)
-  if (t > 0) {$IFNDEF ALWAYS_SINGLE_BYTE_MASK_MOVE}and ((t mod sizeof(nativeint)) > 0){$ENDIF} then
+  if (t > 0) {$IFNDEF ALWAYS_SINGLE_BYTE_MASK_MOVE}and ((t and andMask) > 0){$ENDIF} then
   repeat
     dec(t);
     bd := bd-1;
@@ -709,7 +726,7 @@ begin
     bm := bm-1;
     bd^ := ((bd^) and not (bm^)) or ((bs^) and (bm^));
 
-  until (t {$IFNDEF ALWAYS_SINGLE_BYTE_MASK_MOVE}mod sizeof(nativeint){$ENDIF}) = 0;
+  until (t {$IFNDEF ALWAYS_SINGLE_BYTE_MASK_MOVE}and andMask{$ENDIF}) = 0;
 
 
 {$IFNDEF ALWAYS_SINGLE_BYTE_MASK_MOVE}
@@ -717,13 +734,14 @@ begin
   dd := PNativeInt(bd);
   ss := PNativeInt(bs);
   mm := PNativeInt(bm);
+  sz := sizeof(NativeInt);
   //move bigger chunks until 0
-  if t >= SizeOf(NativeInt) then
+  if t >= sz then
   repeat
-    dec(t,SizeOf(NativeInt));
-    dd := PNativeInt(pbyte(dd)-SizeOf(NativeInt));
-    ss := PNativeInt(pbyte(ss)-SizeOf(NativeInt));
-    mm := PNativeInt(pbyte(mm)-SizeOf(NativeInt));
+    dec(t,sz);
+    dd := PNativeInt(pbyte(dd)-sz);
+    ss := PNativeInt(pbyte(ss)-sz);
+    mm := PNativeInt(pbyte(mm)-sz);
     dd^ := ((dd^) and not (mm^)) or ((ss^) and (mm^));//destination will be ANDed with Mask, then ORed with source
   until t = 0;
 {$ENDIF}

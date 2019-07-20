@@ -16,7 +16,7 @@ unit commandprocessor;
 {x$DEFINE PERFORMANCE_LOGGING}
 {$DEFINE DONT_USE_DQ}
 {$DEFINE FIRE_FORGET_CONTROLLED_BY_CP}
-{$DEFINE CLEAN_STALE}
+{$DEFINE CLEANSTALE}
 interface
 
 uses
@@ -29,11 +29,10 @@ uses
   backgroundthreads, commandicons;
 {$DEFINE RAISE_EXCEPTIONS_FROM_COMMANDS_ON_WAITFOR}
 {$DEFINE LOCK_RESOURCE_SCAN}
-{$DEFINE ENABLE_QUICKPOOL}
+{$DEFINE ENABLE_QUICKPOOL}  //reduces potential stress on thread pool, not typically necessary
 {x$DEFINE OVERSPILL}
-{$DEFINE QUEUE_INCOMING}
+{x$DEFINE QUEUE_INCOMING}
 {x$DEFINE ALLOW_EARLY_THREADDONE_SIGNAL}
-{x$DEFINE ENABLE_QUICKPOOL} //reduces potential stress on thread pool, not typically necessary
 //{$INLINE AUTO}
 
 const
@@ -41,7 +40,6 @@ const
   THREAD_SLEEP = 1;
   LARGE_FILE_THRESHOLD = 1000000;
   LARGE_TRANSFER_THRESHOLD = 64000;
-  COMMAND_PROCESSORS = 8;
 type
   TProgressEx = record
     progress: TProgress;
@@ -632,11 +630,13 @@ type
 
   end;
 
+  TLLL = TDirectlyLinkedList<TCommandProcessorChildThread>;
+
   TCPThreadPoolGrowthManager = class(TManagedThread)
   private
     FIdleCount: ni;
     tmLastNeedtime: ticker;
-    FList: TDirectlyLinkedList<TCommandProcessorChildThread>;
+    FList: TLLL;
     function GetIdleCount: ni;
   protected
     procedure DoExecute; override;
@@ -1088,7 +1088,7 @@ begin
     p.Lock;
     try
       if Assigned(Processor) then begin
-        Processor.RemoveCommand(self);
+        //Processor.RemoveCommand(self);
         processor := nil;
       end;
     finally
@@ -1284,6 +1284,7 @@ end;
 
 procedure TCommand.Detach;
 begin
+  try
   if detached then
     exit;
 
@@ -1326,8 +1327,9 @@ begin
     end;
   end;
 
-
-  Self.Processor := nil;
+  finally
+    Self.Processor := nil;
+  end;
 
   inherited;
 
@@ -1852,6 +1854,8 @@ begin
 //  Lock;
 //  try
     progress.step := Value;
+  if assigned(Thread) then
+    thread.step := value;
 //  finally
 //    Unlock;
 //  end;
@@ -1863,6 +1867,8 @@ begin
 //  Lock;
 //  try
     progress.StepCount := Value;
+    if assigned(Thread) then
+      thread.stepcount := value;
 //  finally
 //    Unlock;
 //  end;
@@ -2359,7 +2365,9 @@ end;
 
 procedure TCommandProcessor.CleanStaleChildThreads;
 begin
-  FQuickPool.CleanStale;
+{$IFDEF ENABLE_QUICKPOOL}
+//  FQuickPool.CleanStale; //CLEANED BY GROWTH MANAGER THREAD
+{$ENDIF}
 //  raise Exception.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
@@ -2498,13 +2506,13 @@ var
 begin
   Lock;
   try
+
     c := FAllCommands[t];
     FAllCommands.Delete(t);
     FIncompleteCommands.remove(c);
     FActiveCommands.remove(c);
     FCompleteCommands.remove(c);
     c.Processor := nil;
-
 
     if c.OwnedByProcessor then
       c.free;
@@ -2799,6 +2807,7 @@ begin
     CmdPerfLog('CommandProcessor.OnThreadExecute 4');
     ct := Needthread;
     CmdPerfLog('CommandProcessor.OnThreadExecute 5');
+
 
 {$IFDEF DETAILED_COMMAND_LOGGING}
     Debug.Log(self,inttostr(ct.threadid) + ' got command #' + inttostr(FCommandIndexFound) + ' @' + inttohex(NativeInt(pointer(c)), 8)+' ('+c.ClassName+')');
@@ -3624,6 +3633,13 @@ begin
 end;
 procedure TCommandProcessor.NoNeedThread(thr: TCommandProcessorChildThread);
 begin
+{$IFDEF DETAILED_COMMAND_LOGGING}
+  if thr.Command <> nil then
+    Debug.Log(self,inttostr(thr.threadid) + ' finished command  @' + inttohex(NativeInt(pointer(thr.command)), 8)+' ('+thr.command.ClassName+')')
+  else
+    Debug.Log(self,inttostr(thr.threadid) + ' finished command');
+
+{$ENDIF}
   thr.lastUsed := getticker;
   thr.HasWork := false;
   Lock;
@@ -3633,6 +3649,7 @@ begin
     Unlock;
   end;
 
+  thr.command := nil;
 {$IFDEF ENABLE_QUICKPOOL}
   FQuickPool.NoNeedThread(thr);
 {$ELSE}
@@ -4932,26 +4949,38 @@ end;
 { TCPThreadPoolGrowthManager }
 
 procedure TCPThreadPoolGrowthManager.CleanStale;
+const
+  GIVE_FROM_QP_TO_POOL_TIME = 100;
 var
   thr: TCommandProcessorChildThread;
+  tmSince: ticker;
 begin
 {$IFDEF CLEANSTALE}
+  thr := nil;
   Lock;
   try
-
-    if Flist.count > 0 then begin
+    if IdleCount > 1 then begin
       thr := FList[0];
-      if gettimeSince(thr.lastused) > 1000 then begin
+      tmSince := gettimeSince(thr.lastused);
+      if tmSince > GIVE_FROM_QP_TO_POOL_TIME then begin
         FList.remove(thr);
-        thr.loop := false;
-        thr.stop;
-        thr.WaitFor;
-        TPM.NoNeedThread(thr);
+      end else begin
+        thr := nil;
       end;
     end;
   finally
     Unlock;
   end;
+
+  if thr <> nil then begin
+//    Debug.Log('Quickpool removed thread that was '+tmsince.tostring+'ms. old, stopping');
+    thr.loop := false;
+    thr.stop;
+    thr.WaitFor;
+    TPM.NoNeedThread(thr);
+//    Debug.Log('Quickpool removed, stopped');
+  end;
+
 {$ENDIF}
 end;
 
@@ -4964,14 +4993,19 @@ begin
 end;
 
 procedure TCPThreadPoolGrowthManager.DoExecute;
+const
+  NEED_SILENCE_GIVE_UP = 50;
+  RAPID_NEED_TIME = 10;
+
 var
   expanded: TcommandProcessorChildThread;
 begin
   inherited;
 //  Debug.Log('check expand');
-  if (IdleCount =0) or ((tmLastNeedtime > 0) and (gettimesince(tmLastNeedTime) < 1000) and (IdleCount < 4)) then begin //if there are no threads in reserve then make some
+  if (IdleCount =0) or ((tmLastNeedtime > 0) and (gettimesince(tmLastNeedTime) < RAPID_NEED_TIME) and (IdleCount < 4)) then begin //if there are no threads in reserve then make some
 //    Debug.Log('epanding');
     expanded := TPM.Needthread<TCommandProcessorChildThread>(nil);
+    expanded.lastused := getticker;
     expanded.loop := true;
     expanded.haswork := false;
 
@@ -4991,6 +5025,10 @@ begin
     runHot := false;
 
   coldruninterval := 50;
+  if ((tmLastNeedtime > 0) and (gettimesince(tmLastNeedTime) > NEED_SILENCE_GIVE_UP) and (IdleCount > 4)) then begin
+    CleanStale;
+  end;
+
 
 end;
 
@@ -5028,7 +5066,7 @@ procedure TCPThreadPoolGrowthManager.Init;
 begin
   inherited;
   Loop := true;
-  FList := TDirectlyLinkedList<TcommandProcessorChildThread>.create;
+  FList := TLLL.create;
 
 end;
 
@@ -5050,6 +5088,7 @@ begin
       if IdleCount > 0 then begin
         result := FList[0];
         FList.remove(result);
+        result.lastused := getticker;
 //        Debug.Log('found idle thread');
       end;
     finally
@@ -5069,6 +5108,7 @@ begin
   Lock;
   try
     FList.Add(thr);
+    thr.lastused := getticker;
   finally
     Unlock;
   end;

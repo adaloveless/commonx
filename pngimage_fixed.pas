@@ -175,8 +175,8 @@ interface
 
 
 uses
- Windows {$IFDEF UseDelphi}, Classes, Graphics, SysUtils{$ENDIF} {$IFDEF Debug},
- dialogs{$ENDIF}, pngzlib, pnglang, GDIPOBJ, GDIPAPI, beeper;
+ Windows {$IFDEF UseDelphi}, Classes, vcl.Graphics, SysUtils,{$ENDIF}
+ pngzlib, pnglang, GDIPOBJ, GDIPAPI, beeper;
 
 const
   LibraryVersion = '1.56';

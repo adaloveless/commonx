@@ -240,6 +240,7 @@ var
   s: string;
   slTemp: TStringlist;
   t: ni;
+  bgt: TManagedThread;
 begin
 {$IFDEF DO_MEM_CHART}
   brainscanultra.memchart(chart1);
@@ -281,8 +282,9 @@ begin
         tm1 := GetTicker;
         if lvBackGround.itemIndex > -1 then begin
           if backgroundthreadman.count > lvBackGround.itemindex then begin
-            if backgroundthreadman[lvBackGround.itemindex] is TCommandProcessorMainThread then begin
-              thr := backgroundthreadman[lvBackGround.itemindex] as TCommandProcessorMainthread;
+            bgt := backgroundthreadman[lvBackGround.itemindex];
+            if bgt is TCommandProcessorMainThread then begin
+              thr := bgt as TCommandProcessorMainthread;
               if thr.tryLock then
               try
                 if thrDraw = nil then begin
@@ -301,9 +303,7 @@ begin
                     thrDraw.Fire;
                     DrawDiskUsage(thr.CP);
                   end;
-
                 end;
-
               finally
                 thr.Unlock;
               end;
@@ -542,12 +542,14 @@ var
   temp64, temptime, deltatime, tempfreq: int64;
   c,l,i: int64;
   tt: TThreadTimes;
-
   rTemp: single;
   totalCpuTicks: int64;
   totalUsedTicks: int64;
   ts:  PThreadState;
 begin
+  temptime := GetHighResTicker;
+  deltaTime := (temptime-Self.LastNanotick);
+
   totalCPUTicks := 0;
   temptime := GetHighResTicker;
   deltaTime := (temptime-Self.LastNanotick);
@@ -637,10 +639,10 @@ begin
 
 
         //-----------THREAD TIMES
+        tt := tickcount.getthreadtime(thr2.handle);
         if deltaTime = 0 then deltaTime := 1;
 
         QueryPerformanceFrequency(tempfreq);
-
 
 
         //- - - - - - - - - - - - - - - - - - - -
@@ -687,7 +689,7 @@ begin
           rTemp := lesserof(1, rTemp);
           rTemp := rTemp * 10;
           sTemp := '..........';
-          for t2:= 1 to (round(rTemp)) do begin
+          for t2:= STRZ to (round(rTemp))+STRZ-1 do begin
             sTemp[t2-(1-STRZ)] := '|';
           end;
 

@@ -3,14 +3,21 @@ unit advancedgraphics;
 {$INCLUDE DelphiDefs.inc}
 {$INLINE auto}
 {x$DEFINE USE_SSE3}
+{$IFDEF MSWINDOWS}
+{$DEFINE USEVCL}
+{$ENDIF}
 
 interface
 
 uses
   system.rtlconsts,system.types, system.uitypes,
-  winapi.windows, Vcl.Graphics, winapi.messages, controls, classes, dialogs, sysutils,
-  extctrls, math, easyimage, colorconversion, fastbitmap, colorblending,
-  glasscontrols, systemx, stringx, numbers, typex, geometry;
+  winapi.windows, Vcl.Graphics, winapi.messages,
+{$IFDEF USEVCL}
+  controls, dialogs, extctrls, glasscontrols,
+{$ENDIF}
+  sysutils, classes,
+  math, easyimage, colorconversion, fastbitmap, colorblending,
+  systemx, stringx, numbers, typex, geometry;
 
 const
   TEXT_WIDTH_INFINITE = -1;

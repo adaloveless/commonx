@@ -1093,7 +1093,7 @@ begin
 
 
   BLCache.Add(sIP, result);
-  SayNatural('Blacklisted by '+inttostr(result)+' services', false);
+//  SayNatural('Blacklisted by '+inttostr(result)+' services', false);
   exit;
 
 
@@ -1333,7 +1333,7 @@ begin
       on e: Exception do begin
 //        beeper.beepchord([700,777],500 );
         status := e.Message;
-        SAyNatural(status);
+//        SAyNatural(status);
       end;
     end;
 

@@ -55,9 +55,11 @@ type
 
 
 
-  TAnonymousFunction = class(TAnonymousCommand<boolean>)
+  TAnonymousFunctionCommand = class(TAnonymousCommand<boolean>)
   public
     constructor CreateInline(AThreadFunc: TProc; ACreateSuspended: Boolean = False;
+      FreeOnComplete: Boolean = false);reintroduce;
+    constructor CreateInlineWithGui(AThreadFunc, GuiFunc: TProc; ACreateSuspended: Boolean = False;
       FreeOnComplete: Boolean = false);reintroduce;
   end;
 
@@ -72,6 +74,8 @@ type
 { TAnonymousTimer }
 
 function InlineProc(proc: TProc): TAnonymousCommand<boolean>;
+function InlineProcWithGui(proc, guiproc: TProc): TAnonymousCommand<boolean>;
+
 //function InlineProc<T>(proc: TProc): TAnonymousCommand<T,boolean>;
 
 
@@ -111,10 +115,24 @@ begin
 end;
 
 function InlineProc(proc: TProc): TAnonymousCommand<boolean>;
+var
+  res: TAnonymousCommand<boolean>;
 begin
-  var res := TAnonymousFunction.createinline(proc, false, false);
+  res := TAnonymousFunctionCommand.createinline(proc, false, false);
   result := res;
 end;
+
+function InlineProcWithGui(proc, guiproc: TProc): TAnonymousCommand<boolean>;
+var
+  res: TAnonymousCommand<boolean>;
+begin
+  res := TAnonymousFunctionCommand.createinlinewithgui(proc, guiproc, false, false);
+
+  result := res;
+  result.start;
+
+end;
+
 
 constructor TAnonymousCommand<T>.Create(AThreadFunc: TFunc<T>; AOnFinishedProc: TProc<T>;
   AOnErrorProc: TProc<Exception>; ACreateSuspended: Boolean = False; FreeOnComplete: Boolean = True);
@@ -284,12 +302,14 @@ begin
   SynchronizeFinish := true;
 end;
 
-{ TAnonymousFunction }
+{ TAnonymousFunctionCommand }
 
-constructor TAnonymousFunction.CreateInline(AThreadFunc: TProc;
+constructor TAnonymousFunctionCommand.CreateInline(AThreadFunc: TProc;
   ACreateSuspended, FreeOnComplete: Boolean);
+var
+  funct: TFunc<boolean>;
 begin
-  var funct:TFunc<boolean> := function (): boolean
+  funct:= function (): boolean
                 begin
                   AthreadFunc();
                   result := true;
@@ -297,6 +317,31 @@ begin
 
 
   Create(funct, procedure (b: boolean) begin end, procedure (e: exception) begin end);
+end;
+
+constructor TAnonymousFunctionCommand.CreateInlineWithGui(AThreadFunc, GuiFunc: TProc;
+  ACreateSuspended, FreeOnComplete: Boolean);
+var
+  func1: TFunc<boolean>;
+  func2: TProc<boolean>;
+begin
+  func1:= function (): boolean
+                begin
+                  AthreadFunc();
+                  result := true;
+                end;
+
+  func2:= procedure (b: boolean)
+                begin
+                  GuiFunc();
+                end;
+
+
+  Create(func1, func2, procedure (e: exception) begin end, true, false);
+  SynchronizeFinish := true;
+  Start;
+
+
 end;
 
 end.

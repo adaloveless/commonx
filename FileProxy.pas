@@ -11,7 +11,10 @@ interface
   file in other platforms.
 }
 
-uses System.Sysutils, debug, numbers, systemx, windows;
+uses System.Sysutils, debug, numbers, systemx, windows, typex;
+
+const
+  MAX_SINGLE_OP = 262144;
 
 
 
@@ -30,22 +33,27 @@ implementation
 
 {$IFDEF MSWINDOWS}
 function FileReadPx(ats: PAlignedTempSpace; Handle: THandle; var Buffer; Count: LongWord): Integer;inline;
+var
+  chunk: ni;
 begin
+  chunk := lesserof(count,MAX_SINGLE_OP);
 {$IFNDEF ATS}
   ats := nil;
 {$ENDIF}
   if ats = nil then begin
-    result := FileRead(Handle, buffer, count);
+    result := FileRead(Handle, buffer, chunk);
   {$IFDEF PX_DEBUG}
     Debug.Log('FileReadPx '+memorytohex(pbyte(@buffer), lesserof(count, 64)));
   {$ENDIF}
   end else begin
-    result := FileRead(Handle, ats.aligned^, lesserof(count,262144));
+    result := FileRead(Handle, ats.aligned^, chunk);
     Movemem32(@buffer, ats.aligned, result);
   end;
 end;
 
 function FileWritePx(ats: PAlignedTempSpace; Handle: THandle; const Buffer; Count: LongWord): Integer;inline;
+var
+  chunk: ni;
 begin
 {$IFNDEF ATS}
   ats := nil;
@@ -69,8 +77,9 @@ begin
     Debug.Log('WRITES ARE DISABLED: '+memorytohex(pbyte(@buffer), lesserof(count, 64)));
     result := count;
   {$ELSE}
-    Movemem32(ats.aligned,@buffer, lesserof(count,262144));
-    result := fileWrite(Handle, ats.aligned^, count);
+    chunk := lesserof(count,MAX_SINGLE_OP);
+    Movemem32(ats.aligned,@buffer, chunk);
+    result := fileWrite(Handle, ats.aligned^, chunk);
   {$ENDIF}
   end;
 

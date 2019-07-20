@@ -150,7 +150,6 @@ end;
 constructor Trdtpdb.CopyCreate(source: TRDTPDB);
 begin
   inherited Create;
-  Created := getticker;
   FMWHost := source.MWHost;
   FMWEndpoint := source.MWEndpoint;
   if source.Context <> '' then begin
@@ -319,6 +318,7 @@ begin
   inherited;
   FMWHost := 'localhost';
   FMWEndpoint := '235';
+  Created := getticker;
 end;
 
 

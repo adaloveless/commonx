@@ -3,7 +3,7 @@ unit RDTPSocketServer;
 interface
 
 uses
-  windows, rdtpprocessor, sharedobject, better_sockets, sysutils;
+  windows, rdtpprocessor, sharedobject, better_sockets, sysutils, betterobject;
 
 type
   TRDTPSocketServer <T: TRDTPProcessor, constructor> = class (TSharedObject)

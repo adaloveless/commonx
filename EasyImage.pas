@@ -8,9 +8,9 @@ unit EasyImage;
 {$DEFINE NATIVE_RES_TEXT}
 interface
 
-uses system.uitypes, system.types, system.rtlconsts, gdipapi, betterobject, ColorConversion, beeper, ExtCtrls, generics.collections.fixed,tickcount,
-    graphics, typex, dialogs, sysutils, classes, GDIPOBJ, winapi.windows, math, controls,orderlyinit, numbers, colorblending, vcl.imaging.pngimage,
-    Vcl.Imaging.GIFImg, sharedobject, debug, geometry, commandprocessor, dir, dirfile, systemx, helpers.stream, fastbitmap, vcl.imaging.jpeg;
+uses system.uitypes, system.types, system.rtlconsts, gdipapi, betterobject, ColorConversion, beeper, generics.collections.fixed,tickcount,
+    vcl.graphics, typex, sysutils, classes, GDIPOBJ, winapi.windows, math, orderlyinit, numbers, colorblending, vcl.imaging.pngimage, controls, extctrls,
+    Vcl.Imaging.GIFImg, sharedobject, debug, geometry, commandprocessor, dir, dirfile, systemx, helpers.stream, fastbitmap, vcl.imaging.jpeg, graphicsx;
 
 
 const primary_hues: array[0..8] of TColor = ($FF, $7fFF, $FFFF, $FF00, $FFFF00, $FF0000, $FF009F, $FF00FF,$FFFFFF);
@@ -214,7 +214,9 @@ function GetAlphaFromPointer(p: pointer): integer;inline;
 procedure SetAlphaToPointer(p: pointer; a: integer);inline;
 function CountPNGColors(png: TPNGImage; iStopAt: integer = 256): integer;overload;
 
+{$IFDEF USEVCL}
 procedure AutoQuantizePNG(png: TPNGImage; iColorTarget: integer = 256; bDither: boolean=true; bDitherAlpha: boolean = false; debugger: TImage= nil);overload;
+{$ENDIF}
 
 procedure QuantizePNG(png: TPNGImage; rLevels, gLevels, bLevels, aLevels: integer; bDither: boolean=true; bDitherAlpha: boolean = false);overload;
 procedure QuantizeFB(fb: TFastBitmap; rLevels, gLevels, bLevels, aLevels: integer; bDither: boolean=true; bDitherAlpha: boolean = false);overload;
@@ -349,7 +351,7 @@ var
 begin
   result := Vcl.Graphics.TBitmap.create;
   result.canvas.lock;
-  bm.PixelFormat := pf32Bit;
+  bm.PixelFormat := graphicsx.TPixelFormat.pf32Bit;
   bm.canvas.lock;
   try
     result.Width := x2-x1+1;

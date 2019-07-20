@@ -7,7 +7,7 @@ uses
   ActiveX,
 {$ENDIF}
   SysUtils, Classes, better_Sockets, RDTPServerList, RDTPMultiplexerServer, applicationparams, rdtpprocessor,orderlyinit,
-  sockfix, simpleabstractprivateserversocket, simplereliableudp, typex, skill;
+  sockfix, simpleabstractprivateserversocket, simplereliableudp, typex, skill, herro;
 
 type
   TdmRDTPMultiServer = class(TDataModule)
@@ -34,6 +34,7 @@ implementation
 
 {$R *.dfm}
 
+
 procedure TdmRDTPMultiServer.DataModuleCreate(Sender: TObject);
 var
   ap:  TAppParams;
@@ -53,8 +54,8 @@ begin
     rdtpservers.Lockread;
     try
       for t:= 0 to RDTPServers.Count-1 do begin
-        skills.RegisterLocalSkill(RDTPServers.ServiceNames[t], 0, tcp.localPort, 'RDTP/RUDP');
-        skills.RegisterLocalSkill(RDTPServers.ServiceNames[t], 0, tcp.localPort, 'RDTP/TCP');
+        herro.RegisterLocalSkill(RDTPServers.ServiceNames[t], 0, tcp.localPort, 'RDTP/RUDP');
+        herro.RegisterLocalSkill(RDTPServers.ServiceNames[t], 0, tcp.localPort, 'RDTP/TCP');
       end;
     finally
       rdtpservers.UnlockRead;

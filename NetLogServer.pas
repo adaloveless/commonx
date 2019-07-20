@@ -164,7 +164,7 @@ begin
   LogServer.BroadcastEnabled := true;
   LogServer.Active := true;
 
-  skill.RegisterLocalSkill('NetLogServer', 0, '1111', 'NetLog/UDP');
+  herro.RegisterLocalSkill('NetLogServer', 0, '1111', 'NetLog/UDP');
   Debug.Log('Bound');
 
 end;

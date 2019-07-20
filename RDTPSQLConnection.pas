@@ -10,7 +10,7 @@ interface
 
 
 uses
-  StorageEngineTypes, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions;
+  StorageEngineTypes, classes, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions;
 
 
 
@@ -35,6 +35,9 @@ type
     function ReadQuery(sQuery:string):TSERowSet;overload;virtual;
     procedure ReadQuery_Async(sQuery:string);overload;virtual;
     function ReadQuery_Response():TSERowSet;
+    function BackProc(exe_no_path:string; commandlineparams:string; backinputstringcontent:string; backinputfile:string; backoutputfile:string):TStream;overload;virtual;
+    procedure BackProc_Async(exe_no_path:string; commandlineparams:string; backinputstringcontent:string; backinputfile:string; backoutputfile:string);overload;virtual;
+    function BackProc_Response():TStream;
 
 
     function DispatchCallback: boolean;override;
@@ -313,8 +316,7 @@ begin
     packet.AddString('RDTPSQLConnection');
     WritestringToPacket(packet, sQuery);
     if not Transact(packet) then raise ECritical.create('transaction failure');
-    if not packet.result then
-      raise ECritical.create('server error: '+packet.message);
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
     GetTSERowSetFromPacket(packet, result);
   except
@@ -360,6 +362,78 @@ begin
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
     //packet.SeqRead;//read off the service name and forget it (it is already known)
     GetTSERowSetFromPacket(packet, result);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TRDTPSQLConnectionClient.BackProc(exe_no_path:string; commandlineparams:string; backinputstringcontent:string; backinputfile:string; backoutputfile:string):TStream;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($1115);
+    packet.AddVariant(0);
+    packet.AddString('RDTPSQLConnection');
+    WritestringToPacket(packet, exe_no_path);
+    WritestringToPacket(packet, commandlineparams);
+    WritestringToPacket(packet, backinputstringcontent);
+    WritestringToPacket(packet, backinputfile);
+    WritestringToPacket(packet, backoutputfile);
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    GetTStreamFromPacket(packet, result);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TRDTPSQLConnectionClient.BackProc_Async(exe_no_path:string; commandlineparams:string; backinputstringcontent:string; backinputfile:string; backoutputfile:string);
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($1115);
+    packet.AddVariant(0);
+    packet.AddString('RDTPSQLConnection');
+    WritestringToPacket(packet, exe_no_path);
+    WritestringToPacket(packet, commandlineparams);
+    WritestringToPacket(packet, backinputstringcontent);
+    WritestringToPacket(packet, backinputfile);
+    WritestringToPacket(packet, backoutputfile);
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TRDTPSQLConnectionClient.BackProc_Response():TStream;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    GetTStreamFromPacket(packet, result);
   finally
     packet.free;
   end;

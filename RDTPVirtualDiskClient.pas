@@ -10,7 +10,7 @@ interface
 
 
 uses
-  PacketHelpers_VirtualDisk, VirtualDisk_Advanced, VirtualDisk_Status, Classes, VirtualDiskParams, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions;
+  PacketHelpers_VirtualDisk, VirtualDisk_Status, Classes, VirtualDiskParams, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions;
 
 
 

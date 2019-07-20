@@ -60,7 +60,7 @@ procedure TWriteBuilder.Init;
 begin
   inherited;
 
-  SetDataCapacity(512);
+  SetDataCapacity(262144);
 
 
 end;

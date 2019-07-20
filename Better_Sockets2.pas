@@ -1347,6 +1347,7 @@ begin
           i := Fthreads.count;
           FThreads[0].KillClient;
           FThreads[0].BeginStop;
+          Debug.Log('Waiting for #'+FThreads[0].realthread.handle.tostring+' to stop.');
         end;
 //        for t:= 0 to FThreads.count-1 do begin
 //          FThreads[t].KillClient;
@@ -1354,7 +1355,7 @@ begin
       finally
         Unlock;
       end;
-      Debug.Log('Waiting for '+i.tostring+' client socket threads to stop.');
+
       sleep(1000);
   end;
 //  for t:= 0 to FThreads.count-1 do begin

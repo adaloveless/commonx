@@ -1,4 +1,5 @@
 unit betterobject;
+{x$DEFINE DEBUG_HOLDER}
 {$INCLUDE DelphiDefs.inc}
 {$MESSAGE '*******************COMPILING betterobject.pas'}
 
@@ -15,7 +16,9 @@ unit betterobject;
 {x$DEFINE OBJECT_DEBUG_FACILITIES}
 
 {$DEFINE FREEDICT}
-{$DEFINE GIVER}
+{x$DEFINE GIVER_IN_IHOLDER}
+{$DEFINE GIVER_IN_TOBJECT}
+{$DEFINE GIVER_POOLS}
 {x$DEFINE THREAD_BLOCKING_DIAGNOSTICS}
 {x$DEFINE LOCK_DEBUG}
 {x$DEFINE CONTEXT_SWITCH}
@@ -48,6 +51,7 @@ const
   SHARED_SPIN = 0;
 
 type
+  ELockTimeout = class(Exception);
   TBetterObject = class;//forward
 
   IHolder<T: class> = interface
@@ -58,7 +62,7 @@ type
   end;
 
   TSharedObject = class;//forward
-{$IFDEF GIVER}
+{$IFDEF GIVER_POOLS}
   TGiver = class;//forward
 {$ENDIF}
 
@@ -74,7 +78,7 @@ type
     FFreeWithReferences: boolean;
     fDetached: boolean;
     detachbegan, detachended: boolean;
-{$IFDEF GIVER}
+{$IFDEF GIVER_IN_TOBJECT}
     FGiveTo: TGiver;
 {$ENDIF}
     procedure SetFreeWithReferences(const Value: boolean);
@@ -92,7 +96,7 @@ type
     procedure AfterConstruction;override;
     procedure BeforeDestruction;override;
 
-    function _AddRef: Integer; virtual;stdcall;
+    function _AddRef: Integer;virtual;stdcall;
     function _Release: Integer;virtual; stdcall;
     function _RefCount: Integer;virtual; stdcall;
 
@@ -120,7 +124,7 @@ type
     procedure FreeByInterface;
     property IsDead: boolean read GetIsDead;
     function ShouldTake: boolean;virtual;
-{$IFDEF GIVER}
+{$IFDEF GIVER_IN_TOBJECT}
     property GiveTo: TGiver read FGiveTo;//if taken from a giver, this property will be set.
     procedure Give;//INSTEAD OF calling FREE, try giving it to the giver instead (pooling)
 {$ENDIF}
@@ -139,6 +143,7 @@ type
 
   THolder<T: class> = class(TBetterObject, IHolder<T>)
   private
+    FTakenFrom: TBetterObject;
     function Get__Holding: T;
     procedure Set__Holding(const Value: T);
   protected
@@ -148,7 +153,13 @@ type
     FO: T;
     constructor create;override;
     destructor Destroy;override;
+
+{$IFDEF DEBUG_HOLDER}
+    function _AddRef: Integer; override;
+    function _Release: Integer;override;
+{$ENDIF}
     property o: T read Get__Holding write Set__Holding;
+    property TakenFrom: TBetterObject read FTakenFrom write FTakenFrom;
   end;
 
 
@@ -174,6 +185,7 @@ type
   private
     FSpinCount: ni;
     fWatchMe: boolean;
+    FLockTimeout: ni;
     procedure SetSpinCount(const Value: ni);
   protected
 
@@ -203,9 +215,10 @@ type
     function IsLocked: boolean;
     function LockOwner: cardinal;
 {$ENDIF}
+    property LockTimeout: ni read FLockTimeout write FLockTimeout;
   end;
 
-{$IFDEF GIVER}
+{$IFDEF GIVER_POOLS}
   TGiver = class(TSharedObject)
   private
 
@@ -453,7 +466,7 @@ end;
 procedure TBetterObject.BeforeDestruction;
 begin
   Detach;
-  if RefCount > 1 then begin
+  if _RefCount > 1 then begin
     FreeWithReferences := true;
     raise EAbort.create('Trying to free '+self.ClassName+' with more than 1 reference');
 
@@ -558,7 +571,7 @@ begin
   result := classname+'@'+inttostr(ni(pointer(self)));
 end;
 
-{$IFDEF GIVER}
+{$IFDEF GIVER_IN_TOBJECT}
 procedure TBetterObject.Give;
 begin
   if giveto = nil then begin
@@ -627,45 +640,59 @@ end;
 
 function TBetterObject._AddRef: Integer;
 begin
-{$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
+{$IFDEF AUTOREFCOUNT}
+  result := inherited _AddRef;
+{$ELSE}
   EnterCriticalSection(FRefSect);
   inc(FrefCount);
   Result := FRefCount;
   LeaveCriticalSection(FRefSect);
-{$ELSE}
-  result := InterlockedIncrement(FRefCount);
 {$ENDIF}
+
 end;
 
 function TBetterObject._RefCount: Integer;
 begin
-{$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
+{$IFDEF AUTOREFCOUNT}
+  result := RefCount;
+{$ELSE}
   EnterCriticalSection(FRefSect);
-{$ENDIF}
   result := FRefCount;
-{$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
   LeaveCriticalSection(FRefSect);
 {$ENDIF}
+
 end;
 
 function TBetterObject._Release: Integer;
 begin
   if FDead = $DEAD then
     raise ECritical.create('trying to release a dead object');
-{$IFNDEF NO_INTERLOCKED_INSTRUCTIONS}
-  result := InterlockedDecrement(FRefCount);
-{$ELSE}
+{$IFDEF AUTOREFCOUNT}
   EnterCriticalSection(FRefSect);
+{$ENDIF}
   DeadCheck;
+
+{$IFDEF AUTOREFCOUNT}
+  result := inherited _Release();
+{$ELSE}
   dec(FRefCount);
   Result := FRefCount;
+
   LeaveCriticalSection(FRefSect);
-{$ENDIF}
+
   if (Result = FreeAtRef) or ((Result = 0) and FreeWithReferences) then begin
 {$IFDEF WINDOWS}
     Destroy;//<--- android has ARC, don't destroy on FMX platforms
+{$ELSE}
+{$IFDEF DEBUG_HOLDER}
+    Debug.Log('Will not destroy '+self.classname+' because of ARC');
+{$ENDIF}
+//    Destroy;
+//    Detach;
 {$ENDIF}
   end;
+{$ENDIF}
+
 
 
 end;
@@ -690,20 +717,35 @@ end;
 constructor THolder<T>.create;
 begin
   inherited;
-//  FreeWithReferences := true;
+{$IFDEF MSWINDOWS}
   FreeByInterface;
+{$ELSE}
+  FreeWithReferences := true;
+{$ENDIF}
 end;
 
 destructor THolder<T>.Destroy;
 begin
-{$IFDEF GIVER}
-  if FO is TBetterObject then begin
-    TBetterObject(FO).Give; //IF the object came from a pool, it will be given to the pool, else freed
-  end else begin
-    FO.free;
+{$IFDEF GIVER_IN_TOBJECT}
+  IF FO <> nil then begin
+{$IFDEF DEBUG_HOLDER}
+    Debug.Log('Destroy holder '+self.classname+' @'+inttohex(nativeint(pointer(SELF)),2)+' holding '+FO.Classname);
+{$ENDIF}
+
+    if FO is TBetterObject then begin
+      TBetterObject(FO).Give; //IF the object came from a pool, it will be given to the pool, else freed
+    end else begin
+      FO.free;
+    end;
   end;
 {$ELSE}
-  FO.Free;
+  {$IFDEF GIVER_IN_IHOLDER}
+    if FTakenFrom <> nil then
+      TGiverOf<T>(FTakenFrom).Take(FO);
+      FO := nil;
+  {$ELSE}
+    FO.Free;
+  {$ENDIF}
 {$ENDIF}
   FO := nil;
   inherited;
@@ -726,13 +768,41 @@ begin
 //    Fo.free;
 
   FO := value;
+  if Fo is TBetterObject then
+    TBetterObject(Fo).FreeWithReferences := true;
+
 
 
 end;
 
+{$IFDEF DEBUG_HOLDER}
+function THolder<T>._AddRef: Integer;
+begin
+  result := inherited _AddRef();
+{$IFDEF DEBUG_HOLDER}
+  Debug.Log('Add ref '+self.classname+' @'+inttohex(nativeint(pointer(SELF)),2)+' now has '+inttostr(FRefCount)+' refs.');
+{$ENDIF}
+end;
+
+function THolder<T>._Release: Integer;
+begin
+{$IFDEF DEBUG_HOLDER}
+  var bTrap := (self.classname = 'THolder<RDTPSQLconnectionClientEx.TRDTPSQLConnectionClientEx>');
+
+  if (FRefCount=1) and bTrap then
+    Debug.Log('release here');
+  Debug.Log('Release ref '+self.classname+' @'+inttohex(nativeint(pointer(SELF)),2)+' now has '+inttostr(FRefCount-1)+' refs.');
+{$ENDIF}
+  result := inherited _Release();
+
+  if (FRefCount=0) and bTrap then
+    Debug.Log('released!');
+end;
+{$ENDIF}
+
 { TLightObject }
 
-{$IFDEF GIVER}
+{$IFDEF GIVER_POOLS}
 procedure Tgiver.Take(obj: TObject; sContext: string = '');
 begin
   Lock;
@@ -760,6 +830,7 @@ begin
         o := FList.objects[fList.count-1];
         FList.delete(FList.count-1);
         o.free;
+        o := nil;
       end;
     except
     end;
@@ -812,11 +883,24 @@ begin
 //      if not (self.ClassName='TCommandProcessor') then
 //      if self.ClassName = 'Tmodosc_EQ' then
       Debug.Log(self, self.ClassName+' is blocked on thread '+inttostr(GetCurrentThreadID())+' by '+inttostr(sect.owningthread),'error');
-      EnterCriticalSection(sect);
+      if LockTimeout = 0 then
+        EnterCriticalSection(sect)
+      else
+        if not TryLock(LockTimeout) then
+          raise ELockTimeout.create('lock timeout waiting for '+self.ClassName+' owned by #'+sect.OwningThread.tostring);
       Debug.Log(self, self.ClassName+' is unblocked on thread '+inttostr(GetCurrentThreadID()),'error');
     end;
     {$ELSE}
-    EnterCriticalSection(sect);
+    if LockTimeout = 0 then
+      EnterCriticalSection(sect)
+    else
+      if not TryLock(LockTimeout) then begin
+{$IFDEF MSWINDOWS}
+        raise ELockTimeout.create('lock timeout waiting for '+self.ClassName+' owned by #'+sect.OwningThread.tostring);
+{$ELSE}
+        raise ELockTimeout.create('lock timeout waiting for '+self.ClassName);
+{$ENDIF}
+      end;
     {$ENDIF}
 {$IFDEF CONTEXT_SWITCH}
     lastlocker := GetCurrentThreadId;
@@ -1824,13 +1908,15 @@ end;
 { TGiverFactory<T> }
 
 function TGiverOf<T>.GiveEx(sContextKey: string): TObject;
+var
+  i: ni;
 begin
   result := nil;
   Lock;
   try
     if FList.count > 0 then
     repeat
-      var i := Flist.IndexOf(sContextKey);
+      i := Flist.IndexOf(sContextKey);
       if i < 0 then
         break;
 
@@ -1857,6 +1943,7 @@ function TGiverOf<T>.Need(sContext: string): IHolder<T>;
 var
   res: T;
 begin
+  result := nil;
   Lock;
   try
     res := T(GiveEx(sContext));

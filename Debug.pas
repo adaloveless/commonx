@@ -3,20 +3,25 @@ unit Debug;
 
 interface
 {$IFDEF MSWINDOWS}
-{x$DEFINE LOG_TO_DISK}
+  {$DEFINE LOG_TO_DISK}
 {$ENDIF}
 {$DEFINE NO_US}
+{$DEFINE NO_THREADID}
 {$IFDEF DESIGN_TIME_PACKAGE}
   //none of this
 {$ELSE}
-{$IFDEF WINDOWS}
-{x$DEFINE LOG_TO_CONSOLE}
+  {$IFDEF WINDOWS}
+  {$DEFINE LOG_TO_CONSOLE}
+  {$ENDIF}
+  {x$DEFINE LOG_TO_DISK}
+  {$DEFINE LOG_TO_MEMORY}
+  {x$DEFINE CONSOLE_LOG_TO_DISK}
+  {x$DEFINE LOG_TO_THREAD_STATUS}
+  {x$DEFINE LOG_TO_CTO}
 {$ENDIF}
-{x$DEFINE LOG_TO_DISK}
-{$DEFINE LOG_TO_MEMORY}
-{x$DEFINE CONSOLE_LOG_TO_DISK}
-{x$DEFINE LOG_TO_THREAD_STATUS}
-{x$DEFINE LOG_TO_CTO}
+{$IFDEF MOARDEBUG}
+  {$UNDEF NO_US}
+  {$UNDEF NO_THREADID}
 {$ENDIF}
 
 uses
@@ -31,8 +36,9 @@ uses
   {$ENDIF}
 {$ENDIF}
 {$IFDEF LOG_TO_CTO}
-  edi_log_jan,
-  edi_global,
+xxxx
+//  edi_log_jan,
+//  edi_global,
 {$ENDIF}
   typex, systemx, sharedobject, sysutils, classes, ringbuffer, stringx, numbers, signals;
 
@@ -41,61 +47,6 @@ type
   TLogTargets = set of TLogTarget;
 const
   ltAll = [ltDisk, ltConsole, ltThread, ltEDI];
-  ESCX = #26;
-  CLR0 = ESCX+'c0'+ESCX;
-  CLR1 = ESCX+'c1'+ESCX;
-  CLR2 = ESCX+'c2'+ESCX;
-  CLR3 = ESCX+'c3'+ESCX;
-  CLR4 = ESCX+'c4'+ESCX;
-  CLR5 = ESCX+'c5'+ESCX;
-  CLR6 = ESCX+'c6'+ESCX;
-  CLR7 = ESCX+'c7'+ESCX;
-  CLR8 = ESCX+'c8'+ESCX;
-  CLR9 = ESCX+'c9'+ESCX;
-  CLRA = ESCX+'cA'+ESCX;
-  CLRB = ESCX+'cB'+ESCX;
-  CLRC = ESCX+'cC'+ESCX;
-  CLRD = ESCX+'cD'+ESCX;
-  CLRE = ESCX+'cE'+ESCX;
-  CLRF = ESCX+'cF'+ESCX;
-  ESC_BLUE = CLRE;
-  CLRBLK = CLR0;
-  CLRWHITE = CLR0;
-  ANSICOLORS: array of cardinal = [
-    $000000,//0
-    $800000,//1
-    $008000,//2
-    $808000,//3
-    $000080,//4
-    $800080,//5
-    $008080,//6
-    $D0D0D0,//7
-    $3F3F3F,//8
-    $FF0000,//9
-    $00FF00,//A
-    $FFFF00,//B
-    $0000FF,//C
-    $FF00FF,//D
-    $00FFFF,//E
-    $FFFFFF];//F
-
-   TERMINALCOLORS: array of CARDINAL = [
-    $000000,//0
-    $000080,//1
-    $008000,//2
-    $008080,//3
-    $800000,//4
-    $800080,//5
-    $808000,//6
-    $D0D0D0,//7
-    $3F3F3F,//8
-    $0000FF,//9
-    $00FF00,//A
-    $00FFFF,//B
-    $FF0000,//C
-    $FF00FF,//D
-    $FFFF00,//E
-    $FFFFFF];//F
 
 
   //**********************************************
@@ -151,7 +102,7 @@ procedure Log(targets: TLogTargets; sTypeName: string; ptr: pointer; s: string; 
 procedure ConsoleLog(s: string);
 
 function DebugLog: TDebugLog;
-function ESCSEQ(s: string): string;
+
 
 procedure SetDebugThreadVar(thr: TObject);
 procedure LogToThreadStatus(s: string);
@@ -188,6 +139,7 @@ procedure SetDebugThreadVar(thr: TObject);
 begin
   threadlog.thr := TManagedThread(thr);
 end;
+
 function DebugLog: TDebugLog;
 begin
   if GDebugLog = nil then
@@ -199,76 +151,94 @@ end;
 
 procedure Log(s: string; sFilter: string = '');overload;
 begin
-  if log_is_shut_down then exit;
-  Log(nil, s,sFilter);
+  try
+    if log_is_shut_down then exit;
+    Log(nil, s,sFilter);
+  except
+  end;
 end;
+
 procedure Log(sender: TObject; s: string; sFilter: string = '');
 var
   sobj: string;
 begin
-  if log_is_shut_down then exit;
-  if sender = nil then begin
-    sObj := '';
-  end else begin
-    sObj := sender.classname+'@'+inttohex(ni(pointer(sender)), sizeof(ni)*2)+': ';
+  try
+    if log_is_shut_down then exit;
+    if sender = nil then begin
+      sObj := '';
+    end else begin
+      sObj := sender.classname+'@'+inttohex(ni(pointer(sender)), sizeof(ni)*2)+': ';
+    end;
+    DebugLog.Log(ltAll,
+      DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+      sFilter
+    );
+  except
   end;
-  DebugLog.Log(ltAll, getcurrentthreadid.tostring+'::'+
-    DateToStr(Date)+', '+TimeToStr(Now)+'_'+formatHRT(GethighResTicker)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
-    sFilter
-  );
-
 end;
 
 procedure Log(targets: TLogTargets; sender: TObject; s: string; sFilter: string = '');overload;
 var
   sobj: string;
 begin
-  if log_is_shut_down then exit;
-  if sender = nil then begin
-    sObj := '';
-  end else begin
-    sObj := sender.classname+'@'+inttohex(ni(pointer(sender)), sizeof(ni)*2)+': ';
+  try
+    if log_is_shut_down then exit;
+    if sender = nil then begin
+      sObj := '';
+    end else begin
+      sObj := sender.classname+'@'+inttohex(ni(pointer(sender)), sizeof(ni)*2)+': ';
+    end;
+    DebugLog.Log(targets,
+      DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+      sFilter
+    );
+  except
   end;
-  DebugLog.Log(targets,
-    DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
-    sFilter
-  );
 end;
 
 
 procedure Log(targets: TLogTargets; s: string; sFilter: string = '');overload;
 begin
-  if log_is_shut_down then exit;
-  Log(targets, nil, s,sFilter);
+  try
+    if log_is_shut_down then exit;
+    Log(targets, nil, s,sFilter);
+  except
+  end;
 end;
 procedure Log(sTypeName: string; ptr: pointer; s: string; sFilter: string = '');
 var
   sobj: string;
 begin
-  if log_is_shut_down then exit;
-  if ptr = nil then
-    sObj := ''
-  else
-    sObj := sTypeName+'@'+inttohex(ni(ptr), sizeof(ni)*2)+': ';
-  DebugLog.Log(ltAll,
-    DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
-    sFilter
-   );
+  try
+    if log_is_shut_down then exit;
+    if ptr = nil then
+      sObj := ''
+    else
+      sObj := sTypeName+'@'+inttohex(ni(ptr), sizeof(ni)*2)+': ';
+    DebugLog.Log(ltAll,
+      DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+      sFilter
+     );
+  except
+  end;
 end;
 
 procedure Log(targets: TLogTargets; sTypeName: string; ptr: pointer; s: string; sFilter: string = '');overload;
 var
   sobj: string;
 begin
-  if log_is_shut_down then exit;
-  if ptr = nil then
-    sObj := ''
-  else
-    sObj := sTypeName+'@'+inttohex(ni(ptr), sizeof(ni)*2)+': ';
-  DebugLog.Log(targets,
-    DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
-    sFilter
-   );
+  try
+    if log_is_shut_down then exit;
+    if ptr = nil then
+      sObj := ''
+    else
+      sObj := sTypeName+'@'+inttohex(ni(ptr), sizeof(ni)*2)+': ';
+    DebugLog.Log(targets,
+      DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+      sFilter
+     );
+  except
+  end;
 end;
 
 
@@ -357,35 +327,18 @@ begin
   ecs(sect);
 end;
 
-function RemoveESCX(s: string): string;
-var
-  sl: TStringlist;
-begin
-  sl := nil;
-  try
-    sl := ParseString(s, ESCX);
-    result := UnParseString('', sl, true);
-  finally
-    sl.free;
-  end;
-end;
 procedure TDebugLog.Log(targets: TLogTargets; const s: string; const sFilter: string = '');
 var
   sLog: string;
   sLog2: logstring;
   pb: PByte;
   ss: ansistring;
-  sNoEsc: string;
   sNewFile: string;
 begin
   try
   {$IFDEF LOG_TO_CONSOLE}
-  if ltConsole in targets then begin
-    sNoEsc := RemoveESCX(s);
-    if length(sNoEsc) > 255 then
-      sNoEsc := zcopy(sNoEsc, 0, 255);
-    Windows.OutputDebugString(pchar(sNoEsc));
-  end;
+  if ltConsole in targets then
+    Windows.OutputDebugString(pchar(s));
   {$ENDIF}
   {$IFDEF LOG_TO_THREAD_STATUS}
   if ltThread in targets then
@@ -402,65 +355,73 @@ begin
       sNewFile := LogFileNAme;
 
 
+      //if we haven't opened the file or the filename has changed
       if (fs = nil) or (sNewFile <> fs.FileName) then begin
+        //ditch the old file
         if (fs <> nil) then begin
           fs.free;
           fs := nil;
         end;
+
+        //?????????????????????
+        {$IFDEF FREE_INSTANCE_LOG_AT_MIDNIGHT}
         if (fsInstance <> nil) then begin
           fsInstance.Free;
           fsInstance := nil;
         end;
+        {$ENDIF}
 
+        //if the target file already exists, openit for read/write
         if fileexists(sNewFile) then begin
           fs := TFileStream.Create(sNewFile, fmOpenReadWrite+fmShareDenyNone);
         end
+        //else create a few one then open it for read/write
         else begin
           fs := nil;
 
+          //create the new file
           try
             fs := TFileStream.create(sNewFile, fmCreate);
           finally
             fs.free;
           end;
+          //reopen then new file
           fs := TFileStream.Create(sNewFile, fmOpenReadWrite+fmShareDenyNone);
         end;
 
+      end;
+
+      //Deal with the real-time log (non-dated)
+      //create a new one or use existing one
+      if fsInstance = nil then begin
         if fileexists(LogFileName(false)) then begin
           fsInstance := TFileStream.Create(LogFileName(false), fmOpenReadWrite+fmShareDenyNone);
         end
         else begin
+          //create a new one
           fsInstance := nil;
           try
             fsInstance := TFileStream.create(LogFileName(false), fmCreate);
           finally
             fsInstance.free;
-
           end;
           fsInstance := TFileStream.Create(LogFileName(false), fmOpenReadWrite+fmShareDenyNone);
         end;
-
-
       end;
 
 
+
+      //write the stuff to the actual log
       sLog2 := ansistring(sLog)+ansistring(NEWLINE);
       pb := GetMemory(length(sLog2));
       try
         movemem32(pb, @sLog2[STRZ], length(sLog2));
 
-        {/* log only to INSTANCE LOG first
-          Data will be moved to dated log periodically
-
-        fs.Seek(0, soEnd);
-        Stream_GuaranteeWrite(fs, pb, length(sLog2));
-         */}
-
         fsInstance.Seek(0, soEnd);
         Stream_GuaranteeWrite(fsInstance, pb, length(sLog2));
 
+        //flush instance log to dated log if it is time to do so (DISK_LOG_DRAIN_INTERVAL)
         ARchiveLogDataIfTime;
-
 
       finally
         FreeMemory(pb);
@@ -605,15 +566,6 @@ begin
 {$ENDIF}
 end;
 
-function ESCSEQ(s: string): string;
-begin
-{$IFDEF NO_ESCAPE_LOGS}
-  result := s;
-{$ELSE}
-  result := ESCX+s+ESCX;
-{$ENDIF}
-end;
-
 
 { TThreadLog }
 
@@ -630,8 +582,5 @@ initialization
 
 {$ENDIF}
 
-
-
 end.
-
 

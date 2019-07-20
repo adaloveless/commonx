@@ -101,7 +101,7 @@ interface
 uses
   typex,systemx,
   ringbuffer,
-  skill,
+  skill, herro,
   sysutils,
   managedthread,
   AdminAlert,
@@ -2510,7 +2510,7 @@ begin
     tcps.LocalPort := ap.GetItemEx('Port', '3260');
     tcps.OnAccept := self.TcpServerAccept;
     tcps.Active := true;
-    skill.RegisterLocalSkill('iSCSI', 0, tcps.localport, 'iSCSI');
+    herro.RegisterLocalSkill('iSCSI', 0, tcps.localport, 'iSCSI');
 {$ENDIF}
 
   finally

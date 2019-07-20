@@ -5,7 +5,7 @@ uses ioutils, debug, classes, filectrl, managedthread, threadmanager, commandpro
 
 
 const
-  MAX_FILES = 100;
+  MAX_FILES = 10000;
 type
 
 {$DEFINE ENABLE_THREADED_DIRS}
@@ -166,7 +166,7 @@ begin
 
   while filecommands.Commandcount > MAX_FILES do begin
     if assigned(COMMAND) then Command.WaitingForResources := true;
-    SleepEx(4000,false);
+    SleepEx(400,false);
   end;
 
   if assigned(COMMAND) then Command.WaitingForResources := false;

@@ -513,15 +513,19 @@ begin
 
       //ONE OF THE TWO must be above 50% usage or they will both be considered
       //maxed out
+      if (self is TfileMoveCommand) and (comparetext(ExtractNetworkRoot(self.Source), ExtractNetworkRoot(self.Destination))=0) then begin
+        self.Resources.SetResourceUsage(FStatFrom.Resource,lesserof(r2*5,0.05));
+        self.Resources.SetResourceUsage(FStatTo.Resource,lesserof(r1*5,0.05));
+      end else
       if (r1 > 0.4) or (r2 > 0.4) then begin
-        self.Resources.SetResourceUsage(FStatFrom.Resource,r2);
-        self.Resources.SetResourceUsage(FStatTo.Resource,r1);
+        self.Resources.SetResourceUsage(FStatFrom.Resource,lesserof(r2*1.5,1.0));
+        self.Resources.SetResourceUsage(FStatTo.Resource,lesserof(r1*1.5,1.0));
       end else begin
           if (r1 < 0.1) and (r2 < 0.1) then begin
             self.Resources.SetResourceUsage(FStatFrom.Resource,lesserof(r2*5,1.0));
             self.Resources.SetResourceUsage(FStatTo.Resource,lesserof(r1*5,1.0));
-            self.WaitForResources(30000);
-            self.WakingUp := true;
+//            self.WaitForResources(30000);
+//            self.WakingUp := true;
           end;
           //FLAstTime := GetTicker;
       end;

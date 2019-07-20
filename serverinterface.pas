@@ -6,8 +6,13 @@ unit ServerInterface;
 interface
 
 uses Packet, SysUtils, DataObject, simpleabstractconnection, GenericRDTPClient, tickcount, typex, data.db,
-  DataObjectFactory, Windows, exceptions, ServerInterfaceInterface, debug, SimpleReliableUDP, storageenginetypes,
-  DataObjectCache, classes, sharedobject, simplewinsock, variants, packethelpers, systemx, rdtpdb, RDTPKeyBotClient;
+  DataObjectFactory,
+{$IFDEF MSWINDOWS}
+  Windows,
+  simplewinsock,
+{$ENDIF}
+  exceptions, ServerInterfaceInterface, debug, SimpleReliableUDP, storageenginetypes,
+  DataObjectCache, classes, sharedobject, variants, packethelpers, systemx, rdtpdb, RDTPKeyBotClient;
 
 const
   RQ_RECORD_QUERY = $0990;
@@ -18,7 +23,7 @@ const
 type
   ERDTPExeception = class(Exception);
 
-  TUnmarhsallDebugEvent = procedure (sText: widestring) of object;
+  TUnmarhsallDebugEvent = procedure (sText: string) of object;
   TServerInterface = class(TRDTPDB, IServerInterface)
   //r: Implements functions that interface with the data-tier.
   protected
@@ -609,7 +614,7 @@ end;
 
 function TServerInterface.PingRDTP: boolean;
 begin
-  result := FunctionQuery('select 1', 0);
+  result := FunctionQuery('select 1', 0) = 1;
 
 
 end;

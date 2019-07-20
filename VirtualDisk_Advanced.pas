@@ -3,8 +3,8 @@ unit VirtualDisk_Advanced;
 {x$DEFINE DISABLE_3AM_ENFORCEMENT}
 {x$DEFINE COMPARE_ENTIRE_VAT_ON_SAVE}
 {x$DEFINE NO_SCRUBBER}
-{x$DEFINE PAYLOAD_IS_UNBUFFERED}//<!--------------------
-{$DEFINE ASYNC_READS}//uses multiple threads to read from each RAID piece simultaneously - if disabled blocks during each RAID piece read
+{$DEFINE PAYLOAD_IS_UNBUFFERED}//<!--------------------
+{x$DEFINE ASYNC_READS}//uses multiple threads to read from each RAID piece simultaneously - if disabled blocks during each RAID piece read
 {$DEFINE PAYLOAD_HAS_QUEUED_INTERFACE}
 {x$DEFINE DONT_USE_QUEUED}
 {x$DEFINE ASYNC_REBUILD}
@@ -37,7 +37,7 @@ unit VirtualDisk_Advanced;
 {x$DEFINE DISABLE_VD_SIDEFETCH}//<<------------
 {$DEFINE DEBUG_NEWPHYSICAL}
 {$DEFINE ALLOW_SYNCHRONOUS_READS}//<<-----we want this? BUT BUT only once all backup-restores are complete
-{x$DEFINE ALLOW_DRIVE_SKIPPING}//ok to enable
+{$DEFINE ALLOW_DRIVE_SKIPPING}//ok to enable
 {$DEFINE ALWAYS_FORCE_FLUSH_LOCK}
 {$DEFINE PAYLOAD_HAS_QUEUED_INTERFACE}
 {x$DEFINE ALLOW_SIDEFETCH_REQUEUE}
@@ -91,13 +91,14 @@ uses
   commandprocessor, virtualdiskconstants, arclogshipper, arcmap, zonelog;
 
 const
+  FPs_PER_VAR = 20;
   CONCURRENT_SOURCE_ARCHIVER_CONNECTIONS = 16;
   SET_CS = 2;
   FILE_COUNT_VAT_FUXORED = -1;
   FILE_COUNT_NO_FETCH_FROM_SOURCE_ARCHIVE = -4;
   DEFAULT_CACHED_STRIPES = 2048*3;
 //  DEFAULT_CACHED_STRIPES = 32;
-  MAX_DIRTY_BUFFERS = DEFAULT_CACHED_STRIPES shr 2;
+  MAX_DIRTY_BUFFERS = DEFAULT_CACHED_STRIPES shr 1;
 //  ALLOWED_PREFETCH_STRIPES = 256;
   BIG_BLOCK_ALIGN_POINT = (BLOCKSIZE * _BIG_BLOCK_SIZE_IN_BLOCKS);
   BIG_BLOCK_BYTE_ALIGN_MASK: int64 = not int64(BIG_BLOCK_ALIGN_POINT - 1);
@@ -348,6 +349,7 @@ type
     PhysicalAddr_afterheader: int64;
     procedure InitVirgin;
     function CheckAndCorrect(filecount: ni; ps: TPayLoadStream): boolean;
+    function AddrBeyond(filecount: ni): int64;
   end;
 
   PFilePhysical = ^TFilePhysical;
@@ -359,11 +361,11 @@ type
 {$IFNDEF ALLOW_RAID}
     FileID: smallint;
     PhysicalAddress: int64; // if not RAID then FileID is moved outside array
-    FileIDs: array [1 .. 19] of TFilePhysical;
+    FileIDs: array [1 .. FPs_PER_VAR-1] of TFilePhysical;
     // ^^^^  this section should be the same size/layout as below
 {$ELSE}
     // vvvv  this section should be the same size/layout as above
-    FPs: array [0 .. 19] of TFilePhysical;
+    FPs: array [0 .. FPs_PER_VAR-1] of TFilePhysical;
     FileCount: smallint;
 {$ENDIF}
     FStartingBlock: int64;
@@ -537,6 +539,8 @@ type
       not_this_physical: int64): boolean;
     function FindNextBlockForFileIDInVat_Deprecated(FileID: fi; beyond: int64)
       : PVirtualAddressRecord;
+
+    procedure CheckSanity;
   end;
 
   PVirtualAddressTable = ^TVirtualAddressTable;
@@ -739,7 +743,8 @@ type
     idx: int64;
     seekopt: int64;
     forwardcount: int64;
-    scratch: array[0..BIG_BLOCK_SIZE_IN_BYTES-1] of byte;
+    scratch: array[0..(BIG_BLOCK_SIZE_IN_BYTES div 2)-1] of byte;
+    scratch_ext: array[0..(BIG_BLOCK_SIZE_IN_BYTES div 2)-1] of byte;
     cli: TRDTPArchiveClient;
     tablecopy: array [0 .. MAX_BLOCKS_IN_VAT - 1] of TVirtualAddressRecord;
     property Pin: TDateTime read GetPin;
@@ -824,7 +829,7 @@ type
     WorkingFromSourceArchive: boolean;
     WorkingFromTargetArchive: boolean;
     tmLAstShovel: ticker;
-
+    lastDriveSkipped: ni;
     resurrector: TResurrector;
 
     FprioritySort: array of TPayloadPrioritySort;
@@ -870,7 +875,7 @@ type
 
     function HasRaid(StartingBlock: int64): boolean; //inline;
     // function IndexOfRaid(startingBlock: int64): ni;inline;
-    function NeedRaid(StartingBlock: int64): TRaidAssembledBuffer;
+    function NeedRaid(StartingBlock: int64; bPreferClean: boolean): TRaidAssembledBuffer;
 
     function TryFetchRaid(r: TRaidAssembledBuffer): TRaidFetchStatus;
     function FixFetchRaid(r: TRaidAssembledBuffer): TRaidFetchStatus;inline;
@@ -1296,6 +1301,11 @@ begin
   if iRaidCount < 0 then begin
     raise ECritical.create('Raid count cannot be '+inttostr(iRaidCount));
   end;
+
+  if iRaidCount > FPs_PER_VAR then begin
+    raise ECritical.create('Raid count cannot be '+inttostr(iRaidCount));
+  end;
+
   result := TRaidCalculator.GetPieceSizePAdded(iRAidCount) * LOCALDIV;
   if bIncludingHeaders then
     result := result + (2 * sizeof(TVirtualDiskBigBlockHeader));
@@ -1363,6 +1373,7 @@ var
   t: ni;
   ps: TPayloadStream;
   tmp: single;
+  fpAddr: int64;
 begin
   Lock;
   try
@@ -1393,6 +1404,7 @@ var
   // a: array of int64;
   compare: int64;
   bRetry: boolean;
+  fpAddr: int64;
 begin
 
   Debug.Log('Checking Streams');
@@ -1411,16 +1423,19 @@ begin
         PayloadStreams[u].gaps.ConsumeRegion(0, sizeof(TVirtualDiskPayloadFileHeader));
       end;
       vart := self.vat.FindVarWithHighestPhysicalForPayload(u);
+      if vart = nil then
+        continue;
+      fp := vart.GetFP(u);
+      fpAddr := fp.PhysicalAddr_afterheader;
       iStreamSize := payloadstreams[u].Size;
       if vart = nil then begin
         iLen := SizeOf(Tvirtualdiskpayloadfileheader);
       end else begin
-        fp := vart.GetFP(u);
-        iLen := fp.PhysicalAddr_afterheader+(GetBigBlockSizeInBytes(vart.FileCount)+sizeof(TVirtualDiskBigBlockHeader));
+        iLen := fpAddr+(GetBigBlockSizeInBytes(vart.FileCount)+sizeof(TVirtualDiskBigBlockHeader));
 //        debug.log(self, 'highest physical for file '+inttostr(u)+' is 0x'+inttohex(iLen, 1));
 //        debug.log(self, 'payload size is '+inttostr(u)+' is 0x'+inttohex(FpayloadStreams[u].size, 1));
       end;
-      if ilen < iStreamSize then begin
+      if (fpAddr >=0) and (ilen < iStreamSize) then begin
         logrepair(-2, 'freeing payload space that appears to be empty at end. Will lose '+commaize(payloadstreams[u].size-iLen)+' new size='+commaize(ilen)+' old='+commaize(iStreamSize));
         PayloadStreams[u].Size := iLen;
         PayloadStreams[u].gaps.Length := iLen;
@@ -1451,10 +1466,11 @@ begin
       begin
         //determine start and length
         //start is physical address MINuS the big block header length
-        iStart := fp.PhysicalAddr_afterheader - sizeof(TVirtualDiskBigBlockHeader);
+        fpAddr := fp.PhysicalAddr_afterheader;
+        iStart := fpAddr - sizeof(TVirtualDiskBigBlockHeader);
         //length includes header and footer
         iLen := GetBigBlockSizeInBytes(vart.FileCount, true);
-        if iStart < 0 then begin
+        if (fpAddr<0) or (iStart < 0) then begin
           Self.LogRepair(t,'payload start would be negative, invalidating');
           fp.FileID := -1;
           vat.MarkTableEntryDirtyByPtr(vart);
@@ -1496,10 +1512,13 @@ begin
       vart := vat.FindVarWithHighestPhysicalForPayload(u);
       if vart <> nil then
       begin
-        compare := vart.GetFP(u).PhysicalAddr_afterheader + GetBigBlockSizeInBytes
+
+        fp := vart.GetFP(u);
+        fpAddr := fp.PhysicalAddr_afterheader;
+        compare := fpAddr + GetBigBlockSizeInBytes
           (vart.FileCount, false) + sizeof(TVirtualDiskBigBlockHeader);
         if compare <>
-          ((vart.GetFP(u).PhysicalAddr_afterheader - sizeof(TVirtualDiskBigBlockHeader)) +
+          ((fpAddr - sizeof(TVirtualDiskBigBlockHeader)) +
           GetBigBlockSizeInBytes(vart.FileCount, true)) then
         begin
           raise ECritical.Create('wtf maths error.  seriously this should not happen');
@@ -1732,6 +1751,7 @@ begin
       result := false;
       exit;
     end;
+    vat.CheckSanity;
 
     if ta.StartingBlock <> (t*_BIG_BLOCK_SIZE_IN_BLOCKS) then begin
       LogRepair(t,'Fixing vat @'+inttohex(t,1)+', starting block doesn''t match index');
@@ -1742,9 +1762,9 @@ begin
 
     // check that the blocks physical addresses are all sane
     for u := 0 to ta.FileCount-1 do begin
-      fp := @ta.FPs[t];
-      if ta.FPs[t].FileID >= 0 then begin
-        PS := PayloadStreams[ta.FPs[t].FileID];
+      fp := @ta.FPs[u];
+      if ta.FPs[u].FileID >= 0 then begin
+        PS := PayloadStreams[ta.FPs[u].FileID];
         fp.CheckAndCorrect(ta.FileCount, ps);
       end;
     end;
@@ -1807,18 +1827,26 @@ begin
             end;
 
             // if the physical address is beyond the end of the file, then break/drop
-            a := (ta.FPs[u].PhysicalAddr_afterheader + GetBigBlockSizeInBytes(1, false) +
-              sizeof(TVirtualDiskBigBlockHeader));
-            b := PayloadStreams[ta.FPs[u].FileID].Size;
-            if a > b then
-            begin
-              LogRepair(ta.vatindex, 'Fixing bogus fileid at ' + inttohex(t,1) + ' was ' +
-                inttostr(ta.FPs[u].FileID) + ' a=' + inttostr(a) + ' b=' +
-                inttostr(b));
+
+            if (ta.FPs[u].PhysicalAddr_afterheader < 0) then begin
+              LogRepair(ta.vatindex, 'Negative physical addr');
               ta.RemoveFile(u);
               vat.MarkTableEntryDirtyByPtr(ta);
               SaveVat(false);
-              bChanged := true;
+            end else begin
+              a := (ta.FPs[u].PhysicalAddr_afterheader + GetBigBlockSizeInBytes(1, false) +
+                sizeof(TVirtualDiskBigBlockHeader));
+              b := PayloadStreams[ta.FPs[u].FileID].Size;
+              if a > b then
+              begin
+                LogRepair(ta.vatindex, 'Fixing bogus fileid at ' + inttohex(t,1) + ' was ' +
+                  inttostr(ta.FPs[u].FileID) + ' a=' + inttostr(a) + ' b=' +
+                  inttostr(b));
+                ta.RemoveFile(u);
+                vat.MarkTableEntryDirtyByPtr(ta);
+                SaveVat(false);
+                bChanged := true;
+              end;
             end;
           end;
         end;
@@ -2003,7 +2031,12 @@ begin
     AllowDriveSkipping := true;
 {$ENDIF}
     tmSince := gettimesince(tmOntime);
-    UnlockLock(l);
+    try
+      if bChanged then
+        vat.CheckSanity;
+    finally
+      UnlockLock(l);
+    end;
 
   end;
 end;//ok
@@ -2053,12 +2086,27 @@ begin
         fromS := PayloadStreams[fromID];
         if fromS <> nil then
         begin
-          MovePayloadBigBlock(vart, fromID, toID, fromS, toS, true, PLACED_BY_BUDDYUP);
-          ZoneLog(vart.vatindex,'after payload move, file size is '+inttohex(tos.size,0));
-          ZoneLog(vart.vatindex,'after payload move, '+vart.DebugString);
-          if vart.IsDead then
-            ZoneLog(vart.vatindex,'DEAD AFTER MIRROR!');
-
+          if fromS.TryLock then
+          try
+            if toS.TryLock then
+            try
+              MovePayloadBigBlock(vart, fromID, toID, fromS, toS, true, PLACED_BY_BUDDYUP);
+              ZoneLog(vart.vatindex,'after payload move, file size is '+inttohex(tos.size,0));
+              ZoneLog(vart.vatindex,'after payload move, '+vart.DebugString);
+              if vart.IsDead then
+                ZoneLog(vart.vatindex,'DEAD AFTER MIRROR!');
+            finally
+              toS.Unlock;
+            end else begin
+              zoneLog(vart.vatindex,'could not lock TOSTREAM for buddyup');
+              exit(false);
+            end;
+          finally
+            fromS.Unlock;
+          end else begin
+            zoneLog(vart.vatindex,'could not lock FROMSTREAM for buddyup');
+            exit(false);
+          end;
 
           result := true;
         end
@@ -2104,6 +2152,7 @@ begin
 
 
   inherited;
+  LockTimeout := 60000;
 
 
   icsSC(csScrubber, 0);
@@ -2503,7 +2552,7 @@ end;
 
 function TVirtualDisk_Advanced.Collapse(FileID: ni): boolean;
 var
-  pvar: PVirtualAddressRecord;
+  pvar, pvar2: PVirtualAddressRecord;
   sz: integer;
   // gap_address: int64;
   ps: TPayloadStream;
@@ -2512,6 +2561,7 @@ var
   movefrom, moveto: int64;
   bIsFinalRegion: boolean;
   bOver: boolean;
+  newsz: int64;
 begin
   try
 {$IFNDEF ALLOW_COLLAPSE}
@@ -2527,12 +2577,32 @@ begin
   if PayloadStreams[FileID].Collapsable = false then
     exit; // if the hint is false, then exit for performance purposes
 
+
+  //shrink ends of files
+  pvar2 := vat.FindVarWithHighestPhysicalForPayload(FileID);
+  sz := 0;
+  if pvar2 = nil then begin
+    sz := sizeof(TVirtualDiskPayloadFileHeader);
+  end else begin
+    fp := pvar2.GetFP(FileID);
+    if fp <> nil then begin
+      sz := fp.AddrBeyond(pvar2.FileCount);
+    end;
+  end;
+  //get the payload stream
+  ps := Self.PayloadStreams[FileID];
+  if ps = nil then
+    exit;
+  if sz > 0 then
+    ps.Size := sz;
+
+
   // get the highest over var for the particular file
   pvar := FindHighestOverVar(FileID, bOver);
   if pvar = nil then begin
     exit;
   end;
-  ZoneLog(pvar.vatindex, 'Collape');
+  ZoneLog(pvar.vatindex, 'Collapse');
   // determine the size of the payload
   sz := GetBigBlockSizeInBytes(pvar.FileCount, true);
 
@@ -2544,9 +2614,17 @@ begin
   //get the file-physical record
   fp := pvar.GetFP(FileID);
 
+  if fp = nil then begin
+    Debug.Log('File physical does not have '+fileid.tostring);
+    exit;
+  end;
+
   if not bOver then begin
-    ps.Size := fp.PhysicalAddr_afterheader+GetBigBlockSizeInBytes(pvar.FileCount)+sizeof(TvirtualDiskBigBlockHeader);
-    ps.gaps.length := ps.size;
+    newsz := fp.PhysicalAddr_afterheader+GetBigBlockSizeInBytes(pvar.FileCount)+sizeof(TvirtualDiskBigBlockHeader);
+    if newsz < ps.Size then begin
+      ps.Size := newsz;
+      ps.gaps.length := ps.size;
+    end;
     exit;
   end;
 
@@ -2651,13 +2729,13 @@ begin
       if trygetlock(l) then
       try
 //          Debug.Log('scrubber flush buffers');
-        last_flush_status := FlushBuffers(false,10000,false,false);
+        last_flush_status := FlushBuffers(false,60000,false,false);
         if last_flush_status = bsNoBuffersToFlush then begin
 //            Debug.Log('scrubber flush buffers (1)');
-          last_flush_status := FlushBuffers(false,1000,false,true)
+          last_flush_status := FlushBuffers(false,45000,false,true)
         end else begin
 //            Debug.Log('scrubber flush buffers (2)');
-          last_flush_status := FlushBuffers(false,10000,true,true);
+          last_flush_status := FlushBuffers(false,30000,true,true);
         end;
 
         BackupVat;
@@ -3430,6 +3508,17 @@ end;
 
 function TVirtualDisk_Advanced.GetBusiestPhysical
   (const vart: PVirtualAddressRecord): ni;
+{$IFNDEF OLD}
+var
+  t: ni;
+begin
+  result := lastdriveskipped+1;
+  if result > vart.FileCount then
+    result := 0;
+
+end;
+
+{$ELSE}
 var
   t: nativeint;
   ps: TPayloadStream;
@@ -3474,6 +3563,7 @@ begin
   end;
 
 end;
+{$ENDIF}
 
 function TVirtualDisk_Advanced.GetLeastBusyPhysical(): ni;
 var
@@ -3536,7 +3626,7 @@ var
   bs: int64;
   tt: ni;
   byte_off: int64;
-  a: array [0 .. 31] of TQueueItem;
+  a: array [0 .. 31] of TQueueStreamItem;
   waithandles: array[0..31] of THandle;
   //handleidx: array[0..31] of ni;
   localvat: PVirtualAddressRecord;
@@ -3632,7 +3722,9 @@ begin
     if AllowDriveSkipping then
     begin
       if localvat.FileCount > 1 then
-        driveToSkip := GetBusiestPhysical(localvat)
+        driveToSkip := GetBusiestPhysical(localvat);
+
+      lastDriveSkipped := drivetoSkip;
     end;
 
 
@@ -3702,7 +3794,7 @@ begin
         end else begin
            // seek to [start of the physical location] + [byte offset post raid]
             seekpos := fp.PhysicalAddr_afterheader + byte_off;
-            if (seekpos < 0) or (seekpos >= ps.size) then begin
+            if (ps = nil) or ((seekpos < 0) or (seekpos >= ps.size)) then begin
               rc.invalid_piece := t;
               rc.invalid_determined := true;
             end;
@@ -3749,7 +3841,7 @@ begin
               // seek to [start of the physical location] + [byte offset post raid]
               seekpos := fp.PhysicalAddr_afterheader + byte_off;
               if (seekpos < 0) or (seekpos >= ps.size) then
-                  raise Ecritical.create('BAD SEEK POSITION: '+inttostr(seekpos));
+                  raise Ecritical.create('BAD SEEK POSITION: '+inttostr(seekpos)+' bs='+bs.tostring+' so='+so.tostring+' fp.PhysicalAddr_afterheader='+fp.physicalAddr_afterheader.tostring);
   {$IFNDEF ASYNC_READS}
               ps.Seek(seekpos, soBeginning);
   {$ENDIF}
@@ -3842,6 +3934,9 @@ begin
       if a[t] = nil then
         continue;
       a[t].waitfor;
+      fp := @localvat.FPs[t];
+      ps := PayloadStreams[fp.FileID];
+      ps.stats.AddStat(a[t].executiontime);
 
       fp := @localvat.FPs[t];
       if fp.FileID < 0 then
@@ -4025,7 +4120,7 @@ begin
     result_pf := pf;
     result := pvar;
 
-    x := pf.PhysicalAddr_afterheader+getbigblocksizeinbytes(pvar.filecount)+(sizeof(TvirtualDiskBigBlockHeader)*1);
+    x := pf.PhysicalAddr_afterheader+getbigblocksizeinbytes(pvar.filecount)+(sizeof(TVirtualDiskBigBlockHeader)*1);
     if (x > vat.PayloadConfig.filelist[FileID].size_limit)
     or (vat.PayloadConfig.filelist[FileID].priority < 0)
     then begin
@@ -4185,19 +4280,15 @@ begin
 
       last := nil;
       itm := FRaidsByDirtyTime.firstitem;
-
-
-
-      if itm = nil then begin
+      if (itm = nil) or (gettimesince(itm.rab.DirtyTime) < iOlderThan) then begin
         result := bsNoBuffersToFlush;
         last_buffer_count := 0;
         exit;
-
       end;
       if bFindAllDirty then
       while not itm.rab.AllDirty do begin
         itm := TRaidTreeItem_ByDirtyTime(itm.NExt);
-        if itm = nil then begin
+        if (itm = nil) or (gettimesince(itm.rab.DirtyTime) < iOlderThan) then begin
           result := bsNoBuffersToFlush;
           exit;
         end;
@@ -4213,7 +4304,7 @@ begin
 
 
       while true do begin
-        if itm = nil then break;
+        if (itm = nil) or (gettimesince(itm.rab.DirtyTime) < iOlderThan) then
 
         if itm = last then
           break; // we're spinning our wheels... get out of here, there's nothing to do
@@ -5581,7 +5672,7 @@ end;
 {$ENDIF}
 {$IFDEF use_vat}
 
-function TVirtualDisk_Advanced.NeedRaid(StartingBlock: int64)
+function TVirtualDisk_Advanced.NeedRaid(StartingBlock: int64; bPreferClean: boolean)
   : TRaidAssembledBuffer;
 var
   rab: TRaidAssembledBuffer;
@@ -5590,6 +5681,7 @@ var
   t: ni;
   x: ni;
   tableidx: ni;
+  cx: ni;
 begin
   result := nil;
   x := 0;
@@ -5627,6 +5719,19 @@ begin
   begin
 
     itm := FRaidsByLastUsed.firstitem;
+    cx := Self.CachedSTripes shr 1;
+    if bPreferClean then
+    while itm.rab.AnyDirty do begin
+      itm := TRaidTreeItem_ByLastUsedTime(itm.NExt);
+      dec(cx);
+      if (itm = nil) or (cx = 0) then begin
+        itm := FRaidsByLastUsed.firstItem;
+        break;
+      end;
+
+    end;
+
+
     result := itm.rab;
     rab := result;
 
@@ -5745,6 +5850,10 @@ begin
     begin
       t := FPrioritySort[tt].index;
       fs := FprioritySort[tt].str;
+      if fs.Warnings > 0 then begin
+        self.vat.PayloadConfig.filelist[t].size_limit := fs.size;
+        continue;
+      end;
 
       //if this file is of the right priority
       if not (vat.PayloadConfig.filelist[t].priority = iPriority) then begin
@@ -7229,6 +7338,7 @@ begin
     exit;
   end;
   vat.FlushToStream(FVATStream, bAll);
+  vat.CheckSanity;
   // SaveStringAsFile(FVatStream.FileName+'.debug.txt', vat.DebugVatSTructure);
 end;
 
@@ -7415,6 +7525,12 @@ var
   playcmd: Tcmd_ReplayLog;
 {$ENDIF}
 begin
+  try
+//  if not fileexists(value) then begin
+//    Foperational := false;
+//    status := value+' not found';
+//    exit;
+//  end;
   Debug.log(self, 'opening virtual disk '+value);
 
 {$IFDEF RECORD_OPS}
@@ -7500,6 +7616,8 @@ begin
     Debug.log(self, 'loading vatstats');
     LoadVatStats;
 
+    vat.CheckSanity;
+
     shipper.RingfileName := FileName+'.tmp';
     zonerevs.FileName := FileName+'.arcmap';
 
@@ -7522,6 +7640,12 @@ begin
   end;
 
 //  DumpBigBlock(0);
+  except
+    on E: Exception do begin
+      Foperational := false;
+      status := e.Message;
+    end;
+  end;
 
 end;
 
@@ -7688,8 +7812,7 @@ begin
 
 
 
-      FlushRaid(buf);
-      // this does the actual splitting into pieces based on VAT information
+      FlushRaid(buf);// this does the actual splitting into pieces based on VAT information
       result := true;
 
       FRaidsByDirtyTime.Remove(buf.treeItemDirtyTime, true);
@@ -7766,13 +7889,13 @@ begin
   if bForWriting then
   begin
     // if this is for writing then we just need to get a buffer, period
-    buffer := NeedRaid(lba)
+    buffer := NeedRaid(lba, true)
   end
   else
   begin
     // else we need to
     // 1. get a buffer
-    buffer := NeedRaid(lba);
+    buffer := NeedRaid(lba, true);
     primary_buffer := buffer;
 
 {$IFDEF USE_VAT_HINTS}
@@ -8036,8 +8159,8 @@ begin
     end;
     FRaidsByDirtyTime.add(buffer.treeItemDirtyTime);
 //    while FRAidsByDirtyTime.count > MAX_DIRTY_BUFFERS do begin
-      while FRAidsByDirtyTime.count > (MAX_DIRTY_BUFFERS) do begin
-        if FlushBuffers(true, 1000, false, false) <> bsFlushedSome then
+      while FRAidsByDirtyTime.count > 0 do begin
+        if (FlushBuffers(true, 1000, true, true) <> bsFlushedSome) then
           break;
       end;
 //    end;
@@ -8690,6 +8813,21 @@ begin
 
 end;
 
+procedure TVirtualAddressTable.CheckSanity;
+var
+  t,u: ni;
+  pa: int64;
+begin
+  for t:= 0 to High(table) do begin
+    for u := 0 to table[t].FileCount-1 do begin
+      pa := table[t].FPs[u].PhysicalAddr_afterheader;
+      if pa < -1 then begin
+        raise Ecritical.CreateFmt('table[%d].FPs[%d].PhysicalAddr_afterheader is insane = %d',[t,u,pa]);
+      end;
+    end;
+  end;
+end;
+
 function TVirtualAddressTable.CountPopulatedTableEntries: ni;
 var
   t: ni;
@@ -9245,6 +9383,7 @@ var
   fpf: PFilePhysical;
   c: array of Tcmd_VerifyGapsPArt;
 begin
+  CheckSanity;
   result := true;
 
   setlength(c, Length(PayloadConfig.filelist));
@@ -9568,8 +9707,8 @@ begin
 {$ELSE}
   result := (filecount <> FILE_COUNT_NO_FETCH_FROM_SOURCE_ARCHIVE)
             and ((filecount = -2) or (filecount = FILE_COUNT_VAT_FUXORED) or (deaad >= lesserof(2, filecount)));{$ENDIF}
-  if result then
-    Debug.Log('DEAD! '+DebugString);
+//  if result then
+//    Debug.Log('DEAD! '+DebugString);
 end;
 
 procedure TVirtualAddressRecord.RemoveFile(idx: ni);
@@ -10481,6 +10620,11 @@ begin
 end;
 
 { TFilePhysical }
+
+function TFilePhysical.AddrBeyond(filecount: ni): int64;
+begin
+  result := ((physicaladdr_afterheader -sizeof(TvirtualDiskBigBlockHeader))+ GetBigBlockSizeInBytes(filecount, true));
+end;
 
 function TFilePhysical.CheckAndCorrect(filecount: ni;
   ps: TPayLoadStream): boolean;

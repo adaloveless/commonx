@@ -4,7 +4,7 @@ unit RDTPLightShowServerImplib;
 {RQFILE RDTPLightShowRQs.txt}
 {END}
 interface
-uses RDTPLightShowServer, classes, systemx, sharedobject, windows, messages, packethelpers, sysutils, stringx;
+uses RDTPLightShowServer, betterobject, classes, systemx, sharedobject, windows, messages, packethelpers, sysutils, stringx;
 
 type
   TLightshowServerSharedData = class(TSharedObject)

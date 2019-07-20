@@ -3,7 +3,7 @@ unit NoSleep;
 interface
 
 uses
-  periodicEvents, QueueStream, systemx, classes, sysutils, tickcount, sharedobject, applicationparams, namevaluepair, orderlyinit, typex, dir, generics.collections;
+  periodicEvents, QueueStream, systemx, classes, sysutils, tickcount, sharedobject, applicationparams, namevaluepair, orderlyinit, typex, dir, generics.collections, betterobject;
 
 
 type

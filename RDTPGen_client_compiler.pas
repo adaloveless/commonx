@@ -40,6 +40,7 @@ type
     FPublicMembers: TStringlist;
     FVAR: TStringList;
     FUses: TStringList;
+    FUses_backend: TStringlist;
     FEndNames: TStringList;
   public
     constructor create;override;
@@ -269,6 +270,7 @@ begin
 
   FVAr := TStringLIst.create;
   FUSEs := TStringList.create;
+  FUSES_BACKEND := TStringList.Create;
 end;
 
 destructor TRDTPClientGenerator.destroy;
@@ -286,6 +288,7 @@ begin
   FDirectives.free;
   FVar.free;
   FUses.free;
+  FUses_BACKEND.free;
   inherited;
 end;
 
@@ -542,6 +545,9 @@ begin
     if uppercase(sLEft) = 'USES' then begin
       FUSES.add(sParams);
     end else
+    if uppercase(sLEft) = 'USES_BACKEND' then begin
+      FUSES_BACKEND.add(sParams);
+    end else
     if uppercase(sLEft) = 'USING' then begin
     end else
     if uppercase(sLEft) = 'RQ' then begin
@@ -590,6 +596,7 @@ begin
     FOUTPUT := stringreplace(FOUTPUT, '{IMPLIB}', FIMPLIB, [rfIgnoreCase, rfReplaceAll]);
     FOUTPUT := stringreplace(FOUTPUT, '{VAR}', FVAR.text, [rfIgnoreCase, rfReplaceAll]);
     FOUTPUT := stringreplace(FOUTPUT, '{USES}', stringreplace(FUSES.text,#13#10,', ', [rfReplaceAll]), [rfIgnoreCase, rfReplaceAll]);
+    FOUTPUT := stringreplace(FOUTPUT, '{USES_BACKEND}', stringreplace(FUSES_BACKEND.text,#13#10,', ', [rfReplaceAll]), [rfIgnoreCase, rfReplaceAll]);
 
 
   end;

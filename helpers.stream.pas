@@ -10,10 +10,13 @@ uses
 {$ENDIF}
   typex, ios.stringx.iosansi;
 
+const
+  STREAM_CHUNK_SIZE = 262144*8;
+
 function Stream_GuaranteeWrite(const s: TStream; const p: PByte; const iSize: nativeint; iStartingPositionHint:int64 = 0; iAlign:int64 =65536): nativeint;overload;
 function Stream_GuaranteeWrite(const s: TStream; const p: PByte; const iSize: nativeint; prog: PProgress; iStartingPositionHint:int64 = 0; iAlign:int64 =65536): nativeint;overload;
 {$IFDEF MSWINDOWS}
-function Stream_GuaranteeWrite(const s:  TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint): nativeint;overload;
+function Stream_GuaranteeWrite(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint): nativeint;overload;
 function Stream_GuaranteeWrite(const s: TAdaptiveQueuedSTream; const p: PByte; const iSize: nativeint): nativeint;overload;inline;
 {$ENDIF}
 
@@ -83,12 +86,12 @@ var
   iJustWritten, iTotalWritten: int64;
   p: pbyte;
 begin
-  p := GetMemory(262144);
+  p := GetMemory(STREAM_CHUNK_SIZE);
   try
-    FillMem(p, 262144, 0);
+    FillMem(p, STREAM_CHUNK_SIZE, 0);
     iTotalWritten := 0;
     while iTotalWritten < iCount do begin
-      iJustWritten := Stream_GuaranteeWrite(s, p, lesserof(262144, iCount-iTotalWritten));
+      iJustWritten := Stream_GuaranteeWrite(s, p, lesserof(STREAM_CHUNK_SIZE, iCount-iTotalWritten));
       iTotalWritten := iTotalWritten + iJustWritten;
     end;
   finally
@@ -352,7 +355,7 @@ end;
 {$IFDEF MSWINDOWS}
 function Stream_GuaranteeCopy(const sFrom: TAdaptiveQueuedFileSTream; const sTo: TAdaptiveQueuedFileSTream; const iSize: int64): int64;overload;
 const
-  MOVESIZE: int64 = 262144;
+  MOVESIZE: int64 = STREAM_CHUNK_SIZE;
 var
   iMoved, iJustMoved, iToMove: int64;
   p: pbyte;

@@ -3,7 +3,10 @@ unit GenericRDTPClient;
 //SERVER SCENARIOS
 //--SYSTEM THREAD is waiting for USER ACTIONS to complete and connection times out - receive AV
 
-{$DEFine ENABLE_RDTP_COMPRESSION}
+{$IFDEF MSWINDOWS}
+  {$DEFINE ALLOW_TCP}
+{$ENDIF}
+{$DEFINE ENABLE_RDTP_COMPRESSION}
 {x$DEFINE ALLOW_CALLBACKS}
 
 {x$DEFINE PACKET_DEBUG_MESSAGES}
@@ -14,7 +17,7 @@ uses
   simplereliableudp, simplebufferedconnection, betterobject, sharedobject, packet,
   classes,
   sysutils, exceptions,
-{$IFDEF WINDOWS}
+{$IFDEF MSWINDOWS}
   simplewinsock,
   windows,
 {$ENDIF}
@@ -554,12 +557,15 @@ begin
     end;
   end;
 
+{$IFDEF ALLOW_TCP}
   IF UseTCP then begin
     result := TSimpleWinsockconnection.create;
+
     if UseTor then
-      tSimpleWinsockConnection(result).UseSocks := true;
+      TSimpleWinsockConnection(result).UseSocks := true;
   end
   else
+{$ENDIF}
     result := TGenericConnectionType.create;
 
 

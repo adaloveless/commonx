@@ -12,6 +12,66 @@ uses
 
 const
 
+
+  ESCX = #26;
+  CLR0 = ESCX+'c0'+ESCX;
+  CLR1 = ESCX+'c1'+ESCX;
+  CLR2 = ESCX+'c2'+ESCX;
+  CLR3 = ESCX+'c3'+ESCX;
+  CLR4 = ESCX+'c4'+ESCX;
+  CLR5 = ESCX+'c5'+ESCX;
+  CLR6 = ESCX+'c6'+ESCX;
+  CLR7 = ESCX+'c7'+ESCX;
+  CLR8 = ESCX+'c8'+ESCX;
+  CLR9 = ESCX+'c9'+ESCX;
+  CLRA = ESCX+'cA'+ESCX;
+  CLRB = ESCX+'cB'+ESCX;
+  CLRC = ESCX+'cC'+ESCX;
+  CLRD = ESCX+'cD'+ESCX;
+  CLRE = ESCX+'cE'+ESCX;
+  CLRF = ESCX+'cF'+ESCX;
+  CLR_UI = CLRE;
+  CLR_QUERY = CLRA;
+  CLR_QUERY_WRITE = CLRB;
+  CLR_ERR = CLRC;
+  ESC_BLUE = CLRE;
+  CLRBLK = CLR0;
+  CLRWHITE = CLR0;
+  ANSICOLORS: array of cardinal = [
+    $000000,//0
+    $800000,//1
+    $008000,//2
+    $808000,//3
+    $000080,//4
+    $800080,//5
+    $008080,//6
+    $D0D0D0,//7
+    $3F3F3F,//8
+    $FF0000,//9
+    $00FF00,//A
+    $FFFF00,//B
+    $0000FF,//C
+    $FF00FF,//D
+    $00FFFF,//E
+    $FFFFFF];//F
+
+   TERMINALCOLORS: array of CARDINAL = [
+    $000000,//0
+    $000080,//1
+    $008000,//2
+    $008080,//3
+    $800000,//4
+    $800080,//5
+    $808000,//6
+    $D0D0D0,//7
+    $3F3F3F,//8
+    $0000FF,//9
+    $00FF00,//A
+    $00FFFF,//B
+    $FF0000,//C
+    $FF00FF,//D
+    $FFFF00,//E
+    $FFFFFF];//F
 {$IFDEF WINDOWS}
   NEWLINE = #13#10;
 {$ELSE}
@@ -201,7 +261,8 @@ function PixelRect(x1,y1,x2,y2: int64): TPixelRect;
 procedure Deprecate;
 procedure NotImplemented;
 function Null20(v: variant): variant;
-
+function EscSeq(s: string): string;
+function objaddr(o: TObject): string;
 
 
 
@@ -209,6 +270,16 @@ implementation
 
 uses
   systemx, numbers;
+
+function objaddr(o: TObject): string;
+begin
+  result := '@'+inttohex(nativeint(pointer(o)),1);
+end;
+
+function EscSeq(s: string): string;
+begin
+  result := ESCX+s;
+end;
 
 function Null20(v: variant): variant;
 begin

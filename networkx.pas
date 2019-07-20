@@ -17,7 +17,7 @@ uses
 function GetBroadcastIPs(): IHolder<TStringList>;
 function GetInterfaceIPs(): IHolder<TStringList>;
 function GetNICinfo(): IHolder<TStringList>;
-function GetHostID: string;
+function GetHostID(eport: ni): string;
 function ip_to_broadcast_v4(addr: string; subnet: string): string;
 
 implementation
@@ -135,8 +135,9 @@ Begin
     Begin
       if aNetInterfaceList[i].BroadcastSupport
       and aNetInterfaceList[i].IsInterfaceUp
-      and (not aNetInterfaceList[i].IsLoopback) then
+      and (not aNetInterfaceList[i].IsLoopback) then begin
         result.o.Add (aNetInterfaceList[i].AddrDirectedBroadcast);
+      end;
     end;
   end;
 end;
@@ -179,12 +180,13 @@ end;
 {$ENDIF}
 
 
-function GetHostID: string;
+function GetHostID(eport: ni): string;
 begin
-  result := extractfilenamepart(dllname)+GetInterfaceIPs().o.text;
+  result := extractfilenamepart(dllname)+'@'+GetInterfaceIPs().o.text;
   result := stringreplace(result, #13#10, '/', [rfReplaceAll]);
   result := stringreplace(result, #13, '/', [rfReplaceAll]);
   result := stringreplace(result, #10, '/', [rfReplaceAll]);
+  result := result+eport.tostring;
 end;
 
 

@@ -3,11 +3,16 @@ unit WebConfig;
 //This class is responsible for reading and updating configuration values
 //(that pertain to the workstation operation) stored in the workstation's
 //registry and in the workstation's Pathways.INI file.
-
+xxx
 
 
 interface
-uses {registry, }sysutils, windows, classes, SharedObject, SimpleWinsock,orderlyinit, betterobject;
+uses {registry, }sysutils,
+{$IFDEF MSWINDOWS}
+  windows,
+  SimpleWinsock,
+{$ENDIF}
+  classes, SharedObject, orderlyinit, betterobject;
 const
   DT_INDEX_PWLN = 0;
   DT_INDEX_ISRN = 1;
@@ -19,124 +24,124 @@ type
   TNetConnection= class(TFakeLockQueuedObject)
   private
     FMiddleWare: boolean;
-    FHost: ansistring;
-    FEndPoint: ansistring;
-    FName: ansistring;
-    FURL: ansistring;
-    FFarm: ansistring;
+    FHost: string;
+    FEndPoint: string;
+    FName: string;
+    FURL: string;
+    FFarm: string;
     FLoad: integer;
     FCitrix: boolean;
     FNoTest: boolean;
-    FTestURL: ansistring;
+    FTestURL: string;
     FParadox: boolean;
-    FContext: ansistring;
+    FContext: string;
 
 
 
     function GetLoad: integer;
-    function GetTestURL: ansistring;
-    procedure SetTestURL(const Value: ansistring);
-    function GetURL: ansistring;
-    procedure SetURL(const Value: ansistring);
-    function GetFarm: ansistring;
-    function GetHost: ansistring;
-    function GetName: ansistring;
-    procedure SetFarm(const Value: ansistring);
-    procedure SetHost(const Value: ansistring);
-    procedure SetName(const Value: ansistring);
+    function GetTestURL: string;
+    procedure SetTestURL(const Value: string);
+    function GetURL: string;
+    procedure SetURL(const Value: string);
+    function GetFarm: string;
+    function GetHost: string;
+    function GetName: string;
+    procedure SetFarm(const Value: string);
+    procedure SetHost(const Value: string);
+    procedure SetName(const Value: string);
     function GetParadox: boolean;
     procedure SetParadox(const Value: boolean);
-    function GetContext: ansistring;
-    procedure SetContext(const Value: ansistring);
+    function GetContext: string;
+    procedure SetContext(const Value: string);
   protected
   public
     constructor Create; reintroduce; virtual;
     destructor Destroy; override;
-    property Name: ansistring read GetName write SetName;
+    property Name: string read GetName write SetName;
     property MiddleWare: boolean read FMiddleWare write FMiddleWare;
     property Citrix: boolean read FCitrix write FCitrix;
-    property Host: ansistring read GetHost write SetHost;
-    property Endpoint: ansistring read FEndPoint write FEndPoint;
-    property URL: ansistring read GetURL write SetURL;
-    property Farm: ansistring read GetFarm write SetFarm;
+    property Host: string read GetHost write SetHost;
+    property Endpoint: string read FEndPoint write FEndPoint;
+    property URL: string read GetURL write SetURL;
+    property Farm: string read GetFarm write SetFarm;
     property Load: integer read GetLoad;
     property NoTest: boolean read FNoTest write FNoTest;
-    property TestURL: ansistring read GetTestURL write SetTestURL;
+    property TestURL: string read GetTestURL write SetTestURL;
     property Paradox: boolean read GetParadox write SetParadox;
-    property Context: ansistring read GetContext write SetContext;
+    property Context: string read GetContext write SetContext;
   end;
 
 //------------------------------------------------------------------------------
   TWebConfig = class(TFakeLockQueuedObject)
   private
-    FConfigFile: ansistring;
+    FConfigFile: string;
     FWebLog: boolean;
     FEnableAuditLog: boolean;
     FExcessiveAuditLog: boolean;
     FDataCenterID: integer;
-    FHTMLDocPath: ansistring;
+    FHTMLDocPath: string;
 
-    FLogAlertLocation: ansistring;
+    FLogAlertLocation: string;
     FLogFileKeyNames: TStrings;
     FLogFileLocations: TStrings;
     FLogFileCount: integer;
 
     FConnectionLimit: integer;
 
-    FReportPDFTempFileLocation: ansistring;
+    FReportPDFTempFileLocation: string;
 
-    function GetConn(sDestName: ansistring): TNetConnection;
-    function GetFarmRouter: ansistring;
+    function GetConn(sDestName: string): TNetConnection;
+    function GetFarmRouter: string;
     function GetInitialized: boolean;
     procedure SetEchoPageParameters(const Value: boolean);
-    procedure SetFarmRouter(const Value: ansistring);
+    procedure SetFarmRouter(const Value: string);
     function GetEchoPageParameters: boolean;
     function GetDestByIndex(iIndex: integer): TNetConnection;
-    function GetLogfileKeyNames(idx: integer): ansistring;
-    function GetLogFileLocation(idx: integer): ansistring;
+    function GetLogfileKeyNames(idx: integer): string;
+    function GetLogFileLocation(idx: integer): string;
     procedure SetConnectionLImit(limit: integer);
     function GetConnectionLimit: integer;
-    function GetExternalREsourcePath: ansistring;
-    procedure SetExternalResourcePAth(const Value: ansistring);
-    function GetConfigFile: ansistring;
-    procedure SetConfigFile(const Value: ansistring);
-    function GetReportPDFTempFileLocation: ansistring;
-    function GetLogFileName: ansistring;
-    function GetLogAlertLocation: ansistring;
-    function GetHTMLDocPath: ansistring;
+    function GetExternalREsourcePath: string;
+    procedure SetExternalResourcePAth(const Value: string);
+    function GetConfigFile: string;
+    procedure SetConfigFile(const Value: string);
+    function GetReportPDFTempFileLocation: string;
+    function GetLogFileName: string;
+    function GetLogAlertLocation: string;
+    function GetHTMLDocPath: string;
     //    reg: TRegistry;
   protected
-    FFarmRouter: ansistring;
-    FExternalResourcePath: ansistring;
+    FFarmRouter: string;
+    FExternalResourcePath: string;
     FEchoPageParameters: boolean;
     lstConnections: TList;
-    FLogFileName: ansistring;
+    FLogFileName: string;
 
 
   public
-    constructor create(sConfigfile: ansistring); reintroduce;
+    constructor create(sConfigfile: string); reintroduce;
     destructor Destroy; override;
 
 
 
-    function ReadConfigString(sSection, sKeyName, sDefault: ansistring): ansistring;
-    procedure WriteConfigString(sKeyName, sKeyValue: ansistring);
-    property ReportPDFTempFileLocation: ansistring read GetReportPDFTempFileLocation;
-    function HasConnection(sName: ansistring): boolean;
-    property ConfigFile: ansistring read GetConfigFile write SetConfigFile;
-    property FarmRouter: ansistring read GetFarmRouter write SetFarmRouter;
-    property Root: ansistring read GetFarmRouter write SetFarmRouter;
-    property ExternalResourcePath: ansistring read GetExternalREsourcePath write SetExternalResourcePAth;
-    property TemplateRoot: ansistring read GetExternalResourcePAth write SetExternalResourcePath;
-    property conn[sDestName: ansistring]: TNetConnection read GetConn;
+    function ReadConfigString(sSection, sKeyName, sDefault: string): string;
+    procedure WriteConfigString(sKeyName, sKeyValue: string);
+    property ReportPDFTempFileLocation: string read GetReportPDFTempFileLocation;
+    function HasConnection(sName: string): boolean;
+    property ConfigFile: string read GetConfigFile write SetConfigFile;
+    property FarmRouter: string read GetFarmRouter write SetFarmRouter;
+    property Root: string read GetFarmRouter write SetFarmRouter;
+    property ExternalResourcePath: string read GetExternalREsourcePath write SetExternalResourcePAth;
+    property TemplateRoot: string read GetExternalResourcePAth write SetExternalResourcePath;
+    property conn[sDestName: string]: TNetConnection read GetConn;
     property DestByIndex[iIndex: integer]: TNetConnection read GetDestByIndex;
-    function IsConnectionDefined(sDestName: ansistring): boolean;
-    function IndexOfConnection(sDestName: ansistring): integer;
-    property LogFileName: ansistring read GetLogFileName;
-    property LogFileLocation[idx: integer]: ansistring read GetLogFileLocation;
-    property LogFileKeyNames[idx: integer]: ansistring read GetLogfileKeyNames;
-    property LogAlertLocation: ansistring read GetLogAlertLocation;
-    property HTMLDocPath: ansistring read GetHTMLDocPath;
+    function IsConnectionDefined(sDestName: string): boolean;
+    function IndexOfConnection(sDestName: string): integer;
+    property LogFileName: string read GetLogFileName;
+    property LogFileLocation[idx: integer]: string read GetLogFileLocation;
+    property LogFileKeyNames[idx: integer]: string read GetLogfileKeyNames;
+    property LogAlertLocation: string read GetLogAlertLocation;
+    property HTMLDocPath: string read GetHTMLDocPath;
 
 
 
@@ -162,7 +167,7 @@ type
     function LoadConfig: boolean;
   end;
 
-  function GetWindowsDir: ansistring;
+  function GetWindowsDir: string;
 
 function WSC: TWebconfig;inline;
 
@@ -178,14 +183,14 @@ uses
   {dialogs, }systemx, IniFiles;
 
 //-----------------------------------------------------------------------------
-procedure TWebConfig.WriteConfigString(sKeyName, sKeyValue: ansistring);
+procedure TWebConfig.WriteConfigString(sKeyName, sKeyValue: string);
 //Description: Updates the registry for the sKeyName key with
 // the sKeyValue value.
 begin
   raise Exception.create('WriteConfigString is unimplemented');
 end;
 //-----------------------------------------------------------------------------
-function TWebConfig.ReadConfigString(sSection, sKeyName, sDefault: ansistring): ansistring;
+function TWebConfig.ReadConfigString(sSection, sKeyName, sDefault: string): string;
 //Description: Returns the registry setting for the sKeyName key.
 var
   fIni : TIniFile;
@@ -215,7 +220,7 @@ begin
   end;
 end;
 //-----------------------------------------------------------------------------
-constructor TWebConfig.create(sConfigFile: ansistring);
+constructor TWebConfig.create(sConfigFile: string);
 begin
   inherited Create;
   FConfigFile := sConfigFile;
@@ -248,7 +253,7 @@ begin
 
 end;
 //------------------------------------------------------------------------------
-function TWebConfig.GetConn(sDestName: ansistring): TNetConnection;
+function TWebConfig.GetConn(sDestName: string): TNetConnection;
 var
   idx: integer;
 begin
@@ -276,7 +281,7 @@ begin
 
 end;
 
-function TWebConfig.GetFarmRouter: ansistring;
+function TWebConfig.GetFarmRouter: string;
 begin
   LockString;
   try
@@ -299,7 +304,7 @@ var
   iDestCount: integer;
   t: integer;
   dest: TNetConnection;
-  sDestKey: ansistring;
+  sDestKey: string;
 begin
 
   ini := TIniFile.create(FConfigFile);
@@ -390,7 +395,7 @@ begin
 
 end;
 
-procedure TWebConfig.SetFarmRouter(const Value: ansistring);
+procedure TWebConfig.SetFarmRouter(const Value: string);
 begin
   LockString;
   try
@@ -428,7 +433,7 @@ begin
 end;
 
 
-function TNetConnection.GetContext: ansistring;
+function TNetConnection.GetContext: string;
 begin
   LockString;
   try
@@ -438,7 +443,7 @@ begin
   end;
 end;
 
-function TNetConnection.GetFarm: ansistring;
+function TNetConnection.GetFarm: string;
 begin
   LockString;
   try
@@ -449,7 +454,7 @@ begin
   end;
 end;
 
-function TNetConnection.GetHost: ansistring;
+function TNetConnection.GetHost: string;
 begin
   LockString;
   try
@@ -501,7 +506,7 @@ begin
 
 end;
 
-function TWebConfig.IsConnectionDefined(sDestName: ansistring): boolean;
+function TWebConfig.IsConnectionDefined(sDestName: string): boolean;
 begin
   LockString;
   try
@@ -519,7 +524,7 @@ begin
 
 end;
 
-function TWebConfig.IndexOfConnection(sDestName: ansistring): integer;
+function TWebConfig.IndexOfConnection(sDestName: string): integer;
 var
   t: integer;
 begin
@@ -545,7 +550,7 @@ begin
   end;
 end;
 
-function GetWindowsDir: ansistring;
+function GetWindowsDir: string;
 var
   sTemp: array[0..255] of AnsiChar;
 begin
@@ -557,7 +562,7 @@ begin
 end;
 
 
-function TWebConfig.HasConnection(sName: ansistring): boolean;
+function TWebConfig.HasConnection(sName: string): boolean;
 var
   t: integer;
 begin
@@ -582,7 +587,7 @@ begin
 
 end;
 
-function TWebConfig.GetLogfileKeyNames(idx: integer): ansistring;
+function TWebConfig.GetLogfileKeyNames(idx: integer): string;
 begin
   LockString;
   try
@@ -596,7 +601,7 @@ begin
   end;
 end;
 
-function TWebConfig.GetLogFileLocation(idx: integer): ansistring;
+function TWebConfig.GetLogFileLocation(idx: integer): string;
 begin
   LockString;
   try
@@ -633,7 +638,7 @@ begin
   end;
 end;
 
-function TNetConnection.GetName: ansistring;
+function TNetConnection.GetName: string;
 begin
   LockString;
   try
@@ -654,7 +659,7 @@ begin
   end;
 end;
 
-function TNetConnection.GetTestURL: ansistring;
+function TNetConnection.GetTestURL: string;
 begin
   LockString;
   try
@@ -665,7 +670,7 @@ begin
   end;
 end;
 
-function TNetConnection.GetURL: ansistring;
+function TNetConnection.GetURL: string;
 begin
   LockString;
   try
@@ -677,7 +682,7 @@ begin
 end;
 
 
-procedure TNetConnection.SetContext(const Value: ansistring);
+procedure TNetConnection.SetContext(const Value: string);
 begin
   LockString;
   try
@@ -687,7 +692,7 @@ begin
   end;
 end;
 
-procedure TNetConnection.SetFarm(const Value: ansistring);
+procedure TNetConnection.SetFarm(const Value: string);
 begin
   LockString;
   try
@@ -698,7 +703,7 @@ begin
   end;
 end;
 
-procedure TNetConnection.SetHost(const Value: ansistring);
+procedure TNetConnection.SetHost(const Value: string);
 begin
   LockString;
   try
@@ -709,7 +714,7 @@ begin
   end;
 end;
 
-procedure TNetConnection.SetName(const Value: ansistring);
+procedure TNetConnection.SetName(const Value: string);
 begin
   LockString;
   try
@@ -730,7 +735,7 @@ begin
   end;
 end;
 
-procedure TNetConnection.SetTestURL(const Value: ansistring);
+procedure TNetConnection.SetTestURL(const Value: string);
 begin
   Lock;
   try
@@ -741,7 +746,7 @@ begin
   end;
 end;
 
-procedure TNetConnection.SetURL(const Value: ansistring);
+procedure TNetConnection.SetURL(const Value: string);
 begin
   Lock;
   try
@@ -752,7 +757,7 @@ begin
   end;
 end;
 
-function TWebConfig.GetExternalREsourcePath: ansistring;
+function TWebConfig.GetExternalREsourcePath: string;
 begin
   LockString;
   try
@@ -764,7 +769,7 @@ begin
   end;
 end;
 
-procedure TWebConfig.SetExternalResourcePAth(const Value: ansistring);
+procedure TWebConfig.SetExternalResourcePAth(const Value: string);
 begin
   LockString;
   try
@@ -775,7 +780,7 @@ begin
   end;
 end;
 
-function TWebConfig.GetConfigFile: ansistring;
+function TWebConfig.GetConfigFile: string;
 begin
   LockString;
   try
@@ -786,7 +791,7 @@ begin
 
 end;
 
-procedure TWebConfig.SetConfigFile(const Value: ansistring);
+procedure TWebConfig.SetConfigFile(const Value: string);
 begin
   LockString;
   try
@@ -798,7 +803,7 @@ begin
 end;
 
 
-function TWebConfig.GetReportPDFTempFileLocation: ansistring;
+function TWebConfig.GetReportPDFTempFileLocation: string;
 begin
   LockString;
   try
@@ -811,7 +816,7 @@ begin
 end;
 
 
-function TWebConfig.GetLogFileName: ansistring;
+function TWebConfig.GetLogFileName: string;
 begin
   LockString;
   try
@@ -823,7 +828,7 @@ begin
 end;
 
 
-function TWebConfig.GetLogAlertLocation: ansistring;
+function TWebConfig.GetLogAlertLocation: string;
 begin
   LockString;
   try
@@ -834,7 +839,7 @@ begin
   end;
 end;
 
-function TWebConfig.GetHTMLDocPath: ansistring;
+function TWebConfig.GetHTMLDocPath: string;
 begin
   LockString;
   try

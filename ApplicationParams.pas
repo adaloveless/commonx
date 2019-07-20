@@ -195,6 +195,9 @@ function GetApplicationParamsfileName: string;
 begin
 {$IFDEF WINDOWS}
   result := changefileext(DLLName,'.params');
+  {$IFDEF USE_PARAMS_FROM_WORKING_DIRECTORY}
+    result := ExtractFileName(result);
+  {$ENDIF}
 {$ELSE}
 //  result := System.IOUtils.TPath.GetHomePath;
   result := System.IOUtils.TPath.GetDocumentsPath+'app.params';

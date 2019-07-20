@@ -1,0 +1,19 @@
+inherited framBusyFMX: TframBusyFMX
+  Size.Width = 569.000000000000000000
+  Size.Height = 412.000000000000000000
+  OnResize = FrameResize
+  object RectBusyAnim: TRectangle
+    Align = Contents
+    Fill.Color = xCF000000
+    Size.Width = 569.000000000000000000
+    Size.Height = 412.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+  end
+  object tmAnim: TTimer
+    Interval = 25
+    OnTimer = tmAnimTimer
+    Left = 272
+    Top = 192
+  end
+end

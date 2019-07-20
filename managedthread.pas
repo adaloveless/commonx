@@ -8,7 +8,7 @@ interface
 {x$DEFINE SUSPEND_ACK}
 {x$DEFINE DEBUG_THREAD_NAMES}
 {x$DEFINE DISABLE_THREAD_POOL}
-{$DEFINE DETAILED_DEBUG}
+{x$DEFINE DETAILED_DEBUG}
 {x$DEFINE QUICK_THREAD_DEBUG}
 
 uses
@@ -89,6 +89,8 @@ type
     threadid: int64;//copied when real thread assigned
     signaldebug: string;
     coldruninterval: nativeint;
+    tt: TThreadTimes;
+    handle: THandle;
   private
     function GetAge: ticker;
   public
@@ -98,9 +100,10 @@ type
 
   TManagedThread = class(TsharedObject)
   protected
+    Finfo: TThreadInfo;
     FTimes: array[0..19] of ticker;
     FTimeIndex: nativeint;
-    Finfo: TThreadInfo;
+
 
     FthreadManager: TThreadManager;
     FLastUsed: cardinal;
@@ -166,6 +169,7 @@ type
     FIdleIterations: ni;
     FComReferences: integer;
     FAutoCycle: boolean;
+    zone: ni;
     procedure SetStop(const Value: boolean);
     function GetUnknown: IUnknown;
     procedure DoTermiante;
@@ -747,10 +751,6 @@ begin
   //register if applicable with a threadmanager
   FOwner := owner;
 
-  if manager <> nil then
-    self.Manager := manager as TThreadManager
-  else
-    self.Manager := BackGroundThreadMan;
   Init;
 //  if not CreateSuspended then
   SetStartingState;
@@ -764,6 +764,17 @@ begin
   end;
 
   signal(evSleeping,true);
+{$IFDEF MSWINDOWS}
+  FInfo.handle := realthread.handle;
+{$ELSE}
+  FInfo.handle := 0;
+{$ENDIF}
+
+
+  if manager <> nil then
+    self.Manager := manager as TThreadManager
+  else
+    self.Manager := BackGroundThreadMan;
 
 
 end;
@@ -802,6 +813,8 @@ begin
 //  Debug.Log(self.classname+'('+inttostr(threadid)+') "'+self.name+'" is being destroyed');
   if Pooled then RemoveFromPool;
 
+  Manager := nil;
+
   if realthread.Suspended and not realthread.Terminated then begin
     realthread.resume;
     realthread.terminate;
@@ -822,7 +835,7 @@ begin
   WaitForSignal(evConcluded);
   Debug.Log('Concluded '+nameex);
 
-  Manager := nil;
+
   if not realthread.Terminated and (not realthread.FreeOnTerminate) then begin
     realthread.terminate;
   end;
@@ -920,6 +933,7 @@ var
 label
   rep_not_continue;
 begin
+  zone := 1;
   try
     try
       SetDebugThreadVar(self);
@@ -929,32 +943,41 @@ begin
     {$IFDEF WINDOWS}
       winapi.activex.coinitialize(nil);
     {$ENDIF}
+      zone := 2;
       while not realthread.terminated do begin
         repeat
           try
+            zone := 3;
     {$IFDEF QUICK_THREAD_DEBUG}Debug.Log('Starting new cycle '+GetSignalDebug+', not terminated loop '+nameex);{$ENDIF}
             while not WaitForSignal(evOutOfPool, 4000) do begin // REALLY Rare race condition can occur
+              zone := 4;
             {$IFDEF QUICK_THREAD_DEBUG}Debug.Log(GetSignalDebug+'Wait Timeout for evOutOfPool');{$ENDIF}
               if realthread.terminated then begin                   // where evStart is cleared and loses start signal required for terminate
+                zone := 99;
                 Signal(evStarted);
                 SignalAllForTerminate;
+                zone := 999;
                 exit;
               end;
               if Killed then begin
+                zone := 88;
                 Signal(evStarted);
                 Debug.ConsoleLog(self.classname+' named '+self.name+' is still active after thread-pool is killed.');
                 raise ECritical.create(self.classname+' named '+self.name+' is still active after thread-pool is killed.');
               end;
             end;
 
-
+            zone := 5;
             Signal(evIdle, true);
             while not WaitForSignal(evStart, 4000) do begin // REALLY Rare race condition can occur
                                                             // where evStart is cleared and loses start signal required for terminate
+              zone := 6;
               {$IFDEF QUICK_THREAD_DEBUG}Debug.Log(GetSignalDebug+'Wait Timeout for evStart');{$ENDIF}
               if realthread.terminated then begin
+                zone := 77;
                 Signal(evStarted);
                 SignalAllForTerminate;
+                zone := 777;
                 exit;
               end;
               if Killed then begin
@@ -964,28 +987,40 @@ begin
               end;
             end;
 
+            zone := 7;
 {$IFDEF GWATCH}
-            if self.threadid = GWATCHTHREAD then
+            if int64(self.threadid) = int64(GWATCHTHREAD) then
               Debug.Log('Trap Watch '+GetsignalDebug);
 {$ENDIF}
 
     {$IFDEF QUICK_THREAD_DEBUG}Debug.Log('going '+getsignaldebug+' '+nameex);{$ENDIF}
             if IsSignaled(evStop) then begin
+              zone := 8;
               {$IFDEF QUICK_THREAD_DEBUG}Debug.Log('STOPPING IMMEDIATELY '+getsignaldebug+' '+nameex);{$ENDIF}
               break;
             end;
-            if not beforestartcalled then
+            zone := 9;
+            if not beforestartcalled then begin
+              zone := 10;
               BeforeSTart;
+            end;
+            zone := 11;
             Signal(evStart, false);
             //Signal(evStop, false);
+            zone := 12;
             Signal(evStarted);
-            if realthread.terminated then exit;//<<---- when terminating, the signal will be set, it could be set just for the purpose of termination wakeup
+            zone := 13;
+            if realthread.terminated then begin
+              zone := 14;
+              exit;//<<---- when terminating, the signal will be set, it could be set just for the purpose of termination wakeup
+            end;
 
 
       {$IFDEF DEBUG_THREAD_NAMES}
             if FName <> FDebugName then
               Realthread.NameThreadForDebugging(FName);
       {$ENDIF}
+            zone := 15;
             FDebugName := Finfo.Name;
       {$IFDEF DETAILED_DEBUG}
             Debug.Log(self,'Execute: '+self.classname);
@@ -994,32 +1029,38 @@ begin
             repeat
             {$ENDIF}
 rep_not_continue:
+              zone := 16;
               Signal(evIdle, true);
               if not WaitForSignal(evHasWork, round(NoWorkRunInterval)) then //evaluate conditions under lock ALWAYS
               begin
+                zone := 17;
                 //IDLE CYCLE
                 if realthread.terminated then exit;//<<---- when terminating, the signal will be set, it could be set just for the purpose of termination wakeup
                 IdleCycle;
 
                 goto rep_not_continue;
               end;
-
-
+              zone := 18;
               Signal(evIdle, false);
               if IsSignaled(evStop) then begin
+                zone := 19;
                 Signal(evStarted,true);
                 break;
               end;
 
-              BeforeDoExecute;
+              zone := 20;
               try
+                BeforeDoExecute;
+                zone := 21;
                 tm1 := tickcount.GetTicker;
 {$IFDEF GWATCH}
-                if self.threadid = GWATCHTHREAD then
+                if int64(self.threadid) = int64(GWATCHTHREAD) then
                   Debug.Log('Trap Watch '+GetsignalDebug);
 {$ENDIF}
 
+                zone := 22;
                 DoExecute;
+                zone := 23;
                 if AutoCountCycles then
                   inc(Finfo.Iterations);
                 tm2 := tickcount.GetTicker;
@@ -1027,40 +1068,53 @@ rep_not_continue:
                 FTimes[FTimeIndex] := GetTimeSince(tm2, tm1);
                 inc(FTimeIndex);
 
+                AfterDoExecute;
               except
                 on E:Exception do begin
+                  zone := 24;
                   Debug.Log(self, 'Unhandled exception in '+self.classname+' id:'+inttostr(threadid)+':' +e.message);
 
                 end;
               end;
-              AfterDoExecute;
+              zone := 25;
+
               //IdleStateTasks;
               if IsSignaled(evStop) then begin
+                zone := 26;
                 Signal(evStarted,true);
                 break;
               end;
 
-             if not IsSignaled(evHot) then
-              WaitForSignal(evHot, ColdRunInterval) //skip waiting for hot signal because this is a no-work cycle
-            {$IFDEF NEW_LOOP}
-
+              if not IsSignaled(evHot) then begin
+               zone := 27;
+               WaitForSignal(evHot, ColdRunInterval) //skip waiting for hot signal because this is a no-work cycle
+              end;
+              {$IFDEF NEW_LOOP}
+              zone := 26;
             until (not loop) or IsSignaled(evStop);
             {$endIF}
+            zone := 27;
     //        Debug.Log('Reached out of user loop');
             OnFinish;
+            zone := 28;
 {$IFDEF GWATCH}
-            if self.threadid = GWATCHTHREAD then
+            if int64(self.threadid) = int64(GWATCHTHREAD )then
               Debug.Log('Trap Watch '+GetsignalDebug);
 {$ENDIF}
 
 
           finally
+            zone := 28 ;
             Signal(evFinished);
-            if not IsCriticalSystemThread then
+            if not IsCriticalSystemThread then begin
+              zone := 29;
               WaitForSignal(evSleeping);
+            end;
+            zone := 30;
             evPoolReady.Signal(true);
           end;
         until not poolloop;
+        zone := 31;
 
 
   {$IFDEF QUICK_THREAD_DEBUG}Debug.Log(self.nameex+' Finished loop '+GetSignalDebug);{$ENDIF}
@@ -1076,7 +1130,7 @@ rep_not_continue:
   finally
 
 {$IFDEF GWATCH}
-    if self.threadid = GWATCHTHREAD then
+    if int64(self.threadid) = int64(GWATCHTHREAD) then
       Debug.Log('Trap Watch');
 {$ENDIF}
 
@@ -1116,9 +1170,20 @@ begin
 end;
 
 function TManagedThread.Getinfo: TThreadInfo;
+var
+  s: string;
 begin
-  result := FInfo;
-  result.pooled := FPool <> nil;//volatile
+  DeadCheck;
+  try
+    result := FInfo;
+    result.pooled := FPool <> nil;//volatile
+  except
+    on E: Exception do begin
+      s := 'Got exception '+e.message+' when getting thread info from @'+inttohex(ni(pointer(self)),1)+' where FInfo=@'+inttohex(ni(@FInfo),1);
+      raise ECritical.create(s);
+
+    end;
+  end;
 end;
 
 function TManagedThread.GetIsComplete: boolean;
@@ -1778,7 +1843,7 @@ begin
   Signal(evStop);
   Signal(evStart);//<--- must signal start to wake up for terminate
   Signal(evOutOfPool, true);//<---special spot for termination
-  //Signal(evIdle,true);
+  Signal(evIdle,true);
 
 
 end;
@@ -1806,8 +1871,16 @@ begin
 {$IFDEF QUICK_THREAD_DEBUG}  Debug.Log('At beginning of start signal '+self.GetSignalDebug);{$ENDIF}
 
     NEverStarted := false;
-    if orderlyinit.init.initialized then
+    if orderlyinit.init.initialized then begin
+{$DEFINE WAIT0}
+{$IFDEF WAIT0}
       WaitForSignal(evIdle);
+{$ELSE}
+      while not WaitForSignal(evIdle, 1000) do begin
+        debug.log('waiting for idle signal zone='+zone.tostring);
+      end;
+{$ENDIF}
+    end;
   //  Signal(evStarted,false);
     Signal(evStop, false);
     if realthread.suspended then realthread.resume;
@@ -2601,7 +2674,7 @@ begin
         FCleaner.Name := 'Master Thread Pool Cleaner';
         FCleaner.IsCriticalSystemThread := true;
         FCleaner.Loop := true;
-        FCleaner.Start;
+        FCleaner.BeginStart;
       end;
     finally
       Unlock;
@@ -2663,7 +2736,7 @@ begin
     end;
     //if HighperformanceMode is defined, we will NEVER destroy any threads (until shutdown)
     if not TPM.HighPerformanceMode then begin
-      for t:= 0 to Fthreads.count-1 do begin
+      for t:= Fthreads.count-1 downto 0 do begin
         thr := Fthreads[t];
         if (GetTimeSince(thr.LastUsed) > ThreadPoolTimeout) then begin
           FIncomingThreads.remove(thr);
@@ -2893,7 +2966,7 @@ begin
       FIncomingThreads.add(thr);
       signal(thr.evSleeping, true);//<---ONE SPOT!
     end else begin
-      FThreads.add(thr);
+      FIncomingThreads.add(thr);
       signal(thr.evSleeping, true);//<---ONE SPOT!
     end;
 
@@ -3193,7 +3266,8 @@ procedure TThreadManager.DeRegisterThread(thread: TManagedThread);
 begin
   LockWrite;
   try
-    FThreads.remove(thread);
+    while FThreads.Has(thread) do
+      FThreads.remove(thread);
   finally
     UnlockWrite;
   end;
@@ -3270,17 +3344,25 @@ function TThreadManager.GetInfoList: TArray<TThreadInfo>;
 var
   t: ni;
 begin
-  Lock;
-  try
-    setlength(result, count);
-    for t:= 0 to count-1 do begin
-      result[t] := threads[t].info;
-      result[t].status := threads[t].status;
-      result[t].signaldebug := threads[t].GetSignalDebug;
+
+    Lock;
+    try
+      setlength(result, count);
+      for t:= 0 to count-1 do begin
+        try
+          result[t] := threads[t].info;
+        except
+          on E: Exception do begin
+            raise ECritical.create('Exception '+e.message+' getting threadinfo from '+threads[t].classname);
+          end;
+        end;
+        result[t].status := threads[t].status;
+        result[t].signaldebug := threads[t].GetSignalDebug;
+      end;
+    finally
+      Unlock;
     end;
-  finally
-    Unlock;
-  end;
+
 
 end;
 

@@ -12,7 +12,7 @@ uses
   Winapi.windows,
 {$ENDIF}
 {$IFNDEF FMX}
-  graphics,helpers.stream,
+  vcl.graphics,helpers.stream,
   //pngimage_fixed,
 {$ELSE}
   helpers.stream,

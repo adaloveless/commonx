@@ -169,6 +169,7 @@ function FriendlySizeName(i: int64): string;
 function MakeThreadSafe(s: string): string;inline;
 function HexEncode(s: string): string;
 function  stringToStringList(s: string): TStringList;
+function NewStringListH(): IHolder<TStringList>;
 function stringToStringListH(s: string): IHolder<TStringList>;
 //procedure SplitString(sSource, sDelimiter: string; var sLeft, sRight: string);
 function TrimStr(s: string): string;
@@ -191,7 +192,7 @@ function ParseString(src: string; sDelimiter: string): TStringlist;overload;
 procedure ParseString2(src: string; sDelimiter: string; slList: TStringList);
 procedure ParseNumericStringWithRanges(src: string; sDelimiter: string; slList: TStringList);
 procedure ParseNumericRange(src: string; sDelimiter: string; slList: TStringList);
-function Quote(s: string): string;overload;
+function Quote(s: string; sQuote: string = '"'): string;overload;
 function Quote(sl: TStringlist): string;overload;
 function CommaQuote(s: string): string;
 function AdjustFolderPath(sPath: string): string;
@@ -1896,7 +1897,7 @@ begin
   end;
 end;
 
-function Quote(s: string): string;
+function Quote(s: string; sQuote: string = '"'): string;
 begin
   if s <> '' then begin
     if s[1] = '"' then begin
@@ -1904,7 +1905,7 @@ begin
       exit;
     end;
   end;
-  result := '"'+s+'"';
+  result := sQuote+s+sQuote;
 end;
 
 function Quote(sl: TStringlist): string;overload;
@@ -4503,9 +4504,17 @@ begin
   result := uppercase(zcopy(s,0,1))+zcopy(s,1,length(s)-1);
 end;
 
+function NewStringListH(): IHolder<TStringList>;
+begin
+  result := Tholder<TStringlist>.create;
+  result.o := TStringList.create;
+
+end;
+
 
 initialization
   UTF.RegisterClass(TUT_StringX);
 
 end.
+
 

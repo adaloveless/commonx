@@ -2,7 +2,7 @@ unit RDTPKeyBotServer;
 {GEN}
 {TYPE SERVER}
 {CLASS TKeyBotServer}
-{USES RDTPProcessorForKEYBOT}
+{USES_BACKEND RDTPProcessorForKEYBOT}
 {ANCESTOR TRDTPProcessorForKEYBOT}
 {IMPLIB RDTPKeyBotServerImplib}
 {TEMPLATE RDTP_gen_server_template.pas}

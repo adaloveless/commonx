@@ -3,7 +3,7 @@ unit rdtp_gen_server_template;
 interface
 
 uses
-  {USES}typex, packet, systemx, betterobject, genericRDTPClient, sysutils, windows, variants, rdtpprocessor, packethelpers, debug, RDTPServerList;
+  {USES_BACKEND}typex, packet, systemx, betterobject, genericRDTPClient, sysutils, windows, variants, rdtpprocessor, packethelpers, debug, RDTPServerList;
 
 
 

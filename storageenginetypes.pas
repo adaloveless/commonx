@@ -7,7 +7,7 @@
 interface
 
 uses
-  debug, betterobject, sqlexpr, sysutils, DB, classes, stringx, systemx, variants, typex, MultiBufferMemoryFileStream, helpers.stream, numbers, btree, JSONHelpers, mysqlstoragestring;
+  debug, betterobject, sqlexpr, sysutils, DB, classes, stringx, systemx, variants, typex, MultiBufferMemoryFileStream, helpers.stream, numbers, btree, JSONHelpers, mysqlstoragestring, mssqlStorageString;
 
 const
   SYSTEM_FIELD_COUNT = 1;
@@ -89,7 +89,7 @@ type
   protected
     FRowset: array of TSERow;
     FFieldDefs: array of TSERowsetFieldDef;
-    FCursor: integer;
+    FCursor: nativeint;
     FIndexValues: array of array of int64;
     FIndexNames: array of string;
     FIndex: integer; //<<--This is the index used to nagivate the rowset via first/next etc.
@@ -146,7 +146,7 @@ type
 
     procedure SetIndex(idx: integer);
     function GetIndexedRow(iOrderIdx: integer): integer;
-    property Cursor: integer read FCursor write FCursor;
+    property Cursor: nativeint read FCursor write FCursor;
     function ToString: string;override;
     procedure Append(rs: TSERowSet);overload;
     procedure Append(rs: IHolder<TSERowSet>);overload;
@@ -175,8 +175,15 @@ type
     procedure Clear;
     function ToMYSQLCreateTable(sTableName: string): string;
     function ToMYSQLImport(sTableName: string): string;
+    function ToMSSQLImport(sTableName: string): string;
     function RowToMYSQLValues(r: TSERow): string;
+    function RowToMSSQLValues(r: TSERow): string;
     function ToMYSQLValues: string;
+    function ToMSSQLValues: string;
+    property CurrentRecordIndex: nativeint read FCursor write FCursor;//alias
+    function GetFieldList: IHolder<TStringlist>;
+
+
   end;
 
 
@@ -915,6 +922,15 @@ begin
   result := @self.FFielddefs[idx];
 end;
 
+function TSERowSet.GetFieldList: IHolder<TStringlist>;
+begin
+  result := NewStringListH;
+  for var t := 0 to Self.FieldCount-1 do begin
+    result.o.add(self.fielddefs[t].sName);
+  end;
+
+end;
+
 function TSERowSet.GetfieldValue(iRow: nativeint; sFieldName: string): variant;
 var
   i: nativeint;
@@ -1240,6 +1256,31 @@ begin
   dec(FCursor);
 end;
 
+function TSERowSet.RowToMSSQLValues(r: TSERow): string;
+var
+  t: ni;
+  cell: TSECell;
+begin
+  result := '(';
+  for t:= 0 to high(r) do begin
+    cell := r[t];
+    case vartype(cell) of
+      varString, varUString, varOleStr:
+      begin
+//        cell := StringReplace(cell, 'â„¢', '™', [rfReplaceAll]);
+      end;
+    end;
+
+    if t > 0 then
+      result := result + ',';
+
+    result := result + gvs(cell);
+
+
+  end;
+  result := result + ')';
+end;
+
 function TSERowSet.RowToMYSQLValues(r: TSERow): string;
 var
   t: ni;
@@ -1431,6 +1472,25 @@ begin
     finally
       jrec.free;
     end;
+  end;
+end;
+
+function TSERowSet.ToMSSQLImport(sTableName: string): string;
+begin
+  var flds := GetFieldList;
+  var unparsed := stringx.UnParseString(',', flds.o);
+  result := 'insert into '+sTableName+' ('+unparsed+') values '+ToMSSQLValues+';';
+end;
+
+function TSERowSet.ToMSSQLValues: string;
+var
+  t: ni;
+begin
+  result := '';
+  for t:= 0 to rowcount-1 do begin
+    if t > 0 then
+      result := result + ',';
+    result := result + self.RowToMYSQLValues(self.FRowset[t]);
   end;
 end;
 

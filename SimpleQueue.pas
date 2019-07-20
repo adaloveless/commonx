@@ -59,7 +59,7 @@ type
     Destructor Destroy;override;
     property Wait: boolean read GEtWait;
     function WAitFor(iTimeout: ni = -1): boolean;
-    procedure Execute;
+    procedure Execute;virtual;
     procedure SignalComplete;inline;
     property AutoDestroy: boolean read FAutoDestroy write FAutoDestroy;
     function IsComplete   : boolean;inline;
@@ -117,6 +117,7 @@ type
     FIterations: nativeint;
     FIncomingItems, FWorkingItems{$IFDEF TRACK_COMPLETED}, FCompletedItems{$ENDIF}: TDirectlyLInkedList_Shared<TQueueItem>;
     last_process_time: int64;
+    FWorkingIndex: nativeint;
     function GetNextItem: TQueueItem;virtual;
     function IdleBreak: Boolean; override;
   public
@@ -401,6 +402,10 @@ begin
   if bForce or urgent then begin
     FIncomingItems.Lock;
     try
+      if FWorkingIndex >= FWorkingItems.count then begin
+        FWorkingItems.clear;
+        FWorkingIndex := 0;
+      end;
       FWorkingItems.AddList(FIncomingItems);
 {$IFDEF REPRIORITIZE}
       FincomingItems.Clear;
@@ -547,10 +552,25 @@ begin
   //todo 1: this can be WAY more efficient
   repeat
     CheckWorkingItems;
+{$IFDEF FASTER_WORKING_ITEMS}
+    if FWorkingIndex >= FworkingItems.count then
+      result := nil
+    else begin
+      result := FWorkingItems[FWorkingIndex];
+      inc(FWorkingIndex);
+    end;
+
+{$ELSE}
     result := FWorkingItems[0];//default, override me if you want to implement custom ordering
     if result = nil then
       FWorkingItems.delete(0);
-  until (result <> nil) or (FWorkingItems.count = 0);
+
+{$ENDIF}
+  until (result <> nil)
+{$IFDEF FASTER_WORKING_ITEMS}
+  or (FWorkingIndex >= Fworkingitems.count)
+{$endIF}
+  or (FWorkingItems.count = 0);
 
 end;
 

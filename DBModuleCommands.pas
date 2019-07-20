@@ -3,7 +3,7 @@ unit DBModuleCommands;
 interface
 
 uses
-  RDTP_DatabaseConnection, stringx, systemx, typex, commandprocessor, sysutils, dir, classes, storageenginetypes, debug, betterobject, variants;
+  DatabaseconnectionDm, stringx, systemx, typex, commandprocessor, sysutils, dir, classes, storageenginetypes, debug, betterobject, variants;
 
 type
   TDBCommand = class(TCommand)

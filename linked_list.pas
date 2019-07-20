@@ -7,7 +7,7 @@ uses
 
 {x$DEFINE DBG}  //debugs the paths taken on removal
 {x$DEFINE validate_count} //will validate count after every operation
-{x$DEFINE HAS_CHECKS} //will validate that the linked list HAS an item. Important for maintaining counts.. but WAY slow.
+{$DEFINE HAS_CHECKS} //will validate that the linked list HAS an item. Important for maintaining counts.. but WAY slow.
 
 
 type
@@ -550,9 +550,9 @@ begin
     end
     else begin
       last := nil;
-      if first = obj then begin
+//      if first = obj then begin
         first := nil;
-      end;
+//      end;
     end;
   end else
   if obj = first then begin

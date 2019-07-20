@@ -11,26 +11,29 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     Top = 0
     Width = 451
     Height = 305
-    ActivePage = TabSheet7
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
     object TabSheet1: TTabSheet
       Caption = 'Threads and Commands'
+      ExplicitLeft = 0
+      ExplicitTop = 0
       object Splitter1: TSplitter
         Left = 0
-        Top = 214
-        Width = 443
+        Top = 219
+        Width = 453
         Height = 10
         Cursor = crVSplit
         Align = alBottom
         ExplicitLeft = 1
         ExplicitTop = 125
+        ExplicitWidth = 443
       end
       object lvBackground: TListView
         Left = 0
         Top = 65
-        Width = 443
-        Height = 149
+        Width = 453
+        Height = 154
         Align = alClient
         Columns = <
           item
@@ -95,28 +98,33 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
         OnAdvancedCustomDrawSubItem = lvBackgroundAdvancedCustomDrawSubItem
         OnChange = lvBackgroundChange
         OnDrawItem = lvBackgroundDrawItem
+        ExplicitWidth = 443
+        ExplicitHeight = 149
       end
       object pnlBitmap: TPanel
         Left = 0
-        Top = 224
-        Width = 443
+        Top = 229
+        Width = 453
         Height = 53
         Align = alBottom
         Color = clBackground
         ParentBackground = False
         TabOrder = 1
+        ExplicitTop = 224
+        ExplicitWidth = 443
       end
       object Panel1: TPanel
         Left = 0
         Top = 0
-        Width = 443
+        Width = 453
         Height = 65
         Align = alTop
         TabOrder = 2
+        ExplicitWidth = 443
         object rgUpdateSpeed: TRadioGroup
           Left = 1
           Top = 18
-          Width = 441
+          Width = 451
           Height = 46
           Align = alClient
           Caption = 'Update Speed'
@@ -130,11 +138,12 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
             'Hyper')
           TabOrder = 0
           OnClick = rgUpdateSpeedClick
+          ExplicitWidth = 441
         end
         object StaticText1: TStaticText
           Left = 1
           Top = 1
-          Width = 441
+          Width = 502
           Height = 17
           Align = alTop
           Caption = 
@@ -147,11 +156,15 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     object TabSheet8: TTabSheet
       Caption = 'Log'
       ImageIndex = 7
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object memLog: TMemo
         Left = 0
         Top = 0
-        Width = 443
-        Height = 277
+        Width = 453
+        Height = 282
         Align = alClient
         DoubleBuffered = True
         ParentDoubleBuffered = False
@@ -163,20 +176,25 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     object TabSheet7: TTabSheet
       Caption = 'RUDP'
       ImageIndex = 6
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Splitter2: TSplitter
         Left = 0
-        Top = 59
-        Width = 443
+        Top = 64
+        Width = 453
         Height = 37
         Cursor = crVSplit
         Align = alBottom
         ExplicitTop = 203
+        ExplicitWidth = 443
       end
       object lvRUDP: TListView
         Left = 0
         Top = 0
-        Width = 443
-        Height = 59
+        Width = 453
+        Height = 64
         Align = alClient
         Columns = <
           item
@@ -268,8 +286,8 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       end
       object cRUDP: TChart
         Left = 0
-        Top = 96
-        Width = 443
+        Top = 101
+        Width = 453
         Height = 181
         Title.Text.Strings = (
           'UDP Throughput')
@@ -344,6 +362,10 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     object TabSheet6: TTabSheet
       Caption = 'Ring Stats'
       ImageIndex = 5
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object memRingStats: TMemo
         Left = 0
         Top = 0
@@ -353,16 +375,22 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
         Lines.Strings = (
           'memRingStats')
         TabOrder = 0
+        ExplicitWidth = 453
+        ExplicitHeight = 282
       end
     end
     object TabSheet2: TTabSheet
       Caption = 'Better Objects'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object lvClasses: TListView
         Left = 0
         Top = 0
-        Width = 443
-        Height = 277
+        Width = 453
+        Height = 282
         Align = alClient
         Columns = <
           item
@@ -385,6 +413,10 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     object TabSheet3: TTabSheet
       Caption = 'Disk Usage'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object memDisk: TMemo
         Left = 0
         Top = 0
@@ -394,16 +426,22 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
         Lines.Strings = (
           'memDisk')
         TabOrder = 0
+        ExplicitWidth = 453
+        ExplicitHeight = 282
       end
     end
     object TabSheet4: TTabSheet
       Caption = 'Memory'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object lvMemory: TListView
         Left = 0
         Top = 0
-        Width = 443
-        Height = 277
+        Width = 453
+        Height = 282
         Align = alClient
         Columns = <
           item
@@ -451,11 +489,15 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     object TabSheet5: TTabSheet
       Caption = 'TabSheet5'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Chart1: TChart
         Left = 0
         Top = 0
-        Width = 443
-        Height = 277
+        Width = 453
+        Height = 282
         Title.Text.Strings = (
           'TChart')
         View3DOptions.Elevation = 315
@@ -497,7 +539,7 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     Left = 96
     Top = 96
     Bitmap = {
-      494C01012A002D00040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01012A002D00080010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000B0000000010020000000000000B0
       0000000000000000000000000000000000000000000000000000000000000000
       0000CECED6007B8494004A52630031395200313952004A5263007B848C00C6CE
@@ -1960,7 +2002,7 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
     Left = 32
     Top = 96
     Bitmap = {
-      494C010121002500040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010121002500080010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000CECED6007B8494004A52630031395200313952004A5263007B848C00C6CE

@@ -10,7 +10,7 @@ interface
 
 
 uses
-  TerrainData, PacketHelpers_TerrainData, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions;
+  PacketHelpers_TerrainData, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions;
 
 
 
