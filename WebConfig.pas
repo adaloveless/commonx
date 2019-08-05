@@ -3,7 +3,7 @@ unit WebConfig;
 //This class is responsible for reading and updating configuration values
 //(that pertain to the workstation operation) stored in the workstation's
 //registry and in the workstation's Pathways.INI file.
-xxx
+
 
 
 interface

@@ -75,11 +75,8 @@ type
 
 
     { Public declarations }
-    procedure BeginTransaction;override;
-    procedure Commit;override;
-    procedure Rollback;override;
-    function GetNextID(iKey: integer): int64;override;
-    function SetNextID(iKey: integer; iValue: int64): int64;override;
+
+
     function TryGetNextID(iKey: integer; out res: int64): boolean;
     function TrySetNextID(iKey: integer; value: int64): boolean;
     procedure ReadConfigOld;
@@ -111,6 +108,8 @@ type
     procedure VerifyContext;
     function TableExists(sTable: string): boolean;
     function CopyTable(sSource, sTarget: string): IHolder<TStringList>;
+    function GetNextID(sKey: string): Int64; override;
+    function SetNextID(sKey: string; iValue: Int64): Int64; override;
 
   end;
 
@@ -123,38 +122,12 @@ uses AppLock, debug,  stringx;
 { TMYSQLRDTPDataModule }
 
 
-procedure TMYSQLRDTPDataModule.BeginTransaction;
-begin
-  exit;
-//  td.TransactionID := GetCurrentThreadID;
-//  td.IsolationLevel := xilREADCOMMITTED;
-//  self.query.sql.Text := 'START TRANSACTION;';
-//  self.query.ExecSQL(true);
-//  self.writes.StartTransaction(td);
-  self.writes.ExecuteDirect('START TRANSACTION;');
-  Debug.Log(self,'Transaction Started');
-end;
 
 procedure TMYSQLRDTPDataModule.ChangeSQLConnectionParam(conn: TSQLConnection;
   sParamName, sVAlue: string);
 begin
   RemovePrefixFromStringList(sPAramName,conn.Params);
   conn.params.Add(sParamName+'='+sValue);
-end;
-
-procedure TMYSQLRDTPDataModule.Commit;
-begin
-  exit;
-  if writes.connected and (FWriteQueries > 0) then begin
-    self.writes.ExecuteDirect('COMMIT;');
-//    self.writes.Commit(td);
-    Debug.Log(self,'Transaction Committed');
-  end else begin
-    Debug.Log(self,'No writes to commit');
-  end;
-//  self.query.sql.Text := 'COMMIT;';
-//  self.query.ExecSQL(true);         77
-
 end;
 
 procedure TMYSQLRDTPDataModule.ConfigureFromContext_SE;
@@ -427,24 +400,6 @@ end;
 
 
 
-function TMYSQLRDTPDataModule.GetNextID(iKey: integer): int64;
-var
-  i: integer;
-  b: boolean;
-begin
-  i := 0;
-  repeat
-    inc(i);
-    if i > 100 then
-      raise exception.create('Retry limit exceeded');
-    b := TryGetNextID(iKey, result);
-
-    Debug.Log(self,'['+inttostr(iKey)+']Got key:'+inttostr(result));
-
-    if not b then sleep(200);
-  until b;
-
-end;
 
 
 procedure TMYSQLRDTPDataModule.SetContext(const Value: string);
@@ -454,39 +409,14 @@ begin
 
 end;
 
-function TMYSQLRDTPDataModule.SetNextID(iKey: integer; iValue: int64): int64;
-var
-  i: integer;
-  b: boolean;
+
+
+
+function TMYSQLRDTPDataModule.SetNextID(sKey: string; iValue: Int64): Int64;
 begin
-  i := 0;
-  repeat
-    inc(i);
-    if i > 100 then
-      raise exception.create('Retry limit exceeded');
-    b := TrySetNextID(iKey, iValue);
-    Debug.Log(self,'['+inttostr(iKey)+']Set key:'+inttostr(ivalue));
 
-    result := 1;
-
-    if not b then sleep(200);
-  until b;
-
-end;
-
-
-procedure TMYSQLRDTPDataModule.Rollback;
-begin
-  exit;
-//  self.query.sql.Text := 'ROLLBACK;';
-//  self.query.ExecSQL(true);
-
-  if writes.connected and (FWriteQueries > 0) then
-    self.writes.ExecuteDirect('ROLLBACK;');
-//    self.writes.Rollback(td);
-
-
-  Debug.Log(self,'Transaction ROLLBACK');
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
 end;
 
 procedure TMYSQLRDTPDataModule.ReadConfigOld;
@@ -727,6 +657,7 @@ end;
 constructor TMYSQLRDTPDataModule.create;
 begin
   inherited;
+  raise ENotImplemented.Create('Deprecated in favor of unidac.. else implement BeginTransactionOn...etc');
   writes := TSQLConnection.create(nil);
   sessiondb := TSQLConnection.create(nil);
   reads := TSQLConnection.create(nil);
@@ -1148,6 +1079,13 @@ end;
 
 function TMYSQLRDTPDataModule.ExecuteWrite_Platform(sQuery: string;
   out dataset: TCustomSQLDataset): integer;
+begin
+
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
+end;
+
+function TMYSQLRDTPDataModule.GetNextID(sKey: string): Int64;
 begin
 
   raise ECritical.create('unimplemented');

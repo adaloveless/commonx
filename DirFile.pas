@@ -16,6 +16,7 @@ TAdvancedFileChecksum = packed record
   bytexor: byte;
   bytecount:int64;
   procedure Calculate(sFile: string);
+  class operator equal(a,b: TAdvancedFileChecksum): boolean;
 end;
 
 TFileInformation = class(Tobject)
@@ -343,6 +344,13 @@ begin
   finally
     fs.free;
   end;
+
+end;
+
+class operator TAdvancedFileChecksum.equal(a,
+  b: TAdvancedFileChecksum): boolean;
+begin
+  result := (a.bytesum = b.bytesum) and (a.bytexor = b.bytexor) and (a.bytecount = b.bytecount);
 
 end;
 

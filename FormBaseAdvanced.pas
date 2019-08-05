@@ -2,6 +2,7 @@ unit FormBaseAdvanced;
 
 interface
 {x$DEFINE USE_ANON_THREAD}
+{$DEFINE NEW_COMMAND_FLOW}
 
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, FrameBusyFMX,
@@ -32,8 +33,6 @@ type
     FrefSect: TCLXCriticalsection;
     FRefCount: ni;
     FFreeWithReferences: boolean;
-
-
     function _AddRef: Integer;
     function _RefCount: Integer;
     function _Release: Integer;
@@ -60,6 +59,7 @@ type
   protected
     procedure DoUpdateState;virtual;
   public
+    ActiveCommands: TCommandList<TCommand>;
     detached: boolean;
     fancyAnim: TFramBusyFMX;
     { Public declarations }
@@ -79,6 +79,8 @@ type
     procedure WaitForCommand(c: TCommand; bTakeOwnership: boolean; p: TOnCommandFinished);overload;
     procedure WaitForCommand(c: TCommand; bTakeOwnership: boolean; p: TOnCommandFinishedThen);overload;
 {$ENDIF}
+    procedure WaitforCommandsToComplete;
+    function WatchCommands: boolean;
 
     property ActiveCommand: TCommand read FWaitingOn;
     procedure UpdateState;
@@ -147,6 +149,10 @@ begin
   if Busy.StartAngle>359 then
     Busy.StartAngle:=0;
 
+{$IFDEF NEW_COMMAND_FLOW}
+  WatchCommands;
+
+{$ELSE}
   if FWaitingOn <> nil then begin
 {$IFDEF USE_ANON_THREAD}
     if FWaitingOn.Finished then begin
@@ -175,18 +181,22 @@ begin
       end;
     end;
   end;
+{$ENDIF}
 
 end;
 
 constructor TfrmBaseAdvanced.Create(AOwner: TComponent);
 begin
   ics(Frefsect);
+  ActiveCommands := TCommandList<TCommand>.create;
+  ActiveCommands.RestrictedtoThreadID := Tthread.Currentthread.threadid;
   inherited;
 
 end;
 
 destructor TfrmBaseAdvanced.Destroy;
 begin
+
   if assigned(FWaitingOn) then begin
     if not InBGOp then
       FWaitingOn.WaitFor;
@@ -194,10 +204,15 @@ begin
     FWaitingOn := nil;
   end;
 
+  ActiveCommands.WaitForAll;
+  ActiveCommands.ClearAndDestroyCommands;
+
 //  BGCmd.WaitForAll;
 
   dcs(FRefSect);
   inherited;
+
+  Activecommands.free;
 end;
 
 procedure TfrmBaseAdvanced.Detach;
@@ -363,6 +378,39 @@ begin
 end;
 
 
+procedure TfrmBaseAdvanced.WaitforCommandsToComplete;
+begin
+  while ActiveCommands.count > 0 do begin
+    WaitForCommand(activecommands[0], false);
+    var c := activecommands[0];
+    activecommands.delete(0);
+    c.free;
+    c := nil;
+  end;
+  ToggleBusy(false);
+
+end;
+
+function TfrmBaseAdvanced.WatchCommands: boolean;
+begin
+  if ActiveCommands.count > 0 then begin
+    if activecommands[0].IsComplete then begin
+      WaitForCommand(activecommands[0], false);
+      var c := activecommands[0];
+      activecommands.delete(0);
+      if assigned(FonCommandFinishedThen) then
+        FonCommandFinishedThen(c);
+      if assigned(FonCommandFinish) then
+        FonCommandFinish(c);
+      c.free;
+      c := nil;
+    end;
+  end;
+  result := not (ActiveCommands.count > 0);
+  ToggleBusy(not result);
+
+end;
+
 {$IFDEF USE_ANON_THREAD}
 procedure TfrmBase.WaitForCommand(c: TThread; bTakeOwnership: boolean);
 begin
@@ -373,6 +421,7 @@ end;
 {$ELSE}
 procedure TfrmBaseAdvanced.WaitForCommand(c: TCommand; bTakeOwnership: boolean);
 begin
+  if not ActiveCommands.Has(c) then ActiveCommands.Add(c);
   if c.OwnedByProcessor then
     raise ECritical.create('cannot wait on a free-on-complete command');
   FTakeOwnershipOfbackgroundCommand := btakeOwnership;

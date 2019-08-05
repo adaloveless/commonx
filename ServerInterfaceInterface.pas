@@ -35,8 +35,9 @@ type
     function NoTransUpdateQuery(cache: TDataObjectCache; sQuery: string; iSessionID: integer): boolean;
     function FireForgetQuery(cache: TDataObjectCache; sQuery: string; iSessionID: integer; bSerialize: boolean= false): boolean;
     function RecordQuery(cache: TDataObjectCache; out obj: TDataObject; sQuery: string; iSessionID: integer; bExpectMany: boolean; iTimeoutMS: integer = STANDARD_TIMEOUT): boolean;
-    function GetNextID(iType: integer; iSessionID: integer=0): integer;
-    function SetNextID(iType: integer; iID: int64): boolean;
+    function GetNextID(sType: string): int64;
+    function SetNextID(sType: string; iID: int64): boolean;
+
 
     function Ghost(cache: TDataObjectCache; out obj: TDataObject; sType: string; params: variant; iSessionID: integer): boolean; overload;
     function New(cache: TDataObjectCache; out obj: TDataObject; sType: string; params: variant; iSessionID: integer): boolean; overload;

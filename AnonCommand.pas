@@ -38,6 +38,7 @@ type
     procedure Detach; override;
     property SynchronizeFinish: boolean read FSynchronizeFinish write FSynchronizeFinish;
     property SynchronizeExecute: boolean read FSynchronizeExecute write FSynchronizeExecute;
+    constructor CreateAndTrack(tracker: TCommandList<TCommand>; AThreadFunc: TFunc<T>; AOnFinishedProc: TProc<T>;AOnErrorProc: TProc<Exception>; ACreateSuspended: Boolean = False);virtual;
     constructor Create(AThreadFunc: TFunc<T>; AOnFinishedProc: TProc<T>;AOnErrorProc: TProc<Exception>; ACreateSuspended: Boolean = False;
       FreeOnComplete: Boolean = True);reintroduce;
     destructor Destroy;override;
@@ -155,6 +156,14 @@ begin
     Start;
 end;
 
+
+constructor TAnonymousCommand<T>.CreateAndTrack(tracker: TCommandList<TCommand>;
+  AThreadFunc: TFunc<T>; AOnFinishedProc: TProc<T>;
+  AOnErrorProc: TProc<Exception>; ACreateSuspended: Boolean);
+begin
+  Create(AthreadFunc, AonFinishedProc, AOnErrorProc, ACreateSuspended, false);
+  tracker.Add(self);
+end;
 
 destructor TAnonymousCommand<T>.Destroy;
 begin

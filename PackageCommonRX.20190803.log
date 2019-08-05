@@ -1,0 +1,477 @@
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize TickCount
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering ApplicationParams
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize ApplicationParams
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering unittest
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Deferring initialization of unittest which has dependencies: [betterobject]
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering DestructionQueue
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Deferring initialization of DestructionQueue which has dependencies: [backgroundthreads][managedthread]
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: **DestructionQueue is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering BackgroundThreads
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize BackgroundThreads
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: **DestructionQueue is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering commands_system
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Deferring initialization of commands_system which has dependencies: [commandprocessor]
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: **DestructionQueue is still not initialized
+8/2/2019, 9:36:27 PM: **commands_system is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering CommandProcessor
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Deferring initialization of CommandProcessor which has dependencies: [managedthread]
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: **DestructionQueue is still not initialized
+8/2/2019, 9:36:27 PM: **commands_system is still not initialized
+8/2/2019, 9:36:27 PM: **CommandProcessor is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering ManagedThread
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Deferring initialization of ManagedThread which has dependencies: [systemx][backgroundthreads]
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: **DestructionQueue is still not initialized
+8/2/2019, 9:36:27 PM: **commands_system is still not initialized
+8/2/2019, 9:36:27 PM: **CommandProcessor is still not initialized
+8/2/2019, 9:36:27 PM: **ManagedThread is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering RingStats
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Deferring initialization of RingStats which has dependencies: [managedthread]
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: **DestructionQueue is still not initialized
+8/2/2019, 9:36:27 PM: **commands_system is still not initialized
+8/2/2019, 9:36:27 PM: **CommandProcessor is still not initialized
+8/2/2019, 9:36:27 PM: **ManagedThread is still not initialized
+8/2/2019, 9:36:27 PM: **RingStats is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering commands_file
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Deferring initialization of commands_file which has dependencies: [debug][managedthread]
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: **DestructionQueue is still not initialized
+8/2/2019, 9:36:27 PM: **commands_system is still not initialized
+8/2/2019, 9:36:27 PM: **CommandProcessor is still not initialized
+8/2/2019, 9:36:27 PM: **ManagedThread is still not initialized
+8/2/2019, 9:36:27 PM: **RingStats is still not initialized
+8/2/2019, 9:36:27 PM: **commands_file is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering Dir
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Deferring initialization of Dir which has dependencies: [managedthread]
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: **DestructionQueue is still not initialized
+8/2/2019, 9:36:27 PM: **commands_system is still not initialized
+8/2/2019, 9:36:27 PM: **CommandProcessor is still not initialized
+8/2/2019, 9:36:27 PM: **ManagedThread is still not initialized
+8/2/2019, 9:36:27 PM: **RingStats is still not initialized
+8/2/2019, 9:36:27 PM: **commands_file is still not initialized
+8/2/2019, 9:36:27 PM: **Dir is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering PeriodicEvents
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Deferring initialization of PeriodicEvents which has dependencies: [managedthread][backgroundthreads]
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: **DestructionQueue is still not initialized
+8/2/2019, 9:36:27 PM: **commands_system is still not initialized
+8/2/2019, 9:36:27 PM: **CommandProcessor is still not initialized
+8/2/2019, 9:36:27 PM: **ManagedThread is still not initialized
+8/2/2019, 9:36:27 PM: **RingStats is still not initialized
+8/2/2019, 9:36:27 PM: **commands_file is still not initialized
+8/2/2019, 9:36:27 PM: **Dir is still not initialized
+8/2/2019, 9:36:27 PM: **PeriodicEvents is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering SharedObject
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize SharedObject
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: **DestructionQueue is still not initialized
+8/2/2019, 9:36:27 PM: **commands_system is still not initialized
+8/2/2019, 9:36:27 PM: **CommandProcessor is still not initialized
+8/2/2019, 9:36:27 PM: **ManagedThread is still not initialized
+8/2/2019, 9:36:27 PM: **RingStats is still not initialized
+8/2/2019, 9:36:27 PM: **commands_file is still not initialized
+8/2/2019, 9:36:27 PM: **Dir is still not initialized
+8/2/2019, 9:36:27 PM: **PeriodicEvents is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering Debug
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize Debug
+8/2/2019, 9:36:27 PM: ***********************************************************************************
+8/2/2019, 9:36:27 PM: ****                           APPLICATION STARTUP                             ****
+8/2/2019, 9:36:27 PM: ***********************************************************************************
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: **DestructionQueue is still not initialized
+8/2/2019, 9:36:27 PM: **commands_system is still not initialized
+8/2/2019, 9:36:27 PM: **CommandProcessor is still not initialized
+8/2/2019, 9:36:27 PM: **ManagedThread is still not initialized
+8/2/2019, 9:36:27 PM: **RingStats is still not initialized
+8/2/2019, 9:36:27 PM: **commands_file is still not initialized
+8/2/2019, 9:36:27 PM: **Dir is still not initialized
+8/2/2019, 9:36:27 PM: **PeriodicEvents is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering systemx
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize systemx
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize ManagedThread
+8/2/2019, 9:36:27 PM: TMAsterThreadPool@276F7450: Master Thread Pool Created
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize DestructionQueue
+8/2/2019, 9:36:27 PM: TThreadPoolBase@2B05C4D0: Thread Creation time: 0
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize CommandProcessor
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize commands_system
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize RingStats
+8/2/2019, 9:36:27 PM: TThreadPoolBase@2B05A248: Thread Creation time: 1
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize commands_file
+8/2/2019, 9:36:27 PM: TThreadPoolBase@2B05D900: Thread Creation time: 0
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize Dir
+8/2/2019, 9:36:27 PM: TThreadPoolBase@2B05D900: Thread Creation time: 0
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize PeriodicEvents
+8/2/2019, 9:36:27 PM: TThreadPoolBase@08ABC3B8: Thread Creation time: 0
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering betterobjectregistry
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize betterobjectregistry
+8/2/2019, 9:36:27 PM: **unittest is still not initialized
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering betterobject
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize betterobject
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize unittest
+8/2/2019, 9:36:27 PM: TThreadPoolBase@08ABBB38: Thread Creation time: 0
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering exe
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize exe
+8/2/2019, 9:36:27 PM: TThreadPoolBase@08ABBB38: Thread Creation time: 0
+8/2/2019, 9:36:27 PM: TThreadPoolBase@2B05D900: Thread Creation time: 0
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering fftw_interface
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize fftw_interface
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: TThreadPoolBase@08ABBB38: Thread Creation time: 0
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering EasyImage
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize EasyImage
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering virtualdiskconstants
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize virtualdiskconstants
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering raid
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize raid
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering ConsoleLock
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize ConsoleLock
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering Fiber
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize Fiber
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering better_indy
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize better_indy
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering SimpleReliableUDP
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize SimpleReliableUDP
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering RUDPMonitor
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize RUDPMonitor
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Registering ProgressForm
+8/2/2019, 9:36:27 PM: PackageCommonRX.bpl: Initialize ProgressForm
+8/2/2019, 9:36:27 PM: TOrderlyInitializer@24F63CA0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering TickCount
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize TickCount
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering ApplicationParams
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize ApplicationParams
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering unittest
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Deferring initialization of unittest which has dependencies: [betterobject]
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering DestructionQueue
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Deferring initialization of DestructionQueue which has dependencies: [backgroundthreads][managedthread]
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: **DestructionQueue is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering BackgroundThreads
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize BackgroundThreads
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: **DestructionQueue is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering commands_system
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Deferring initialization of commands_system which has dependencies: [commandprocessor]
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: **DestructionQueue is still not initialized
+8/3/2019, 10:31:59 AM: **commands_system is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering CommandProcessor
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Deferring initialization of CommandProcessor which has dependencies: [managedthread]
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: **DestructionQueue is still not initialized
+8/3/2019, 10:31:59 AM: **commands_system is still not initialized
+8/3/2019, 10:31:59 AM: **CommandProcessor is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering ManagedThread
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Deferring initialization of ManagedThread which has dependencies: [systemx][backgroundthreads]
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: **DestructionQueue is still not initialized
+8/3/2019, 10:31:59 AM: **commands_system is still not initialized
+8/3/2019, 10:31:59 AM: **CommandProcessor is still not initialized
+8/3/2019, 10:31:59 AM: **ManagedThread is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering RingStats
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Deferring initialization of RingStats which has dependencies: [managedthread]
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: **DestructionQueue is still not initialized
+8/3/2019, 10:31:59 AM: **commands_system is still not initialized
+8/3/2019, 10:31:59 AM: **CommandProcessor is still not initialized
+8/3/2019, 10:31:59 AM: **ManagedThread is still not initialized
+8/3/2019, 10:31:59 AM: **RingStats is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering commands_file
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Deferring initialization of commands_file which has dependencies: [debug][managedthread]
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: **DestructionQueue is still not initialized
+8/3/2019, 10:31:59 AM: **commands_system is still not initialized
+8/3/2019, 10:31:59 AM: **CommandProcessor is still not initialized
+8/3/2019, 10:31:59 AM: **ManagedThread is still not initialized
+8/3/2019, 10:31:59 AM: **RingStats is still not initialized
+8/3/2019, 10:31:59 AM: **commands_file is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering Dir
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Deferring initialization of Dir which has dependencies: [managedthread]
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: **DestructionQueue is still not initialized
+8/3/2019, 10:31:59 AM: **commands_system is still not initialized
+8/3/2019, 10:31:59 AM: **CommandProcessor is still not initialized
+8/3/2019, 10:31:59 AM: **ManagedThread is still not initialized
+8/3/2019, 10:31:59 AM: **RingStats is still not initialized
+8/3/2019, 10:31:59 AM: **commands_file is still not initialized
+8/3/2019, 10:31:59 AM: **Dir is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering PeriodicEvents
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Deferring initialization of PeriodicEvents which has dependencies: [managedthread][backgroundthreads]
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: **DestructionQueue is still not initialized
+8/3/2019, 10:31:59 AM: **commands_system is still not initialized
+8/3/2019, 10:31:59 AM: **CommandProcessor is still not initialized
+8/3/2019, 10:31:59 AM: **ManagedThread is still not initialized
+8/3/2019, 10:31:59 AM: **RingStats is still not initialized
+8/3/2019, 10:31:59 AM: **commands_file is still not initialized
+8/3/2019, 10:31:59 AM: **Dir is still not initialized
+8/3/2019, 10:31:59 AM: **PeriodicEvents is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering SharedObject
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize SharedObject
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: **DestructionQueue is still not initialized
+8/3/2019, 10:31:59 AM: **commands_system is still not initialized
+8/3/2019, 10:31:59 AM: **CommandProcessor is still not initialized
+8/3/2019, 10:31:59 AM: **ManagedThread is still not initialized
+8/3/2019, 10:31:59 AM: **RingStats is still not initialized
+8/3/2019, 10:31:59 AM: **commands_file is still not initialized
+8/3/2019, 10:31:59 AM: **Dir is still not initialized
+8/3/2019, 10:31:59 AM: **PeriodicEvents is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering Debug
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize Debug
+8/3/2019, 10:31:59 AM: ***********************************************************************************
+8/3/2019, 10:31:59 AM: ****                           APPLICATION STARTUP                             ****
+8/3/2019, 10:31:59 AM: ***********************************************************************************
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: **DestructionQueue is still not initialized
+8/3/2019, 10:31:59 AM: **commands_system is still not initialized
+8/3/2019, 10:31:59 AM: **CommandProcessor is still not initialized
+8/3/2019, 10:31:59 AM: **ManagedThread is still not initialized
+8/3/2019, 10:31:59 AM: **RingStats is still not initialized
+8/3/2019, 10:31:59 AM: **commands_file is still not initialized
+8/3/2019, 10:31:59 AM: **Dir is still not initialized
+8/3/2019, 10:31:59 AM: **PeriodicEvents is still not initialized
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering systemx
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize systemx
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize ManagedThread
+8/3/2019, 10:31:59 AM: TMAsterThreadPool@26BA8C20: Master Thread Pool Created
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize DestructionQueue
+8/3/2019, 10:31:59 AM: TThreadPoolBase@2A4FE278: Thread Creation time: 0
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize CommandProcessor
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize commands_system
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize RingStats
+8/3/2019, 10:31:59 AM: TThreadPoolBase@2A4FE388: Thread Creation time: 0
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize commands_file
+8/3/2019, 10:31:59 AM: TThreadPoolBase@2A4FE300: Thread Creation time: 0
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize Dir
+8/3/2019, 10:31:59 AM: TThreadPoolBase@2A4FE300: Thread Creation time: 0
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize PeriodicEvents
+8/3/2019, 10:31:59 AM: TThreadPoolBase@2A4FE410: Thread Creation time: 0
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: TThreadPoolBase@2A4FE498: Thread Creation time: 0
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering betterobjectregistry
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize betterobjectregistry
+8/3/2019, 10:31:59 AM: **unittest is still not initialized
+8/3/2019, 10:31:59 AM: TThreadPoolBase@2A4FE498: Thread Creation time: 0
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering betterobject
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize betterobject
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize unittest
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering exe
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize exe
+8/3/2019, 10:31:59 AM: TThreadPoolBase@2A4FE300: Thread Creation time: 0
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering fftw_interface
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize fftw_interface
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: TThreadPoolBase@2A4FE498: Thread Creation time: 0
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering EasyImage
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize EasyImage
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering virtualdiskconstants
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize virtualdiskconstants
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering raid
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize raid
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering ConsoleLock
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize ConsoleLock
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering Fiber
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize Fiber
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering better_indy
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize better_indy
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering SimpleReliableUDP
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize SimpleReliableUDP
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering RUDPMonitor
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize RUDPMonitor
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Registering ProgressForm
+8/3/2019, 10:31:59 AM: PackageCommonRX.bpl: Initialize ProgressForm
+8/3/2019, 10:31:59 AM: TOrderlyInitializer@26BF0F30: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering TickCount
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize TickCount
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering ApplicationParams
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize ApplicationParams
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering unittest
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Deferring initialization of unittest which has dependencies: [betterobject]
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering DestructionQueue
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Deferring initialization of DestructionQueue which has dependencies: [backgroundthreads][managedthread]
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: **DestructionQueue is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering BackgroundThreads
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize BackgroundThreads
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: **DestructionQueue is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering commands_system
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Deferring initialization of commands_system which has dependencies: [commandprocessor]
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: **DestructionQueue is still not initialized
+8/3/2019, 7:33:25 PM: **commands_system is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering CommandProcessor
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Deferring initialization of CommandProcessor which has dependencies: [managedthread]
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: **DestructionQueue is still not initialized
+8/3/2019, 7:33:25 PM: **commands_system is still not initialized
+8/3/2019, 7:33:25 PM: **CommandProcessor is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering ManagedThread
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Deferring initialization of ManagedThread which has dependencies: [systemx][backgroundthreads]
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: **DestructionQueue is still not initialized
+8/3/2019, 7:33:25 PM: **commands_system is still not initialized
+8/3/2019, 7:33:25 PM: **CommandProcessor is still not initialized
+8/3/2019, 7:33:25 PM: **ManagedThread is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering RingStats
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Deferring initialization of RingStats which has dependencies: [managedthread]
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: **DestructionQueue is still not initialized
+8/3/2019, 7:33:25 PM: **commands_system is still not initialized
+8/3/2019, 7:33:25 PM: **CommandProcessor is still not initialized
+8/3/2019, 7:33:25 PM: **ManagedThread is still not initialized
+8/3/2019, 7:33:25 PM: **RingStats is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering commands_file
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Deferring initialization of commands_file which has dependencies: [debug][managedthread]
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: **DestructionQueue is still not initialized
+8/3/2019, 7:33:25 PM: **commands_system is still not initialized
+8/3/2019, 7:33:25 PM: **CommandProcessor is still not initialized
+8/3/2019, 7:33:25 PM: **ManagedThread is still not initialized
+8/3/2019, 7:33:25 PM: **RingStats is still not initialized
+8/3/2019, 7:33:25 PM: **commands_file is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering Dir
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Deferring initialization of Dir which has dependencies: [managedthread]
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: **DestructionQueue is still not initialized
+8/3/2019, 7:33:25 PM: **commands_system is still not initialized
+8/3/2019, 7:33:25 PM: **CommandProcessor is still not initialized
+8/3/2019, 7:33:25 PM: **ManagedThread is still not initialized
+8/3/2019, 7:33:25 PM: **RingStats is still not initialized
+8/3/2019, 7:33:25 PM: **commands_file is still not initialized
+8/3/2019, 7:33:25 PM: **Dir is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering PeriodicEvents
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Deferring initialization of PeriodicEvents which has dependencies: [managedthread][backgroundthreads]
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: **DestructionQueue is still not initialized
+8/3/2019, 7:33:25 PM: **commands_system is still not initialized
+8/3/2019, 7:33:25 PM: **CommandProcessor is still not initialized
+8/3/2019, 7:33:25 PM: **ManagedThread is still not initialized
+8/3/2019, 7:33:25 PM: **RingStats is still not initialized
+8/3/2019, 7:33:25 PM: **commands_file is still not initialized
+8/3/2019, 7:33:25 PM: **Dir is still not initialized
+8/3/2019, 7:33:25 PM: **PeriodicEvents is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering SharedObject
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize SharedObject
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: **DestructionQueue is still not initialized
+8/3/2019, 7:33:25 PM: **commands_system is still not initialized
+8/3/2019, 7:33:25 PM: **CommandProcessor is still not initialized
+8/3/2019, 7:33:25 PM: **ManagedThread is still not initialized
+8/3/2019, 7:33:25 PM: **RingStats is still not initialized
+8/3/2019, 7:33:25 PM: **commands_file is still not initialized
+8/3/2019, 7:33:25 PM: **Dir is still not initialized
+8/3/2019, 7:33:25 PM: **PeriodicEvents is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering Debug
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize Debug
+8/3/2019, 7:33:25 PM: ***********************************************************************************
+8/3/2019, 7:33:25 PM: ****                           APPLICATION STARTUP                             ****
+8/3/2019, 7:33:25 PM: ***********************************************************************************
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: **DestructionQueue is still not initialized
+8/3/2019, 7:33:25 PM: **commands_system is still not initialized
+8/3/2019, 7:33:25 PM: **CommandProcessor is still not initialized
+8/3/2019, 7:33:25 PM: **ManagedThread is still not initialized
+8/3/2019, 7:33:25 PM: **RingStats is still not initialized
+8/3/2019, 7:33:25 PM: **commands_file is still not initialized
+8/3/2019, 7:33:25 PM: **Dir is still not initialized
+8/3/2019, 7:33:25 PM: **PeriodicEvents is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering systemx
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize systemx
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize ManagedThread
+8/3/2019, 7:33:25 PM: TMAsterThreadPool@27E022B0: Master Thread Pool Created
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize DestructionQueue
+8/3/2019, 7:33:25 PM: TThreadPoolBase@2B82BA70: Thread Creation time: 0
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize CommandProcessor
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize commands_system
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize RingStats
+8/3/2019, 7:33:25 PM: TThreadPoolBase@2B82CC80: Thread Creation time: 0
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize commands_file
+8/3/2019, 7:33:25 PM: TThreadPoolBase@2B82EAC8: Thread Creation time: 1
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize Dir
+8/3/2019, 7:33:25 PM: TThreadPoolBase@2B82EAC8: Thread Creation time: 0
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize PeriodicEvents
+8/3/2019, 7:33:25 PM: TThreadPoolBase@2B82BC90: Thread Creation time: 0
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering betterobjectregistry
+8/3/2019, 7:33:25 PM: TThreadPoolBase@2B82BB80: Thread Creation time: 0
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize betterobjectregistry
+8/3/2019, 7:33:25 PM: **unittest is still not initialized
+8/3/2019, 7:33:25 PM: TThreadPoolBase@2B82BB80: Thread Creation time: 0
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering betterobject
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize betterobject
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize unittest
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering exe
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize exe
+8/3/2019, 7:33:25 PM: TThreadPoolBase@2B82EAC8: Thread Creation time: 0
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering fftw_interface
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize fftw_interface
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: TThreadPoolBase@2B82BB80: Thread Creation time: 0
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering EasyImage
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize EasyImage
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering virtualdiskconstants
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize virtualdiskconstants
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering raid
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize raid
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering ConsoleLock
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize ConsoleLock
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering Fiber
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize Fiber
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering better_indy
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize better_indy
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering SimpleReliableUDP
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize SimpleReliableUDP
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering RUDPMonitor
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize RUDPMonitor
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Registering ProgressForm
+8/3/2019, 7:33:25 PM: PackageCommonRX.bpl: Initialize ProgressForm
+8/3/2019, 7:33:25 PM: TOrderlyInitializer@27E37CF0: OrderlyInit.INITIALIZED!************************
+8/3/2019, 8:08:37 PM: PackageCommonRX.bpl: Registering TickCount

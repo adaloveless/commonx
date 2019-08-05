@@ -17,7 +17,6 @@ type
   public
 
     cli: TRDTPSQLConnectionClient;
-    kb: TKeybotClient;
     tmLAstReadyCheck: ticker;
     procedure Init;override;
     destructor Destroy;override;
@@ -48,11 +47,14 @@ type
     function FunctionQuery(sQuery: string; rDefault: double): double;overload;override;
     function FunctionQuery(sQuery: string; sDefault: string): string;overload;override;
     procedure CleanupClient;
+    function GetNextID(sType: string): Int64; override;
+    function SetNextID(sType: string; id: Int64): Boolean; override;
     property UseTCP: boolean read FUseTCP write FuseTCP;
     property UseTor: boolean read FUseTor write FuseTor;
     function Connected: boolean;override;
     property Context: string read Getcontext write Setcontext;
     procedure CheckConnectedOrConnect;
+
   end;
 
 
@@ -97,9 +99,6 @@ begin
     cli.free;
   cli := nil;
 
-  if assigned(kb) then
-    kb.free;
-  kb := nil;
 end;
 
 procedure Trdtpdb.Connect;
@@ -115,24 +114,17 @@ begin
   cli.UseTCP := self.UseTCP;
   cli.UseTor := self.UseTor;
 
-  kb := TKeybotClient.create(MWHost, MWEndpoint);
-  kb.UseTCP := self.UseTCP;
-  kb.UseTor := self.UseTor;
-
   if context <> '' then begin
     splitstringnocase(context, ';db=', sl,sr);
     splitstringnocase(sr, ';', sl,sr);
-    kb.Context := sl;
     cli.context := context;
   end else begin
 {$IFNDEF CONTEXT_ONLY}
-    kb.Context := database;
     cli.Context :='simple;db='+Database+';host='+DBHost+';user='+DBUSER+';pass='+DBPassword+';port='+DBPort+';';
 {$ENDIF}
   end;
 
   cli.timeout := 3000000;
-  kb.Timeout := 300000;
 
 
 
@@ -307,6 +299,11 @@ begin
   result := FContext;
 end;
 
+function Trdtpdb.GetNextID(sType: string): Int64;
+begin
+  Result := cli.GetNextId(sType);
+end;
+
 function Trdtpdb.FunctionQuery(sQuery: string; rDefault: double): double;
 begin
   FunctionQueryDouble_Begin(sQuery);
@@ -429,6 +426,12 @@ end;
 procedure Trdtpdb.Setcontext(Value: string);
 begin
   Fcontext := value;
+end;
+
+function Trdtpdb.SetNextID(sType: string; id: Int64): Boolean;
+begin
+  cli.SetNextId(sType, id);
+  result := true;
 end;
 
 procedure Trdtpdb.Writebehind(sQuery: string; bDontLog: boolean = false);

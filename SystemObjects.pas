@@ -114,7 +114,7 @@ end;
 
 function TdoSession.DoNew(iSessionID: integer): boolean;
 begin
-  token.params[0] :=   IServerInterface(TDataObjectCache(self.cache).server).GetNextID(CKEY_NEW_SESSION, iSessionID);
+  token.params[0] :=   IServerInterface(TDataObjectCache(self.cache).server).GetNextID('sessionid');
   result := true;
 end;
 
@@ -210,7 +210,7 @@ end;
 
 function TdoUser.DoNew(iSessionID: integer): boolean;
 begin
-  token.params[0] := IServerInterface(TDataObjectCache(self.cache).server).GetNextID(CKEY_NEW_USER, iSessionID);
+  token.params[0] := IServerInterface(TDataObjectCache(self.cache).server).GetNextID('userid');
   result := true;
 
 end;
@@ -296,7 +296,7 @@ end;
 
 function TdoMail.DoNew(iSessionID: integer): boolean;
 begin
-  token.params[0] := IServerInterface(TDataObjectCache(self.cache).server).GetNextID(CKEY_NEW_MAIL, iSessionID);
+  token.params[0] := IServerInterface(TDataObjectCache(self.cache).server).GetNextID('mailid');
   result := true;
 
 end;

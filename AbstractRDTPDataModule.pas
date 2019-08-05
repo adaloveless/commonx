@@ -10,6 +10,9 @@ uses
 const
   DB_CONNECTION_TIMEOUT: cardinal = 300000;
   MAX_DM_AGE = 300000;
+  SQL_CHANNEL_READ = 0;
+  SQL_CHANNEL_WRITE = 1;
+  SQL_CHANNEL_SYSTEM = 2;
 
 type
   TSQLChannel = (sqlRead, sqlWrite, sqlSystem);
@@ -19,6 +22,15 @@ type
 
   TDataClass = class of TObject;
   TAbstractRDTPDataModuleClass = class of TAbstractRDTPDataModule;//forward
+
+  TSQLChannelStats = record
+    WriteQueries: int64;
+    ReadQueries: int64;
+    InTransaction: boolean;
+    procedure Init;
+  end;
+
+  PSQLChannelStats = ^TSQLChannelStats;
 
   TDataPool = class(TSharedObject)
   private
@@ -65,16 +77,16 @@ type
     FCreationTime: cardinal;
     procedure SetConfigFromLocalFile(const Value: boolean);
   protected
+      FChannelStats: array[0..2] of TSQLChannelStats;
     cmd: TCommand;
     Fet: TRDTpExecutionThread;
     FProg: TRDTPProgressEvent;
     FContext: string;
     FConfigFromLocalFile: boolean;
+    function GetChannelStats(ch: TSQLChannel): PSQLChannelStats;
     procedure WaitForCommands;
     function GetExecutionThread: TRDTPExecutionThread;
     procedure DataModuleCreate(Sender: TObject);
-    function TryGetNextID(iKey: integer; out res: int64): boolean;
-    function TrySetNextID(iKey: integer; value: int64): boolean;
     procedure Execute(sQuery:string; connection: TSQLConnection; ds: TCustomSQLDataset);
     procedure ExecuteDirect(sQuery: string; connection: TSQLConnection);
     procedure SetProgress(const Value: TRDTPProgressEvent);virtual;
@@ -84,12 +96,18 @@ type
     constructor create;overload;override;
     constructor create2(sContext: string);overload;virtual;
     destructor destroy;override;
-    procedure BeginTransaction;virtual;
-    procedure Commit;virtual;
-    procedure Rollback;virtual;
+    procedure BeginTransaction;
+    procedure Commit;
+    procedure Rollback;
+    procedure BeginTransactionOn(ch: TSQLChannel);virtual;abstract;
+    procedure CommitOn(ch: TSQLChannel);virtual;abstract;
+    procedure RollbackOn(ch: TSQLChannel);virtual;abstract;
+    procedure WriteOn(ch: TSQLChannel; sQuery: string);virtual;abstract;
+    function ReadOn(ch: TSQLChannel; sQuery: string): TSERowSEt;virtual;abstract;
 
-    function GetNextID(iKey: integer): int64;virtual;
-    function SetNextID(iKey: integer; iValue: int64): int64;virtual;
+    function GetNextID(sKey: string): int64;virtual;abstract;
+    function GetNextIDEx(sKey: string; sTable, sField: string): int64;virtual;abstract;
+    function SetNextID(sKey: string; iValue: int64): int64;virtual;abstract;
 
     //RETURNS IHolder<TSERowSet>
     function ReadQuery(sQuery: string): IHolder<TSERowset>;
@@ -157,9 +175,10 @@ uses DatabaseDictionary, Exceptions, beeper;
 
 procedure TAbstractRDTPDataModule.BeginTransaction;
 begin
+  BeginTransactionOn(TSQLChannel.sqlWrite);
 
-//TODO -cunimplemented: unimplemented block
 end;
+
 
 procedure TAbstractRDTPDataModule.CheckContextSet;
 begin
@@ -169,10 +188,8 @@ end;
 
 procedure TAbstractRDTPDataModule.Commit;
 begin
-
-//TODO -cunimplemented: unimplemented block
+  CommitOn(TSQLChannel.sqlWrite);
 end;
-
 
 
 
@@ -325,11 +342,6 @@ begin
   result := Fet;
 end;
 
-function TAbstractRDTPDataModule.GetNextID(iKey: integer): int64;
-begin
-  result := 0;
-end;
-
 
 function TAbstractRDTPDataModule.IsExpired: boolean;
 begin
@@ -337,6 +349,7 @@ begin
 
 
 end;
+
 
 function TAbstractRDTPDataModule.ReadQuery(sQuery: string): IHolder<TSERowset>;
 var
@@ -354,9 +367,9 @@ end;
 
 procedure TAbstractRDTPDataModule.Rollback;
 begin
-
-//TODO -cunimplemented: unimplemented block
+  RollbackOn(TSQLChannel.sqlWrite);
 end;
+
 
 procedure TAbstractRDTPDataModule.SetConfigFromLocalFile(const Value: boolean);
 begin
@@ -369,10 +382,6 @@ begin
   ConfigureFromContext;
 end;
 
-function TAbstractRDTPDataModule.SetNextID(iKey: integer; iValue: int64): int64;
-begin
-  result := 0;
-end;
 
 procedure TAbstractRDTPDataModule.SetProgress(const Value: TRDTPProgressEvent);
 begin
@@ -392,21 +401,6 @@ begin
   end;
 end;
 
-function TAbstractRDTPDataModule.TryGetNextID(iKey: integer;
-  out res: int64): boolean;
-begin
-
-//TODO -cunimplemented: unimplemented block
-  raise Exception.create('not implemented');
-end;
-
-function TAbstractRDTPDataModule.TrySetNextID(iKey: integer;
-  value: int64): boolean;
-begin
-
-//TODO -cunimplemented: unimplemented block
-  raise Exception.create('not implemented');
-end;
 
 procedure TAbstractRDTPDataModule.WaitForCommands;
 begin
@@ -446,6 +440,11 @@ begin
   finally
     Unlock;
   end;
+end;
+
+function TAbstractRDTPDataModule.GetChannelStats(ch: TSQLChannel): PSQLChannelStats;
+begin
+  result := @FChannelStats[ord(ch)];
 end;
 
 function TDataPool.GetClassToCreate: TRDTPDataMOduleClass;
@@ -711,6 +710,15 @@ procedure Tcmd_DBWriteBehind.InitExpense;
 begin
   inherited;
   CPuExpense := 0.0;
+end;
+
+{ TSQLChannelStats }
+
+procedure TSQLChannelStats.Init;
+begin
+  Writequeries := 0;
+  ReadQueries := 0;
+  InTransaction := false;
 end;
 
 initialization

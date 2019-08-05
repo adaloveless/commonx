@@ -182,6 +182,8 @@ type
     function ToMSSQLValues: string;
     property CurrentRecordIndex: nativeint read FCursor write FCursor;//alias
     function GetFieldList: IHolder<TStringlist>;
+    function GetValueArray(fields: TDynStringArray): TDynVariantArray;
+    function GetValueStringArray(fields: TDynStringArray): TDynStringArray;
 
 
   end;
@@ -982,6 +984,16 @@ begin
   result := length(FRowset);
 end;
 
+function TSERowSet.GetValueArray(fields: TDynStringArray): TDynVariantArray;
+var
+  t: ni;
+begin
+  setlength(result, length(fields));
+  for t:= 0 to high(fields) do begin
+    result[t] := self[fields[t]];
+  end;
+end;
+
 function TSERowSet.GetValues(x, y: integer): variant;
 var
   iRow: integer;
@@ -991,6 +1003,17 @@ begin
     SetLength(FRowset[iRow], fieldcount);
 
   result := FRowset[iRow][x];
+end;
+
+function TSERowSet.GetValueStringArray(
+  fields: TDynStringArray): TDynStringArray;
+var
+  t: ni;
+begin
+  setlength(result, length(fields));
+  for t:= 0 to high(fields) do begin
+    result[t] := self[fields[t]];
+  end;
 end;
 
 function TSERowSet.IndexCount: integer;
@@ -1285,6 +1308,7 @@ function TSERowSet.RowToMYSQLValues(r: TSERow): string;
 var
   t: ni;
   cell: TSECell;
+  fdef: PSERowsetFieldDef;
 begin
   result := '(';
   for t:= 0 to high(r) do begin
@@ -1295,10 +1319,22 @@ begin
         cell := StringReplace(cell, 'â„¢', '™', [rfReplaceAll]);
       end;
     end;
+
     if t > 0 then
       result := result + ',';
 
-    result := result + gvs(cell);
+    fdef := FieldDefs[t];
+    case fdef.vType of
+      ftDate, ftDateTime: begin
+        result := result + gss(varDate, cell);
+      end;
+    else
+      result := result + gvs(cell);
+    end;
+
+
+
+
 
 
   end;

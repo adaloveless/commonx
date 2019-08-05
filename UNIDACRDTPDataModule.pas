@@ -19,7 +19,6 @@ type
   TUniDACRDTPDataModule = class(TAbstractRDTPDataModule)
   private
     { Private declarations }
-    FWriteQueries: integer;
     FContextVerified: boolean;
     FHost: string;
     FID: string;
@@ -38,6 +37,8 @@ type
     procedure ConnectRead;override;
     procedure ConnectWrite;override;
     procedure ConnectSystem;override;
+    function GetChannelObject(ch: TSQLChannel): TUniConnection;
+
 
   public
 
@@ -45,6 +46,7 @@ type
     sessiondb: TUniConnection;
     reads: TUniConnection;
     keybot_link: TBetterTcpClient;
+    dbtype: string;
 
     constructor create;override;
     destructor destroy;override;
@@ -52,11 +54,10 @@ type
 
 
     { Public declarations }
-    procedure BeginTransaction;override;
-    procedure Commit;override;
-    procedure Rollback;override;
-    function GetNextID(iKey: integer): int64;override;
-    function SetNextID(iKey: integer; iValue: int64): int64;override;
+
+    function GetNextID(sKey: string): int64;override;
+    function GetNextIDEx(sKey: string; sTable, sField: string): int64;override;
+    function SetNextID(sKey: string; iValue: int64): int64;override;
 
     procedure IncWrite;
     procedure ChangeUniConnectionParam(conn: TUniConnection; sParamName: string; sVAlue: string);
@@ -75,10 +76,16 @@ type
     procedure VerifyContext;
     function TableExists(sTable: string): boolean;
     function CopyTable(sSource, sTarget: string): IHolder<TStringList>;
+    procedure BeginTransactionOn(ch: TSQLChannel); override;
+    procedure CommitOn(ch: TSQLChannel); override;
+    procedure RollbackOn(ch: TSQLChannel); override;
+    procedure WriteOn(ch: TSQLChannel; sQuery: string); override;
+    function ReadOn(ch: TSQLChannel; sQuery: string): TSERowSet; override;
+    function IsMYSQL: boolean;
 
   end;
 
-procedure UniSetToRowSet(rs: TSERowset; ds: TCustomDADataset; bAppend: boolean = false);
+procedure UniSetToRowSet(var rs: TSERowset; ds: TCustomDADataset; bAppend: boolean = false);
 
 
 
@@ -86,13 +93,16 @@ implementation
 
 uses AppLock, debug,  stringx;
 
-procedure UniSetToRowSet(rs: TSERowset; ds: TCustomDaDataset; bAppend: boolean = false);
+procedure UniSetToRowSet(var rs: TSERowset; ds: TCustomDaDataset; bAppend: boolean = false);
 var
   t, i,u: integer;
   s: string;
   u8: utf8string;
   c: array of char;
 begin
+  if rs = nil then
+    rs := TSERowSet.Create;
+
   ds.first;
   i := 0;
   if not bAppend then begin
@@ -150,16 +160,22 @@ begin
   end;
 end;
 
-procedure TUniDACRDTPDataModule.BeginTransaction;
+procedure TUniDACRDTPDataModule.BeginTransactionOn(ch: TSQLChannel);
+var
+  conn: TUniConnection;
+  stats: PSQlChannelStats;
 begin
-  exit;
-//  td.TransactionID := GetCurrentThreadID;
-//  td.IsolationLevel := xilREADCOMMITTED;
-//  self.query.sql.Text := 'START TRANSACTION;';
-//  self.query.ExecSQL(true);
-//  self.writes.StartTransaction(td);
-  self.writes.StartTransaction;
-  Debug.Log(self,'Transaction Started');
+  conn := GetChannelObject(ch);
+  conn.Connect;
+  stats := GetChannelStats(ch);
+  if not stats.InTransaction then begin
+    stats.Init;
+    stats.InTransaction := true;
+    conn.StartTransaction;
+    Debug.Log(self,'Transaction Started');
+  end else
+    Debug.Log(self,'Already in Transaction');
+
 end;
 
 procedure TUniDACRDTPDataModule.ChangeUniConnectionParam(conn: TUniConnection;
@@ -170,18 +186,28 @@ begin
 //  conn.params.Add(sParamName+'='+sValue);
 end;
 
-procedure TUniDACRDTPDataModule.Commit;
+procedure TUniDACRDTPDataModule.CommitOn(ch: TSQLChannel);
+var
+  conn: TUniConnection;
+  stats: PSQlChannelStats;
 begin
-  exit;
-  if writes.connected and (FWriteQueries > 0) then begin
-    self.writes.Commit;
-//    self.writes.Commit(td);
-    Debug.Log(self,'Transaction Committed');
-  end else begin
-    Debug.Log(self,'No writes to commit');
+  conn := GetChannelObject(ch);
+  conn.Connect;
+  stats := GetChannelStats(ch);
+
+
+
+  if conn.connected and (stats.InTransaction) then begin
+    if stats.WriteQueries > 0 then begin
+      conn.Commit;
+      stats.init;
+      Debug.Log(self,'Transaction Committed');
+    end else begin
+//      conn.Rollback;
+      stats.init;
+      Debug.Log(self,'No writes to commit');
+    end;
   end;
-//  self.query.sql.Text := 'COMMIT;';
-//  self.query.ExecSQL(true);         77
 
 end;
 
@@ -227,6 +253,7 @@ begin
 
     nvp.loadFromString(h.o.Text);
     var prov := nvp.GetItemEx('Provider','MySQL');
+    dbtype := prov;
     applyAll('Provider Name', prov);
     if comparetext(prov, 'mysql') = 0 then begin
       applyAll('Database', nvp.GetItemEx('db',''));
@@ -299,25 +326,96 @@ end;
 
 
 
-function TUniDACRDTPDataModule.GetNextID(iKey: integer): int64;
-var
-  i: integer;
-  b: boolean;
+function TUniDACRDTPDataModule.GetChannelObject(
+  ch: TSQLChannel): TUniConnection;
 begin
-  i := 0;
-  repeat
-    inc(i);
-    if i > 100 then
-      raise exception.create('Retry limit exceeded');
-    b := TryGetNextID(iKey, result);
+  case ch of
+    sqlRead: exit(reads);
+    sqlWrite: exit(writes);
+    sqlSystem: exit(sessiondb);
+  end;
+end;
 
-    Debug.Log(self,'['+inttostr(iKey)+']Got key:'+inttostr(result));
 
-    if not b then sleep(200);
-  until b;
+
+
+function TUniDACRDTPDataModule.GetNextID(sKey: string): int64;
+var
+  rs: TSERowSet;
+begin
+  result := -1;
+
+    BeginTransactionOn(sqlSYstem);
+    try
+      if IsMySQL then begin
+        self.WriteOn(sqlSystem,
+          '	create table if not exists nextid '+CRLF+
+          '	(keyname char(50) PRIMARY KEY, '+CRLF+
+          '	ID bigint);'
+        );
+      end else begin
+        self.WriteOn(sqlSystem,
+          'if not exists (select * from sysobjects where name=''nextid'' and xtype=''U'') '+CRLF+
+          '	create table nextid '+CRLF+
+          '	(keyname char(50) PRIMARY KEY, '+CRLF+
+          '	ID bigint);'+CRLF
+        );
+      end;
+      if IsMySQL then begin
+        self.WriteOn(sqlSystem,
+          ' insert ignore into nextid values ("'+sKey+'",1)'
+        );
+      end else begin
+        self.WriteOn(sqlSystem,
+          'if not exists (select * from nextid where keyname='''+sKey+''') '+CRLF+
+          'begin '+CRLF+
+          '	insert into nextid values('''+sKey+''', 1); '+CRLF+
+          'end; '
+        );
+      end;
+      if IsMySQL then begin
+        self.WriteOn(sqlSystem,
+          ' update nextid set id = id + 1 where keyname = "'+sKey+'"'
+        );
+      end else begin
+        self.WriteOn(sqlSystem,
+          ' update nextid set id = id + 1 where keyname = '''+sKey+''''
+        );
+      end;
+      rs := nil;
+      try
+        if IsMySQL then begin
+          rs := self.ReadOn(
+            sqlSystem,
+            ' select * from nextid where keyname = "'+sKey+'"'
+          );
+        end else begin
+          rs := self.ReadOn(
+            sqlSystem,
+            ' select * from nextid where keyname = '''+sKey+''''
+          );
+        end;
+
+        result := rs['id'];
+      finally
+        rs.free;
+      end;
+
+      CommitOn(sqlSYstem);
+    except
+      RollbackOn(sqlSystem);
+    end;
+
+
 
 end;
 
+function TUniDACRDTPDataModule.GetNextIDEx(sKey, sTable, sField: string): int64;
+begin
+
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
+end;
 
 procedure TUniDACRDTPDataModule.SetContext(const Value: string);
 begin
@@ -326,38 +424,105 @@ begin
 
 end;
 
-function TUniDACRDTPDataModule.SetNextID(iKey: integer; iValue: int64): int64;
+
+
+
+function TUniDACRDTPDataModule.SetNextID(sKey: string; iValue: int64): int64;
 var
-  i: integer;
-  b: boolean;
+  rs: TSERowSet;
 begin
-  i := 0;
-  repeat
-    inc(i);
-    if i > 100 then
-      raise exception.create('Retry limit exceeded');
-    b := TrySetNextID(iKey, iValue);
-    Debug.Log(self,'['+inttostr(iKey)+']Set key:'+inttostr(ivalue));
+  result := ivalue;
+    BeginTransactionOn(sqlSYstem);
+    try
+      if IsMySQL then begin
+        self.WriteOn(sqlSystem,
+          '	create table if not exists nextid '+CRLF+
+          '	(keyname char(50) PRIMARY KEY, '+CRLF+
+          '	ID bigint);'
+        );
+      end else begin
+        self.WriteOn(sqlSystem,
+          'if not exists (select * from sysobjects where name=''nextid'' and xtype=''U'') '+CRLF+
+          '	create table nextid '+CRLF+
+          '	(keyname char(50) PRIMARY KEY, '+CRLF+
+          '	ID bigint);'+CRLF
+        );
+      end;
+      if IsMySQL then begin
+        self.WriteOn(sqlSystem,
+          ' insert ignore into nextid values ("'+sKey+'",1)'
+        );
+      end else begin
+        self.WriteOn(sqlSystem,
+          'if not exists (select * from nextid where keyname='''+sKey+''') '+CRLF+
+          'begin '+CRLF+
+          '	insert into nextid values('''+sKey+''', 1); '+CRLF+
+          'end; '
+        );
+      end;
+      if IsMySQL then begin
+        self.WriteOn(sqlSystem,
+          ' update nextid set id = '+ivalue.tostring+'where keyname = "'+sKey+'"'
+        );
+      end else begin
+        self.WriteOn(sqlSystem,
+          ' update nextid set id = '+ivalue.tostring+' where keyname = '''+sKey+''''
+        );
+      end;
+      CommitOn(sqlSYstem);
+    except
+      RollbackOn(sqlSystem);
+    end;
+end;
 
-    result := 1;
+function TUniDACRDTPDataModule.ReadOn(ch: TSQLChannel;
+  sQuery: string): TSERowSet;
+var
+  conn: TUniConnection;
+  stats: PSQlChannelStats;
+  dataset: TCustomDADataset;
+begin
+  result := nil;
+  conn := GetChannelObject(ch);
+  conn.Connect;
+  stats := GetChannelStats(ch);
+  inc(stats.ReadQueries);
+  WaitForCommands;
 
-    if not b then sleep(200);
-  until b;
+  dataset := nil;
+
+  try
+    Execute(sQuery, conn, dataset);
+    UniSetToRowSet(result, dataset, false);
+    lastused := getticker;
+  finally
+    dataset.free;
+  end;
 
 end;
 
-
-procedure TUniDACRDTPDataModule.Rollback;
+procedure TUniDACRDTPDataModule.RollbackOn(ch: TSQLChannel);
+var
+  conn: TUniConnection;
+  stats: PSQlChannelStats;
 begin
-  exit;
-//  self.query.sql.Text := 'ROLLBACK;';
-//  self.query.ExecSQL(true);
+  conn := GetChannelObject(ch);
+  conn.Connect;
+  stats := GetChannelStats(ch);
 
-  if writes.connected and (FWriteQueries > 0) then
-    writes.Rollback;
+  if conn.connected and (stats.InTransaction) then begin
+    if stats.WriteQueries > 0 then begin
+      conn.Rollback;
+      stats.init;
+      Debug.Log(self,'Transaction Rollback');
+    end else begin
+      stats.init;
+//      Debug.Log(self,'No writes to rollback');
+    end;
+  end;
 
 
-  Debug.Log(self,'Transaction ROLLBACK');
+
 end;
 
 
@@ -381,7 +546,7 @@ begin
     bRetry := false;
     try
       if not writes.connected then begin
-        FWriteQueries := 0;
+        GetChannelStats(sqlWrite).Init;
         writes.connected := true;
         Debug.Log(self,'write connection opened');
         //self.BeginTransaction;
@@ -476,8 +641,13 @@ end;
 
 procedure TUniDACRDTPDataModule.IncWrite;
 begin
-  inc(FWriteQueries);
+  inc(GetChannelStats(sqlWrite).WriteQueries);
 
+end;
+
+function TUniDACRDTPDataModule.IsMYSQL: boolean;
+begin
+  result := comparetext(dbtype,'MySQL')=0;
 end;
 
 destructor TUniDACRDTPDataModule.destroy;
@@ -844,6 +1014,25 @@ begin
 
 end;
 
+procedure TUniDACRDTPDataModule.WriteOn(ch: TSQLChannel; sQuery: string);
+var
+  conn: TUniConnection;
+  stats: PSQlChannelStats;
+  dataset: TCustomDADataset;
+begin
+  conn := GetChannelObject(ch);
+  conn.Connect;
+  stats := GetChannelStats(ch);
+  inc(stats.WriteQueries);
+
+  WaitForCommands;
+
+  dataset := nil;
+
+  ExecuteDirect(sQuery, conn{, dataset});
+
+end;
+
 { TDataPool }
 
 
@@ -886,8 +1075,10 @@ begin
 //    slParsed := ParseString(sRight, '--execute--');
     while SplitString(sRight, '--execute--', sLeft, sRight) do begin
       ExecuteDirect(sLeft,writes);
+      IncWrite;
     end;
     ExecuteDirect(sLeft, writes);
+    IncWrite;
     lastused := getticker;
 
 //    ConnectWrite;
@@ -916,6 +1107,7 @@ begin
     dataset := nil;
     try
       Execute(sQuery, writes, dataset);
+      IncWrite;
 
     finally
 //      dataset.free;

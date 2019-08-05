@@ -12,6 +12,8 @@ uses
   FMX.Gestures, tickcount, betterobject, geometry, stringx;
 
 type
+  TSetupProc = reference to procedure (frm: TfrmFMXBAse);
+
   TMQInfo = record
     startTime: ticker;
     msg: string;
@@ -53,6 +55,7 @@ type
     constructor Create(AOwner: TComponent); override;
     procedure RemoveForm(f: TfrmFMXBase);
     procedure ShowFormClass<T: TfrmFMXBase>(var f: T);
+    procedure ShowFormClassAndSetup<T: TfrmFMXBase>(var f: T; p: TProc);
     procedure TemporaryMessage(s: string);
     procedure TempMessageEngine;
   end;
@@ -79,11 +82,30 @@ uses debug;
 
 procedure TfrmMockMobile.ShowFormClass<T>(var f: T);
 begin
-  if f = nil then
+  if f = nil then begin
+    Debug.Log(CLR_UI+'***Creating form: '+ f.classname);
     f := T.create(application);
+    Debug.Log(CLR_UI+'***Created form: '+ f.classname);
+  end;
 
+  Debug.Log(CLR_UI+'***Showing form: '+ f.classname);
   MM_ShowForm(f);
 
+end;
+
+procedure TfrmMockMobile.ShowFormClassAndSetup<T>(var f: T; p: TProc);
+begin
+  if f = nil then begin
+    Debug.Log(CLR_UI+'***Creating form: '+ f.classname);
+    f := T.create(application);
+    Debug.Log(CLR_UI+'***Created form: '+ f.classname);
+  end;
+
+  Debug.Log(CLR_UI+'***running lambda setup proc()');
+  p();
+
+  Debug.Log(CLR_UI+'***Showing form: '+ f.classname);
+  MM_ShowForm(f);
 end;
 
 procedure MM_ShowForm(frm: TfrmFMXBase);
@@ -172,8 +194,11 @@ begin
     GiveBackControls;
   formstack.remove(f);
 
-  if showingform <> nil then
+  if showingform <> nil then begin
     TakeControls;
+    showingform.ActivateOrTransplant;
+    showingform.ActivateByPop;
+  end;
 end;
 
 procedure TfrmMockMobile.ShowForm(f: TfrmFMXBase);
@@ -195,6 +220,7 @@ begin
     showingform.height := height;
     TakeControls;
     showingform.ActivateOrTransplant;
+    showingform.ActivateByPush;
 //    showingform.show;
   end;
 

@@ -1,4 +1,4 @@
-package PackageCommonRX_Forms;
+package PackageCommonRX_Forms_10_3_2;
 {$R *.res}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
@@ -37,9 +37,12 @@ requires
   IndyProtocols,
   IndyCore,
   bindengine,
-  PackageCommonRX,
   vclwinx,
-  fmx;
+  fmx,
+  FMXTee,
+  VclSmp,
+  Tee,
+  PackageCommonRX_10_3_2;
 
 contains
   FormBase in 'FormBase.pas' {frmBase},

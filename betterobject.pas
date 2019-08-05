@@ -225,8 +225,11 @@ type
   protected
     FList: TStringlist;
     function GiveEx(sContextKey: string): TObject;virtual;abstract;
+    procedure BeforeTake(obj: Tobject; var bCanTake: boolean);virtual;
+    procedure AfterTake(obj: Tobject);virtual;
   public
     procedure Take(obj: TObject; sContext: string = '');
+
 
     constructor Create; override;
     destructor Destroy; override;
@@ -804,15 +807,34 @@ end;
 
 {$IFDEF GIVER_POOLS}
 procedure Tgiver.Take(obj: TObject; sContext: string = '');
+var
+  cantake: boolean;
 begin
   Lock;
   try
-    Flist.addObject(sContext, obj);
+    cantake := true;
+    BeforeTake(obj, {out}cantake);
+    if cantake then begin
+      Flist.addObject(sContext, obj);
+      AfterTake(obj);
+    end else
+      obj.free;
+
   finally
     Unlock;
   end;
 
 end;
+procedure TGiver.AfterTake(obj: Tobject);
+begin
+//
+end;
+
+procedure TGiver.BeforeTake(obj: Tobject; var bCanTake: boolean);
+begin
+//
+end;
+
 constructor TGiver.Create;
 begin
   inherited;

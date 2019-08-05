@@ -76,7 +76,7 @@ end;
 
 function TdoAsyncProcess.DoNew(iSessionID: integer): boolean;
 begin
-  token.params[0] := IServerInterface(TDataObjectCache(self.cache).server).GetNextID(CKEY_NEW_PROCESS, iSessionID);
+  token.params[0] := IServerInterface(TDataObjectCache(self.cache).server).GetNextID('async_process');
   result := true;  
 end;
 

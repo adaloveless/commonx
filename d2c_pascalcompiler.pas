@@ -3,7 +3,7 @@ unit d2c_pascalcompiler;
 
 interface
 
-uses debug, contnrs, namevaluepair, sysutils, classes, d2c_project, stringx, sharedobject, stringx.ansi;
+uses debug, contnrs, namevaluepair, sysutils, classes, d2c_project, stringx, sharedobject, stringx.ansi, betterobject;
 
 type
   ESyntax = class(Exception);

@@ -6,7 +6,7 @@ unit RDTPSQLConnectionServerImplib;
 interface
 
 uses
-   typex, debug, rdtpprocessor, RDTPSQLConnectionServer, RDTPServerList, storageenginetypes, classes, systemx, exe, sysutils, stringx, dir,dirfile, commands_system;
+   typex, debug, rdtpprocessor, RDTPSQLConnectionServer, RDTPServerList, storageenginetypes, classes, systemx, exe, sysutils, stringx, dir,dirfile, commands_system, abstractrdtpdatamodule;
 
 
 type
@@ -21,6 +21,18 @@ type
     procedure RQ_WriteBehind(sQuery:string);overload;override;
     function RQ_ReadQuery(sQuery:string):TSERowSet;overload;override;
     function RQ_BackProc(exe_no_path:string; commandlineparams:string; backinputstringcontent:string; backinputfile:string; backoutputfile:string):TStream;overload;override;
+    procedure RQ_BeginTransaction();overload;override;
+    function RQ_Commit():boolean;overload;override;
+    function RQ_Rollback():boolean;overload;override;
+    procedure RQ_BeginTransactionOn(channel_const:integer);overload;override;
+    procedure RQ_CommitOn(channel_const:integer);overload;override;
+    procedure RQ_RollbackOn(channel_const:integer);overload;override;
+    function RQ_ReadOn(channel_const:integer; query:string):TSERowSet;overload;override;
+    function RQ_WriteOn(channel_const:integer; query:string):boolean;overload;override;
+    procedure RQ_WriteBehindOn(channel_const:integer; query:string);overload;override;
+    function RQ_GetNextID(key:string):int64;overload;override;
+    procedure RQ_SetNextID(key:string; id:int64);overload;override;
+    function RQ_GetNextIDEx(key:string; table:string; field:string):int64;overload;override;
 
 {INTERFACE_END}
   end;
@@ -65,6 +77,48 @@ begin
 
 end;
 
+procedure TRDTPSQLConnectionServer.RQ_BeginTransaction;
+begin
+  inherited;
+  data.BeginTransaction;
+end;
+
+procedure TRDTPSQLConnectionServer.RQ_BeginTransactionOn(
+  channel_const: integer);
+begin
+  inherited;
+  data.BeginTransactionOn(TSQLChannel(channel_const));
+end;
+
+function TRDTPSQLConnectionServer.RQ_Commit: boolean;
+begin
+  data.Commit;
+  result := true;
+end;
+
+procedure TRDTPSQLConnectionServer.RQ_CommitOn(channel_const: integer);
+begin
+  inherited;
+  data.CommitOn(TSQLChannel(channel_const));
+end;
+
+function TRDTPSQLConnectionServer.RQ_GetNextID(key: string): int64;
+begin
+ result := data.GetNextID(key);
+end;
+
+function TRDTPSQLConnectionServer.RQ_GetNextIDEx(key, table,
+  field: string): int64;
+begin
+  result := data.GetNextIDEx(key, table, field);
+end;
+
+function TRDTPSQLConnectionServer.RQ_ReadOn(channel_const: integer;
+  query: string): TSERowSet;
+begin
+  result := data.readOn(TSQLChannel(channel_const), query);
+end;
+
 function TRDTPSQLConnectionServer.RQ_ReadQuery(
   sQuery: string): TSERowSet;
 begin
@@ -78,6 +132,24 @@ begin
   result := true;
 end;
 
+function TRDTPSQLConnectionServer.RQ_Rollback: boolean;
+begin
+  data.Rollback;
+  result := true;
+end;
+
+procedure TRDTPSQLConnectionServer.RQ_RollbackOn(channel_const: integer);
+begin
+  inherited;
+  data.RollbackOn(TSQLChannel(channel_const));
+end;
+
+procedure TRDTPSQLConnectionServer.RQ_SetNextID(key: string; id: int64);
+begin
+  inherited;
+  data.SetNextID(key, id);
+end;
+
 function TRDTPSQLConnectionServer.RQ_Test: integer;
 begin
   result := 666;
@@ -87,6 +159,23 @@ end;
 procedure TRDTPSQLConnectionServer.RQ_WriteBehind(sQuery: string);
 begin
   Data.ExecuteWriteBehind(sQuery);
+end;
+
+procedure TRDTPSQLConnectionServer.RQ_WriteBehindOn(channel_const: integer;
+  query: string);
+begin
+  inherited;
+  data.WriteOn(TSQLChannel(channel_const), query);
+
+
+end;
+
+function TRDTPSQLConnectionServer.RQ_WriteOn(channel_const: integer;
+  query: string): boolean;
+begin
+  data.WriteOn(TSQLChannel(channel_const), query);
+  result := true;
+
 end;
 
 function TRDTPSQLConnectionServer.RQ_WriteQuery(sQuery:string):boolean;

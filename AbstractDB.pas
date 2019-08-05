@@ -48,6 +48,8 @@ type
     property MWHost: string read GetMWHost write SetMWHost;
     property MWEndPoint: string read GetMWEndPoint write SetMWEndpoint;
     property Age: ticker read GetAge;
+    function GetNextID(sType: string): int64;virtual;abstract;
+    function SetNextID(sType: string; id: int64): boolean;virtual;abstract;
   end;
 
   TAbstractFieldDef =   TSERowsetFieldDef;
@@ -238,6 +240,7 @@ begin
   result := FMWhost;
 end;
 
+
 procedure TAbstractdb.Init;
 begin
   inherited;
@@ -292,6 +295,7 @@ procedure TAbstractdb.SetMWHost(Value: string);
 begin
   FMWhost := value;
 end;
+
 
 procedure TAbstractdb.Writebehind(sQuery: string; bDontLog: boolean = false);
 begin

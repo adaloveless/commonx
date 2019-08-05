@@ -1,4 +1,4 @@
-package PackageCommonRX;
+package PackageCommonRX_10_3_2;
 
 {$R *.res}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
@@ -26,7 +26,7 @@ package PackageCommonRX;
 {$DEFINE PACKAGE}
 {$DEFINE DESIGN_TIME_PACKAGE}
 {$ENDIF IMPLICITBUILDING}
-{x$IMPLICITBUILD OFF}
+{$IMPLICITBUILD OFF}
 
 requires
   rtl,

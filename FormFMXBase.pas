@@ -32,6 +32,8 @@ type
     function GetControl<T: TControl>(parent: TControl): T;
 
     procedure ActivateOrTransplant;virtual;
+    procedure ActivateByPush;virtual;
+    procedure ActivateByPop;virtual;
     procedure UnregisterWithMockMobile;
     procedure UpdateMouseCursor;
     constructor Create(AOwner: TComponent); override;
@@ -54,6 +56,16 @@ uses
 {$R *.fmx}
 
 { TfrmFMXBase }
+
+procedure TfrmFMXBase.ActivateByPop;
+begin
+//this happens when the form is activated after another form is popped off the form stack
+end;
+
+procedure TfrmFMXBase.ActivateByPush;
+begin
+//this happens when the form is pushed to the form stack
+end;
 
 procedure TfrmFMXBase.ActivateOrTransplant;
 begin

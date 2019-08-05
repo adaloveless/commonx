@@ -8,7 +8,7 @@ implementation
 
 uses sysutils, system.types, System.Devices,
   DesignIntf,
-  FormBase, FrameBase, FormDataAware, DesignEditors, classes, dialogs, FormWizard, FrameWizardPage, FormProperties, FormPropertyDialog;
+  FrameBaseVCL, FormBase, FrameBaseFMX, FormDataAware, DesignEditors, classes, dialogs, FormWizard, FrameWizardPage, FormProperties, FormPropertyDialog;
 
 procedure Register;
 begin

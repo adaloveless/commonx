@@ -96,6 +96,8 @@ procedure FillMemRandom(p:pbyte; length:integer);
 procedure FillMemInc(p:pbyte; length:integer);
 function IsAllZeros(p: pbyte; length: ni): boolean;
 function GetTempPath: string;
+function GetDownloadsFolder: string;
+function GEtPDFPath: string;
 function GetTempPathForThread: string;overload;
 function GetComputerName: string;
 function Get7BitEncodedBufferLength(i8BitLength: nativeint): nativeint;
@@ -1121,6 +1123,16 @@ end;
 function GetTempPathForThread: string;overload;
 begin
   result := GetTempPath+inttostr(GetCurrentThreadID)+'\';
+end;
+
+function GetDownloadsFolder: string;
+begin
+  result := slash(TPath.GetDownloadsPath);
+end;
+
+function GEtPDFPath: string;
+begin
+  result := slash(TPath.GetDownloadsPath);
 end;
 
 function GetTempPath: string;overload;

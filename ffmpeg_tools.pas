@@ -956,7 +956,7 @@ begin
       end;
       if FAlternate then changefileext(OutputFile, '.webm');
       if BleedingEdge <> beAncient then begin
-        Params := '-y'+sThreads+'-i "'+InputFile+'" -q:a 0 -q:v 0 -acodec mp3 '+sDim+' "'+OutputFIle+'"';
+        Params := '-y'+sThreads+'-i "'+InputFile+'" -q:a 0 -q:v 3 -acodec mp3 '+sDim+' "'+OutputFIle+'"';
       end else begin
         Params := '-y'+sThreads+'-i "'+InputFile+'" -sameq -b 100000'+sDim+' "'+OutputFIle+'"';
       end;

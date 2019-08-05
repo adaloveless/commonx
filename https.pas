@@ -195,6 +195,8 @@ begin
       result.Body := htp.responseText;
       result.contentType := htp.getResponseHeader('Content-type');
       result.Success := true;
+      result.bodystream := THolder<TStream>.create;
+      Result.bodystream.o := olevarianttomemoryStream(htp.responsebody);
     except
       on e: Exception do begin
         result.success := false;

@@ -806,7 +806,6 @@ end;
 destructor TManagedThread.Destroy;
 begin
 
-
   if thread_shutdown_tracking_stage > 0 then
     Debug.Log(self, classname+' should be destroyed already at shutdown stage '+inttostr(thread_shutdown_tracking_stage)+'!!!!!!!!!!!!!!!!!');
 
@@ -1173,16 +1172,21 @@ function TManagedThread.Getinfo: TThreadInfo;
 var
   s: string;
 begin
-  DeadCheck;
+  Lock;
   try
-    result := FInfo;
-    result.pooled := FPool <> nil;//volatile
-  except
-    on E: Exception do begin
-      s := 'Got exception '+e.message+' when getting thread info from @'+inttohex(ni(pointer(self)),1)+' where FInfo=@'+inttohex(ni(@FInfo),1);
-      raise ECritical.create(s);
+    DeadCheck;
+    try
+      result := FInfo;
+      result.pooled := FPool <> nil;//volatile
+    except
+      on E: Exception do begin
+        s := 'Got exception '+e.message+' when getting thread info from @'+inttohex(ni(pointer(self)),1)+' where FInfo=@'+inttohex(ni(@FInfo),1);
+        raise ECritical.create(s);
 
+      end;
     end;
+  finally
+    Unlock;
   end;
 end;
 

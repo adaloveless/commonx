@@ -133,6 +133,7 @@ type
   BOOL = wordbool;
   ni = nativeint;
   fi = integer;
+  TDynVariantArray = array of variant;
   TDynByteArray = array of byte;
   TDynInt64Array = array of Int64;
   PInt16 = ^smallint;

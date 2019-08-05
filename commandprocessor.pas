@@ -346,7 +346,7 @@ type
     procedure SelfDestruct(iTime: ticker);
   end;
 
-  TCommandList<T: TCommand> = class(TList<T>)
+  TCommandList<T: TCommand> = class(TSharedList<T>)
   private
     function GEtPercentComplete: nativefloat;
   public
@@ -361,6 +361,12 @@ type
     procedure CancelAll;
     procedure Startall;
   end;
+
+  TCommandHolder = THolder<TCommand>;
+  ICommandHolder = IHolder<TCommand>;
+  TCommandHolderArray = array of ICommandHolder;
+
+
 
   TWaitableCommandList = class(TCommandList<TCommand>);
 
@@ -4846,14 +4852,21 @@ function TCommandList<T>.GEtPercentComplete: nativefloat;
 var
   t: integer;
 begin
-  result := 0;
-  for t:= 0 to count-1 do begin
-    result := result + self.Items[t].PercentComplete;
+  Lock;
+  try
+    result := 0;
+    for t:= 0 to count-1 do begin
+      result := result + self.Items[t].PercentComplete;
+    end;
+
+    result := result / count;
+  finally
+    Unlock;
   end;
 
-  result := result / count;
-
 end;
+
+
 
 function TCommandList<T>.IsComplete: boolean;
 var

@@ -6,6 +6,7 @@ uses RequestDispatcher, RequestInfo, Exceptions, RequestManager, Dataobjectcache
 
 function IgnoreError(s: string): boolean;
 
+procedure LogError(sPage, s: string; code: integer);
 procedure HTTPProxy(rqInfo: TRequestInfo);
 procedure MailError(rqInfo: trequestinfo; e: exception);
 procedure WRQ_MaxConnections(rqInfo: TRequestInfo);
@@ -40,6 +41,10 @@ uses
   SimpleMail, systemx, HTTPClient, debug,
   CommonAsyncPages;
 
+procedure LogError(sPage, s: string; code: integer);
+begin
+  Debug.Log(sPage+' Error: '+s);
+end;
 
 //------------------------------------------------------------------------------
 function DispatchWebRequest(rqInfo: TRequestInfo): boolean;
@@ -847,7 +852,8 @@ end;
 //------------------------------------------------------------------------------
 procedure WRQ_ShowErrorLog(rqInfo: TRequestInfo);
 begin
-  GetErrorLogHTML(rqInfo.response.content);
+  rqInfo.Response.Content.text := 'not implemented anymore';
+//  GetErrorLogHTML(rqInfo.response.content);
 
 end;
 

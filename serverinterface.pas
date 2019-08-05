@@ -131,8 +131,8 @@ type
       function GhostFetch(cache: TDataObjectCache; out obj: TDataObject; sType: string; params: variant; iSessionID: integer; bLazy: boolean = true; iTimeoutMS: integer = 300000; bcheckCacheOnly: boolean = false): boolean; overload;
       procedure Delete(cache: TdataObjectCache; obj: TDataObject);overload;
 
-      function GetNextID(iType: integer; iSessionID: integer=0): integer;
-      function SetNextID(iType: integer; iID: int64): boolean;
+      function GetNextID(sType: string): int64;
+      function SetNextID(sType: string; iID: int64): boolean;
       procedure Time;
       function Ghost(cache: TDataObjectCache; out obj: TDataObject; sType: string; params: variant; iSessionID: integer): boolean; overload;
       function New(cache: TDataObjectCache; out obj: TDataObject; sType: string; params: variant; iSessionID: integer): boolean; overload;
@@ -464,10 +464,9 @@ begin
 
 end;
 //------------------------------------------------------------------------------
-function TServerInterface.GetNextID(iType: integer; iSessionID: integer): integer;
+function TServerInterface.GetNextID(sType: string): int64;
 begin
-  raise ECritical.create('unimplemented');
-//TODO -cunimplemented: unimplemented block
+  result := cli.GetNextID(sType)
 end;
 
 function TServerInterface.GetPoolTime: ticker;
@@ -483,7 +482,7 @@ begin
   docf.LowLevelDOCreate(obj, cache, sType, params, 0,0,0);
   obj.New(0);
   if obj.IdentityKeyCount > 0 then begin
-    obj.Token.Params[0] := kb.GetNextID_str(obj.AutoKeyNames[0]);
+    obj.Token.Params[0] := GetNextID(obj.AutoKeyNames[0]);
   end;
 
 
@@ -694,11 +693,12 @@ begin
   SetLastError(s);
 end;
 
-function TServerInterface.SetNextID(iType: integer; iID: int64): boolean;
-begin
 
-  raise ECritical.create('unimplemented');
-//TODO -cunimplemented: unimplemented block
+
+function TServerInterface.SetNextID(sType: string; iID: int64): boolean;
+begin
+  cli.SetNextID(sType, iid);
+  result := true;
 end;
 
 procedure TServerInterface.SetPoolTime(const Value: ticker);

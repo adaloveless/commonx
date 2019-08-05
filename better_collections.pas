@@ -52,6 +52,7 @@ type
     FVolatileCount: ni;
     function GetCount: nativeint;virtual;
   public
+    RestrictedtoThreadID: int64;
     constructor Create;override;
     destructor Destroy;override;
 
@@ -65,6 +66,7 @@ type
 
     property Count: nativeint read GetCount;
     function IndexOf(obj: T): nativeint;virtual;
+    function Has(obj: T): boolean;virtual;
     property Items[idx: nativeint]: T read GEtItem write SetItem;default;
     procedure Clear;
     procedure FreeAndClear;
@@ -205,6 +207,12 @@ end;
 {$MESSAGE '*******************1 COMPILING Better_Collections.pas'}
 function TSharedList<T>.Add(obj: T): nativeint;
 begin
+  if (RestrictedtoThreadID <> 0) and (TThread.CurrentThread.ThreadID <> RestrictedToThreadID) then
+{$IFDEF STRICT_THREAD_ENFORCEMENT}
+    raise Ecritical.create(self.ClassName+' is restricted to thread #'+RestrictedToThreadID.ToString+' but you are accessing it from #'+TThread.CurrentThread.ThreadID.tostring);
+{$ELSE}
+    Debug.Log(CLR_ERR+self.ClassName+' is restricted to thread #'+RestrictedToThreadID.ToString+' but you are accessing it from #'+TThread.CurrentThread.ThreadID.tostring);
+{$ENDIF}
   Lock;
   try
     result := FList.add(obj);
@@ -218,6 +226,8 @@ procedure TSharedList<T>.AddList(l: TSharedList<T>);
 var
   x: nativeint;
 begin
+  if (RestrictedtoThreadID <> 0) and (TThread.CurrentThread.ThreadID <> RestrictedToThreadID) then
+    raise Ecritical.create(self.ClassName+' is restricted to thread #'+RestrictedToThreadID.ToString+' but you are accessing it from #'+TThread.CurrentThread.ThreadID.tostring);
   l.Lock;
   try
     Lock;
@@ -317,6 +327,11 @@ begin
   finally
     Unlock;
   end;
+end;
+
+function TSharedList<T>.Has(obj: T): boolean;
+begin
+  result := IndexOf(obj) >=0;
 end;
 
 {$MESSAGE '*******************10 COMPILING Better_Collections.pas'}

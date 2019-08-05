@@ -12,10 +12,6 @@ object frmWizard: TfrmWizard
   Font.Style = []
   OldCreateOrder = False
   OnDestroy = frmBaseDestroy
-  OnUpdateState = frmBaseUpdateState
-  Right = 291
-  Bottom = 168
-  NewMode = False
   PixelsPerInch = 96
   TextHeight = 13
 end

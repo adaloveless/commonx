@@ -16,7 +16,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, commandprocessor, fileserviceclientex, ApplicationParams, stringx, typex, systemx,
-  Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.WinXCtrls, colorblending, tickcount, exe, namevaluepair;
+  Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.WinXCtrls, colorblending, tickcount, exe, namevaluepair, dirfile, managedthread;
 
 type
   TWorker = class(TCommand)
@@ -29,15 +29,17 @@ type
     host, endpoint, prog, run_when_done, run_when_done_params: string;
     beta: boolean;
     verfile: string;
-    paramsfile: string;
+
     procedure ExecuteUpdateScriptLine(sLIne: string);
   public
     cli: TFileServiceClientEx;
+    paramsfile: string;
     procedure Init; override;
     property UpdateAVailable: boolean read GetUpdateAvailable;
     property CheckOnly: boolean read FCheckOnly write FCheckOnly;
     procedure DoExecute; override;
   end;
+  Tcmd_CheckForAppUpdates = TWorker;
 
   TfrmUpdateProgress = class(TForm)
     Timer1: TTimer;
@@ -214,6 +216,7 @@ procedure TWorker.ExecuteUpdateScriptLine(sLIne: string);
 var
   sl,sr: string;
   upgradePath: string;
+  cs, csRemote: TAdvancedFileChecksum;
 begin
 
 
@@ -230,7 +233,23 @@ begin
       upgradePath := cli.GetUpgradePath(prog);
       if zpos(lowercase(prog), lowercase(upgradepath)) < 0 then
         upgradePath := upgradePath + prog+'\';//bug fix for some server version
-      cli.GetFileEx(upgradepath+inttostr(workingver)+'\'+sr, dllpath+sr, @subprogress);
+      var fFrom := upgradepath+inttostr(workingver)+'\'+sr;
+      var fTo := dllpath+sr;
+      var fToTemp := fTo+'.unconfirmed';
+      cli.GetFileEx(fFrom, fToTemp, @subprogress);
+      cli.GetFileChecksum_Async(fFrom);
+      cs.Calculate(fToTemp);
+      csRemote := cli.GetFileChecksum_Response;
+      if csRemote = cs then begin
+        CopyFile(ftoTemp, fTo, false);
+        DeleteFile(fToTemp);
+      end else begin
+        raise ECritical.create('downloaded file checksum incorrect')
+      end;
+
+
+
+
     end else
     if comparetext(sl,'del')=0 then begin
       if fileexists(dllpath+sr) then

@@ -105,6 +105,8 @@ type
     procedure ClearSubdirs;
 
     constructor Create(strpath, strFilespec: string; AttrResult, AttrMask: integer; bAsynchronous: boolean = false; bSort: boolean = true; brecurse: boolean = false); reintroduce; virtual;
+    class function CreateH(strpath, strFilespec: string; AttrResult, AttrMask: integer; bAsynchronous: boolean = false; bSort: boolean = true; brecurse: boolean = false): IHolder<TDirectory>; reintroduce; virtual;
+
     destructor Destroy;override;
     procedure Refresh;
     function HasFile(sName: string): boolean;
@@ -493,7 +495,6 @@ begin
 end;
 
 constructor TDirectory.Create(strpath, strFilespec: string; AttrResult, AttrMask: integer; bAsynchronous: boolean; bSort: boolean; bRecurse: boolean);
-
 begin
   inherited Create;
 
@@ -520,6 +521,15 @@ begin
   end;
 
 end;
+class function TDirectory.CreateH(strpath, strFilespec: string; AttrResult,
+  AttrMask: integer; bAsynchronous, bSort,
+  brecurse: boolean): IHolder<TDirectory>;
+begin
+  result := THolder<TDirectory>.create;
+  result.o := TDirectory.Create(strpath, strfilespec, attrresult, attrmask, bAsynchronous, bSort, bRecurse);
+
+end;
+
 {------------------------------------------------------------------------------}
 destructor TDirectory.destroy;
 var

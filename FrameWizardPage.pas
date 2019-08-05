@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, FrameBase;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, FrameBaseVcl;
 
 type
   TfrmWizardPage = class(TfrmFrameBase)
