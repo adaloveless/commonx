@@ -1,4 +1,4 @@
-inherited frmMockMobile: TfrmMockMobile
+inherited mm: Tmm
   Caption = 'Application'
   ClientHeight = 555
   ClientWidth = 445

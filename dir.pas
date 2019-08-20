@@ -24,6 +24,14 @@ const
   {$ENDIF}
 
 
+const
+  UFA_FOLDER = 1;
+  UFA_HIDDEN = 2;
+  UFA_ARCHIVE = 4;
+  UFA_SYSTEM = 8;
+  UFA_READ_ONLY = 16;
+  UFA_COMPRESSED = 32;
+
 type
   TDirCommand = class;
   TFileInfoRec = record
@@ -33,7 +41,7 @@ type
   end;
 
 
-  TFileTransferReference = class(TBetterObject)
+  TFileTransferReferenceObj = class(TBetterObject)
   private
     FBuffer: PByte;
     FLength: int64;
@@ -53,7 +61,10 @@ type
     property EOF: boolean read FEOF write FEOF;
     property Handle: THandle read FHandle write FHandle;
     procedure FreeBuffer;
+    destructor Destroy;override;
   end;
+
+  TFileTransferReference = IHolder<TFileTransferReferenceObj>;
 
   TDirectory = class(TSharedObject)
   private
@@ -73,7 +84,7 @@ type
     FRecurse: boolean;
     function GetFile(index: integer): TfileInformation;
     function GetFolder(index: integer): TfileInformation;
-    procedure FillList(prog: PVolatileProgression; strdirectory: string; Attr, AttrMask: Integer; List: TBetterList<TFileInformation>);
+    procedure FillList(prog: PVolatileProgression; strdirectory: string; Attr, AttrMask: Integer; List: TBetterList<TFileInformation>; bFolders: boolean);
     procedure EMptyList(list: TBetterList<TFileInformation>);
     function GetAttributes: integer;
     function GetFilterfolders: boolean;
@@ -103,7 +114,10 @@ type
     procedure RefreshFolders;
     procedure syncSubdirs;
     procedure ClearSubdirs;
+    procedure AddFileInfo(fi: Tfileinformation);
+    procedure AddFolderInfo(fi: Tfileinformation);
 
+    constructor CreateFromRemote();
     constructor Create(strpath, strFilespec: string; AttrResult, AttrMask: integer; bAsynchronous: boolean = false; bSort: boolean = true; brecurse: boolean = false); reintroduce; virtual;
     class function CreateH(strpath, strFilespec: string; AttrResult, AttrMask: integer; bAsynchronous: boolean = false; bSort: boolean = true; brecurse: boolean = false): IHolder<TDirectory>; reintroduce; virtual;
 
@@ -477,6 +491,16 @@ begin
 end;
 
 
+procedure TDirectory.AddFileInfo(fi: Tfileinformation);
+begin
+  FFiles.Add(fi);
+end;
+
+procedure TDirectory.AddFolderInfo(fi: Tfileinformation);
+begin
+  FFolders.Add(fi);
+end;
+
 procedure TDirectory.ClearSubdirs;
 var
   t: integer;
@@ -521,6 +545,14 @@ begin
   end;
 
 end;
+constructor TDirectory.CreateFromRemote;
+begin
+  inherited Create;
+  FFiles := TBetterList<TFileInformation>.create;
+  FFolders := TBetterList<TFileInformation>.create;
+
+end;
+
 class function TDirectory.CreateH(strpath, strFilespec: string; AttrResult,
   AttrMask: integer; bAsynchronous, bSort,
   brecurse: boolean): IHolder<TDirectory>;
@@ -600,7 +632,7 @@ begin
 
 end;
 
-procedure TDirectory.FillList(prog: PVolatileProgression; strdirectory: string; Attr, AttrMask: Integer; List: TBetterList<TFileInformation>);
+procedure TDirectory.FillList(prog: PVolatileProgression; strdirectory: string; Attr, AttrMask: Integer; List: TBetterList<TFileInformation>; bFolders: boolean);
 var
   sRec: TSearchRec;
   FileInf: TfileInformation;
@@ -622,6 +654,9 @@ begin
     try
       while EasyFindFile(scope, strdirectory, Attr, AttrMask, sRec) do begin
         fileinf:= TfileInformation.create;
+        if bFolders then
+          fileinf.IsFolder := true;
+
         fileinf.fullname:=Extractfilepath(strdirectory)+srec.Name;
         fileinf.Size := sRec.Size;
         try
@@ -690,18 +725,20 @@ end;
 procedure TDirectory.RefreshFolders;
 begin
   if not FilterFolders then
-    FillList(@FolderProgression, slash(path)+FILE_WILDCARD_ANY, fadirectory, faDirectory , FFolders)
+    FillList(@FolderProgression, slash(path)+FILE_WILDCARD_ANY, fadirectory, faDirectory , FFolders, true)
   else
-    FillList(@FolderProgression, slash(path)+FileSpec, Attributes or faDirectory, AttributeMask or faDirectory,  FFolders);
+    FillList(@FolderProgression, slash(path)+FileSpec, Attributes or faDirectory, AttributeMask or faDirectory,  FFolders, true);
 
   if Recurse then begin
     SyncSubdirs;
   end;
 end;
+
+
 {------------------------------------------------------------------------------}
 procedure TDirectory.RefreshFiles;
 begin
-  FillList(@FileProgression, slash(path)+filespec, Attributes and (not faDirectory), AttributeMask or faDirectory, FFiles);
+  FillList(@FileProgression, slash(path)+filespec, Attributes and (not faDirectory), AttributeMask or faDirectory, FFiles, false);
 end;
 
 {------------------------------------------------------------------------------}
@@ -1235,14 +1272,21 @@ begin
 end;
 
 
-{ TFileTransferReference }
+{ TFileTransferReferenceObj }
 
-procedure TFileTransferReference.FreeBuffer;
+destructor TFileTransferReferenceObj.Destroy;
+begin
+  FreeBuffer;
+  inherited;
+end;
+
+procedure TFileTransferReferenceObj.FreeBuffer;
 begin
   if assigned(FBuffer) then begin
     FreeMem(FBuffer);
     FBuffer := nil;
   end;
+  ContainsData := false;
 end;
 
 function CopyFile(sSource: string; sDest: string): boolean;

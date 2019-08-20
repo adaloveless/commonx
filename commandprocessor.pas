@@ -433,12 +433,14 @@ type
     property SleepLength: NativeInt read FSleepLength write FSleepLength;
 
   protected
+
     function GetStatus: string; override;
     function GetStepCount: NativeInt; override;
     function GetStep: NativeInt; override;
     function GetAutoSpin: boolean; override;
     function GEtSpin: boolean; override;
-    function GetName: string;override;//this probably doesn't work anymore because Tthreadinfo is a separatething
+    function GetName: string;override;
+    procedure Updatethreadinfo; override;
   public
     lastUsed: ticker;
     procedure InitFromPool;override;
@@ -1447,7 +1449,7 @@ begin
       except
         on E: exception do begin
           self.Cresult := false;
-          Debug.Log(self,'Error Executing command ' + self.ClassName + '... ' +
+          Debug.Log(self,CLRE+'Error Executing command ' + self.ClassName + '... ' +
               E.message);
           Error := true;
           ErrorMessage := E.message;
@@ -3225,16 +3227,16 @@ begin
     if Assigned(Command) then begin
       if Command.TryLock then
         try
-          Finfo.StepCount := Command.StepCount;
+          Finfo.progress.StepCount := Command.StepCount;
         finally
           Command.Unlock;
         end;
 
     end
     else begin
-      Finfo.StepCount := 0;
+      Finfo.progress.StepCount := 0;
     end;
-    Result := Finfo.StepCount;
+     Result := Finfo.progress.StepCount;
   finally
     Unlock;
   end;
@@ -3324,15 +3326,15 @@ begin
     if Assigned(Command) then begin
       if Command.TryLock then
         try
-          Finfo.Step := Command.Step;
+          Finfo.progress.Step := Command.Step;
         finally
           Command.Unlock;
         end;
     end
     else begin
-      Finfo.Step := 0;
+      Finfo.progress.Step := 0;
     end;
-    Result := Finfo.Step;
+    Result := Finfo.progress.Step;
   finally
     Unlock;
   end;
@@ -3352,6 +3354,15 @@ procedure TCommandProcessorChildThread.SetParent(
   const Value: TCommandProcessor);
 begin
   FParent := Value;
+end;
+
+procedure TCommandProcessorChildThread.Updatethreadinfo;
+begin
+  inherited;
+  if assigned(command) then begin
+    Finfo.progress := Command.progress;
+    Finfo.status := command.Status;
+  end;
 end;
 
 procedure TCommand.SetThread(const Value: TCommandProcessorChildThread);

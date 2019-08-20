@@ -41,6 +41,7 @@ type
       AHeight: Integer); override;
     property Transplanted: boolean read FTransplanted write FTransplanted;
     procedure DoBoundsSet;virtual;
+    procedure UpdateFromModel; virtual;
 
 
   end;
@@ -129,8 +130,8 @@ begin
   if mock = nil then
     exit;
 
-  if mock is TfrmMockMobile then
-    TfrmMockMobile(mock).RemoveForm(self);
+  if mock is Tmm then
+    Tmm(mock).RemoveForm(self);
 
   mock := nil;
 end;
@@ -150,6 +151,11 @@ begin
 //  Perform( $B00F, 0, 0 );
 
 {$ENDIF}
+end;
+
+procedure TfrmFMXBase.UpdateFromModel;
+begin
+  //
 end;
 
 end.

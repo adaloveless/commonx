@@ -3,7 +3,9 @@ unit Debug;
 
 interface
 {$IFDEF MSWINDOWS}
-  {$DEFINE LOG_TO_DISK}
+  {$IFNDEF NO_DISK_LOGGING}
+    {$DEFINE LOG_TO_DISK}
+  {$ENDIF}
 {$ENDIF}
 {$DEFINE NO_US}
 {$DEFINE NO_THREADID}
@@ -170,7 +172,11 @@ begin
       sObj := sender.classname+'@'+inttohex(ni(pointer(sender)), sizeof(ni)*2)+': ';
     end;
     DebugLog.Log(ltAll,
+{$IFDEF NO_THREADID}
       DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+{$ELSE}
+      GetcurrentThreadid.tostring+':'+DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+{$ENDIF}
       sFilter
     );
   except
@@ -189,7 +195,11 @@ begin
       sObj := sender.classname+'@'+inttohex(ni(pointer(sender)), sizeof(ni)*2)+': ';
     end;
     DebugLog.Log(targets,
+{$IFDEF NO_THREADID}
       DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+{$ELSE}
+      GetcurrentThreadid.tostring+':'+DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+{$ENDIF}
       sFilter
     );
   except
@@ -216,7 +226,11 @@ begin
     else
       sObj := sTypeName+'@'+inttohex(ni(ptr), sizeof(ni)*2)+': ';
     DebugLog.Log(ltAll,
+{$IFDEF NO_THREADID}
       DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+{$ELSE}
+      GetcurrentThreadid.tostring+':'+DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+{$ENDIF}
       sFilter
      );
   except
@@ -234,7 +248,11 @@ begin
     else
       sObj := sTypeName+'@'+inttohex(ni(ptr), sizeof(ni)*2)+': ';
     DebugLog.Log(targets,
+{$IFDEF NO_THREADID}
       DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+{$ELSE}
+      GetcurrentThreadid.tostring+':'+DateToStr(Date)+', '+TimeToStr(Now)+': '+sObj+StringReplace(s,NEWLINE,' ',[rfReplaceAll]),
+{$ENDIF}
       sFilter
      );
   except

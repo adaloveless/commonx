@@ -54,6 +54,8 @@ procedure ZZip(sSource, sDest: string);
 procedure ZUnZip(sSource, sDest: string);
 function ZipRam(pSource, pDest: pbyte; sourcelen: nativeint; destlen: nativeint; prog: PProgress): nativeint;
 function UnZipRam(pSource, pDest: pbyte; sourcelen: nativeint; destlen: nativeint; prog: PProgress): nativeint;
+function ZCompressStrA(const s: ansistring; level: TZCompressionLevel): TBytes; overload;
+function ZDecompressStrA(const s: TBytes): ansistring;
 
 
 implementation
@@ -246,5 +248,24 @@ begin
   c.detachandfree;
   c := nil;
 end;
+
+function ZCompressStrA(const s: ansistring; level: TZCompressionLevel): TBytes; overload;
+var
+  b: TBytes;
+begin
+  b := AnsiStringToTBytes(s);
+  setlength(result, length(b)*3);
+  system.zlib.ZCompress(b, result, level);
+
+end;
+function ZDecompressStrA(const s: TBytes): ansistring;
+var
+  b: TBytes;
+begin
+  system.zlib.ZDeCompress(s, b);
+  result := BytesToAnsiString(b);
+
+end;
+
 
 end.

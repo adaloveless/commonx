@@ -1190,14 +1190,14 @@ end;
 
 
 procedure WRQ_StatGeneral(rqInfo: TRequestInfo);
-var
-  t: integer;
+(*var
+  t: integer;*)
 begin
-  rqInfo.NoHit := true;
+(*  rqInfo.NoHit := true;
 
   for t:= 0 to 1000000 do begin
     rqINfo.server.GetNextID(1);
-  end;
+  end;*)
 
 end;
 

@@ -147,7 +147,7 @@ procedure SaveMemoryAsFile(m: pointer; size: integer; sFile: string);
 procedure LoadFileIntoMemory(m: pointer; size: integer; sFile: string);
 function HighOrderBit(Value:integer):integer;overload;
 function HighOrderBit(const Value:int64):int64;overload;
-function HighOrderBit(const Value:TGiantFuckingInt):int64;overload;
+function HighOrderBit(const Value:TGiantInt):int64;overload;
 function NearPower2(value:int64): int64;
 function RAndomOrder(iItems: ni): TDynInt64Array;
 
@@ -1660,7 +1660,7 @@ begin
 end;
 
 
-function HighOrderBit(const Value:TGiantFuckingInt):int64;
+function HighOrderBit(const Value:TGiantInt):int64;
 var
   cx: int64;
   zone: ni;

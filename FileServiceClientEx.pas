@@ -13,6 +13,7 @@ const
 type
   TFileServiceClientEx = class(TFileServiceClient)
   public
+    connattempts: ni;
     procedure GetFileEx(sRemoteFile: string; sLocalFile: string; prog: PProgress = nil);
     procedure PutFileEx(sLocalFile: string; sRemoteFile: string; prog: PProgress = nil);
   end;
@@ -44,11 +45,13 @@ var
   fs: TFileStream;
   iToWrite, iWritePos, iTotal: int64;
   t: ni;
+  chunksize: int64;
 begin
   OpenFile_Async(sRemoteFile, fmOpenRead+fmShareDenyNone);
   GetFileSize_Async(sRemoteFile);
 
-  if OpenFile_Response(ftr) then
+  ftr := nil;
+  if OpenFile_Response(ftr) then //CREATES TFileTransferReference
   try
     iTotal := GetFileSize_Response();
     if prog <> nil then begin
@@ -63,50 +66,83 @@ begin
 
     fs := TFileStream.create(sLocalFile, fmCreate);
     try
-      iWritePos := 0;
-      repeat
-        ftr.StartBlock := iStart;
-        iToWRite := lesserof(262144, iTotal-iWritePos);
-        ftr.Length := iToWrite;
-        ftr.Buffer := nil;
-        ftr.ContainsData := false;
-        GetFile_Async(ftr);
-        inc(iStart,ftr.Length);
-        inc(iWritePos, iToWrite);
-      until iWritePos = iTotal;
 
-      CloseFile_Async(ftr);
+      if iTotal > 0 then begin
+        chunksize := 262144*4*16;
+        iWritePos := 0;
+        repeat
+          ftr.o.StartBlock := iStart;
+          iToWRite := lesserof(chunksize, iTotal-iWritePos);
+          ftr.o.Length := iToWrite;
+          ftr.o.ContainsData := false;
+          ftr.o.FreeBuffer;
+          GetFile_Async(ftr);  //destroys TFileTransferReference
+          GetFile_Response(ftr); //creates TFileTransferReference
+          stream_GuaranteeWrite(fs, ftr.o.buffer, ftr.o.Length);
+          if ftr.o.length < 0 then
+            raise ECritical.create('ftr length < 0');
+
+          if prog<> nil then
+            prog.step := iWritePos;
+
+          if ftr.o.eof then begin
+            fileSetDate(fs.Handle, DatetimeToFileDate(ftr.o.FileDate));
+          end;
+          inc(iStart,ftr.o.Length);
+          inc(iWritePos, iToWrite);
+        until iWritePos = iTotal;
+        CloseFile_Async(ftr);  //destroys TfileTransferReference;
+      end else begin
+        chunksize := 262144*4*16;
+        iWritePos := 0;
+        repeat
+          ftr.o.StartBlock := iStart;
+          iToWRite := lesserof(chunksize, iTotal-iWritePos);
+          ftr.o.Length := iToWrite;
+          ftr.o.Buffer := nil;
+          ftr.o.ContainsData := false;
+          GetFile_Async(ftr);
+          if prog<> nil then
+            inc(prog.step, ftr.o.Length);
+          inc(iStart,ftr.o.Length);
+          inc(iWritePos, iToWrite);
+        until iWritePos = iTotal;
+
+        CloseFile_Async(ftr);
 
 
-      iStart := 0;
-      iWritePos := 0;
-      repeat
-        ftr.StartBlock := iStart;
-        iToWRite := lesserof(262144, iTotal-iWritePos);
-        ftr.Length := iToWrite;
-        ftr.Buffer := nil;
-        ftr.ContainsData := false;
-//        GetFile_Async(ftr);
-        GetFile_Response(ftr);
-        stream_GuaranteeWrite(fs, ftr.buffer, ftr.Length);
-        if prog<> nil then
-          inc(prog.step, ftr.Length);
+        iStart := 0;
+        iWritePos := 0;
+        prog.step := 0;
+        repeat
+          ftr.o.StartBlock := iStart;
+          iToWRite := lesserof(chunksize, iTotal-iWritePos);
+          ftr.o.Length := iToWrite;
+          ftr.o.Buffer := nil;
+          ftr.o.ContainsData := false;
+  //        GetFile_Async(ftr);
+          GetFile_Response(ftr);
+          stream_GuaranteeWrite(fs, ftr.o.buffer, ftr.o.Length);
+          if prog<> nil then
+            inc(prog.step, ftr.o.Length);
 
-        if ftr.eof then begin
-          fileSetDate(fs.Handle, DatetimeToFileDate(ftr.FileDate));
-        end;
-        inc(iStart,ftr.Length);
+          if ftr.o.eof then begin
+            fileSetDate(fs.Handle, DatetimeToFileDate(ftr.o.FileDate));
+          end;
+          inc(iStart,ftr.o.Length);
 
-        inc(iWritePos, iToWrite);
-      until iWritePos = iTotal;
+          inc(iWritePos, iToWrite);
+        until iWritePos = iTotal;
+
+      end;
 
     finally
       fs.free;
     end;
   finally
-    ftr.ContainsData := false;
+    ftr.o.ContainsData := false;
     self.CloseFile_REsponse();
-    ftr.free;
+//    ftr.free;
   end
   else
     raise ECritical.create('Failed to open remote file '+sRemoteFile);
@@ -144,24 +180,24 @@ begin
         repeat
           iToWrite := lesserof(PUT_SIZE, fs.Size-fs.Position);
           GEtMem(b, iToWrite);
-          ftr.Buffer := b;
-          ftr.StartBlock := iPos;
-          ftr.Length := stream_guaranteeread(fs, ftr.Buffer, PUT_SIZE);//fs.Read(b[0], PUT_SIZE);
-          inc(iPos, ftr.Length);
+          ftr.o.Buffer := b;
+          ftr.o.StartBlock := iPos;
+          ftr.o.Length := stream_guaranteeread(fs, ftr.o.Buffer, PUT_SIZE);//fs.Read(b[0], PUT_SIZE);
+          inc(iPos, ftr.o.Length);
 
-          ftr.EOF := fs.Position >= fs.Size;
-          ftr.FileDate := FileDateToDateTime(FileGetDAte(fs.handle));
-          ftr.ContainsData := true;
+          ftr.o.EOF := fs.Position >= fs.Size;
+          ftr.o.FileDate := FileDateToDateTime(FileGetDAte(fs.handle));
+          ftr.o.ContainsData := true;
           self.PutFile(ftr);
-          ftr.FreeBuffer;
+          ftr.o.FreeBuffer;
 
 
-        until ftr.eof;
+        until ftr.o.eof;
       finally
-        ftr.Buffer := nil;
-        ftr.length := 0;
+        ftr.o.Buffer := nil;
+        ftr.o.length := 0;
         self.CloseFile(ftr);
-        ftr.free;
+        ftr.o.free;
       end;
     finally
       fs.free;

@@ -6,7 +6,7 @@ interface
 
 
 uses
-  Classes, variants, math, commonconstants, systemx, sort, numbers, typex, betterobject;
+  Classes, variants, math, commonconstants, systemx, sort, numbers, typex, betterobject, types, sysutils;
 
 const
   CRLF = #13#10;
@@ -86,6 +86,9 @@ function CountChar(s: string; c: char): ni;
 function StrIsBinary(s: string): boolean;
 function Capitalize(s: string): string;
 function AmpEncode(s: string): string;
+function AnsiStringToBytes(s: ansistring): TArray<byte>;
+function AnsiStringToTBytes(s: ansistring): Tbytes;
+function BytesToAnsiString(b: TArray<byte>): ansistring;
 
 
 function Unquote(s: string): string;
@@ -234,7 +237,7 @@ function ordEX(c: widechar): nativeint;overload;
 {##############################################################################}
 implementation
 uses
-  helpers.stream, SysUtils, unittest;
+  helpers.stream, unittest;
 
 type
   TUT_StringX = class(TUnitTest)
@@ -839,11 +842,12 @@ function stringToStringListH(s: string): IHolder<TStringList>;
 //quickly breaking apart a large document into a bunch of lines.
 //Note that you should manaually free the TStringList class yourself.
 var
-  s1,s2: string;
+  s1: string;
 begin
   result := THolder<TStringList>.create;
   result.o := TStringList.create;
-{$IFDEF FMX}
+  s1 := s;
+{$IFNDEF I_TRUST_EMBARCADERO}
   result.o.TrustyText := s;
 {$ELSE}
   result.o.text := s;
@@ -2147,10 +2151,10 @@ begin
     result := 'NULL';
   end else
   if (vt and varDate)=varDate then begin
-    result := '"'+datetomysqldate(v)+'"';
+    result := ''''+datetomysqldate(v)+'''';
   end else
   if (vt and varString)=varString then begin
-    result := '"'+SQLEscape(vartostr(v))+'"';
+    result := ''''+SQLEscape(vartostr(v))+'''';
   end
   //--------------------------------
   else if (vt and varBoolean)=varBoolean then begin
@@ -2196,9 +2200,12 @@ end;
 
 
 function StartsWith(sMaster: string; sStartsWith: string): boolean;
+var
+  sCompare: string;
 begin
   sStartswith := lowercase(sStartsWith);
-  result := lowercase(copy(sMaster, 1,length(sStartsWith))) = sStartsWith;
+  sCompare := lowercase(zcopy(sMaster, 0,length(sStartsWith)));
+  result :=  sCompare = sStartsWith;
 
 end;
 
@@ -2207,7 +2214,7 @@ begin
   sMaster := Trimstr(sMaster);
   result := StartsWith(sMaster, sStartsWith);
   if result then begin
-    sMaster := copy(sMaster, length(sStartsWith)+1, length(sMaster));
+    sMaster := zcopy(sMaster, length(sStartsWith), length(sMaster));
   end;
 end;
 
@@ -4510,6 +4517,25 @@ begin
   result.o := TStringList.create;
 
 end;
+
+function AnsiStringToBytes(s: ansistring): TArray<byte>;
+begin
+  setlength(result, length(s));
+  movemem32(@result[0], @s[STRZ], length(s));
+end;
+
+function AnsiStringToTBytes(s: ansistring): Tbytes;
+begin
+  setlength(result, length(s));
+  movemem32(@result[0], @s[STRZ], length(s));
+end;
+
+function BytesToAnsiString(b: TArray<byte>): ansistring;
+begin
+  setlength(result, length(b));
+  movemem32(@result[STRZ], @b[0], length(b));
+end;
+
 
 
 initialization

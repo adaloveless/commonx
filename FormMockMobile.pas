@@ -24,7 +24,7 @@ type
   end;
   PMQinfo = ^TMQInfo;
 
-  TfrmMockMobile = class(TfrmFMXBase)
+  Tmm = class(TfrmFMXBase)
     q: TPanel;
     gm: TGestureManager;
     TempMessageTimer: TTimer;
@@ -64,7 +64,7 @@ type
   TFormClass = class of TfrmFMXBase;
 var
   frmDefault: TFormClass;
-  mm: TfrmMockMobile;
+  mm: Tmm;
 
 procedure MM_ShowForm(frm: TfrmFMXBase);
 procedure MM_CloseForm(frm: TfrmFMXBase);
@@ -80,7 +80,7 @@ implementation
 uses debug;
 
 
-procedure TfrmMockMobile.ShowFormClass<T>(var f: T);
+procedure Tmm.ShowFormClass<T>(var f: T);
 begin
   if f = nil then begin
     Debug.Log(CLR_UI+'***Creating form: '+ f.classname);
@@ -93,7 +93,7 @@ begin
 
 end;
 
-procedure TfrmMockMobile.ShowFormClassAndSetup<T>(var f: T; p: TProc);
+procedure Tmm.ShowFormClassAndSetup<T>(var f: T; p: TProc);
 begin
   if f = nil then begin
     Debug.Log(CLR_UI+'***Creating form: '+ f.classname);
@@ -123,13 +123,13 @@ end;
 
 { TfrmMockMobile }
 
-procedure TfrmMockMobile.AfterConstruction;
+procedure Tmm.AfterConstruction;
 begin
   inherited;
 
 end;
 
-procedure TfrmMockMobile.BeforeDestruction;
+procedure Tmm.BeforeDestruction;
 begin
   inherited;
   for var t := 0 to formstack.count-1 do begin
@@ -140,21 +140,21 @@ begin
 
 end;
 
-procedure TfrmMockMobile.btnGestureTestGesture(Sender: TObject;
+procedure Tmm.btnGestureTestGesture(Sender: TObject;
   const EventInfo: TGestureEventInfo; var Handled: Boolean);
 begin
   inherited;
 //  btnGestureTest.text := 'gesture!'+getticker.tostring;
 end;
 
-constructor TfrmMockMobile.Create(AOwner: TComponent);
+constructor Tmm.Create(AOwner: TComponent);
 begin
   inherited;
   formstack := TBetterList<TfrmFMXBase>.create;
   Debug.Log(self.ClassName+' created.');
 end;
 
-procedure TfrmMockMobile.DoShow;
+procedure Tmm.DoShow;
 begin
   inherited;
   if showingform = nil then begin
@@ -164,31 +164,31 @@ begin
 
 end;
 
-function TfrmMockMobile.GetShowingForm: TfrmFMXBase;
+function Tmm.GetShowingForm: TfrmFMXBase;
 begin
   if formstack.count = 0 then
     exit(nil);
   result := formstack.Last;
 end;
 
-procedure TfrmMockMobile.GiveBackControls;
+procedure Tmm.GiveBackControls;
 begin
   MoveControls(showingform, self, showingform);
 end;
 
 
-function TfrmMockMobile.PopForm: TfrmFMXBase;
+function Tmm.PopForm: TfrmFMXBase;
 begin
   result := showingform;
   formstack.remove(result);
 end;
 
-procedure TfrmMockMobile.PushForm(f: TfrmFMXBase);
+procedure Tmm.PushForm(f: TfrmFMXBase);
 begin
   formstack.add(f);
 end;
 
-procedure TfrmMockMobile.RemoveForm(f: TfrmFMXBase);
+procedure Tmm.RemoveForm(f: TfrmFMXBase);
 begin
   if f = showingform then
     GiveBackControls;
@@ -201,7 +201,7 @@ begin
   end;
 end;
 
-procedure TfrmMockMobile.ShowForm(f: TfrmFMXBase);
+procedure Tmm.ShowForm(f: TfrmFMXBase);
 begin
   if showingform <> nil then begin
       showingform.Parent := nil;
@@ -228,12 +228,12 @@ begin
 
 end;
 
-procedure TfrmMockMobile.TakeControls;
+procedure Tmm.TakeControls;
 begin
   MoveControls(showingform, showingform, self);
 end;
 
-procedure TfrmMockMobile.MoveControls(owner, cfrm, cto: TFMXObject);
+procedure Tmm.MoveControls(owner, cfrm, cto: TFMXObject);
 {$IFNDEF NEW_MOVE}
 begin
   if cfrm = nil then
@@ -404,7 +404,7 @@ begin
 
 end;
 
-procedure TfrmMockMobile.TempMessageEngine;
+procedure Tmm.TempMessageEngine;
 begin
   var mq : PMQinfo := @FTempMsginfo;
   if (not mq.enabled) and (FTemporaryMessageQueue.o.count = 0) then
@@ -465,13 +465,13 @@ begin
 
 end;
 
-procedure TfrmMockMobile.TempMessageTimerTimer(Sender: TObject);
+procedure Tmm.TempMessageTimerTimer(Sender: TObject);
 begin
   inherited;
   TempMessageEngine;
 end;
 
-procedure TfrmMockMobile.TemporaryMessage(s: string);
+procedure Tmm.TemporaryMessage(s: string);
 begin
   if FTemporaryMessageQueue = nil then begin
     FTemporaryMessageQueue := Tholder<TSTringList>.create;

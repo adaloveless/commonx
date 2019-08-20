@@ -80,8 +80,7 @@ type
     name: string;
     status: string;
     iterations: int64;
-    step: int64;
-    stepcount: int64;
+    progress: TProgress;
     error: string;
     lastused: ticker;
     pooled: boolean;//requires refresh on extract
@@ -189,6 +188,7 @@ type
     procedure SetBetterPriority(const Value: TBetterPriority);
     function Getinfo: TThreadInfo;
   protected
+    procedure Updatethreadinfo;virtual;
     procedure BeforeDoExecute;virtual;
     procedure DoExecute;virtual;
     procedure AfterDoExecute;virtual;
@@ -736,8 +736,8 @@ begin
   FMMTaskHandle := cardinal(PDWord(@h)^);
 {$ENDIF}
 
-  Finfo.StepCount := 0;
-  Finfo.Step := 0;
+  Finfo.progress.StepCount := 0;
+  Finfo.progress.Step := 0;
   Finfo.Iterations := 0;
 
   //initialize critical section
@@ -922,6 +922,11 @@ begin
     p.NoNeedThread(self)
   else
     TPM.NoNeedthread(self);
+end;
+
+procedure TManagedThread.Updatethreadinfo;
+begin
+  //
 end;
 
 //------------------------------------------------------------------------------
@@ -1176,6 +1181,7 @@ begin
   try
     DeadCheck;
     try
+      UpdateThreadInfo;
       result := FInfo;
       result.pooled := FPool <> nil;//volatile
     except
@@ -1243,7 +1249,7 @@ function TManagedThread.GetStepCount: NativeInt;
 begin
   Lock;
   try
-    result := Finfo.StepCount;
+    result := Finfo.progress.StepCount;
   finally
     UnLock;
   end;
@@ -1407,7 +1413,7 @@ function TManagedThread.GetStep: NativeInt;
 begin
   Lock;
   try
-    result := Finfo.Step;
+    result := Finfo.progress.Step;
   finally
     UnLock;
   end;
@@ -1698,7 +1704,7 @@ procedure TManagedThread.SetStepCount(const Value: NativeInt);
 begin
 //  Lock;
 //  try
-    Finfo.StepCount := Value;
+    Finfo.progress.StepCount := Value;
 //  finally
 //    UnLock;
 //  end;
@@ -1861,7 +1867,7 @@ procedure TManagedThread.SetStep(const Value: NativeInt);
 begin
 //  Lock;
 //  try
-    Finfo.Step := Value;
+    Finfo.progress.Step := Value;
 //  finally
 //    UnLock;
 //  end;
@@ -2080,7 +2086,7 @@ procedure TManagedThread.StepComplete(iStepCount: NativeInt);
 begin
   Lock;
   try
-    inc(Finfo.Step, iStepCount);
+    inc(Finfo.progress.Step, iStepCount);
   finally
     UnLock;
   end;

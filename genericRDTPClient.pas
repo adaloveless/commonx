@@ -93,6 +93,7 @@ type
 
 
   public
+    errors: nativeint;
     property UseTCP: boolean read FUseTCP write FUseTCP;
     property UseTor: boolean read FUseTor write FUseTor;
 
@@ -624,8 +625,10 @@ begin
 
 
     //server will return platform options that it supports using the input from the request
-    if packet.result = false then
+    if packet.result = false then begin
+      inc(self.errors);
       raise EServerError.Create(packet.Message);
+    end;
 
     if bTrans and (packet.result) and (packet.DataCount > (PACKET_INDEX_RESULT_DETAILS-1)) then begin
       PlatformOptions := packet.Data[PACKET_INDEX_RESULT_DETAILS];
@@ -1162,7 +1165,9 @@ begin
           if FConnection = nil then
             raise ETransportError.create('Connection dropped unexpectedly');
 
-          iBytesThisREad := FConnection.ReadData(pcHeader+iBytesRead, 18-iBytesRead);
+
+          FConnection.WaitForData(Timeout);
+            iBytesThisREad := FConnection.ReadData(pcHeader+iBytesRead, 18-iBytesRead);
 
           if iBytesThisRead = 0 then
             raise ETransportError.create('client disconnected');
@@ -1171,6 +1176,8 @@ begin
         end;
   {$ENDIF}
 
+
+        FConnection.WaitForData(Timeout);
         Fconnection.ReadData(pcHeader, 18, true);
 
         //Get info on packet

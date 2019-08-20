@@ -743,14 +743,14 @@ begin
 end;
 
 procedure GenerateRekeyMap(rqInfo: TRequestInfo; sTempTable: string; sField: string; iKEYConstant: integer);
-var
+(*var
   sReKeyTable: string;
   doTemp: TDataObject;
   t: integer;
   k1: string;
-  k2: string;
+  k2: string;*)
 begin
-  sReKeyTable := GetRekeyTemptableName(rqInfo, sField);
+(*  sReKeyTable := GetRekeyTemptableName(rqInfo, sField);
 
   //select distinct keys from table in order into another temptable with naming convention
   doTemp := GetTempTableFromQuery(
@@ -765,7 +765,7 @@ begin
     k2 := inttostr(rqInfo.Server.GetNextID(iKeyConstant));
 
     NoTransUpdateQuery(rQinfo, 'update '+sRekeyTable+' set key2='+k2+' where key1='+k1);
-  end;
+  end;*)
 
 end;
 

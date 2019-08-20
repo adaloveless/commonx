@@ -1068,19 +1068,24 @@ begin
   ThreadObject := Self;
   while not Terminated do
   begin
-    if Assigned(FServerSocketThread) and not FServerSocketThread.Terminated and
-       Assigned(FServerSocketThread.ServerSocket) then
-    begin
-      FClientSocket := TCustomIpClient.Create(nil);
-      try
-        FServerSocketThread.ServerSocket.Accept(FClientSocket);
-      finally
-        FClientSocket.Free;
-        FClientSocket := nil;
+    try
+      if Assigned(FServerSocketThread) and not FServerSocketThread.Terminated and
+         Assigned(FServerSocketThread.ServerSocket) then
+      begin
+        FClientSocket := TCustomIpClient.Create(nil);
+        try
+          FServerSocketThread.ServerSocket.Accept(FClientSocket);
+        finally
+          FClientSocket.Free;
+          FClientSocket := nil;
+        end;
       end;
-    end;
     if not Terminated then
       Suspend;
+    except
+      Terminate;
+
+    end;
   end;
 end;
 

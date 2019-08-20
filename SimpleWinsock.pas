@@ -120,7 +120,7 @@ Begin
   Addr.sin_addr.S_addr := INET_ADDR(PAnsiChar(GetIPFromHost(ansistring(HostName))));
 
 
-  Debug.Log(self,'Connecting to ' + string(GetIPFromHost(ansistring(HostName))));
+  Debug.Log(self,'Connecting to ' + string(GetIPFromHost(ansistring(HostName)))+':'+EndPoint);
 
   //Attempt the connection using our socket
   if (Winapi.Winsock.Connect(hSocket, Addr, SizeOf(Addr)) = 0) then
@@ -307,11 +307,14 @@ var
   FDSet: TFDSet;
   TimeVal: TTimeVal;
 begin
-  TimeVal.tv_sec := Timeout div 1000;
+  TimeVal.tv_sec := Timeout div 1000;//todo 3: remove this divide
   TimeVal.tv_usec := (Timeout mod 1000) * 1000;
   FD_ZERO(FDSet);
   FD_SET(hSocket, FDSet);
-  Result := (select(0, @FDSet, nil, nil, @TimeVal) > 0)
+  if timeout = 0 then
+    result := (select(0, @FDSet, nil, nil, nil) > 0)
+  else
+    Result := (select(0, @FDSet, nil, nil, @TimeVal) > 0);
 end;
 
 { TSocksHeader }

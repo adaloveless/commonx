@@ -287,8 +287,24 @@ end;
 function TServerInterface.Post(obj: TDataObject; out objOutput: TDataObject; cache: TDataObjectCache; iSessionID: integer; bIncludeSubFields:boolean =false):boolean;
 //Description: Saves a Data object to the database be marshalling it into
 //a packet and transmitting it to the server.
+var
+  s: string;
+  t: ni;
 begin
-  cli.WriteQuery(obj.SaveQuery);
+  if obj.IsList then begin
+    for t := 0 to obj.objectcount-1 do begin
+      if obj.obj[t].IsChanged then
+        post(obj.obj[t], objOutput, cache, iSessionID);
+    end;
+  end else begin
+    s := obj.SaveQuery;
+    Debug.Log('POST '+obj.classname+' with query: '+s);
+  //  if not IsMYSQL then begin
+  //    if obj.tablelink <> '' then
+  //      cli.WriteQuery('SET IDENTITY_INSERT '+obj.TableLink+' ON;');
+  //  end;
+    cli.WriteQuery(s);
+  end;
 end;
 
 //------------------------------------------------------------------------------
@@ -478,6 +494,8 @@ end;
 function TServerInterface.New(cache: TDataObjectCache; out obj: TDataObject; sType: string;
   params: variant; iSessionID: integer): boolean;
 begin
+  CheckConnectedOrConnect;
+
   result := true;
   docf.LowLevelDOCreate(obj, cache, sType, params, 0,0,0);
   obj.New(0);

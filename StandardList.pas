@@ -28,6 +28,8 @@ type
     property OwnsObjects: boolean read FOwnsObjects write FOwnsObjects;
     property Items[idx: nativeint]: T_OBJ read GetItem write SetItem;default;
     property ItemsByIndex[idx: T_IDX]: T_OBJ read GetItemByIndex;
+    procedure AfterAdd(p: T_OBJ);virtual;
+    procedure AfterRemove(p: T_OBJ);virtual;
     procedure Add(p: T_OBJ);virtual;
     procedure Remove(p: T_OBJ);
     procedure Delete(idx: nativeint);
@@ -43,6 +45,12 @@ type
     function HighestIndex: T_IDX;
     function LowestIndex: T_IDX;
   end;
+
+  TReferencedList<T_IDX; T_OBJ: class, IIndexable<T_IDX>> = class(TStandardList<T_IDX, T_OBJ>)
+    procedure AfterAdd(p: T_OBJ);override;
+    procedure AfterRemove(p: T_OBJ);override;
+  end;
+
 
   TBinarySearchableList<T_OBJ:class,IIndexable<int64>> = class(TStandardList<int64, T_OBJ>)
   protected
@@ -73,10 +81,21 @@ begin
   Lock;
   try
     FList.add(p);
+    AfterAdd(p);
   finally
     Unlock;
   end;
 
+end;
+
+procedure TStandardList<T_IDX, T_OBJ>.AfterAdd(p: T_OBJ);
+begin
+//
+end;
+
+procedure TStandardList<T_IDX, T_OBJ>.AfterRemove(p: T_OBJ);
+begin
+//
 end;
 
 procedure TStandardList<T_IDX, T_OBJ>.Clear;
@@ -109,6 +128,7 @@ begin
       tt := FList[idx];
     end;
     Flist.delete(idx);
+    AfterRemove(tt);
     if ownsobjects then begin
       tt.free;
       tt := nil;
@@ -311,8 +331,11 @@ begin
   Lock;
   try
     fList.Remove(p);
+    AfterRemove(p);
     if OwnsObjects then
       p.free;
+
+
 
   finally
     Unlock;
@@ -344,6 +367,21 @@ end;
 function TBinarySearchableList<T_OBJ>.IndexOf_Binary(p: int64): nativeint;
 begin
   raise ECritical.create('Not implemented');
+end;
+
+{ TReferencedList<T_IDX, T_OBJ> }
+
+procedure TReferencedList<T_IDX, T_OBJ>.AfterAdd(p: T_OBJ);
+begin
+  inherited;
+  p._AddRef;
+end;
+
+procedure TReferencedList<T_IDX, T_OBJ>.AfterRemove(p: T_OBJ);
+begin
+  inherited;
+  p._Release;
+
 end;
 
 end.

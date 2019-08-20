@@ -340,7 +340,7 @@ begin
     BusyRect.bringtofront;
     CenterControl(BusyRect);
     CenterControl(BusyCircle);
-    BusyRect.Align := TAlignLayout.client;
+    BusyRect.Align := TAlignLayout.contents;
     ShowFancy(working);
   end else
   begin

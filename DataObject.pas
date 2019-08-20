@@ -1787,33 +1787,40 @@ function TDataObject.GetInsertQuery: string;
 var
   t: ni;
   ColumnList: string;
+  ValueList: string;
 const
   BL = '';//would be brackets on MSSQL
   BR = '';//would be brackets on MSSQL
 begin
   ColumnList := '';
   for t:= SkipInsertKeycount to high(FKeys) do begin
-    ColumnList := ColumnList + BL+self.Fkeys[t]+BR+', ';
+    if columnlist <> '' then
+      columnlist := columnlist + ', ';
+    ColumnList := ColumnList + BL+self.Fkeys[t]+BR;
   end;
 
   for t:= 0 to fieldCount-1 do begin
+    if columnlist <> '' then
+      columnlist := columnlist + ', ';
     ColumnList := ColumnList + BL+self.fieldByIndex[t].Name+BR;
-    if t < fieldcount-1 then
-      ColumnList := ColumnList + ', ';
   end;
 
   result := 'insert into '+FTableLink+' ('+ColumnList+') ( select ';
 
+  ValueList := '';
   for t:= SkipInsertKeycount to high(FKeys) do begin
-    result := result + vartostr(token.params[t])+', ';
+    if valuelist <> '' then
+      valuelist := valuelist + ', ';
+    ValueList := ValueList + vartostr(token.params[t]);
   end;
 
   for t:= 0 to fieldCount-1 do begin
-    result := result + self.fieldByIndex[t].QuotedStorageString;
-    if t < fieldcount-1 then
-      result := result + ', ';
+    if valuelist <> '' then
+      valuelist := valuelist + ', ';
+    ValueList := ValueList + self.fieldByIndex[t].QuotedStorageString;
+
   end;
-  result := result + ')';
+  result := result + valuelist+ ')';
 
 end;
 
@@ -2266,7 +2273,7 @@ end;
 procedure TDataField.RaiseTypeCastException(v: variant);
 begin
   raise EDataObjectError.create(
-    'Value passed to ' +self.name+':'+self.ClassName+
+    'Value "'+vartostrex(v)+'" passed to ' +self.name+':'+self.ClassName+
     ' was of unexpected type. (Type '+inttostr(varType(v))+') Object: '+self.Owner.ClassName);
 
 

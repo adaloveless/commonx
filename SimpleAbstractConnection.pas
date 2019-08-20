@@ -172,9 +172,17 @@ begin
 end;
 
 function TSimpleAbstractConnection.Connect: boolean;
+var tmStart: ticker;
 begin
   Disconnecting := false;
-  result := DoConnect;
+
+  tmStart := getTicker;
+  repeat
+    result := DoConnect;
+    if not result then
+      sleep(random(500));
+  until result or (gettimesince(tmStart) > 8000);
+
 
 end;
 
@@ -274,7 +282,7 @@ begin
     if WaitforData(iTimeout) then begin
       justread := ReadData(pp, togo);
       if justread <=0 then
-        raise ETransportError.Create(classname+' returned zero bytes');
+        raise ETransportError.Create(classname+' returned zero bytes!**');
     end;
 
     dec(togo, justread);
@@ -359,9 +367,9 @@ end;
 
 function TSimpleAbstractConnection.SendData(buffer: pbyte; length: integer; bSendAll: boolean = true): integer;
 var
-  iSent: integer;
-  iToSend: integer;
-  iJustSent: integer;
+  iSent: int64;
+  iToSend: int64;
+  iJustSent: int64;
 begin
   iSent := 0;
   while iSent < length do begin

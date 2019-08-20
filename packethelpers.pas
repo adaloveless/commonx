@@ -7,7 +7,7 @@ interface
 {$DEFINE SAVE_MEMORY}
 
 uses
-  consolelock, helpers.stream, debug, system.ioutils, numbers, systemx, typex, packet, sysutils, SqlExpr, DB, StorageEngineTypes, variants, Databasedictionary, dir, dirfile, classes, zip, rdtp_file;
+  consolelock, helpers.stream, debug, system.ioutils, numbers, systemx, typex, packet, sysutils, SqlExpr, DB, StorageEngineTypes, variants, Databasedictionary, dir, dirfile, classes, zip, rdtp_file, betterobject;
 
 type
   TStringArray = array of ansistring;
@@ -127,17 +127,12 @@ implementation
 procedure GetTFileInformationFromPacket(packet: TRDTPPacket; out inf: TFileInformation);
 var
   i: nativeint;
-  fa: TFileAttributes;
 begin
   inf := TFileInformation.create;
   inf.FullName := packet.SeqRead;
   packet.SeqRead;//name is kinda redundant
   i := packet.SeqRead;
-
-  fa := [];
-  systemx.MoveMem32(@fa, @i, lesserof(sizeof(i), sizeof(fa)));
-
-  inf.Attributes := fa;
+  inf.UniversalAttributes := i;
 
 
 end;
@@ -149,10 +144,11 @@ var
 begin
   packet.AddString(inf.Fullname);
   packet.AddString(inf.Name);
-  fa := inf.Attributes;
 
-  i := 0;
-  MoveMem32(@i, @fa, lesserof(sizeof(fa), sizeof(i)));
+  i := inf.UniversalAttributes;
+
+//  i := 0;
+//  MoveMem32(@i, @fa, lesserof(sizeof(fa), sizeof(i)));
 
   packet.AddInt(i);
 
@@ -164,18 +160,19 @@ procedure GetTFileTransferReferenceFromPacket(packet: TRDTPPacket; out fr: TFile
 var
   iLength: int64;
 begin
-  fr := TfileTransferReference.create;
+  fr := THolder<TfileTransferReferenceObj>.create;
+  fr.o := TfileTransferReferenceObj.create;
 
-  fr.filename := packet.SeqRead;
-  fr.Handle := packet.SeqREad;
-  fr.ContainsData := packet.seqread;
-  fr.StartBlock := packet.seqread;
-  fr.length := packet.SeqRead;
-  if fr.ContainsData then begin
-    fr.EOF := packet.seqread;
-    fr.Buffer := packet.SeqReadBytes(iLength);
-    if fr.EOF then begin
-      fr.FileDate := packet.SeqRead;
+  fr.o.filename := packet.SeqRead;
+  fr.o.Handle := packet.SeqREad;
+  fr.o.ContainsData := packet.seqread;
+  fr.o.StartBlock := packet.seqread;
+  fr.o.length := packet.SeqRead;
+  if fr.o.ContainsData then begin
+    fr.o.EOF := packet.seqread;
+    fr.o.Buffer := packet.SeqReadBytes(iLength);
+    if fr.o.EOF then begin
+      fr.o.FileDate := packet.SeqRead;
     end;
   end;
 end;
@@ -184,16 +181,16 @@ end;
 procedure WriteTFileTransferReferenceToPacket(packet: TRDTPPacket; tr: TFileTransferReference);
 begin
   try
-    packet.addvariant(tr.FileName);
-    packet.AddLong(tr.handle);
-    packet.addvariant(tr.ContainsData);
-    packet.addvariant(tr.StartBlock);
-    packet.addvariant(tr.length);
-    if (tr.containsdata) then begin
-      packet.AddVariant(tr.EOF);
-      packet.addBytes(tr.Buffer, tr.Length);
-      if tr.eof then begin
-        packet.AddVariant(tr.FileDate);
+    packet.addvariant(tr.o.FileName);
+    packet.AddLong(tr.o.handle);
+    packet.addvariant(tr.o.ContainsData);
+    packet.addvariant(tr.o.StartBlock);
+    packet.addvariant(tr.o.length);
+    if (tr.o.containsdata) then begin
+      packet.AddVariant(tr.o.EOF);
+      packet.addBytes(tr.o.Buffer, tr.o.Length);
+      if tr.o.eof then begin
+        packet.AddVariant(tr.o.FileDate);
       end;
     end;
   finally
@@ -669,8 +666,29 @@ begin
 end;
 //------------------------------------------------------------------------------
 procedure GetTDirectoryFromPacket(packet: TRDTPPacket; out d: TDirectory);
+var
+  count,t: integer;
+  fi: TFileInformation;
 begin
-   raise exception.create('unimplemented - gettdirectoryfrompacket');
+  d := TDirectory.CreateFromRemote;
+  try
+    count := packet.seqread;
+    for t:= 0 to count-1 do begin
+      GetTFileInformationFromPacket(packet, fi);
+      d.AddFileInfo(fi);
+    end;
+
+    count := packet.seqread;
+    for t:= 0 to count-1 do begin
+      GetTFileInformationFromPacket(packet, fi);
+      d.AddFolderInfo(fi);
+    end;
+  except
+    d.free;
+    d := nil;
+    raise;
+  end;
+
 
 end;
 //------------------------------------------------------------------------------
@@ -683,6 +701,7 @@ begin
     WriteTFileInformationToPacket(packet, d.Files[t]);
   end;
 
+  packet.AddVariant(d.FolderCount);
   for t:= 0 to d.Foldercount-1 do begin
     WriteTFileInformationToPacket(packet, d.Folders[t]);
   end;

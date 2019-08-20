@@ -82,28 +82,28 @@ begin
 //  GetMem(aa, 2000000);
   try
 
-    fs := FindFileResource(self, oFile.handle);
+    fs := FindFileResource(self, oFile.o.handle);
     if fs = nil then begin
-      raise Exception.create('The file handle was invalid reading file: '+oFile.FileName);
+      raise Exception.create('The file handle was invalid reading file: '+oFile.o.FileName);
     end;
     try
-      fs.Seek(oFile.StartBlock,0);
+      fs.Seek(oFile.o.StartBlock,0);
   //    GetMem(b, ofile.Length);
-      b := ofile.Buffer;
+      b := ofile.o.Buffer;
 //      MoveMem32(@aa[0],b, oFile.Length);
       iWritten := 0;
       repeat
-        iJustWritten := fs.Write(b[iWritten], oFile.Length-iWritten);
+        iJustWritten := fs.Write(b[iWritten], oFile.o.Length-iWritten);
         if iJustWritten < 1 then break;
         inc(iWritten, iJustWritten);
-      until iWritten = oFile.length;
-      if oFile.EOF then begin
-        FileSetDAte(fs.handle,DateTimeToFileDate(oFile.FileDate));
+      until iWritten = oFile.o.length;
+      if oFile.o.EOF then begin
+        FileSetDAte(fs.handle,DateTimeToFileDate(oFile.o.FileDate));
       end;
 
     finally
   //    fs.free;
-      FreeMem(oFile.Buffer);
+      FreeMem(oFile.o.Buffer);
     end;
   finally
 //    FreeMem(aa);
@@ -122,24 +122,24 @@ var
 begin
 
   result := true;
-  fs := FindFileResource(self, oFile.handle);
+  fs := FindFileResource(self, oFile.o.handle);
   if fs = nil then begin
-    raise Exception.create('The file handle was invalid reading file: '+oFile.FileName);
+    raise Exception.create('The file handle was invalid reading file: '+oFile.o.FileName);
   end;
   try
-    fs.Seek(oFile.StartBlock,0);
-    iRead := fs.Read(a, oFile.Length);
-    GetMem(b, ofile.Length);
+    fs.Seek(oFile.o.StartBlock,0);
+    iRead := fs.Read(a, oFile.o.Length);
+    GetMem(b, ofile.o.Length);
     MoveMem32(b, @a[0], iRead);
     //oFile.Init();
-    oFile.eof := fs.Position >= fs.Size;
+    oFile.o.eof := fs.Position >= fs.Size;
 
 //(iRead < oFile.Length);
-    oFile.length := iRead;
-    oFile.containsData := true;
-    oFile.buffer := b;
-    if oFile.eof then begin
-      oFile.FileDate := FileDateToDateTime(FileGetDate(fs.handle));
+    oFile.o.length := iRead;
+    oFile.o.containsData := true;
+    oFile.o.buffer := b;
+    if oFile.o.eof then begin
+      oFile.o.FileDate := FileDateToDateTime(FileGetDate(fs.handle));
     end;
 
 
@@ -158,10 +158,11 @@ var
 begin
   r := TMemoryFileStream.create(sFile, iMode);
 
-  oFile := TFileTransferREference.create;
+  oFile := THolder<TFileTransferREferenceObj>.create;
+  oFile.o := TFileTransferREferenceObj.create;
   self.Resources.Add(r);
-  oFile.FileName := sFile;
-  oFile.Handle := r.handle;
+  oFile.o.FileName := sFile;
+  oFile.o.Handle := r.handle;
   result := true;
 end;
 //------------------------------------------------------------------------------
@@ -294,7 +295,7 @@ begin
   for t:= 0 to self.resources.count-1 do begin
     o := TObject(self.resources[t]);
     if o is TMemoryFileStream then with o as TMemoryFileStream do begin
-      if handle = oFile.handle then begin
+      if handle = oFile.o.handle then begin
         self.resources.remove(o);
         Free;
       end;
@@ -313,8 +314,12 @@ begin
 end;
 
 function TFileServiceServer.RQ_Dir(sRemotePath:string):TDirectory;
+var
+  dir: TDirectory;
 begin
-  raise Exception.create('unimplemented');
+  result := Tdirectory.create(sRemotePath, '*.*', 0,0, false, true, false);
+//  raise Exception.create('unimplemented');
+
 //TODO -cunimplemented: unimplemented block
 end;
 

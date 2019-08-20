@@ -21,7 +21,7 @@ interface
 
 {$IFDEF MSWINDOWS}
 uses debug, sysutils, typex, numbers,
-  winapi.windows,
+  winapi.windows, betterobject,
   managedthread, classes, rtti_helpers,
   commandprocessor, backgroundthreads, commandicons, tickcount,orderlyinit;
 
@@ -59,6 +59,7 @@ procedure WaitForEXE(var hProcessInfo: TBetterProcessInformation; bCloseHandle: 
 function TryWaitForEXE(var hProcessInfo: TBetterProcessInformation): boolean;
 procedure ForgetExe(var hProcessInformation: TBetterProcessInformation);
 procedure RunAndCapture(DosApp: string; cc: TConsoleCaptureHook; Timeout: ticker);
+function RunExeAndCapture(app: string; params: string = ''; wkdir: string = ''): string;
 
 type
   TWAitForExeThread = class(TProcessorThread)
@@ -131,7 +132,7 @@ type
     property Hung: boolean read FHung write FHung;
     procedure CheckIfHungAndTerminate;
     property Timeout: cardinal read FTimeOut write FTimeout;
-    property CaptureConsoleoutput: boolean read FCaptureConsoleOutput write FCaptureConsoleOutput;
+    property CaptureConsoleoutput: boolean read FConsoleRedirect write FConsoleRedirect;
     property ConsoleOutput: string read GetConsoleOutput;
     property IsWindowed: boolean read FIsWindowed write SetIswindowed;
 
@@ -139,7 +140,10 @@ type
 
   end;
 
-procedure KillTaskByName(sImageName: string);
+function IsTaskRunning(sImageName: string): boolean;
+
+function NumberOfTasksRunning(sImageName: string): nativeint;
+function KillTaskByName(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false): boolean;
 procedure KillTaskByID(pid: ni);
 
 
@@ -157,9 +161,87 @@ implementation
 uses
   stringx, systemx;
 
-procedure KillTaskByName(sImageName: string);
+function NumberOfTasksRunning(sImageName: string): nativeint;
+var
+  sTasks: string;
+  h: IHolder<TStringlist>;
+  t: ni;
+  sLine: string;
+  sExtra, sProg: string;
 begin
-  exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'" /T /F', DLLPath, true, false);
+  result := 0;
+  sImageName := lowercase(sImageName);
+  sTasks := exe.RunExeAndCapture(getsystemdir+'tasklist.exe');
+//  SaveStringAsFile('d:\tasks.txt', stasks);
+  h := stringToStringListH(lowercase(sTasks));
+  for t:= 0 to h.o.count-1 do begin
+    sLine := h.o[t];
+    Debug.Log(sLine);
+//    if zcopy(sLine, 0,4) = 'nice' then
+//      Debug.Log('here');
+    if SplitString(sLine, ' ', sProg, sExtra) then begin
+      if comparetext(sLine, sImageName)=0 then
+        inc(result);
+    end;
+  end;
+
+end;
+
+
+
+
+function IsTaskRunningLL(sImageName: string): boolean;
+var
+  sTasks: string;
+  h: IHolder<TStringlist>;
+  t: ni;
+  sLine: string;
+begin
+  result := false;
+  sImageName := lowercase(sImageName);
+  sTasks := exe.RunExeAndCapture(getsystemdir+'tasklist.exe');
+//  SaveStringAsFile('d:\tasks.txt', stasks);
+  h := stringToStringListH(lowercase(sTasks));
+  for t:= 0 to h.o.count-1 do begin
+    sLine := h.o[t];
+    Debug.Log(sLine);
+//    if zcopy(sLine, 0,4) = 'nice' then
+//      Debug.Log('here');
+    if StartsWith(sLine, sImageName) then
+      exit(true);
+  end;
+
+end;
+
+function IsTaskRunning(sImageName: string): boolean;
+var
+  t: ni;
+begin
+  result := false;
+  for t:= 0 to 9 do begin
+    if IsTaskRunningLL(sImageName) then
+      exit(true);
+  end;
+end;
+
+function KillTaskByName(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false): boolean;
+var
+  sTasks: string;
+  tflag: string;
+begin
+  tflag := '';
+  if bKillchildTasks then
+    tflag := ' /T';
+  result := false;
+  exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'"'+tflag+' /F', DLLPath, true, false);
+  while IsTaskRunning(sImageName) do begin
+    Debug.Log('Task '+sImageName+' is still running, retry terminate.');
+    exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'"'+tflag+' /F', DLLPath, true, false);
+    sleep(2000);
+    result := true;
+    if not bKillall then
+      exit;
+  end;
 end;
 
 procedure KillTaskByID(pid: ni);
@@ -1005,7 +1087,9 @@ var
   consolestring: ansistring;
   waittime: int64;
   tmLastAct: ticker;
+  bExitAfterPipeCheck: boolean;
 begin
+  bExitAfterPipeCheck := false;
   with Security do begin
     FillChar(Security, Sizeof(TSecurityAttributes), #0);
     nlength := Sizeof(TSecurityAttributes);
@@ -1057,42 +1141,50 @@ begin
         waittime := lesserof(waittime * 2, 250);
         if Apprunning <> WAIT_TIMEOUT then begin
           Debug.Log('app ended');
+          bExitAfterPipeCheck := true;
         end;
         // it is important to read from time to time the output information
         // so that the pipe is not blocked by an overflow. New information
         // can be written from the console app to the pipe only if there is
         // enough buffer space.
 
-        if not PeekNamedPipe(STdoutRead, @buffer[0], ReadBufferSize,
-          @BytesRead, @TotalBytesAvail, @BytesLeftThisMessage) then
-          Debug.Log('Could not peek std pipe')
-        else if BytesRead > 0 then begin
-          ReadFile(STdoutRead, buffer[0], BytesRead, BytesRead, nil);
-          setlength(consolestring, BytesRead);
-          movemem32(@consolestring[strz], buffer, bytesread);
-          consolestring[bytesread] := #0;
-          cc(ccProgress, consolestring);
-          tmLastAct := getticker;
-          waittime := 1;
-        end;
+
+        repeat
+          BytesRead := 0;
+          if not PeekNamedPipe(STdoutRead, @buffer[0], ReadBufferSize,
+            @BytesRead, @TotalBytesAvail, @BytesLeftThisMessage) then
+            Debug.Log('Could not peek std pipe')
+          else if BytesRead > 0 then begin
+            ReadFile(STdoutRead, buffer[0], BytesRead, BytesRead, nil);
+            setlength(consolestring, BytesRead);
+            movemem32(@consolestring[strz], buffer, bytesread);
+            consolestring[bytesread] := #0;
+            cc(ccProgress, consolestring);
+            tmLastAct := getticker;
+            waittime := 1;
+          end;
+        until BytesRead = 0;
         TotalBytesRead := TotalBytesRead + BytesRead;
 
-        if not PeekNamedPipe(ErRead, @buffer[0], ReadBufferSize,
-          @BytesRead, @TotalBytesAvail, @BytesLeftThisMessage) then
-          Debug.Log('Could not peek err pipe')
-        else if BytesRead > 0 then begin
-          ReadFile(ErRead, buffer[0], BytesRead, BytesRead, nil);
-          setlength(consolestring, BytesRead);
-          movemem32(@consolestring[strz], buffer, bytesread);
-          consolestring[bytesread] := #0;
-          cc(ccProgress, consolestring);
-          tmLastAct := getticker;
-          waittime := 1;
-        end;
-        TotalBytesRead := TotalBytesRead + BytesRead;
+        repeat
+          BytesRead := 0;
+          if not PeekNamedPipe(ErRead, @buffer[0], ReadBufferSize,
+            @BytesRead, @TotalBytesAvail, @BytesLeftThisMessage) then
+            Debug.Log('Could not peek err pipe')
+          else if BytesRead > 0 then begin
+            ReadFile(ErRead, buffer[0], BytesRead, BytesRead, nil);
+            setlength(consolestring, BytesRead);
+            movemem32(@consolestring[strz], buffer, bytesread);
+            consolestring[bytesread] := #0;
+            cc(ccProgress, consolestring);
+            tmLastAct := getticker;
+            waittime := 1;
+          end;
+          TotalBytesRead := TotalBytesRead + BytesRead;
+        until BytesRead = 0;
 
 
-      until (Apprunning <> WAIT_TIMEOUT) or (gettimesince(tmLAstAct)>TimeOut);
+      until (Apprunning <> WAIT_TIMEOUT) or ((timeout > 0) and (gettimesince(tmLAstAct)>TimeOut));
 
       if ((gettimesince(tmLAstAct)>TimeOut) and (Timeout>0)) then begin
         Debug.Log('cancel because hang/no output');
@@ -1161,6 +1253,26 @@ begin
   stdOUTWrite := NO_RETURN_HANDLE;
   stdERRread := NO_RETURN_HANDLE;
   stdERRWrite := NO_RETURN_HANDLE;
+
+end;
+
+function RunExeAndCapture(app: string; params: string = ''; wkdir: string = ''): string;
+var
+  c: Tcmd_RunExe;
+begin
+  c := Tcmd_RunExe.Create;
+  try
+    c.Prog := app;
+    c.Params := params;
+    c.CaptureConsoleoutput := true;
+    c.WorkingDir := wkdir;
+    c.Start;
+    c.WaitFor;
+    result := c.ConsoleOutput;
+  finally
+    c.free;
+    c := nil;
+  end;
 
 end;
 

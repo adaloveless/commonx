@@ -438,12 +438,17 @@ end;
 procedure TSkills.ScrubSkills;
 var
   t: ni;
+  sk: TSkillDef;
 begin
   Lock;
   try
     for t:= FList.count-1 downto 0 do begin
-      if (not FList[t].isvalid) (*and ((Now-FList[t].lastValidationRequest) > 4000)*) then
+      if (not FList[t].isvalid) (*and ((Now-FList[t].lastValidationRequest) > 4000)*) then begin
+        sk := FList[t];
         Flist.delete(t);
+        sk.free;
+        sk := nil;
+      end;
     end;
   finally
     unlock;

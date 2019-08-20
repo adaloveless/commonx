@@ -175,8 +175,8 @@ begin
 end;
 procedure ofinal;
 begin
-  bor.free;
-  bor := nil;
+//  bor.free;
+//  bor := nil;
 
 end;
 

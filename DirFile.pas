@@ -25,6 +25,8 @@ TFileInformation = class(Tobject)
   //will typically automatically create an instance of TFileInformation to represent
   //files in a folder, or folders within a folder.
   private
+    FIsFolder: boolean;
+    FUniversalAttributes: integer;
     procedure SetAtributes(const Value: TFileAttributes);
   protected
     FSize: int64;
@@ -76,7 +78,10 @@ TFileInformation = class(Tobject)
     //Returns the date-time stamp of the file in Pascal datetime format.
 
     function IsCompressed: boolean;
+    property IsFolder: boolean read FIsFolder write FIsFolder;
     procedure LoadFromFile(sFilestring: string);
+    procedure RefreshUniversalAttributes;
+    property UniversalAttributes: integer read FUniversalAttributes write FUniversalAttributes;
 end;
 function LastPos(sub,s : string):integer;
 function GetFileSize(sFile: string): int64;
@@ -170,6 +175,29 @@ begin
   LoadFromFile(FullName);
 end;
 
+procedure TFileInformation.RefreshUniversalAttributes;
+var
+  attr: integer;
+begin
+  attr := 0;
+
+  if isFolder then
+    attr := attr or UFA_FOLDER
+  else begin
+
+    if TFileAttribute.faHidden in Attributes then
+      attr := attr or UFA_HIDDEN;
+
+    if TFileAttribute.faSystem in Attributes then
+      attr := attr or UFA_SYSTEM;
+    if TFileAttribute.faCompressed in Attributes then
+      attr := attr or UFA_COMPRESSED;
+
+    if TFileAttribute.faArchive in Attributes then
+      attr := attr or UFA_ARChIVE;
+  end;
+end;
+
 {------------------------------------------------------------------------------}
 function TfileInformation.getExtension: string;
 //Getter for the Extension property.
@@ -206,8 +234,15 @@ end;
 function TFileInformation.GetAttributes: TFileAttributes;
 //Getter for the Attributes property.
 begin
-  if not bAttributesFetched then
-    result := TFile.GetAttributes(self.fullname);
+  result := [TFileAttribute.faOffline];
+  try
+    if not bAttributesFetched then
+      result := TFile.GetAttributes(self.fullname);
+  except
+    on E: exception do begin
+      Debug.Log('could not read file attributes from '+self.fullname);
+    end;
+  end;
 
 //  result:=FileGetAttr(fullname);
 end;

@@ -78,7 +78,7 @@ function IsNumber(s: string): boolean;
 
 
 type
-  TGiantFuckingInt = record
+  TGiantInt = record
     i1,i2,i3,i4: Uint64;
     procedure ShiftRight;
     procedure ShiftLeft;
@@ -87,45 +87,45 @@ type
     procedure FRomINt64(i: int64);
     function ToUInt64: UInt64;
     procedure FRomUInt64(i: UInt64);
-    class operator implicit(g: TGiantFuckingInt): int64;
-    class operator explicit(g: TGiantFuckingInt): int64;
-    class operator rightshift(g: TGiantFuckingInt; i: ni): TGiantFuckingInt;
-    class operator LeftShift(a: TGiantFuckingInt; i:ni): TGiantFuckingInt;
-    class operator negative(const g: TGiantFuckingInt): TGiantFuckingInt;
-    class operator Inc(a: TGiantFuckingInt) : TGiantFuckingInt;
-    class operator Dec(a: TGiantFuckingInt): TGiantFuckingInt;
-    class operator Trunc(a: TGiantFuckingInt): TGiantFuckingInt;
-    class operator In(a: TGiantFuckingInt; const b: array of TGiantFuckingInt) : Boolean;
-    class operator Equal(a: TGiantFuckingInt; b: TGiantFuckingInt) : Boolean;
-    class operator NotEqual(a: TGiantFuckingInt; b: TGiantFuckingInt): Boolean;
-    class operator GreaterThan(a: TGiantFuckingInt; b: TGiantFuckingInt): Boolean;
-    class operator GreaterThanOrEqual(a: TGiantFuckingInt; b: TGiantFuckingInt): Boolean;
-    class operator LessThan(a: TGiantFuckingInt; b: TGiantFuckingInt): Boolean;
-    class operator LessThanOrEqual(a: TGiantFuckingInt; b: TGiantFuckingInt): Boolean;
-    class operator Add(a: TGiantFuckingInt; b: TGiantFuckingInt): TGiantFuckingInt;
-    class operator Add(a: TGiantFuckingInt; b: int64): TGiantFuckingInt;
-    class operator Add(a: TGiantFuckingInt; b: Uint64): TGiantFuckingInt;
-    class operator Subtract(a: TGiantFuckingInt; b: TGiantFuckingInt) : TGiantFuckingInt;
-    class operator Subtract(a: TGiantFuckingInt; b: uint64) : TGiantFuckingInt;
-    class operator Subtract(a: TGiantFuckingInt; b: int64) : TGiantFuckingInt;
-    class operator Multiply(a: TGiantFuckingInt; b: TGiantFuckingInt) : TGiantFuckingInt;
-    class operator Divide(a: TGiantFuckingInt; b: TGiantFuckingInt) : TGiantFuckingInt;
-    class operator IntDivide(a: TGiantFuckingInt; b: TGiantFuckingInt): TGiantFuckingInt;
-    class operator Modulus(a: TGiantFuckingInt; b: TGiantFuckingInt): TGiantFuckingInt;
-    class operator BitwiseAnd(a: TGiantFuckingInt; b: TGiantFuckingInt): TGiantFuckingInt;
-    class operator BitwiseOr(a: TGiantFuckingInt; b: TGiantFuckingInt): TGiantFuckingInt;
-    class operator BitwiseXor(a: TGiantFuckingInt; b: TGiantFuckingInt): TGiantFuckingInt;
+    class operator implicit(g: TGiantInt): int64;
+    class operator explicit(g: TGiantInt): int64;
+    class operator rightshift(g: TGiantInt; i: ni): TGiantInt;
+    class operator LeftShift(a: TGiantInt; i:ni): TGiantInt;
+    class operator negative(const g: TGiantInt): TGiantInt;
+    class operator Inc(a: TGiantInt) : TGiantInt;
+    class operator Dec(a: TGiantInt): TGiantInt;
+    class operator Trunc(a: TGiantInt): TGiantInt;
+    class operator In(a: TGiantInt; const b: array of TGiantInt) : Boolean;
+    class operator Equal(a: TGiantInt; b: TGiantInt) : Boolean;
+    class operator NotEqual(a: TGiantInt; b: TGiantInt): Boolean;
+    class operator GreaterThan(a: TGiantInt; b: TGiantInt): Boolean;
+    class operator GreaterThanOrEqual(a: TGiantInt; b: TGiantInt): Boolean;
+    class operator LessThan(a: TGiantInt; b: TGiantInt): Boolean;
+    class operator LessThanOrEqual(a: TGiantInt; b: TGiantInt): Boolean;
+    class operator Add(a: TGiantInt; b: TGiantInt): TGiantInt;
+    class operator Add(a: TGiantInt; b: int64): TGiantInt;
+    class operator Add(a: TGiantInt; b: Uint64): TGiantInt;
+    class operator Subtract(a: TGiantInt; b: TGiantInt) : TGiantInt;
+    class operator Subtract(a: TGiantInt; b: uint64) : TGiantInt;
+    class operator Subtract(a: TGiantInt; b: int64) : TGiantInt;
+    class operator Multiply(a: TGiantInt; b: TGiantInt) : TGiantInt;
+    class operator Divide(a: TGiantInt; b: TGiantInt) : TGiantInt;
+    class operator IntDivide(a: TGiantInt; b: TGiantInt): TGiantInt;
+    class operator Modulus(a: TGiantInt; b: TGiantInt): TGiantInt;
+    class operator BitwiseAnd(a: TGiantInt; b: TGiantInt): TGiantInt;
+    class operator BitwiseOr(a: TGiantInt; b: TGiantInt): TGiantInt;
+    class operator BitwiseXor(a: TGiantInt; b: TGiantInt): TGiantInt;
     function ToHex: string;
   end;
 
 //  TGiantInt64Helper = record helper for int64
-//    class operator Explicit(a: int64): TGiantFuckingINt;
+//    class operator Explicit(a: int64): TGiantINt;
 //  end;
 
 const
-  GFI_ONE : TGiantFuckingInt = (i1:1; i2:0; i3:0; i4:0);
-  GFI_ZERO : TGiantFuckingInt = (i1:0; i2:0; i3:0; i4:0);
-  GFI_NEGONE: TGiantFuckingInt = (i1:$FFFFFFFFFFFFFFFF;i2:$FFFFFFFFFFFFFFFF;i3:$FFFFFFFFFFFFFFFF;i4:$FFFFFFFFFFFFFFFF);
+  GFI_ONE : TGiantInt = (i1:1; i2:0; i3:0; i4:0);
+  GFI_ZERO : TGiantInt = (i1:0; i2:0; i3:0; i4:0);
+  GFI_NEGONE: TGiantInt = (i1:$FFFFFFFFFFFFFFFF;i2:$FFFFFFFFFFFFFFFF;i3:$FFFFFFFFFFFFFFFF;i4:$FFFFFFFFFFFFFFFF);
 
 
 implementation
@@ -568,9 +568,9 @@ begin
 end;
 
 
-{ TGiantFuckingInt }
+{ TGiantInt }
 
-class operator TGiantFuckingInt.Add(a, b: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.Add(a, b: TGiantInt): TGiantInt;
 var
   c1,c2,c3,c4: UInt64;
   r1,r2,r3,r4: UInt64;
@@ -613,10 +613,10 @@ begin
 
 end;
 
-class operator TGiantFuckingInt.Add(a: TGiantFuckingInt;
-  b: int64): TGiantFuckingInt;
+class operator TGiantInt.Add(a: TGiantInt;
+  b: int64): TGiantInt;
 var
-  bb: TGiantFuckingInt;
+  bb: TGiantInt;
 begin
   bb.FRomINt64(b);
   result := a+bb;
@@ -625,17 +625,17 @@ begin
 
 end;
 
-class operator TGiantFuckingInt.Add(a: TGiantFuckingInt;
-  b: Uint64): TGiantFuckingInt;
+class operator TGiantInt.Add(a: TGiantInt;
+  b: Uint64): TGiantInt;
 var
-  bb: TGiantFuckingInt;
+  bb: TGiantInt;
 begin
   bb.FRomUINt64(b);
   result := a+bb;
 end;
 
-class operator TGiantFuckingInt.BitwiseAnd(a,
-  b: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.BitwiseAnd(a,
+  b: TGiantInt): TGiantInt;
 var
   p1,p2,p3: ^UInt64;
 begin
@@ -660,8 +660,8 @@ begin
   inc(p2);
 end;
 
-class operator TGiantFuckingInt.BitwiseOr(a,
-  b: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.BitwiseOr(a,
+  b: TGiantInt): TGiantInt;
 var
   p1,p2,p3: ^UInt64;
 begin
@@ -686,8 +686,8 @@ begin
   inc(p2);
 end;
 
-class operator TGiantFuckingInt.BitwiseXor(a,
-  b: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.BitwiseXor(a,
+  b: TGiantInt): TGiantInt;
 var
   p1,p2,p3: ^UInt64;
 begin
@@ -712,18 +712,18 @@ begin
   inc(p2);
 end;
 
-class operator TGiantFuckingInt.Dec(a: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.Dec(a: TGiantInt): TGiantInt;
 begin
   result := a - int64(1);
 end;
 
-class operator TGiantFuckingInt.Divide(a,
-  b: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.Divide(a,
+  b: TGiantInt): TGiantInt;
 begin
   raise ECritical.Create('unimplemented');
 end;
 
-class operator TGiantFuckingInt.Equal(a, b: TGiantFuckingInt): Boolean;
+class operator TGiantInt.Equal(a, b: TGiantInt): Boolean;
 begin
   result := true;
   if a.i1<>b.i1 then
@@ -736,13 +736,13 @@ begin
     exit(false);
 end;
 
-class operator TGiantFuckingInt.explicit(g: TGiantFuckingInt): int64;
+class operator TGiantInt.explicit(g: TGiantInt): int64;
 begin
   result := g.ToInt64;
 
 end;
 
-procedure TGiantFuckingInt.FRomINt64(i: int64);
+procedure TGiantInt.FRomINt64(i: int64);
 begin
   i1 := i and $7fffffffffffffff;
   i2 := 0;
@@ -750,7 +750,7 @@ begin
   i4 := i and $8000000000000000;
 end;
 
-procedure TGiantFuckingInt.FRomUInt64(i: UInt64);
+procedure TGiantInt.FRomUInt64(i: UInt64);
 begin
   i1 := i;
   i2 := 0;
@@ -758,7 +758,7 @@ begin
   i4 := 0;
 end;
 
-class operator TGiantFuckingInt.GreaterThan(a, b: TGiantFuckingInt): Boolean;
+class operator TGiantInt.GreaterThan(a, b: TGiantInt): Boolean;
 var
   aa,bb: uint64;
 begin
@@ -780,26 +780,26 @@ begin
 
 end;
 
-class operator TGiantFuckingInt.GreaterThanOrEqual(a,
-  b: TGiantFuckingInt): Boolean;
+class operator TGiantInt.GreaterThanOrEqual(a,
+  b: TGiantInt): Boolean;
 begin
   result := (a>b) or (a=b);
 
 
 end;
 
-class operator TGiantFuckingInt.implicit(g: TGiantFuckingInt): int64;
+class operator TGiantInt.implicit(g: TGiantInt): int64;
 begin
   result := g.ToInt64;
 
 end;
 
 
-class operator TGiantFuckingInt.In(a: TGiantFuckingInt;
-  const b: array of TGiantFuckingInt): Boolean;
+class operator TGiantInt.In(a: TGiantInt;
+  const b: array of TGiantInt): Boolean;
 var
   t: ni;
-  bb: TGiantFuckingInt;
+  bb: TGiantInt;
 begin
   for t:= low(b) to high(b) do begin
     bb := b[t];
@@ -809,12 +809,12 @@ begin
   result := false;
 end;
 
-class operator TGiantFuckingInt.Inc(a: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.Inc(a: TGiantInt): TGiantInt;
 begin
   result := a + int64(1);
 end;
 
-procedure TGiantFuckingInt.Init;
+procedure TGiantInt.Init;
 begin
   i1 := 0;
   i2 := 0;
@@ -822,8 +822,8 @@ begin
   i4 := 0;
 end;
 
-class operator TGiantFuckingInt.IntDivide(a,
-  b: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.IntDivide(a,
+  b: TGiantInt): TGiantInt;
 begin
 
   raise ECritical.create('unimplemented');
@@ -831,8 +831,8 @@ begin
 end;
 
 
-class operator TGiantFuckingInt.LeftShift(a: TGiantFuckingInt;
-  i: ni): TGiantFuckingInt;
+class operator TGiantInt.LeftShift(a: TGiantInt;
+  i: ni): TGiantInt;
 
 begin
   result := a;
@@ -842,7 +842,7 @@ begin
   end;
 end;
 
-class operator TGiantFuckingInt.LessThan(a, b: TGiantFuckingInt): Boolean;
+class operator TGiantInt.LessThan(a, b: TGiantInt): Boolean;
 var
   aa,bb: uint64;
 begin
@@ -862,27 +862,27 @@ begin
 
 end;
 
-class operator TGiantFuckingInt.LessThanOrEqual(a,
-  b: TGiantFuckingInt): Boolean;
+class operator TGiantInt.LessThanOrEqual(a,
+  b: TGiantInt): Boolean;
 begin
   result := (a<b) or (a=b);
 end;
 
-class operator TGiantFuckingInt.Modulus(a,
-  b: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.Modulus(a,
+  b: TGiantInt): TGiantInt;
 begin
   raise ECritical.create('not implemented');
 end;
 
-class operator TGiantFuckingInt.Multiply(a,
-  b: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.Multiply(a,
+  b: TGiantInt): TGiantInt;
 begin
   raise ECritical.create('not implemented');
 end;
 
-class operator TGiantFuckingInt.negative(const g: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.negative(const g: TGiantInt): TGiantInt;
 var
-  b: TGiantFuckingInt;
+  b: TGiantInt;
 begin
   result.i1 := g.i1 xor $FFFFFFFFFFFFFFFF;
   result.i2 := g.i2 xor $FFFFFFFFFFFFFFFF;
@@ -892,13 +892,13 @@ begin
 
 end;
 
-class operator TGiantFuckingInt.NotEqual(a, b: TGiantFuckingInt): Boolean;
+class operator TGiantInt.NotEqual(a, b: TGiantInt): Boolean;
 begin
   result := not (a=b);
 end;
 
-class operator TGiantFuckingInt.rightshift(g: TGiantFuckingInt;
-  i: ni): TGiantFuckingInt;
+class operator TGiantInt.rightshift(g: TGiantInt;
+  i: ni): TGiantInt;
 var
   cx: ni;
 begin
@@ -913,7 +913,7 @@ end;
 
 
 
-procedure TGiantFuckingInt.ShiftLeft;
+procedure TGiantInt.ShiftLeft;
 var
   c1,c2,c3: int64;
 begin
@@ -934,7 +934,7 @@ begin
 
 end;
 
-procedure TGiantFuckingInt.ShiftRight;
+procedure TGiantInt.ShiftRight;
 var
   c2,c3,c4: int64;
 begin
@@ -955,28 +955,28 @@ begin
 
 end;
 
-class operator TGiantFuckingInt.Subtract(a: TGiantFuckingInt;
-  b: uint64): TGiantFuckingInt;
+class operator TGiantInt.Subtract(a: TGiantInt;
+  b: uint64): TGiantInt;
 var
-  bb: TGiantFuckingInt;
+  bb: TGiantInt;
 begin
   bb.FRomUINt64(b);
   result := a - bb;
 end;
 
-class operator TGiantFuckingInt.Subtract(a: TGiantFuckingInt;
-  b: int64): TGiantFuckingInt;
+class operator TGiantInt.Subtract(a: TGiantInt;
+  b: int64): TGiantInt;
 var
-  bb: TGiantFuckingInt;
+  bb: TGiantInt;
 begin
   bb.FRomINt64(b);
   result := a - bb;
 end;
 
-class operator TGiantFuckingInt.Subtract(a,
-  b: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.Subtract(a,
+  b: TGiantInt): TGiantInt;
 var
-  bb: TGiantFuckingInt;
+  bb: TGiantInt;
 begin
   bb := -b;
   result := a+bb;
@@ -984,12 +984,12 @@ begin
 
 end;
 
-function TGiantFuckingInt.ToHex: string;
+function TGiantInt.ToHex: string;
 begin
   result := inttohex(i4,16)+inttohex(i3,16)+inttohex(i2,16)+inttohex(i1,16);
 end;
 
-function TGiantFuckingInt.ToInt64: int64;
+function TGiantInt.ToInt64: int64;
 begin
   result := i1 and      $7fffffffffffffff;
   if ((i4 and           $8000000000000000) <> 0) then
@@ -997,12 +997,12 @@ begin
 
 end;
 
-function TGiantFuckingInt.ToUInt64: UInt64;
+function TGiantInt.ToUInt64: UInt64;
 begin
   result := i1;
 end;
 
-class operator TGiantFuckingInt.Trunc(a: TGiantFuckingInt): TGiantFuckingInt;
+class operator TGiantInt.Trunc(a: TGiantInt): TGiantInt;
 begin
   result := a;
 end;

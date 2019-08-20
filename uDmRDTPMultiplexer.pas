@@ -6,14 +6,16 @@ uses
 {$IFDEF MSWINDOWS}
   ActiveX,
 {$ENDIF}
-  SysUtils, Classes, better_Sockets, RDTPServerList, RDTPMultiplexerServer, applicationparams, rdtpprocessor,orderlyinit,
-  sockfix, simpleabstractprivateserversocket, simplereliableudp, typex, skill, herro;
+  SysUtils, Classes, sockfix, RDTPServerList, RDTPMultiplexerServer, applicationparams, rdtpprocessor,orderlyinit,
+  simpleabstractprivateserversocket, simplereliableudp, typex, skill, herro, debug;
 
 type
+  TIPClientLocal = TCustomIPClient;
+
   TdmRDTPMultiServer = class(TDataModule)
     tcp: TTCPServer;
     procedure DataModuleCreate(Sender: TObject);
-    procedure tcpAccept(Sender: TObject; ClientSocket: TBetterCustomIPClient);
+    procedure tcpAccept(Sender: TObject; ClientSocket: TIPClientLocal);
   private
     FOnIdle: TRDTPIdleEvent;
     procedure udpAccept(endpoint: TReliableUDPEndpoint);
@@ -44,7 +46,8 @@ begin
   ap := NeedAppParams;
   try
     tcp.localPort := ap.GetItemEx('MultiplexerPort', inttostr(G_RDTP_DEFAULT_MULTIPLEXER_PORT));
-
+    tcp.ServerSocketThread.ThreadCacheSize := 99999;
+    tcp.OnAccept := self.tcpAccept;
     tcp.active := true;
 
     udp := TMultiplexedUDPServer.create(self);
@@ -68,7 +71,7 @@ begin
 end;
 
 procedure TdmRDTPMultiServer.tcpAccept(Sender: TObject;
-  ClientSocket: TBetterCustomIPClient);
+  ClientSocket: TIPClientLocal);
 var
   proc: TRDTPMultiplexerProcessor;
   ac: TSimpleAbstractPrivateServerSocket;
@@ -76,6 +79,7 @@ begin
 {$IFDEF MSWINDOWS}
   Coinitialize(nil);
 {$ENDIF}
+  Debug.Log('tcpAccept!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
   proc := TRDTPMultiplexerProcessor.create;
   try
     ac := TSimpleAbstractPrivateServerSocket.create;

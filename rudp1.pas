@@ -439,7 +439,7 @@ type
 
 
   //--------------------------------------------------------------------------
-  TReliableUDPPacketLog1 = class(TStandardList<int64, TReliableUDPPacketLogRecord>)
+  TReliableUDPPacketLog1 = class(TReferencedList<int64, TReliableUDPPacketLogRecord>)
   //keeps track of packets
   public
     constructor Create;override;
@@ -456,7 +456,7 @@ type
   public
     function Find(iSeqNumber: int64): TtreeItem_ReliableUDPPacketLogRecord;
     procedure Add(ifo: TReliableUDPPacketLogRecord);reintroduce;
-    procedure Remove(ifo: TReliableUDPPacketLogRecord);
+    function Remove(ifo: TReliableUDPPacketLogRecord): boolean;
     function Has(iSeqNumber: int64): boolean;overload;
     function Has(ti: TtreeItem_ReliableUDPPacketLogRecord): boolean;overload;
     function Has(ifo: TReliableUDPPacketLogRecord): boolean;overload;
@@ -1691,9 +1691,10 @@ begin
   while (txLog.Count > 0) and (txLog.root <> nil) do begin
     ti := TTreeItem_ReliableUDPpacketLogRecord(txLog.Root);
     p  := ti.packet;
-    txLog.Remove(p);
-    {$IFDEF REF_DEBUG}Debug.log('RElease from ClearAckedTX');{$ENDIF}
-    p.ReleasePacketRef;
+    if txLog.Remove(p) then begin
+      {$IFDEF REF_DEBUG}Debug.log('RElease from ClearAckedTX');{$ENDIF}
+      p.ReleasePacketRef;//Ref 1B
+    end;
   end;
 
   if assigned(rxLog) then
@@ -1716,10 +1717,11 @@ begin
       Debug.Log('WARNING! rxDataLog has count>0 with nil root!');
       break;
     end;
-    rxDataLog.Remove(ti.packet);
-    p  := ti.packet;
-    {$IFDEF REF_DEBUG}Debug.log('RElease from ClearAckedTX2');{$ENDIF}
-    p.ReleasePacketRef;
+    if rxDataLog.Remove(ti.packet) then begin
+      p  := ti.packet;
+      {$IFDEF REF_DEBUG}Debug.log('RElease from ClearAckedTX2');{$ENDIF}
+      p.ReleasePacketRef;
+    end;
   end;
 
   if assigned(rxQueue) then
@@ -1729,10 +1731,11 @@ begin
       Debug.Log('WARNING! rxQueue has count>0 with nil root!');
       break;
     end;
-    rxQUeue.Remove(ti.packet);
-    p  := ti.packet;
-    {$IFDEF REF_DEBUG}Debug.log('RElease from ClearAckedTX3');{$ENDIF}
-    p.ReleasePacketRef;
+    if rxQUeue.Remove(ti.packet) then begin
+      p  := ti.packet;
+      {$IFDEF REF_DEBUG}Debug.log('RElease from ClearAckedTX3');{$ENDIF}
+      p.ReleasePacketRef;//ref 7
+    end;
   end;
 
   inherited;
@@ -1770,7 +1773,9 @@ var
   r: Ttreeitem_ReliableUDPPacketLogRecord;
   p: TReliableUDPPacketLogRecord;
   tm: ticker;
+  bRel: boolean;
 begin
+  bRel := false;
   p := nil;
   lock;
   try
@@ -1805,12 +1810,13 @@ begin
       p := r.packet;
 {$DEFINE STUPID}
 {$IFDEF STUPID}
-      txLog.remove(p);
+      if txLog.remove(p) then begin
+        bRel := true;
+//        p._Release();
+      end;
       EvalFloodSignal;
       net_stats_clear_rate_tx.Accumulate(1);
-//      p.deadcheck;
-      {$IFDEF REF_DEBUG}Debug.log('RElease from ClearSpecificPacket');{$ENDIF}
-//      p._Release();
+
 {$ELSE}
       p.acked := true;
 {$ENDIF}
@@ -1823,7 +1829,7 @@ begin
     unlock;
   end;
 
-  if p <> nil then
+  if (p <> nil) and bRel then
     p.ReleasePacketRef();
 end;
 
@@ -1871,13 +1877,14 @@ begin
           if (bestAckTime > tm) or (bestAckTime=0) then
             bestAckTime := tm;
 
-          txLog.remove(r);
+          if txLog.remove(r) then begin
+            r.deadcheck;
+            r.ReleasePacketRef();
+          end;
           ti := TtreeItem_ReliableUDPPacketLogRecord(txLog.FirstItem);
           EvalFloodSignal;
           net_stats_clear_rate_tx.Accumulate(1);
-          r.deadcheck;
-          {$IFDEF REF_DEBUG}Debug.log('Release from ClearTXLogsUpTo');{$ENDIF}
-          r.ReleasePacketRef();
+
         end;
 
       end else
@@ -2720,7 +2727,7 @@ begin
 //    UDPDebug('Adding '+inttostr(ifo.h.sequencenumber)+' to data log.');
     if not rxDataLog.Has(ifo.h.sequencenumber) then begin
       {$IFDEF REF_DEBUG}Debug.log('AddRef from HandleIncomingDataPacket');{$ENDIF}
-      ifo.AddPacketRef;
+      ifo.AddPacketRef;//ref 3
       IF rxDataLog.count > 10000 then begin
         self.CloseMe := true;
       end;
@@ -2746,7 +2753,7 @@ end;
 procedure TReliableUDPEndpoint.QueueIncomingPacket(ifo: TReliableUDPPacketLogRecord);
 //!!IFOREF - changed - transitions packets to other threads
 begin
-  ifo.AddPacketRef;
+  ifo.AddPacketRef;//REF 0
   try
 
 
@@ -2812,7 +2819,7 @@ begin
     end;
   finally
     EvalSYstemThreadSignal;
-    ifo.ReleasePacketRef;
+    ifo.ReleasePacketRef;//REF 0
   end;
 
 
@@ -2854,7 +2861,7 @@ begin
       if (ifo.h.sequencenumber >= _nextexpectedSequenceNumber)
       and (not (rxLog.Has(ifo.h.sequencenumber))) then begin
         {$IFDEF REF_DEBUG}Debug.log('AddRef from HandleIncomingSystemPacket');{$ENDIF}
-        ifo.AddPacketRef;
+        ifo.AddPacketRef;//REF 1
         rxLog.Add(ifo);
 
         if ifo.h.Flag_AckType = ackImmediate then begin
@@ -2933,7 +2940,7 @@ var
   bComplete: boolean;
   itm: TPacketQueueItem;
 begin
-  ifo.AddPacketRef;
+  ifo.AddPacketRef;//Ref 4
   try
     //split header will be at the start of the payload
     sh := PRUDPSplitHEader(ifo.payload);
@@ -2969,7 +2976,7 @@ begin
       splitass.Init;
     end;
   finally
-    ifo.ReleasePacketRef;
+    ifo.ReleasePacketRef;//Ref 4
   end;
 
 
@@ -3119,9 +3126,7 @@ begin
 
   if not txLog.Has(r.h.sequencenumber) then begin
     {$IFDEF REF_DEBUG}Debug.log('AddRef from TxLogPacketIfRequired');{$ENDIF}
-    r.AddPacketRef;
-//    r.sendtime := getticker;
-
+    r.AddPacketRef;//REF 1
     txLog.Add(r);
     EvalFloodSignal;
   end;
@@ -3160,7 +3165,6 @@ end;
 
 procedure TReliableUDPEndpoint.UserThreadExecute(thr: TRUDPUserThread);
 begin
-//  thr.Endpoint.AddPacketRef;
   try
   //  Debug.Log('User Thread Execute');
     if CloseMe then begin
@@ -3201,7 +3205,7 @@ begin
 
   if not rxLog.Has(r.h.sequencenumber) then begin
     {$IFDEF REF_DEBUG}Debug.log('AddRef from RxLogPacketIfRequired');{$ENDIF}
-    r.AddPacketRef;
+    r.AddPacketRef;//ref 1B
     rxLog.Add(r);
 //    if r.h.Flag_AckType = ackImmediate then begin
 //      if r.h.sequencenumber >= _nextexpectedSequenceNumber then
@@ -3212,7 +3216,7 @@ begin
 
   if not rxQueue.Has(r.h.sequencenumber) then begin
     {$IFDEF REF_DEBUG}Debug.log('AddRef from RxLogPacketIfRequired1');{$ENDIF}
-    r.AddPacketRef;
+    r.AddPacketRef;//Ref 7
     rxQueue.Add(r);
 
   end;
@@ -3499,7 +3503,7 @@ begin
         if rxQueue.Has(ifo.h.sequencenumber) then begin
           rxQueue.Remove(ifo);
           {$IFDEF REF_DEBUG}Debug.log('RElease from ProcessPacketQUEUE');{$ENDIF}
-          ifo.ReleasePacketRef;
+          ifo.ReleasePacketRef;//ref 7B
         end;
 
         EvalUserThreadSignal;
@@ -5267,6 +5271,7 @@ begin
 
       end;
     finally
+      ifo.deadcheck;
       ifo.ReleasePacketRef;//<<---local hold
       ifo := nil;
     end;
@@ -5799,8 +5804,10 @@ begin
     ifo.ReleasePacketRef;//<<--- not sure why, but we release here ( I think to drop ref count of 1 that is implicit on creation)
   end;
   finally
-    if ifo <> nil then
+    if ifo <> nil then begin
+      ifo.DeadCheck;
       ifo.ReleasePacketRef;//<--Local hold
+    end;
 //    Unlock;
   end;
 end;
@@ -6732,8 +6739,9 @@ begin
   result := payload_length + sizeof(h);
 end;
 
-constructor TReliableUDPPacketLogRecord.Create(owningEndPOint: TReliableUDPEndpoint; h: TReliableUDPHeader; p: pbyte;
-  len: nativeint);
+constructor TReliableUDPPacketLogRecord.Create(
+  owningEndPOint: TReliableUDPEndpoint;
+  h: TReliableUDPHeader; p: pbyte; len: nativeint);
 begin
   Create(owningendpoint);
 {$IFDEF WINDOWS}
@@ -6785,24 +6793,28 @@ begin
 
   if owningendpoint <> nil then begin
     if owningendpoint.rxLog.Has(self) then begin
-      owningendpoint.rxLog.Remove(self);
-      {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint1');{$ENDIF}
-      ReleasePacketRef;
+      if owningendpoint.rxLog.Remove(self) then begin //ref 2
+        {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint2');{$ENDIF}
+        ReleasePacketRef;
+      end;
     end;
     if owningendpoint.txLog.Has(self) then begin
-      owningendpoint.txLog.Remove(self);
-      {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint2');{$ENDIF}
-      ReleasePacketRef;
+      if owningendpoint.txLog.Remove(self) then begin //ref 2
+        {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint2');{$ENDIF}
+        ReleasePacketRef;
+      end;
     end;
     if owningendpoint.rxDataLog.Has(self) then begin
-      owningendpoint.rxDataLog.Remove(self);
-      {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint3');{$ENDIF}
-      ReleasePacketRef;
+      if owningendpoint.rxDataLog.Remove(self) then begin //ref 2
+        {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint2');{$ENDIF}
+        ReleasePacketRef;
+      end;
     end;
     if owningendpoint.rxQueue.Has(self) then begin
-      owningendpoint.rxQueue.Remove(self);
-      {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint4');{$ENDIF}
-      ReleasePacketRef;
+      if owningendpoint.rxQueue.Remove(self) then begin //ref 2
+        {$IFDEF REF_DEBUG}Debug.log('RElease from DeregisterFromEndpoint2');{$ENDIF}
+        ReleasePacketRef;
+      end;
     end;
   end;
 
@@ -7467,12 +7479,13 @@ begin
   result := Find(ti.packet.h.sequencenumber) <> nil;
 end;
 
-procedure TReliableUDPPacketLog2.Remove(ifo: TReliableUDPPacketLogRecord);
+function TReliableUDPPacketLog2.Remove(ifo: TReliableUDPPacketLogRecord): boolean;
 var
   ti: TBTreeItem;
 begin
   ti := Find(ifo.h.sequencenumber);
-  if ti <> nil then begin
+  result := ti <> nil;
+  if result then begin
     RemoveTI(ti);
   end;
 end;

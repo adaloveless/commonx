@@ -575,12 +575,12 @@ begin
       end else
       if thr2.Spin then begin
         if not thr2.AutoSpin then
-          item.ImageIndex := thr2.Step mod 8
+          item.ImageIndex := thr2.progress.Step mod 8
         else
           item.imageindex := (item.imageindex+1) mod 8;
       end else begin
-        c := thr2.Step;
-        l := thr2.StepCount;
+        c := thr2.progress.Step;
+        l := thr2.progress.StepCount;
         i := c;
         if l > 0 then
           i := round((c / l)*32)
@@ -630,8 +630,8 @@ begin
 
         //write out values
         item.SubItems[2] := thr2.Status;
-        item.SubItems[3] := inttostr(thr2.StepCount);
-        item.SubItems[4] := inttostr(thr2.Step);
+        item.SubItems[3] := inttostr(thr2.progress.StepCount);
+        item.SubItems[4] := inttostr(thr2.progress.Step);
         item.SubItems[5] := inttostr(thr2.Iterations);
         item.SubItems[6] := thr2.ColdRunInterval.tostring;
         item.SubItems[9] := inttostr(thr2.age);

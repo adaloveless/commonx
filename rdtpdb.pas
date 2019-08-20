@@ -9,6 +9,7 @@ uses
 type
   Trdtpdb = class(TAbstractDB)
   protected
+    FIsMYSQL: boolean;
     FUseTCP: boolean;
     FUseTor: boolean;
     FContext: string;
@@ -54,6 +55,7 @@ type
     function Connected: boolean;override;
     property Context: string read Getcontext write Setcontext;
     procedure CheckConnectedOrConnect;
+    function IsMYSQL: boolean;
 
   end;
 
@@ -319,6 +321,11 @@ begin
 end;
 
 
+function Trdtpdb.IsMYSQL: boolean;
+begin
+  result := FIsMYSQL;
+end;
+
 function Trdtpdb.ReadQuery(sQuery: string): TSERowSet;
 var
   tm: ticker;
@@ -426,6 +433,8 @@ end;
 procedure Trdtpdb.Setcontext(Value: string);
 begin
   Fcontext := value;
+  if zpos('provider=mysql', lowercase(FContext)) >=0 then
+    FIsMYSQL := true;//todo 2: make this better...
 end;
 
 function Trdtpdb.SetNextID(sType: string; id: Int64): Boolean;

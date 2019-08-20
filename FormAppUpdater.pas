@@ -261,23 +261,11 @@ begin
       exe.RunProgram(dllpath+sr, '', dllpath, false, false, false);
     end else
     if comparetext(sl,'kill')=0 then begin
-      sleep(8000);
-      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
-      sleep(1000);
-      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
-      sleep(1000);
-      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
-      sleep(1000);
-      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
-      sleep(1000);
-      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
-      sleep(1000);
-      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
-      sleep(1000);
-      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
-      sleep(1000);
-      exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sr+'" /F', DLLPath, true, false);
-      sleep(1000);
+      if IsTaskRunning(sr) then begin
+        sleep(8000);
+        KillTaskByName(sr);
+      end;
+      sleep(4000);
     end;
 
 

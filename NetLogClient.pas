@@ -111,7 +111,8 @@ type
     procedure Init; override;
   end;
 
-
+function GetLogServerHostOVerride: string;
+procedure SetLogServerHostOverride(s: string);
 
 var
   LogClient: Tnetlogclient;
@@ -126,6 +127,15 @@ uses
 
 
 { Tnetlogclient }
+
+function GetLogServerHostOVerride: string;
+begin
+  result := LogServerHostOverride;
+end;
+procedure SetLogServerHostOverride(s: string);
+begin
+  LogServerHostOverride := s;
+end;
 
 
 procedure TNetLogClient.AddLog(s: string);
@@ -166,12 +176,13 @@ begin
     end;
   end;
   if not connected then begin
-    if logServerHostOverride = '' then begin
+    if GetlogServerHostOverride = '' then begin
       sk := skills.Find('NetLogServer');
       if sk <> nil then begin
-        if gettimesince(lastconnect) > 1000 then begin
+        if gettimesince(lastconnect) > 8000 then begin
           LogHost := sk.info.host;
           LogPort := strtoint(sk.info.endpoint);
+//          Debug.Log('log skill found at '+loghost+' '+logport.tostring);
           Reset;
           lastconnect := getticker;
         end;
@@ -179,7 +190,7 @@ begin
       end;
     end else begin
       if gettimesince(lastconnect) > 1000 then begin
-        LogHost := LogServerHostOverride;
+        LogHost := GetLogServerHostOverride;
         LogPort := strtoint(LogServerEndpointOverride);
         Reset;
         lastconnect := getticker;

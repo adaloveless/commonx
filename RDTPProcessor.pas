@@ -710,9 +710,9 @@ function TRDTPProcessor.Read(bNotFromQueue: boolean = false): TRDTPPAcket;
 var
   header: TRDTPHeader;
   pc: PByte;
-  iRead: integer;
-  iToRead: integer;
-  iJustRead: integer;
+  iRead: int64;
+  iToRead: int64;
+  iJustRead: int64;
   len: ni;
 begin
   //if there's stuff in the command queue then take it
@@ -1012,7 +1012,7 @@ end;
 
 procedure TRDTPProcessor.Write(packet: TRDTPPacket);
 var
-  iFail, iTotal,iSent: integer;
+  iFail, iTotal,iSent: int64;
   pc: PByte;
 begin
 //  status := 'In Write(packet)';

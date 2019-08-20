@@ -810,12 +810,14 @@ procedure Tgiver.Take(obj: TObject; sContext: string = '');
 var
   cantake: boolean;
 begin
+  Debug.Log('Take '+obj.classname);
   Lock;
   try
     cantake := true;
     BeforeTake(obj, {out}cantake);
     if cantake then begin
       Flist.addObject(sContext, obj);
+      Debug.Log('there are now '+Flist.count.ToString);
       AfterTake(obj);
     end else
       obj.free;
@@ -832,6 +834,7 @@ end;
 
 procedure TGiver.BeforeTake(obj: Tobject; var bCanTake: boolean);
 begin
+  bcantake := true;
 //
 end;
 
@@ -1945,8 +1948,12 @@ begin
       result := FList.objects[i];
       FList.delete(i);
       if not TBetterobject(result).shouldtake then begin
+        Debug.Log('FREE '+result.classname);
         result.Free;
         result := nil;
+      end else begin
+        Debug.Log('GIVE '+result.classname);
+        Debug.Log('there are now '+Flist.count.ToString);
       end;
     until (result <> nil) or (Flist.count = 0);
 
@@ -1956,6 +1963,7 @@ begin
   end;
   if result = nil then begin
     result := T.create;
+    Debug.Log('NEW '+result.classname);
     T(result).FGiveTo := self;
   end;
 
