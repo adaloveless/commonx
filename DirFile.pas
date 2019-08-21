@@ -184,7 +184,7 @@ begin
   if isFolder then
     attr := attr or UFA_FOLDER
   else begin
-
+{$IFDEF MSWINDOWS}
     if TFileAttribute.faHidden in Attributes then
       attr := attr or UFA_HIDDEN;
 
@@ -195,6 +195,7 @@ begin
 
     if TFileAttribute.faArchive in Attributes then
       attr := attr or UFA_ARChIVE;
+{$ENDIF}
   end;
 end;
 
@@ -234,7 +235,11 @@ end;
 function TFileInformation.GetAttributes: TFileAttributes;
 //Getter for the Attributes property.
 begin
+{$IFDEF MSWINDOWS}
   result := [TFileAttribute.faOffline];
+{$ELSE}
+  result := [];
+{$ENDIF}
   try
     if not bAttributesFetched then
       result := TFile.GetAttributes(self.fullname);

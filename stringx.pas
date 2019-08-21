@@ -6,7 +6,11 @@ interface
 
 
 uses
-  Classes, variants, math, commonconstants, systemx, sort, numbers, typex, betterobject, types, sysutils;
+{$IFNDEF MSWINDOWS}
+  stringx.ansi,
+{$ENDIF}
+  Classes, variants, math, commonconstants, systemx, sort, numbers, typex, betterobject, types,
+  sysutils;
 
 const
   CRLF = #13#10;
@@ -42,6 +46,15 @@ type
   public
     property TrustyText: string read GetTrustyText write SetTrustyText;
   end;
+
+{$IFDEF MSWINDOWS}
+  TStringAnsiWinAdapter = record helper for ansistring
+  private
+    function GetAddrOf(idx: ni): Pbyte;
+  public
+    property AddrOf[idx: ni]: Pbyte read GetAddrOf;
+  end;
+{$ENDIF}
 
   PDumbRamString = ^TDumbRamString;
 function paddr(o: TObject): string;inline;
@@ -87,7 +100,7 @@ function StrIsBinary(s: string): boolean;
 function Capitalize(s: string): string;
 function AmpEncode(s: string): string;
 function AnsiStringToBytes(s: ansistring): TArray<byte>;
-function AnsiStringToTBytes(s: ansistring): Tbytes;
+function AnsiStringToTBytes(ss: ansistring): Tbytes;
 function BytesToAnsiString(b: TArray<byte>): ansistring;
 
 
@@ -1132,7 +1145,7 @@ begin
       try
         iRead := fs.Read(sTemp, iLimitLength);
 {$IFDEF NO_LEGACY_STRINGS}
-        SetLength(u8, iRead);
+        system.SetLength(u8, iRead);
         movemem32(@u8[0], @sTemp[0], iRead);
         te := TEncoding.UTF8;
         result := te.GetString(u8, 0, length(u8));
@@ -1250,7 +1263,7 @@ var
   end;
 begin
 
-  setlength(aRefs, length(notin));
+  system.setlength(aRefs, length(notin));
   for t:= low(aRefs) to high(aRefs) do begin
     aRefs[t] := 0
   end;
@@ -4095,7 +4108,7 @@ var
 begin
   t := STRZ;
   tt := 0;
-  setlength(result, length(s) shr 1);
+  system.setlength(result, length(s) shr 1);
   if (length(s) and 1)=1 then
     raise ECritical.create('StringToMemory requires an even number of bytes');
   while t < (length(s)-STRZ) do
@@ -4267,7 +4280,7 @@ var
   s1,s2: string;
 begin
   s2 := sIP;
-  setlength(result, 4);
+  system.setlength(result, 4);
   SplitString(s2, '.', s1,s2);
   result[0] := strtoint(s1);
   SplitString(s2, '.', s1,s2);
@@ -4520,23 +4533,46 @@ end;
 
 function AnsiStringToBytes(s: ansistring): TArray<byte>;
 begin
-  setlength(result, length(s));
-  movemem32(@result[0], @s[STRZ], length(s));
+  system.setlength(result, length(s));
+  movemem32(@result[0], s.addrof[STRZ], length(s));
+
+
 end;
 
-function AnsiStringToTBytes(s: ansistring): Tbytes;
+function AnsiStringToTBytes(ss: ansistring): Tbytes;
+var
+  d,s: pbyte;
+  l: nativeint;
 begin
-  setlength(result, length(s));
-  movemem32(@result[0], @s[STRZ], length(s));
+  system.setlength(result, length(ss));
+
+  d := @result[0];
+  s := ss.addrof[STRZ];
+  l := system.length(ss);
+  movemem32(d, s, l);
 end;
 
 function BytesToAnsiString(b: TArray<byte>): ansistring;
 begin
-  setlength(result, length(b));
-  movemem32(@result[STRZ], @b[0], length(b));
+{$IFNDEF MSWINDOWS}
+  result.SetLength(length(b));
+{$ELSE}
+  system.setlength(result, length(b));
+{$ENDIF}
+  movemem32(result.addrof[STRZ], @b[0], length(b));
 end;
 
 
+
+
+{$IFDEF MSWINDOWS}
+{ TStringAnsiWinAdapter }
+
+function TStringAnsiWinAdapter.GetAddrOf(idx: ni): Pbyte;
+begin
+  result := @self[idx];
+end;
+{$ENDIF}
 
 initialization
   UTF.RegisterClass(TUT_StringX);

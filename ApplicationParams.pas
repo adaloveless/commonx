@@ -35,8 +35,10 @@ function GetUserPAramsFileName: string;
 function APGet(const key: string; defaultvalue: string; bMore: boolean = false): string;overload;
 function APGet(const key: string; defaultvalue: boolean; bMore: boolean = false): boolean;overload;
 function APGet(const key: string; defaultvalue: real; bMore: boolean = false): real;overload;
+function APGetIntegerArray(const key: string; bMore: boolean = false): TArray<int64>;overload;
 
 procedure APPut(const key: string; value: string; bMore: boolean = false);
+procedure APPutIntegerArray(const key: string; a: TArray<int64>; bMore: boolean = false);
 
 
 function UPGet(const key: string; defaultvalue: string; bMore: boolean = false): string;overload;
@@ -123,6 +125,16 @@ begin
   end;
 end;
 
+function APGetIntegerArray(const key: string; bMore: boolean = false): TArray<int64>;overload;
+begin
+  apbegin;
+  try
+    result := gap.GetIntegerParameterArray(key);
+  finally
+    apend;
+  end;
+end;
+
 function APGet(const key: string; defaultvalue: boolean; bMore: boolean = false): boolean;
 begin
   result := strtobool(APGet(key, booltostr(defaultvalue), bMore));
@@ -179,6 +191,17 @@ begin
     apend;
   end;
 end;
+
+procedure APPutIntegerArray(const key: string; a: TArray<int64>; bMore: boolean = false);
+begin
+  apbegin;
+  try
+    gap.SetIntegerParameterArray(key, a);
+  finally
+    apend;
+  end;
+end;
+
 
 procedure UPPut(const key: string; value: string; bMore: boolean = false);
 begin

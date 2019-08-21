@@ -998,6 +998,10 @@ function TSERowSet.GetValues(x, y: integer): variant;
 var
   iRow: integer;
 begin
+  if x < 0 then
+    raise ECritical.create('negative column number '+x.tostring);
+  if x >= fieldcount then
+    raise ECritical.Create('trying to read column '+x.tostring+' which is >= column count '+fieldcount.tostring);
   iRow := GetIndexedRow(y);
   if length(FRowSet[iRow]) <> fieldCount then
     SetLength(FRowset[iRow], fieldcount);

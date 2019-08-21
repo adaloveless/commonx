@@ -143,7 +143,7 @@ type
 function IsTaskRunning(sImageName: string): boolean;
 
 function NumberOfTasksRunning(sImageName: string): nativeint;
-function KillTaskByName(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false): boolean;
+function KillTaskByName(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false; bForce: boolean = true): boolean;
 procedure KillTaskByID(pid: ni);
 
 
@@ -204,7 +204,7 @@ begin
   h := stringToStringListH(lowercase(sTasks));
   for t:= 0 to h.o.count-1 do begin
     sLine := h.o[t];
-    Debug.Log(sLine);
+//    Debug.Log(sLine);
 //    if zcopy(sLine, 0,4) = 'nice' then
 //      Debug.Log('here');
     if StartsWith(sLine, sImageName) then
@@ -224,19 +224,23 @@ begin
   end;
 end;
 
-function KillTaskByName(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false): boolean;
+function KillTaskByName(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false; bForce: boolean = true): boolean;
 var
   sTasks: string;
   tflag: string;
+  fflag: string;
 begin
   tflag := '';
+  fflag := '';
   if bKillchildTasks then
     tflag := ' /T';
+  if bForce then
+    fflag := ' /F';
   result := false;
-  exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'"'+tflag+' /F', DLLPath, true, false);
+  exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'"'+tflag+fflag, DLLPath, true, false);
   while IsTaskRunning(sImageName) do begin
     Debug.Log('Task '+sImageName+' is still running, retry terminate.');
-    exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'"'+tflag+' /F', DLLPath, true, false);
+    exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'"'+tflag+fflag, DLLPath, true, false);
     sleep(2000);
     result := true;
     if not bKillall then

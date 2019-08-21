@@ -60,8 +60,8 @@ type
   public
     constructor CreateInline(AThreadFunc: TProc; ACreateSuspended: Boolean = False;
       FreeOnComplete: Boolean = false);reintroduce;
-    constructor CreateInlineWithGui(AThreadFunc, GuiFunc: TProc; ACreateSuspended: Boolean = False;
-      FreeOnComplete: Boolean = false);reintroduce;
+    constructor CreateInlineWithGui(AThreadFunc, GuiFunc: TProc; ACreateSuspended: Boolean = False; FreeOnComplete: Boolean = false);reintroduce;
+    constructor CreateInlineWithGuiEx(AThreadFunc, GuiFunc: TProc; exProc: TProc<string>; ACreateSuspended: Boolean = False; FreeOnComplete: Boolean = false);reintroduce;
   end;
 
   TAnonTimerProc = reference to procedure();
@@ -76,6 +76,7 @@ type
 
 function InlineProc(proc: TProc): TAnonymousCommand<boolean>;
 function InlineProcWithGui(proc, guiproc: TProc): TAnonymousCommand<boolean>;
+function InlineProcWithGuiEx(proc, guiproc: TProc; exProc:TProc<string>): TAnonymousCommand<boolean>;
 
 //function InlineProc<T>(proc: TProc): TAnonymousCommand<T,boolean>;
 
@@ -128,6 +129,17 @@ var
   res: TAnonymousCommand<boolean>;
 begin
   res := TAnonymousFunctionCommand.createinlinewithgui(proc, guiproc, false, false);
+
+  result := res;
+  result.start;
+
+end;
+
+function InlineProcWithGuiEx(proc, guiproc: TProc; exProc:TProc<string>): TAnonymousCommand<boolean>;
+var
+  res: TAnonymousCommand<boolean>;
+begin
+  res := TAnonymousFunctionCommand.createinlinewithguiex(proc, guiproc, exProc, false, false);
 
   result := res;
   result.start;
@@ -347,6 +359,38 @@ begin
 
 
   Create(func1, func2, procedure (e: exception) begin end, true, false);
+  SynchronizeFinish := true;
+  Start;
+
+
+end;
+
+constructor TAnonymousFunctionCommand.CreateInlineWithGuiEx(AThreadFunc,
+  GuiFunc: TProc; exProc: TProc<string>; ACreateSuspended,
+  FreeOnComplete: Boolean);
+var
+  func1: TFunc<boolean>;
+  func2: TProc<boolean>;
+  func3: TProc<string>;
+begin
+  func1:= function (): boolean
+                begin
+                  AthreadFunc();
+                  result := true;
+                end;
+
+  func2:= procedure (b: boolean)
+                begin
+                  GuiFunc();
+                end;
+
+  func3 := procedure (s: string)
+          begin
+            ExProc(s);
+          end;
+
+
+  Create(func1, func2, procedure (e: exception) begin func3(e.message) end, true, false);
   SynchronizeFinish := true;
   Start;
 

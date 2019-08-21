@@ -122,6 +122,8 @@ type
   TCommand = class;//forward
 
   TCommandFinishedProc = reference to procedure (cmd: TCommand);
+  TOnCommandFinished = procedure (c: TCommand) of object;
+
 
   TCommand = class(TSharedObject, IIndirectlyLinkable<TCommand>)
   strict
@@ -214,6 +216,7 @@ type
     FSelfDestructTime: ticker;
     FSelfDestructInitiated: boolean;
     FNoThreadvarWait: boolean;
+    procedure SyncFinishGui;
     function GetAffinity: nativeint;
     procedure SetAffinity(const Value: nativeint);
     function GetDiskExpenseByFileNAme(sFile: string): nativefloat;
@@ -235,6 +238,9 @@ type
   public
     evWait: TSignal;
     onFinish_Anon: TCommandFinishedProc;
+    onFinish: TOnCommandFinished;
+    onFinishGUI: TCommandFinishedProc;
+    DontBlockGUI: boolean;//this is just a flag that the gui can use to decide to put up a spinny or not.
     procedure AddLinkage(link: TLInkage<TCommand>; list: TObject);
     function GetlinkageFor(obj: TObject): TLinkage<TCommand>;
     procedure RemoveLinkage(obj: TObject);
@@ -248,6 +254,7 @@ type
 
     procedure PostProcess; virtual;
     procedure Execute;
+
     property Icon: PCommandIcon read FIcon write FIcon;
 
     procedure NotifyProgress;
@@ -271,8 +278,8 @@ type
     procedure Process(by: TCommandProcessor); overload;
     property Freeing: boolean read FFreeing write FFreeing;
 
-    procedure Start; overload;
-    procedure Start(by: TCommandProcessor); overload;
+    function Start: TCommand; overload;
+    function Start(by: TCommandProcessor): TCommand; overload;
     function WaitFor(iUpToMS: nativeint = -1;cFrom: TCommand = nil): boolean;
     property NoThreadVarWait: boolean read FNoThreadvarWait write FNoThreadvarWait;
     property Threadable: boolean read FThreadable write FThreadable;
@@ -1437,6 +1444,12 @@ begin
             PostProcess;
             if assigned(onFinish_Anon) then
               onFinish_Anon(self);
+            if assigned(onFinish) then
+              onFinish(self);
+            if assigned(onFinishGUI) then begin
+              TThread.Synchronize(thr.realthread, SyncFinishGUI);
+            end;
+
           end;
           threadcommand := nil;
           FCompletelyFinished := true;
@@ -1530,6 +1543,11 @@ begin
 
 
 
+end;
+
+procedure TCommand.SyncFinishGui;
+begin
+  onFinishGUI(self);
 end;
 
 // ------------------------------------------------------------------------------
@@ -1905,14 +1923,16 @@ begin
 
 end;
 
-procedure TCommand.Start;
-begin
-  Process;
-end;
-
-procedure TCommand.Start(by: TCommandProcessor);
+function TCommand.Start(by: TCommandProcessor): TCommand;
 begin
   Process(by);
+  result := self;
+end;
+
+function TCommand.Start: TCommand;
+begin
+  Process;
+  result := self;
 end;
 
 procedure TCommand.StartChain(by: TCommandProcessor);

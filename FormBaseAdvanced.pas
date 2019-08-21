@@ -8,7 +8,7 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, FrameBusyFMX,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, typex,systemx, guihelpers_fmx, FramBaseFMX,
   FMX.Objects, commandprocessor, FMX.Controls.Presentation, FMX.StdCtrls, AnonCommand,
-  FormFMXBase, tickcount, betterobject;
+  FormFMXBase, tickcount, betterobject, stringx;
 
 type
 {$IFNDEF USE_ANON_THREAD}
@@ -17,15 +17,10 @@ type
   TLocalBackground = TAnonymousThread<boolean>;
 {$ENDIF}
 
-  TOnCommandFinished = procedure (c: TCommand) of object;
-  TOnCommandFinishedThen = reference to procedure (c: Tcommand);
 
 
   TfrmBaseAdvanced = class(TfrmFMXBase, IUnknown)
-    BusyCircle: TCircle;
-    Busy: TArc;
     BusyTimer: TTimer;
-    BusyRect: TRectangle;
     procedure BusyTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
@@ -39,27 +34,19 @@ type
     function QueryInterface(const IID: TGUID; out Obj): HResult;
   protected
 {$IFDEF USE_ANON_THREAD}
-    FWaitingOn: TThread;
-    FBackgroundOp: TAnonymousThread<boolean>;
 {$ELSE}
-    FWaitingOn: Tcommand;
-    FBackgroundOp: TAnonymousCommand<boolean>;
 {$ENDIF}
     FTakeOwnershipOfbackgroundCommand: boolean;
     InBGOp: boolean;
-    FonCommandFinish: TOnCommandFinished;
-    FonCommandFinishedThen: TOnCommandFinishedThen;
     procedure ShowFancy(show: boolean);
-    procedure ToggleBusy(working: Boolean);
     procedure BeforeDestruction;override;
     { Private declarations }
     function BackgroundOp(AThreadFunc: TFunc<boolean>;
       AOnFinishedProc: TProc<boolean>; AOnErrorProc: TProc<Exception>;
       bAutoDestroy: boolean=true): TLocalBackground;
+  private
   protected
-    procedure DoUpdateState;virtual;
   public
-    ActiveCommands: TCommandList<TCommand>;
     detached: boolean;
     fancyAnim: TFramBusyFMX;
     { Public declarations }
@@ -71,21 +58,11 @@ type
 
     //NEW Services Offered by Base Form
     function GetControl<T: TControl>(parent: TControl): T;
-{$IFDEF USE_ANON_THREAD}
-    procedure WaitForCommand(c: TThread; bTakeOwnership: boolean);overload;
-    procedure WaitForCommand(c: TThread; bTakeOwnership: boolean; p: TOnCommandFinished);overload;
-{$ELSE}
-    procedure WaitForCommand(c: TCommand; bTakeOwnership: boolean);overload;
-    procedure WaitForCommand(c: TCommand; bTakeOwnership: boolean; p: TOnCommandFinished);overload;
-    procedure WaitForCommand(c: TCommand; bTakeOwnership: boolean; p: TOnCommandFinishedThen);overload;
-{$ENDIF}
-    procedure WaitforCommandsToComplete;
-    function WatchCommands: boolean;
 
-    property ActiveCommand: TCommand read FWaitingOn;
-    procedure UpdateState;
+
+
     procedure ShowMessage(m: string);
-
+    procedure ToggleBusy(working: Boolean);override;
 
   end;
 
@@ -106,7 +83,7 @@ function TfrmBaseAdvanced.BackgroundOp(AThreadFunc: TFunc<boolean>;
   bAutoDestroy: boolean): TLocalBackground;
 begin
   InBGOp := true;
-  FBackgroundOp := TLocalBackground.Create(AthreadFunc,
+  var bgop := TLocalBackground.Create(AthreadFunc,
     procedure (Aresult: boolean)
     begin
       AonFinishedProc(AResult);
@@ -122,9 +99,10 @@ begin
 
   result := nil;
   if not bAutoDestroy then
-    result := FBackgroundOp;//<--don't return an autodestroy thread,
+    result := bgop;//<--don't return an autodestroy thread,
                             //it might be dead before this function exists
-  WaitForCommand(FBackGroundOp, bAutoDestroy);
+  Watch(bAutoDestroy, bgop);
+//  WaitForCommand(FBackGroundOp, bAutoDestroy);
 
 end;
 
@@ -144,7 +122,7 @@ end;
 
 procedure TfrmBaseAdvanced.BusyTimerTimer(Sender: TObject);
 begin
-
+{$IFDEF OLD_BUSY}
   Busy.StartAngle:=Busy.StartAngle+10;
   if Busy.StartAngle>359 then
     Busy.StartAngle:=0;
@@ -182,14 +160,13 @@ begin
     end;
   end;
 {$ENDIF}
+{$ENDIF}
 
 end;
 
 constructor TfrmBaseAdvanced.Create(AOwner: TComponent);
 begin
   ics(Frefsect);
-  ActiveCommands := TCommandList<TCommand>.create;
-  ActiveCommands.RestrictedtoThreadID := Tthread.Currentthread.threadid;
   inherited;
 
 end;
@@ -197,22 +174,10 @@ end;
 destructor TfrmBaseAdvanced.Destroy;
 begin
 
-  if assigned(FWaitingOn) then begin
-    if not InBGOp then
-      FWaitingOn.WaitFor;
-    FWaitingOn.Free;
-    FWaitingOn := nil;
-  end;
-
-  ActiveCommands.WaitForAll;
-  ActiveCommands.ClearAndDestroyCommands;
-
 //  BGCmd.WaitForAll;
 
   dcs(FRefSect);
   inherited;
-
-  Activecommands.free;
 end;
 
 procedure TfrmBaseAdvanced.Detach;
@@ -220,10 +185,6 @@ begin
   detached := true;
 end;
 
-procedure TfrmBaseAdvanced.DoUpdateState;
-begin
-  //no implementation required
-end;
 
 procedure TfrmBaseAdvanced.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
@@ -259,10 +220,8 @@ end;
 procedure TfrmBaseAdvanced.ShowFancy(show: boolean);
 begin
   if show then begin
-    if fancyAnim <> nil then exit;
-    fancyAnim := TframBusyFMX.Create(self);
-    fancyAnim.Parent := BusyRect;
-    fancyAnim.Align := TAlignLayout.Client;
+    Tmm(mock).ShowFancy;
+
 
   end else begin
     fancyAnim.DisposeOf;
@@ -273,7 +232,7 @@ end;
 
 procedure TfrmBaseAdvanced.ShowMessage(m: string);
 begin
-  mm.TemporaryMessage(m);
+  mm.TemporaryMessage(CRLF+m+CRLF);
 end;
 
 function TfrmBaseAdvanced._AddRef: Integer;
@@ -330,6 +289,7 @@ begin
 
   if working=true then
   begin
+{$IFDEF OLDBUSY}
     BusyTimer.Enabled:=true;
     BusyCircle.Visible:=true;
     BusyRect.Width := clientwidth;
@@ -342,12 +302,17 @@ begin
     CenterControl(BusyCircle);
     BusyRect.Align := TAlignLayout.contents;
     ShowFancy(working);
+{$ENDIF}
+    Tmm(mock).ShowFancy;
   end else
   begin
+    Tmm(mock).HideFancy;
+{$IFDEF OLDBUSY}
     BusyRect.Visible := false;
     BusyTimer.Enabled:=false;
     BusyCircle.Visible:=false;
     ShowFancy(working);
+{$ENDIF}
   end;
   self.Cursor := crDefault;
   UpdateMouseCursor;
@@ -359,76 +324,15 @@ end;
 
 
 
-procedure TfrmBaseAdvanced.UpdateState;
-begin
-  DoUpdateState;
-end;
-
-procedure TfrmBaseAdvanced.WaitForCommand(c: TCommand; bTakeOwnership: boolean;
-  p: TOnCommandFinished);
-begin
-  FonCommandFinish := p;
-  WaitForCommand(c, bTakeOwnerShip);
-end;
-
-procedure TfrmBaseAdvanced.WaitForCommand(c: TCommand; bTakeOwnership: boolean; p: TOnCommandFinishedThen);
-begin
-  FonCommandFinishedThen := p;
-  WaitForCommand(c, bTakeOwnerShip);
-end;
 
 
-procedure TfrmBaseAdvanced.WaitforCommandsToComplete;
-begin
-  while ActiveCommands.count > 0 do begin
-    WaitForCommand(activecommands[0], false);
-    var c := activecommands[0];
-    activecommands.delete(0);
-    c.free;
-    c := nil;
-  end;
-  ToggleBusy(false);
 
-end;
 
-function TfrmBaseAdvanced.WatchCommands: boolean;
-begin
-  if ActiveCommands.count > 0 then begin
-    if activecommands[0].IsComplete then begin
-      WaitForCommand(activecommands[0], false);
-      var c := activecommands[0];
-      activecommands.delete(0);
-      if assigned(FonCommandFinishedThen) then
-        FonCommandFinishedThen(c);
-      if assigned(FonCommandFinish) then
-        FonCommandFinish(c);
-      c.free;
-      c := nil;
-    end;
-  end;
-  result := not (ActiveCommands.count > 0);
-  ToggleBusy(not result);
 
-end;
 
-{$IFDEF USE_ANON_THREAD}
-procedure TfrmBase.WaitForCommand(c: TThread; bTakeOwnership: boolean);
-begin
-  FTakeOwnershipOfbackgroundCommand := btakeOwnership;
-  FWaitingOn := c;
-  ToggleBusy(true);
-end;
-{$ELSE}
-procedure TfrmBaseAdvanced.WaitForCommand(c: TCommand; bTakeOwnership: boolean);
-begin
-  if not ActiveCommands.Has(c) then ActiveCommands.Add(c);
-  if c.OwnedByProcessor then
-    raise ECritical.create('cannot wait on a free-on-complete command');
-  FTakeOwnershipOfbackgroundCommand := btakeOwnership;
-  FWaitingOn := c;
-  ToggleBusy(true);
-end;
-{$ENDIF}
+
+
+
 
 
 

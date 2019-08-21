@@ -9,42 +9,11 @@ object frmBaseAdvanced: TfrmBaseAdvanced
   FormFactor.Devices = [Desktop]
   OnClose = FormClose
   DesignerMasterStyle = 0
-  object BusyRect: TRectangle
-    Fill.Color = claNull
-    Position.X = 48.000000000000000000
-    Position.Y = 56.000000000000000000
-    Size.Width = 257.000000000000000000
-    Size.Height = 209.000000000000000000
-    Size.PlatformDefault = False
-    Stroke.Kind = None
-    object BusyCircle: TCircle
-      Align = Center
-      Fill.Color = claNull
-      HitTest = False
-      Size.Width = 25.000000000000000000
-      Size.Height = 25.000000000000000000
-      Size.PlatformDefault = False
-      Stroke.Color = claNull
-      Visible = False
-      object Busy: TArc
-        Align = Client
-        HitTest = False
-        Size.Width = 25.000000000000000000
-        Size.Height = 25.000000000000000000
-        Size.PlatformDefault = False
-        Stroke.Color = claSilver
-        Stroke.Thickness = 4.000000000000000000
-        Stroke.Cap = Round
-        StartAngle = -90.000000000000000000
-        EndAngle = -90.000000000000000000
-      end
-      object BusyTimer: TTimer
-        Enabled = False
-        Interval = 25
-        OnTimer = BusyTimerTimer
-        Left = 24
-        Top = 200
-      end
-    end
+  object BusyTimer: TTimer
+    Enabled = False
+    Interval = 25
+    OnTimer = BusyTimerTimer
+    Left = 64
+    Top = 120
   end
 end

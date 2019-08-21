@@ -150,6 +150,7 @@ type
     function GetExpired: boolean;
     procedure SEtGenesis(const Value: cardinal);
 
+
     function GetExportString: string;
     function GetFetchQuery: string;
     function GetInsertQuery: string;
@@ -219,6 +220,7 @@ type
     function GetIToken: TDataObjectToken;
     function GetTToken: TDataObjectToken;
     function GetCaption: string; virtual;
+    function IndexOfKey(sname: string): ni;
 
     //special fields
     function HasSpecialFieldDef(sFieldName: string): boolean;
@@ -273,6 +275,8 @@ type
     procedure AddAssociate(sName: string {OVERRIDE DoGetAssociate}); overload;
       //Adds a dynamic associate to object (preferred)...
       //YOU MUST OVERRIDE DoGetAssociate TO RETURN THIS ASSOCIATE
+
+
 
 
     procedure AddCalculatedField(sName: string; FieldType: TDataFieldClass);
@@ -331,6 +335,9 @@ type
     FExtFieldDefs: array of TExtDOFieldDef;
     FValFieldDefs: array of TValDOFieldDef;
       //field defs needs to be public due to property limitations
+
+    function FirstNonKeyField: ni;
+      //returns the index of the first field that isn't a key field
 
     procedure OnParentKeyUpdate(parent: TDataObject; priorkeys: variant);virtual;
     procedure InitDefinition;virtual;
@@ -393,8 +400,8 @@ type
     // exchanged for the real object.  We call this "lazy" instantiation.
 
     property o[sNameOrIndex: variant]:TDataobject read GetO;
-
     property fld[sName: string]: TDataField read GetTFld;default;
+
     //Represents fields in the object
     // a Data object that has ONLY fields, looks an awful lot like a RECORD.
     // These fields contain the basic stuff... e.g. the name of a user, the
@@ -749,7 +756,6 @@ type
     property Owner: TDataObject read FOwner write FOwner;
 
 
-
   end;
 
 
@@ -913,6 +919,25 @@ type
   public
     constructor create(owner: TDataObject; rec: TDOFieldDef); reintroduce; virtual;
   end;
+
+//#########################################################
+  TBigIntDataField = class(TDataField)
+  //this class represents a 32-bit integer value
+  protected
+    procedure SetAsString(str: string); override;
+  public
+    constructor create(owner: TDataObject; rec: TDOFieldDef); reintroduce; virtual;
+  end;
+
+  TKeyDataField = class(TBigIntDataField)
+  protected
+    function KeyIndex: ni;
+    procedure SetAsVariant(v: Variant); override;
+    function GetASVariant: variant;override;
+
+  end;
+
+
 
   TVariantDataField = class(TDataField)
   //this class represents a 32-bit integer value
@@ -1435,8 +1460,18 @@ begin
       exit;
     end;
   end;
-
 end;
+function TDataObject.IndexOfKey(sname: string): ni;
+var
+  t: ni;
+begin
+  result := -1;
+  for t := 0 to high(FKeys) do begin
+    if CompareText(sName, FKeys[t])=0 then
+      exit(t);
+  end;
+end;
+
 //------------------------------------------------------------------------------
 function TDataObject.GetFieldCount: integer;
 begin
@@ -1788,9 +1823,11 @@ var
   t: ni;
   ColumnList: string;
   ValueList: string;
+  f: TDataField;
 const
   BL = '';//would be brackets on MSSQL
   BR = '';//would be brackets on MSSQL
+
 begin
   ColumnList := '';
   for t:= SkipInsertKeycount to high(FKeys) do begin
@@ -1800,9 +1837,12 @@ begin
   end;
 
   for t:= 0 to fieldCount-1 do begin
+    f := self.fieldByIndex[t];
+    if f is TKeyDataField then
+      continue;
     if columnlist <> '' then
       columnlist := columnlist + ', ';
-    ColumnList := ColumnList + BL+self.fieldByIndex[t].Name+BR;
+    ColumnList := ColumnList + BL+f.Name+BR;
   end;
 
   result := 'insert into '+FTableLink+' ('+ColumnList+') ( select ';
@@ -1815,9 +1855,12 @@ begin
   end;
 
   for t:= 0 to fieldCount-1 do begin
+    f := self.fieldByIndex[t];
+    if f is TKeyDataField then
+      continue;
     if valuelist <> '' then
       valuelist := valuelist + ', ';
-    ValueList := ValueList + self.fieldByIndex[t].QuotedStorageString;
+    ValueList := ValueList + f.QuotedStorageString;
 
   end;
   result := result + valuelist+ ')';
@@ -3093,6 +3136,18 @@ begin
   end;
 end;
 
+function TDataObject.FirstNonKeyField: ni;
+var
+  t: ni;
+begin
+  result := fieldcount;
+  for t:= 0 to result-1 do begin
+    if not (FieldByIndex[t] is TKeyDataField) then
+      exit(t);
+  end;
+
+end;
+
 //------------------------------------------------------------------------------
 function TDataObjectToken._AddRef: Integer;
 begin
@@ -3384,7 +3439,8 @@ begin
     else
       FFilterPhrase := FFilterPhrase + sKeyPhrase;
 
-    FFilterPhrase := ' where '+FFilterPhrase;
+    if t = 0 then
+      FFilterPhrase := ' where '+FFilterPhrase;
   end;
 
   //setup a standard query for the table
@@ -4344,6 +4400,80 @@ begin
 
 end;
 
+
+{ TBigIntDataField }
+
+constructor TBigIntDataField.create(owner: TDataObject; rec: TDOFieldDef);
+begin
+  AsVariant := 0;
+end;
+
+procedure TBigIntDataField.SetAsString(str: string);
+var
+  t: integer;
+  s: string;
+  bIsDash: boolean;
+  bIsAbove0: boolean;
+  bIsBelow9: boolean;
+begin
+  if (str ='') or (str = '-') then begin
+    AsVariant := 0;
+    exit;
+  end;
+
+  if (compareText(str, 'True')=0) then begin
+    AsVariant := 1;
+    exit;
+  end;
+
+  if (compareText(str, 'False')=0) then begin
+    AsVariant := 0;
+    exit;
+  end;
+
+  s := str;
+  for t:= 1 to length(s) do begin
+    bIsDash := ord(s[t]) = 45;
+    bIsAbove0 := ord(s[t]) >=48;
+    bIsBelow9 := ord(s[t]) <=57;
+
+    if not bIsDash and not (bIsAbove0 and bIsBelow9) then begin
+      exit;
+    end;
+
+  end;
+
+  try
+    AsVariant := int64(strtoint64(str));
+  except
+  end;
+end;
+
+{ TKeyDataField }
+
+function TKeyDataField.GetASVariant: variant;
+begin
+  result := owner.Token.Params[keyindex];
+end;
+
+function TKeyDataField.KeyIndex: ni;
+begin
+  if owner = nil then
+    raise ECritical.create(classname+' has no owner!');
+  result := owner.indexofkey(self.name);
+end;
+
+procedure TKeyDataField.SetAsVariant(v: Variant);
+var
+  keyidx: ni;
+begin
+//  inherited;
+  owner.Token.Params[keyindex] := v;
+
+
+
+
+end;
 
 initialization
 

@@ -1,12 +1,13 @@
 unit FrameBusyFMX;
 
 interface
+{$DEFINE FANCY}
 
 uses
   debug, betterobject, numbers, systemx, typex, pxl.types, tickcount, FramBaseFMX,
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
-  FMX.Objects;
+  FMX.Objects, guihelpers_fmx;
 
 const
   PROJECTILE_COUNT = 100;
@@ -45,8 +46,9 @@ type
     tracking: TFMXObject;
     procedure Draw;
     procedure init;
-
   end;
+
+  TAnimStage = (asStop, asIn, asPlay, asOut);
 
   TframBusyFMX = class(TframeBaseFMX)
     RectBusyAnim: TRectangle;
@@ -55,19 +57,24 @@ type
     procedure FrameResize(Sender: TObject);
   private
     { Private declarations }
+    animstage: TAnimStage;
   public
     { Public declarations }
     starttime: ticker;
+    keyframetime: ticker;
     circles: array[0..PROJECTILE_COUNT-1] of TCircle;
     physicstime: single;
     grav : array[0..7] of TGravityPoint;
     proj: array[0..PROJECTILE_COUNT-1] of TProjectile;
+    master_fader: single;
+
     procedure DoDraw;
     procedure UpdatePhysics(deltaTime: ticker);
     procedure Init;
     constructor Create(AOwner: TComponent); override;
-
-
+    procedure AnimateFrame(interval: ni);
+    procedure AnimateTransitionIn;
+    procedure AnimateTransitionOut;
   end;
 
 var
@@ -78,6 +85,36 @@ implementation
 {$R *.fmx}
 
 { TValorDraw }
+
+procedure TframBusyFMX.AnimateFrame(interval: ni);
+begin
+  if animstage = asSTop then
+    exit;
+  bringtofront;
+  UpdatePhysics(interval);
+  DoDraw;
+end;
+
+procedure TframBusyFMX.AnimateTransitionIn;
+begin
+  if AnimStage <> asIn then begin
+    bringtofront;
+    starttime := getticker;
+    keyframetime := starttime;
+    Visible := true;
+    RectBusyAnim.HitTest := true;
+    AnimStage := asIn;
+  end;
+//  debug.log('DO STUFF HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+end;
+
+procedure TframBusyFMX.AnimateTransitionOut;
+begin
+  if AnimStage <> asOUT then begin
+    keyframetime := getticker;
+    AnimStage := asOut;
+  end;
+end;
 
 constructor TframBusyFMX.Create(AOwner: TComponent);
 begin
@@ -94,7 +131,34 @@ var
 begin
   inherited;
 
-  RectBusyAnim.Fill.Color := lesserof(0, gettimesince(starttime) div 10) shl 24;
+  case animstage of
+    asStop: REctBusyAnim.Visible := false;
+    asIn, asPlay: begin
+
+            RectBusyAnim.visible := true;
+            var alpha := lesserof(255, gettimesince(keyframetime) div 4);
+            RectBusyAnim.Fill.Color := alpha shl 24;
+            if alpha = 0 then
+              animStage := asPlay;
+            master_fader := alpha / 255;
+            self.Opacity := master_fader;
+
+
+          end;
+    asOut: begin
+            RectBusyAnim.visible := true;
+            var alpha := 255-lesserof(255, gettimesince(keyframetime) div 4);
+            RectBusyAnim.Fill.Color := alpha shl 24;
+            if alpha = 0 then begin
+              animStage := asStop;
+              Visible := false;
+              RectBusyAnim.HitTest := false;
+
+            end;
+            master_fader := alpha / 255;
+            self.Opacity := master_fader;
+          end;
+  end;
 //  for t := 0 to high(grav) do begin
 //    grav[t].Draw(circles[t]);
 //  end;
@@ -143,8 +207,8 @@ end;
 procedure TframBusyFMX.tmAnimTimer(Sender: TObject);
 begin
   inherited;
-  UpdatePhysics(TTimer(sender).Interval);
-  DoDraw;
+  AnimateFrame(tmAnim.Interval);
+
 end;
 
 procedure TframBusyFMX.UpdatePhysics(deltatime: ticker);
@@ -152,6 +216,11 @@ var
   t: integer;
 begin
   inherited;
+  if parent = nil then
+    exit;
+
+  self.width :=  Control_GetWidth(self);
+  self.height := Control_GetHeight(self);
   {$IFNDEF FANCY}
   exit;
   {$ENDIF}
@@ -205,6 +274,7 @@ begin
 //      if ((t=0) and (u=0)) then Debug.Log(diff.ToString);
       var attraction : single := (1/(dist))*80000*(greaterof(0.05,(lesserof(1.0,0.6+(sin(getticker*0.0005))))));;
       var VacuumVector :=  ((g.VacuumForce*10.0));
+      attraction := attraction * master_fader;
       p.Velocity := p.Velocity + (gravVector * attraction);
       p.Velocity := p.Velocity + (VacuumVector * attraction);
       var range: integer := 64;
@@ -231,10 +301,16 @@ end;
 { TProjectile }
 
 procedure TProjectile.Draw;
+const
+  circle_size = 64;
 begin
   if self.tracking is TCircle then begin
-    TCircle(self.tracking).Position.X := self.pos.x;
-    TCircle(self.tracking).Position.y := self.pos.y;
+    TCircle(self.tracking).Position.X := self.pos.x-(circle_size shr 1);
+    TCircle(self.tracking).Position.y := self.pos.y-(circle_size shr 1);
+    TCircle(self.tracking).size.Width := circle_size;
+    TCircle(self.tracking).size.height := circle_size;
+
+
   end;
 
 end;

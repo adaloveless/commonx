@@ -162,8 +162,10 @@ type
       property EnableTransactionLog: boolean read FEnableTransactionLog write FEnableTransactionLog;
 
       procedure ContinueConnection;
+      procedure BeginTransaction;
       procedure Rollback;
       procedure Commit;
+      function IsInTransaction: boolean;
       procedure SetLastError(s: string);overload;
       procedure SetLastError(iCode: integer; s: string);overload;
       function GetLastErrorMessage: string;
@@ -414,6 +416,11 @@ procedure TServerInterface.AddCommonStuff(packet: TRDTPPacket);
 begin
   packet.AddString('RDTPSystem');
 
+end;
+
+procedure TServerInterface.BeginTransaction;
+begin
+  cli.BeginTransaction;
 end;
 
 function TServerInterface.BuildVarArrayFromKeys(packet: TRDTPPacket; iNumKeys: integer): variant;
@@ -815,6 +822,11 @@ begin
 
 end;
 
+function TServerInterface.IsInTransaction: boolean;
+begin
+  result := cli.IsInTransaction;
+end;
+
 function TServerInterface.Query(cache: TDataObjectCache;
   out obj: TDataObject; sQuery: string; iSessionID: integer;
   bExpectMany: boolean; slDebug: TStringList = nil; iTimeoutMS: integer =300000): boolean;
@@ -989,12 +1001,12 @@ end;
 
 procedure TServerInterface.Rollback;
 begin
-//
+  cli.rollback;
 end;
 
 procedure TServerInterface.Commit;
 begin
-//
+  cli.commit;
 end;
 
 function TServerInterface.GetReplayLogs(since: TDateTime): string;
@@ -1110,6 +1122,8 @@ var
   t: ni;
   iKeyCount: ni;
   v: variant;
+  f: TDataField;
+  iFirstnonKeyfieldInObject: ni;
 begin
   //get the keys (this is the tough part)
   iKeyCount := DOCF.GetKeycountForclass(cType);
@@ -1120,9 +1134,13 @@ begin
 
   //instatiate the object with the keyss
   DOCF.LowLowLevelDOCreate(result, cache, cType, v, 0,0,0);
+
+  iFirstnonKeyfieldInObject := Result.firstnonkeyfield;
   //unwrap the fields
-  for t:= 0 to result.FieldCount-1 do begin
-    result.FieldByIndex[t].AsVariant := rs.Values[t+iKeyCount,row];
+  for t:= iFirstnonKeyfieldInObject to result.FieldCount-1 do begin
+    f := result.FieldByIndex[t];
+    if not (f is TKeyDataField) then
+      f.AsVariant := rs.Values[t+iKeyCount-iFirstnonKeyfieldInObject,row];
   end;
 
 

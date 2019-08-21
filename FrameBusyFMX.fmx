@@ -14,6 +14,6 @@ inherited framBusyFMX: TframBusyFMX
     Interval = 25
     OnTimer = tmAnimTimer
     Left = 272
-    Top = 192
+    Top = 200
   end
 end

@@ -28,9 +28,12 @@ type
     q: TPanel;
     gm: TGestureManager;
     TempMessageTimer: TTimer;
+    BusyTimer: TTimer;
     procedure btnGestureTestGesture(Sender: TObject;
       const EventInfo: TGestureEventInfo; var Handled: Boolean);
     procedure TempMessageTimerTimer(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure BusyTimerTimer(Sender: TObject);
   private
     function GetShowingForm: TfrmFMXBase;
 
@@ -43,8 +46,14 @@ type
     procedure PushForm(f: TfrmFMXBase);
     function PopForm: TfrmFMXBase;
   public
+    FancyFrame: TFrame;
+    OnShowFancy: TProc;
+    OnHideFancy: TProc;
+    OnFancyUpdate: TProc<nativeint>;
+    OnFancyMessage: TProc<string>;
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
+    procedure ToggleBusy(busy: Boolean); override;
 
     { Public declarations }
     property showingform: TfrmFMXBase read GetShowingForm;
@@ -58,16 +67,28 @@ type
     procedure ShowFormClassAndSetup<T: TfrmFMXBase>(var f: T; p: TProc);
     procedure TemporaryMessage(s: string);
     procedure TempMessageEngine;
+
+    procedure ShowFancy;
+    procedure HideFancy;
+    procedure Fancyupdate(intv: ni);
+    procedure FancyMessage(s: string);
+
+
   end;
 
 type
   TFormClass = class of TfrmFMXBase;
 var
   frmDefault: TFormClass;
+  OnConfigureMM: Tproc;
   mm: Tmm;
 
 procedure MM_ShowForm(frm: TfrmFMXBase);
 procedure MM_CloseForm(frm: TfrmFMXBase);
+
+
+procedure SetMMConfig(proc: TProc);
+procedure ConfigureMM();
 
 
 type
@@ -126,7 +147,7 @@ end;
 procedure Tmm.AfterConstruction;
 begin
   inherited;
-
+  formMockmobile.configureMM;
 end;
 
 procedure Tmm.BeforeDestruction;
@@ -147,6 +168,15 @@ begin
 //  btnGestureTest.text := 'gesture!'+getticker.tostring;
 end;
 
+procedure Tmm.BusyTimerTimer(Sender: TObject);
+begin
+  inherited;
+  WatchCommands;
+  if Assigned(OnFancyUpdate) then begin
+    OnFancyUpdate(busytimer.Interval);
+  end;
+end;
+
 constructor Tmm.Create(AOwner: TComponent);
 begin
   inherited;
@@ -164,6 +194,23 @@ begin
 
 end;
 
+procedure Tmm.FancyMessage(s: string);
+begin
+  //
+end;
+
+procedure Tmm.Fancyupdate(intv: ni);
+begin
+  if assigned(Onfancyupdate) then
+    OnFancyUpdate(intv);
+end;
+
+procedure Tmm.FormCreate(Sender: TObject);
+begin
+  inherited;
+  //
+end;
+
 function Tmm.GetShowingForm: TfrmFMXBase;
 begin
   if formstack.count = 0 then
@@ -176,6 +223,13 @@ begin
   MoveControls(showingform, self, showingform);
 end;
 
+
+procedure Tmm.HideFancy;
+begin
+  if assigned(OnHideFancy) then
+    OnHideFancy;
+
+end;
 
 function Tmm.PopForm: TfrmFMXBase;
 begin
@@ -199,6 +253,14 @@ begin
     showingform.ActivateOrTransplant;
     showingform.ActivateByPop;
   end;
+end;
+
+procedure Tmm.ShowFancy;
+begin
+  if assigned(OnShowFancy) then begin
+    OnShowFancy();
+  end;
+
 end;
 
 procedure Tmm.ShowForm(f: TfrmFMXBase);
@@ -482,6 +544,27 @@ begin
   TempMessageTimer.Enabled := true;
 
 
+end;
+
+procedure Tmm.ToggleBusy(busy: Boolean);
+begin
+  inherited;
+  if busy then begin
+    ShowFancy;
+  end else begin
+    HideFancy;
+  end;
+end;
+
+procedure ConfigureMM();
+begin
+  if assigned(OnConfigureMM) then
+    OnConfigureMM();
+end;
+
+procedure SetMMConfig(proc: TProc);
+begin
+  OnconfigureMM := proc;
 end;
 
 end.

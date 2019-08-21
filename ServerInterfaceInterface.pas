@@ -85,7 +85,9 @@ type
 
 
     procedure ContinueConnection;
+    procedure BeginTransaction;
     procedure Rollback;
+    function IsInTransaction: boolean;
     procedure Commit;
 
     function GetTimeout: integer;

@@ -59,6 +59,8 @@ type
     function GetItemEx(sName: string; iDefaultVAlue: int64): int64;overload;
     function GetItemEx(sName: string; bDefaultVAlue: boolean): boolean;overload;
     function GetItemEx(sName: string; rDefaultVAlue: real): real; overload;
+    function GetIntegerParameterArray(sPrefix: string): TArray<int64>;
+    procedure SetIntegerParameterArray(sPrefix: string; a: TArray<int64>);
 
     // Looks up a NameValuePair by index.
     property Items[sName: string]: TNameValuePair read GetItem; default;
@@ -162,6 +164,18 @@ begin
   FList.Free;
 
   inherited;
+
+end;
+
+function TNameValuePairList.GetIntegerParameterArray(
+  sPrefix: string): TArray<int64>;
+var
+  t: ni;
+begin
+  setlength(result, GetItemEx(sPrefix+'Count', 0));
+  for t:= 0 to high(result) do begin
+    result[t] := GetItemEx(sPrefix+inttostr(t), 0);
+  end;
 
 end;
 
@@ -376,6 +390,19 @@ begin
   finally
     sl.Free;
   end;
+end;
+
+procedure TNameValuePairList.SetIntegerParameterArray(sPrefix: string;
+  a: TArray<int64>);
+var
+  t: ni;
+begin
+  AutoAdd := true;
+  Items[sPrefix+'Count'].AsInteger := length(a);
+  for t := 0 to FList.count-1 do begin
+    Items[sPrefix+inttostr(t)].AsInteger := a[t];
+  end;
+
 end;
 
 function TNameValuePairList.ToString: string;

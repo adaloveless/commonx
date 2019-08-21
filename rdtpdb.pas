@@ -5,7 +5,7 @@ unit rdtpdb;
 interface
 
 uses
-  consolelock, abstractdb, sysutils, stringx, typex, systemx, tickcount, RDTPSQlConnection, storageenginetypes, variants, debug, namevaluepair, rdtpkeybotclient, betterobject;
+  consolelock, abstractdb, sysutils, stringx, typex, systemx, tickcount, RDTPSQLconnectionClientEx, storageenginetypes, variants, debug, namevaluepair, rdtpkeybotclient, betterobject;
 type
   Trdtpdb = class(TAbstractDB)
   protected
@@ -16,8 +16,7 @@ type
     function Getcontext: string;
     procedure Setcontext(Value: string);
   public
-
-    cli: TRDTPSQLConnectionClient;
+    cli: TRDTPSQLConnectionClientEx;
     tmLAstReadyCheck: ticker;
     procedure Init;override;
     destructor Destroy;override;
@@ -110,7 +109,7 @@ begin
   if connected then exit;
 
   cleanupclient;
-  cli := TRDTPSQLConnectionClient.create(MWHost, MWEndpoint);
+  cli := TRDTPSQLConnectionClientEx.create(MWHost, MWEndpoint);
   cli.Host := self.MWHost;
   cli.endPoint := self.MWEndpoint;
   cli.UseTCP := self.UseTCP;

@@ -79,7 +79,7 @@ type
     fDetached: boolean;
     detachbegan, detachended: boolean;
 {$IFDEF GIVER_IN_TOBJECT}
-    FGiveTo: TGiver;
+    FReturnTo: TGiver;
 {$ENDIF}
     procedure SetFreeWithReferences(const Value: boolean);
     function GetIsDead: boolean;
@@ -123,10 +123,10 @@ type
     function ToHolder<T: class>(): IHolder<T>;
     procedure FreeByInterface;
     property IsDead: boolean read GetIsDead;
-    function ShouldTake: boolean;virtual;
+    function ShouldReturn: boolean;virtual;
 {$IFDEF GIVER_IN_TOBJECT}
-    property GiveTo: TGiver read FGiveTo;//if taken from a giver, this property will be set.
-    procedure Give;//INSTEAD OF calling FREE, try giving it to the giver instead (pooling)
+    property ReturnTo: TGiver read FReturnTo;//if taken from a giver, this property will be set.
+    procedure Return;//INSTEAD OF calling FREE, try giving it to the giver instead (pooling)
 {$ENDIF}
 
 
@@ -225,10 +225,10 @@ type
   protected
     FList: TStringlist;
     function GiveEx(sContextKey: string): TObject;virtual;abstract;
-    procedure BeforeTake(obj: Tobject; var bCanTake: boolean);virtual;
-    procedure AfterTake(obj: Tobject);virtual;
+    procedure BeforeReturn(obj: Tobject; var bCanTake: boolean);virtual;
+    procedure AfterReturn(obj: Tobject);virtual;
   public
-    procedure Take(obj: TObject; sContext: string = '');
+    procedure Return(obj: TObject; sContext: string = '');
 
 
     constructor Create; override;
@@ -575,12 +575,12 @@ begin
 end;
 
 {$IFDEF GIVER_IN_TOBJECT}
-procedure TBetterObject.Give;
+procedure TBetterObject.Return;
 begin
-  if giveto = nil then begin
+  if Returnto = nil then begin
     free;
   end else begin
-    giveto.take(self);
+    Returnto.Return(self);
   end;
 
 
@@ -630,7 +630,7 @@ end;
 
 
 
-function TBetterObject.ShouldTake: boolean;
+function TBetterObject.ShouldReturn: boolean;
 begin
   result := true;
 end;
@@ -736,7 +736,7 @@ begin
 {$ENDIF}
 
     if FO is TBetterObject then begin
-      TBetterObject(FO).Give; //IF the object came from a pool, it will be given to the pool, else freed
+      TBetterObject(FO).Return; //IF the object came from a pool, it will be given to the pool, else freed
     end else begin
       FO.free;
     end;
@@ -806,7 +806,7 @@ end;
 { TLightObject }
 
 {$IFDEF GIVER_POOLS}
-procedure Tgiver.Take(obj: TObject; sContext: string = '');
+procedure Tgiver.Return(obj: TObject; sContext: string = '');
 var
   cantake: boolean;
 begin
@@ -814,11 +814,11 @@ begin
   Lock;
   try
     cantake := true;
-    BeforeTake(obj, {out}cantake);
+    BeforeReturn(obj, {out}cantake);
     if cantake then begin
       Flist.addObject(sContext, obj);
       Debug.Log('there are now '+Flist.count.ToString);
-      AfterTake(obj);
+      AfterReturn(obj);
     end else
       obj.free;
 
@@ -827,12 +827,12 @@ begin
   end;
 
 end;
-procedure TGiver.AfterTake(obj: Tobject);
+procedure TGiver.AfterReturn(obj: Tobject);
 begin
 //
 end;
 
-procedure TGiver.BeforeTake(obj: Tobject; var bCanTake: boolean);
+procedure TGiver.BeforeReturn(obj: Tobject; var bCanTake: boolean);
 begin
   bcantake := true;
 //
@@ -1947,12 +1947,12 @@ begin
 
       result := FList.objects[i];
       FList.delete(i);
-      if not TBetterobject(result).shouldtake then begin
+      if not TBetterobject(result).shouldReturn then begin
         Debug.Log('FREE '+result.classname);
         result.Free;
         result := nil;
       end else begin
-        Debug.Log('GIVE '+result.classname);
+        Debug.Log('RETURN '+result.classname);
         Debug.Log('there are now '+Flist.count.ToString);
       end;
     until (result <> nil) or (Flist.count = 0);
@@ -1964,7 +1964,7 @@ begin
   if result = nil then begin
     result := T.create;
     Debug.Log('NEW '+result.classname);
-    T(result).FGiveTo := self;
+    T(result).FReturnto:= self;
   end;
 
 end;

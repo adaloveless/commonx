@@ -98,6 +98,10 @@ uses
 
 function UpgradeLayoutToProportional(lay: TScaledLayout): TScaledLayoutProportional;
 begin
+  if lay.parent = nil then
+    exit;
+
+
   result := TScaledlayoutProportional.create(lay.owner);
   result.Width := lay.width;
   result.height := lay.height;

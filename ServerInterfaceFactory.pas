@@ -123,7 +123,11 @@ begin
 
     if FPool.IndexOf(si) >=0 then
       raise ECritical.create('already in pool!');
-    FPool.add(si);
+    si.Rollback;
+    if not si.IsInTransaction then
+      FPool.add(si)
+    else
+      Debug.Log('IServerInterface will not be added to pool because it is in transaction');
 
   finally
     Unlock;

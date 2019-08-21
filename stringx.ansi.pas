@@ -17,7 +17,8 @@ type
 {$ENDIF}
 
 {$IFNDEF WINDOWS}
-procedure SetLength(s: ansistring; len: nativeint);
+procedure SetLength(var s: string; len: nativeint);overload;
+procedure SetLength(var s: ansistring; len: nativeint);overload;
 {$ENDIF}
 function StringListFromNullTerminatedStrings(p: PByte; sz: nativeint): TStringlist;
 function LastPos(sub,s : ansistring):integer;overload;
@@ -309,7 +310,12 @@ begin
   end;
 end;
 {$IFNDEF WINDOWS}
-procedure SetLength(s: ansistring; len: nativeint);
+procedure SetLength(var s: string; len: nativeint);
+begin
+  system.SetLength(s, len);
+end;
+
+procedure SetLength(var s: ansistring; len: nativeint);
 begin
   s.SetLength(len);
 end;

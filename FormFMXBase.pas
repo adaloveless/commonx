@@ -6,7 +6,7 @@ uses
 {$IFDEF MSWINDOWS}
   windows, Winapi.Messages, Winapi.IpTypes, fmx.platform.win, fmx.platform,
 {$ENDIF}
-  guihelpers_fmx, SCALEDlayoutproportional,
+  guihelpers_fmx, SCALEDlayoutproportional, commandprocessor, systemx, typex,
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, fmx_messages,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, system.messaging;
 
@@ -17,16 +17,19 @@ type
   private
     FTransplanted: boolean;
     { Private declarations }
+
   protected
+    ActiveCommands: TCommandList<TCommand>;
     {$IFDEF MSWINDOWS}
     FMsgSys: TMessagingSystem;
     {$ENDIF}
 
     procedure DoClose(var CloseAction: TCloseAction); override;
     procedure DoHide; override;
-
+    procedure WatchCommand(c: TCommand; bTakeOwnership: boolean);
   public
     mock: TForm;
+    function WatchCommands: boolean;
     { Public declarations }
 
     function GetControl<T: TControl>(parent: TControl): T;
@@ -37,11 +40,17 @@ type
     procedure UnregisterWithMockMobile;
     procedure UpdateMouseCursor;
     constructor Create(AOwner: TComponent); override;
+
     procedure SetBounds(ALeft: Integer; ATop: Integer; AWidth: Integer;
       AHeight: Integer); override;
+    destructor Destroy; override;
     property Transplanted: boolean read FTransplanted write FTransplanted;
     procedure DoBoundsSet;virtual;
     procedure UpdateFromModel; virtual;
+    procedure UpdateState;
+    procedure DoUpdatestate;virtual;
+    procedure ToggleBusy(busy: boolean);virtual;
+    procedure Watch(bTakeOwnership: boolean; c: TCommand);
 
 
   end;
@@ -52,7 +61,7 @@ var
 implementation
 
 uses
-  FormMockMobile;
+  FormMockMobile, debug;
 
 {$R *.fmx}
 
@@ -60,11 +69,13 @@ uses
 
 procedure TfrmFMXBase.ActivateByPop;
 begin
+  UpdateState;
 //this happens when the form is activated after another form is popped off the form stack
 end;
 
 procedure TfrmFMXBase.ActivateByPush;
 begin
+  UpdateState;
 //this happens when the form is pushed to the form stack
 end;
 
@@ -77,13 +88,26 @@ end;
 
 constructor TfrmFMXBase.Create(AOwner: TComponent);
 begin
+  Debug.Log('Creating '+classname);
   inherited;
 {$IFDEF MSWINDOWS}
   FMsgSys := TMessagingSystem.create(self);
 {$ENDIF}
 //  FMsgSys.RegisterMessageHandler(  <<---- you can use this to subscribe to windows messages if NEEDED
+  ActiveCommands := TCommandList<TCommand>.create;
+  ActiveCommands.RestrictedtoThreadID := Tthread.Currentthread.threadid;
 
 
+
+end;
+
+destructor TfrmFMXBase.Destroy;
+begin
+  ActiveCommands.WaitForAll;
+  ActiveCommands.ClearAndDestroyCommands;
+
+  inherited;
+  ActiveCommands.free;
 
 end;
 
@@ -113,6 +137,11 @@ begin
   UnregisterWithMockMobile;
 end;
 
+procedure TfrmFMXBase.DoUpdatestate;
+begin
+  //
+end;
+
 function TfrmFMXBase.GetControl<T>(parent: TControl): T;
 begin
   result := TGuiHelper.control_Getcontrol<T>(parent);
@@ -123,6 +152,11 @@ begin
   inherited;
   DoBoundsSet;
 
+end;
+
+procedure TfrmFMXBase.ToggleBusy(busy: boolean);
+begin
+  //no implementation requried
 end;
 
 procedure TfrmFMXBase.UnregisterWithMockMobile;
@@ -153,9 +187,58 @@ begin
 {$ENDIF}
 end;
 
+procedure TfrmFMXBase.UpdateState;
+begin
+  updateFromModel;
+  DoupdateState;
+end;
+
 procedure TfrmFMXBase.UpdateFromModel;
 begin
   //
 end;
+
+procedure TfrmFMXBase.WatchCommand(c: TCommand; bTakeOwnership: boolean);
+begin
+  if not ActiveCommands.Has(c) then ActiveCommands.Add(c);
+  if c.OwnedByProcessor then
+    raise ECritical.create('cannot wait on a free-on-complete command');
+
+end;
+
+procedure TfrmFMXBase.Watch(bTakeOwnership: boolean; c: TCommand);
+begin
+  if mock <> nil then
+    Tmm(mock).Watch(bTakeOwnerShip, c)
+  else begin
+    ToggleBusy(true);
+    WAtchCommand(c, bTakeOwnership);
+  end;
+end;
+
+function TfrmFMXBase.WatchCommands: boolean;
+begin
+  if mock <> nil then begin
+    result := Tmm(mock).WatchCommands;
+    if result then
+      exit;
+  end;
+
+  if ActiveCommands.count > 0 then begin
+    ToggleBusy(true);
+    if activecommands[0].IsComplete then begin
+      var c := activecommands[0];
+
+      activecommands.delete(0);
+      c.free;
+      c := nil;
+    end;
+  end;
+  result := not (ActiveCommands.count > 0);
+  ToggleBusy(not result);
+
+end;
+
+
 
 end.
