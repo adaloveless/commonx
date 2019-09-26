@@ -281,8 +281,10 @@ begin
     justread := 0;
     if WaitforData(iTimeout) then begin
       justread := ReadData(pp, togo);
-      if justread <=0 then
+      if justread <=0 then begin
+        Disconnect;
         raise ETransportError.Create(classname+' returned zero bytes!**');
+      end;
     end;
 
     dec(togo, justread);
@@ -291,6 +293,7 @@ begin
       tmStart := getticker;
     end;
     if (iTimeOut > 0) and (gettimesince(tmStart) > iTimeOut) then begin
+      Disconnect;
       raise ETransportError.Create(classname+' timeout during guaranteed read.');
     end;
   end;

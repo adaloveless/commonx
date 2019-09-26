@@ -110,6 +110,7 @@ procedure SetDebugThreadVar(thr: TObject);
 procedure LogToThreadStatus(s: string);
 
 var
+  logToStdout : boolean = false;
   GDebugLog: TDebugLog = nil;
   log_is_shut_down: boolean;
 
@@ -355,8 +356,12 @@ var
 begin
   try
   {$IFDEF LOG_TO_CONSOLE}
-  if ltConsole in targets then
+  if ltConsole in targets then begin
     Windows.OutputDebugString(pchar(s));
+    if LogToStdout then
+      if IsConsole then
+        WriteLn(s);
+  end;
   {$ENDIF}
   {$IFDEF LOG_TO_THREAD_STATUS}
   if ltThread in targets then
@@ -543,7 +548,7 @@ end;
 procedure latefinal;
 begin
   Log('***********************************************************************************');
-  Log('****  APPLICATION SHUTDOWN  Logs (if any) are Ignored AFter this point         ****');
+  Log('****  APPLICATION SHUTDOWN  Logs (if any) are Ignored After this point         ****');
   Log('***********************************************************************************');
   GDebugLog.free;
   GDebugLog := nil;

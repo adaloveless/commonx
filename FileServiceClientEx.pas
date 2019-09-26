@@ -7,6 +7,13 @@ uses
   typex, numbers, memoryfilestream, FileServiceClient, dir, dirfile, sysutils, classes, systemx, commandprocessor, helpers.stream;
 
 const
+{$IFDEF CPUx64}
+  PUT_CHUNK_SIZE = 262144*4*16;
+  GET_CHUNK_SIZE = 262144*4*16;
+{$ELSE}
+  PUT_CHUNK_SIZE = 262144*2;
+  GET_CHUNK_SIZE = 262144*2;
+{$ENDIF}
   DEFAULT_HOST = '192.168.101.12';
 //  DEFAULT_HOST = 'localhost';
   DEFAULT_PORT = '876';
@@ -68,7 +75,7 @@ begin
     try
 
       if iTotal > 0 then begin
-        chunksize := 262144*4*16;
+        chunksize := GET_CHUNK_SIZE;
         iWritePos := 0;
         repeat
           ftr.o.StartBlock := iStart;
@@ -89,7 +96,7 @@ begin
             fileSetDate(fs.Handle, DatetimeToFileDate(ftr.o.FileDate));
           end;
           inc(iStart,ftr.o.Length);
-          inc(iWritePos, iToWrite);
+          inc(iWritePos, ftr.o.Length);
         until iWritePos = iTotal;
         CloseFile_Async(ftr);  //destroys TfileTransferReference;
       end else begin
@@ -154,7 +161,6 @@ end;
 
 
 procedure TFileServiceClientEx.PutFileEx(sLocalFile, sRemotefile: string; prog: PProgress = nil);
-const PUT_SIZE = 4000000;
 var
   ftr: TFileTransferReference;
   fs: TMemoryFileStream;
@@ -178,11 +184,11 @@ begin
         iPos := 0;
         //call putfile for every block of the file
         repeat
-          iToWrite := lesserof(PUT_SIZE, fs.Size-fs.Position);
+          iToWrite := lesserof(PUT_CHUNK_SIZE, fs.Size-fs.Position);
           GEtMem(b, iToWrite);
           ftr.o.Buffer := b;
           ftr.o.StartBlock := iPos;
-          ftr.o.Length := stream_guaranteeread(fs, ftr.o.Buffer, PUT_SIZE);//fs.Read(b[0], PUT_SIZE);
+          ftr.o.Length := stream_guaranteeread(fs, ftr.o.Buffer, PUT_CHUNK_SIZE);//fs.Read(b[0], PUT_SIZE);
           inc(iPos, ftr.o.Length);
 
           ftr.o.EOF := fs.Position >= fs.Size;

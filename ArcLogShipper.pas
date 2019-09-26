@@ -1,12 +1,13 @@
 unit ArcLogShipper;
 {x$DEFINE DISABLE_SHIPPER}
-{x$DEFINE USE_TCP}
+{$DEFINE USE_TCP}
 
 interface
 
 {x$DEFINE LOCAL_TEMP}
 {$DEFINE SUCCESS_HOOK}
 {$DEFINE COMBINE_RING_LOGS}
+{x$DEFINE USE_RING_FILE}
 
 {x$DEFINE USE_NEW_ARC_ZONE_CHECKSUMS}
 {x$DEFINE POST_BY_COMMAND}
@@ -325,7 +326,7 @@ type
     FArchive: string;
     ring: TLocalRing;
     FStatus: string;
-    FThr: TARcLogShippingThread;
+    FThr: TArcLogShippingThread;
     [volatile] FMode: TArcMode;
     temp: TDynByteArray;
     function GetEndpoint: string;
@@ -799,6 +800,8 @@ begin
         end;
 
         validateidx := validateidx + 1;
+        self.FThr.stepcount := ZONES_TO_BACKUP;
+        self.FThr.step := validateidx;
         if validateidx = ZONES_To_BACKUP then
         begin
           validateidx := 0;
@@ -1673,7 +1676,7 @@ begin
 {$IFDEF USE_RING_FILE}
   ring.FileName := value;
 {$ELSE}
-  ring.Size := 1*BILLION;
+  ring.Size := 4*BILLION;
 {$ENDIF}
   arcmap_validated := false;
   StartThread;
@@ -2210,7 +2213,7 @@ procedure Tcmd_ContinueVAlidateLogRefresh.InitExpense;
 begin
   inherited;
   CPUExpense := 1;
-  NetworkExpense := 0.25;
+  NetworkExpense := 1/32;
 end;
 
 function Tcmd_ContinueVAlidateLogRefresh.LockState: Boolean;

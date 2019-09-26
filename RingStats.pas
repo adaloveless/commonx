@@ -21,6 +21,7 @@ type
     FName: string;
     FPeriodicAverage: nativefloat;
     lastperiodupdate: ticker;
+    FOnNewBatch: TProc<TRingStats>;
     function GetName: string;
     procedure SetName(const Value: string);
     function GetSize: ni;
@@ -53,6 +54,7 @@ type
     function MAximum: double;
     PROPERTY PeriodicMax: nativefloat read FPeriodicMax;
     procedure OptionDebug(additional: string);
+    property OnNewbatch: TProc<TRingStats> read FOnNewBatch write FOnNewBatch;
   end;
 
   TRingStatMonitorThread = class(TManagedThread)
@@ -105,6 +107,11 @@ begin
   inc(FIdx);
   if FIDX > h then
     FIDX := 0;
+
+  if NewBAtch then begin
+    if assigned(OnNewBatch) then
+      OnNewbatch(self);
+  end;
 
 end;
 

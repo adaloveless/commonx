@@ -29,14 +29,14 @@ const
   CLRC = ESCX+'cC'+ESCX;
   CLRD = ESCX+'cD'+ESCX;
   CLRE = ESCX+'cE'+ESCX;
-  CLRF = ESCX+'cF'+ESCX;
+  CLR_F = ESCX+'cF'+ESCX;
   CLR_UI = CLRE;
   CLR_QUERY = CLRA;
   CLR_QUERY_WRITE = CLRB;
   CLR_ERR = CLRC;
   ESC_BLUE = CLRE;
-  CLRBLK = CLR0;
-  CLRWHITE = CLR0;
+  CLRBLK = CLR_F;
+  CLRWHITE = CLR_F;
   ANSICOLORS: array of cardinal = [
     $000000,//0
     $800000,//1

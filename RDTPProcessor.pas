@@ -513,7 +513,7 @@ begin
 //    status := 'In MAsterDispatch:$'+inttohex(iREquest,4);
 //    Debug.Log(status);
     try
-      Debug.Log('RQ'+inttohex(iRequest, 4));
+//      Debug.Log('RQ'+inttohex(iRequest, 4));
       result := Dispatch;
       if not result then begin
         result := true;

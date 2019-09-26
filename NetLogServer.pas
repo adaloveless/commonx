@@ -220,8 +220,8 @@ begin
 
       if assigned(OnLog) then begin
         lRes := OnLog(sr,sLogID,sApp, ABinding.PeerIP, Abinding.PeerPort.tostring);
-        if lres.acklevel < 0 then
-          Debug.consolelog('here');
+//        if lres.acklevel < 0 then
+//          Debug.consolelog('here');
         if lres.oldAckLevel <> lres.acklevel then begin
           acklevel := lres.acklevel;
           maxack := greaterof(ackLevel, maxack);

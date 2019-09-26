@@ -76,6 +76,7 @@ type
     procedure VerifyContext;
     function TableExists(sTable: string): boolean;
     function CopyTable(sSource, sTarget: string): IHolder<TStringList>;
+
     procedure BeginTransactionOn(ch: TSQLChannel); override;
     procedure CommitOn(ch: TSQLChannel); override;
     procedure RollbackOn(ch: TSQLChannel); override;
@@ -270,6 +271,13 @@ begin
     applyAll('Data Source', nvp.GetItemEx('host',''));
     applyAll('User ID', nvp.GetItemEx('user',''));
     applyAll('password', nvp.GetItemEx('pass',''));
+    var bUseSSL := nvp.GetItemEx('ssl', false);
+    if bUseSSL then begin
+      writes.SpecificOptions.Values['MySQL.Protocol'] := 'mpSSL';
+      reads.SpecificOptions.Values['MySQL.Protocol'] := 'mpSSL';
+      sessiondb.SpecificOptions.Values['MySQL.Protocol'] := 'mpSSL';
+    end;
+
 
     //commit string
 
@@ -590,7 +598,19 @@ begin
   result := THolder<TStringList>.create;
   result.o := TStringlist.create;
 
-  sQuery := 'create table '+sTarget+' like '+sSource;
+  var rs : IHolder<TSERowSet> := ReadQuery('show create table '+sSource);
+  if rs.o.rowcount = 0 then
+    raise ECritical.create('Trying to copy '+sSource+' table, which does not exist');
+  var ct : string := rs.o.values[1,0];
+
+  ct := stringreplace(ct, '''0000-00-00 00:00:00''', 'now()', [rfIgnoreCase, rfReplaceAll]);
+  ct := stringreplace(ct, '''0000-00-00''', 'now()', [rfIgnoreCase, rfReplaceAll]);
+  ct := stringreplace(ct, 'current_timestamp()', 'now()', [rfIgnoreCase, rfReplaceAll]);
+  ct := stringreplace(ct, 'create table', 'create table if not exists', [rfIgnoreCase]);
+  ct := stringreplace(ct, sSource, sTarget, [rfIgnoreCase]);
+
+//  sQuery := 'create table '+sTarget+' like '+sSource;
+  sQuery := ct;
   ExecuteWrite(sQuery);
   result.o.add(sQuery);
 
@@ -695,7 +715,21 @@ begin
       try
         ds.SQL.text := sQuery;
 
-        ds.Active := true;
+        var retry := 0;
+        repeat
+          try
+            ds.Active := true;
+            break;
+          except
+            on E: Exception do begin
+              inc(retry);
+              Debug.Log('DB Exception :'+e.message+' ... will retry ... #'+retry.tostring);
+              if retry >= 10 then
+                raise;
+            end;
+          end;
+        until false;
+
 
 
       except

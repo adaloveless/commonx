@@ -791,7 +791,8 @@ begin
     FconsoleOutput := '';
     FconsoleTemp := '';
   end;
-  Debug.Log(sData);
+  if sData <> '' then
+    Debug.Log(sData);
   Status := sData;
 
   FConsoleTemp := FConsoleTemp + sData;

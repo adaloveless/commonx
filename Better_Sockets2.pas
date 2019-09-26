@@ -1210,7 +1210,8 @@ procedure TBetterClientSocketThread.KillClient;
 begin
   try
     WAitBEforeAbortTime := 8000;
-    self.ClientSocket.Kill;
+    if assigned(self.clientsocket) then
+      self.ClientSocket.Kill;
   except
   end;
 end;

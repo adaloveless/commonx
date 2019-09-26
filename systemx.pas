@@ -87,6 +87,8 @@ procedure MoveMem_Up(const DD,SS: pointer; const Size: ni);
 procedure MoveMem_Down(const D,S: pointer; const Size: ni);
 procedure MoveMem32Xor(const D,S: pointer; const size: ni);inline;
 procedure MoveMem32WithMask(D,S,M: pointer; Size: integer);
+procedure MoveMem32WithMaskPacked(D,S,Mbase: pointer; MOff: ni; Size: integer);
+procedure MoveMem32WithMaskPacked_NOT(D,S,Mbase: pointer; MOff: ni; Size: integer);
 procedure MoveMem32WithMask_NOT(D,S,M: pointer; Size: integer);
 function JStr(s: string): string;
 procedure ZeroMemory(p: Pbyte;length: ni);inline;
@@ -636,6 +638,98 @@ begin
     dd^ := ss^;
   until t =0;
 end;}
+
+procedure MoveMem32WithMaskPacked_NOT(D,S,Mbase: pointer; MOff: ni; Size: integer);
+//p: D: Destination Pointer
+//p: S: Source Pointer
+//p: Size: Size to move in bytes
+VAR
+  t: NativeInt;
+  dd,ss,mm: PNativeInt;
+  M,bd,bs,bm: PByte;
+  bmb: ni;
+  sz: nativeint;
+  maskbyte: byte;
+
+begin
+  if size = 0  then
+    exit;
+
+  bmb := (MOff+size) and $7;
+  M := Mbase;
+
+  t := size;
+
+  //setup pointers
+  bd := PByte(pbyte(D)+size);
+  bs := PByte(pbyte(S)+size);
+  bm := PByte(pbyte(M)+(((size-1) shr 3)+1));
+
+  if (t > 0) then
+  repeat
+    dec(t);
+    bd := bd-1;
+    bs := bs-1;
+    dec(bmb);
+    if bmb < 0 then begin
+      bmb := 7;
+      bm := bm-1;
+    end;
+    maskbyte := (bm^ shr bmb) and 1;
+    if maskbyte <> 0 then
+      maskbyte := 255;
+    bd^ := ((bd^) and not (maskbyte)) or ((bs^) and (maskbyte));
+  until (t =0);
+end;
+procedure MoveMem32WithMaskPacked(D,S,Mbase: pointer; MOff: ni; Size: integer);
+//p: D: Destination Pointer
+//p: S: Source Pointer
+//p: Size: Size to move in bytes
+VAR
+  t: NativeInt;
+  dd,ss,mm: PNativeInt;
+  M,bd,bs,bm: PByte;
+  bmb: ni;
+  sz: nativeint;
+  maskbyte: byte;
+begin
+  if size = 0  then
+    exit;
+
+  bmb := (MOff+size) and $7;
+  M := MBase;
+
+  t := size;
+
+  //1..1 -- 7..1 -- 8..1 -- 9..2
+  //
+
+
+
+
+  //setup pointers
+  bd := PByte(pbyte(D)+size);
+  bs := PByte(pbyte(S)+size);
+  bm := PByte(pbyte(M)+(((size-1) shr 3)+1));
+
+  if (t > 0) then
+  repeat
+    dec(t);
+    bd := bd-1;
+    bs := bs-1;
+    dec(bmb);
+    if bmb < 0 then begin
+      bmb := 7;
+      bm := bm-1;
+    end;
+    maskbyte := (bm^ shr bmb) and 1;
+    if maskbyte <> 0 then
+      maskbyte := 255;
+
+    bd^ := ((bd^) and (maskbyte)) or ((bs^) and not (maskbyte));
+  until (t =0);
+end;
+
 
 
 procedure MoveMem32WithMask(D,S,M: pointer; Size: integer);

@@ -12,7 +12,7 @@ uses
     sysutils, rdtpprocessor, dir, dirfile, classes, systemx,
     betterobject, spam, stringx, exe, rdtpserverlist,orderlyinit,
     helpers.stream, consolelock, commandprocessor, rdtp_file,
-    SoundConversion_Windows, SoundConversions_CommandLine;
+    SoundConversion_Windows, SoundConversions_CommandLine, numbers;
 
   type
   TFileServiceServer = class(TFileServiceServerBase)
@@ -116,7 +116,7 @@ end;
 function TFileServiceServer.RQ_GetFile(var oFile:TFileTransferReference):boolean;
 var
   fs: TMemoryFileStream;
-  a: array [0..512000] of byte;
+//  a: array [0..512000] of byte;
   iRead: int64;
   b: pointer;
 begin
@@ -127,10 +127,13 @@ begin
     raise Exception.create('The file handle was invalid reading file: '+oFile.o.FileName);
   end;
   try
+    fs.BufferSize := lesserof(2000000, greaterof(ofile.o.length, fs.BufferSegmentSize))*fs.BufferSEgments;
+    fs.BufferSEgments := 3;
     fs.Seek(oFile.o.StartBlock,0);
-    iRead := fs.Read(a, oFile.o.Length);
     GetMem(b, ofile.o.Length);
-    MoveMem32(b, @a[0], iRead);
+    iRead := fs.Read(pbyte(b)^, oFile.o.Length);
+
+//    MoveMem32(b, @a[0], iRead);
     //oFile.Init();
     oFile.o.eof := fs.Position >= fs.Size;
 

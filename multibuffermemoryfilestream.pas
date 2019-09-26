@@ -991,6 +991,9 @@ end;
 procedure TMultiBufferMemoryFileStream.SEtBufferSegments(
   const Value: nativeint);
 begin
+  if value = FBufferSegments then
+    exit;
+
   FinalizeBuffers;
   if Value > MAX_BUFFERS then
     FBufferSegments := MAX_BUFFERS

@@ -191,7 +191,7 @@ begin
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
 
-
+    vdh.vdlist[iDISKID].WantLock;//hint to any heavy processes that we want a lock
     l := vdh.vdlist[iDISKID].getlock;
     try
       result := vdh.vdlist[iDISKID].CachedSTripes;
@@ -369,6 +369,7 @@ begin
       raise Exception.create('VAT not found.');
 
 
+    vdh.vdlist[iDISKID].WantLock;//hint to any heavy processes that we want a lock
     l := vdh.vdlist[iDISKID].getlock;
     try
       result := vdh.vdlist[iDISKID].RepairArcZone(zoneidx);
@@ -474,6 +475,7 @@ begin
       raise Exception.create('VAT not found.');
 
 
+    vdh.vdlist[iDISKID].WantLock;//hint to any heavy processes that we want a lock
     l := vdh.vdlist[iDISKID].getlock;
     try
       vdh.vdlist[iDISKID].SelfTest(testid);
@@ -498,6 +500,7 @@ begin
       raise Exception.create('VAT not found.');
 
 
+    vdh.vdlist[iDISKID].WantLock;//hint to any heavy processes that we want a lock
     l := vdh.vdlist[iDISKID].getlock;
     try
       vdh.vdlist[iDISKID].CachedSTripes := value;
@@ -578,6 +581,7 @@ begin
       raise Exception.create('VAT not found.');
 
 
+    vdh.vdlist[iDISKID].WantLock;//hint to any heavy processes that we want a lock
     l := vdh.vdlist[iDISKID].getlock;
     try
       vdh.vdlist[iDISKID].SetPayloadPhysical(iFileId, physical);
@@ -605,6 +609,7 @@ begin
       raise Exception.create('VAT not found.');
 
 
+    vdh.vdlist[iDISKID].WantLock;//hint to any heavy processes that we want a lock
     l := vdh.vdlist[iDISKID].getlock;
     try
       vdh.vdlist[iDISKID].SetPayloadPriority(iFileId, Priority);
@@ -632,6 +637,7 @@ begin
       raise Exception.create('VAT not found.');
 
 
+    vdh.vdlist[iDISKID].WantLock;//hint to any heavy processes that we want a lock
     l := vdh.vdlist[iDISKID].getlock;
     try
       vdh.vdlist[iDISKID].SetPayloadQuota(iFileID, max_size);
@@ -672,6 +678,7 @@ begin
       raise Exception.create('VAT not found.');
 
 
+    vdh.vdlist[iDISKID].WantLock;//hint to any heavy processes that we want a lock
     l := vdh.vdlist[iDISKID].getlock;
     try
       vdh.vdlist[iDISKID].UnpauseScrubber;
@@ -718,6 +725,7 @@ begin
       raise Exception.create('VAT not found.');
 
 
+    vdh.vdlist[iDISKID].WantLock;//hint to any heavy processes that we want a lock
     l := vdh.vdlist[iDISKID].getlock;
     try
       result := vdh.vdlist[iDISKID].VerifyArcZone(zoneidx);

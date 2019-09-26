@@ -2,6 +2,7 @@ unit QueueStream;
 interface
 {x$DEFINE HOLD}
 {$IFDEF MSWINDOWS}
+{$DEFINE PACKED_MASK}
 //!!!!WINDOWS ONLY FOR NOW!!!!
 
 {x$DEFINE DOUBLE_READ}
@@ -69,8 +70,11 @@ interface
 
 {x$DEFINE ALERT_WRITE}
 {x$DEFINE LOCK_UNDER_INSTEAD_OF_BACK}
-{$DEFINE ALLOW_UB_SIDE_FETCH}//yes, tries prefetches n stuff
-{$DEFINE ALLOW_UB_WRITE_BEHIND}//yes, flush-behind keeps the pipes clean
+
+{$DEFINE CHECK_SIZE_BEFORE_READ}
+{x$DEFINE ALLOW_UB_SIDE_FETCH}//yes, tries prefetches n stuff
+{$DEFINE MINIMAL_UB_PREFETCH}
+{x$DEFINE ALLOW_UB_WRITE_BEHIND}//yes, flush-behind keeps the pipes clean
 
 {x$DEFINE ALLOW_SIDEFETCH_REQUEUE}
 {$DEFINE USE_PERIODIC_QUEUE}
@@ -80,7 +84,7 @@ interface
 {$DEFINE ALLOW_UNBUFFERED_FLAG}
 {$DEFINE USE_LINKED_BUFFERS}
 {x$DEFINE ALLOW_SYNCHRONOUS_READS}//if enabled, reads can potentially be handled in calling thread, so you're relying more of prefetches to bring things into memory
-{$DEFINE USE_SPOT_FLUSH}
+{x$DEFINE USE_SPOT_FLUSH}
 {x$DEFINE USE_OPTIMAL_FLUSH}//doesn't work
 {x$define COMPLEX_STREAM}//too slow
 {x$DEFINE IDLE_FETCH}//deprecated for a real side-fetch thread
@@ -136,10 +140,10 @@ const
   {$ELSE}
 //  UNBUFFERSIZE = int64(262144);//<<<<--CHANGE TOGETHER!
 //  UNBUFFERSHIFT = int64(18);//<<<<<<--------^
-  UNBUFFERSIZE = int64(262144);//<<<<--CHANGE TOGETHER!
+  UNBUFFERSIZE = int64(262144);//<<<<--CHANGE TOGETHER!  MUST BE MULTIPLE OF 64... 8 for bits in byte mask and 8 for 8byte int64-optimized array checks
   UNBUFFERSHIFT = int64(18);//<<<<<<--------^
   UNBUFFERMASK: Uint64 = int64(UNBUFFERSIZE)-int64(1);
-  UNBUFFERED_BUFFERED_PARTS = 514;//!! SHoULD EQUAL BIG BLOCK SIZE
+  UNBUFFERED_BUFFERED_PARTS = 514;//514;//!! SHoULD EQUAL BIG BLOCK SIZE
   {$ENDIF}
 {$ENDIF}
 
@@ -397,34 +401,42 @@ type
   end;
 
   Tunbuffer = record
-
-    FDirtyMask, data: array[0..UNBUFFERSIZE-1] of byte;
+{$IFDEF PACKED_MASK}////
+    FDirtyMask: array[0..(UNBUFFERSIZE-1) ] of byte;//ok
+{$ELSE}
+    FDirtyMask: array[0..UNBUFFERSIZE-1] of byte;//ok
+{$ENDIF}
+    data: array[0..UNBUFFERSIZE-1] of byte;
 {$IFDEF DOUBLE_READ}
     data2, data3: array[0..UNBUFFERSIZE-1] of byte;
 {$ENDIF}
     Fpagenumber: int64;
-    FPageIsDirty: boolean;
     wasfetched: boolean;
+  strict private
   private
     FDirtyTime: ticker;
     lck: TCLXCriticalSection;
-    FAllDirtyChecked: boolean;
-    FAllDirtyCached: boolean;
+    DirtyCount: ni;
     ubs: TUnbufferedFileStream;
     procedure FirstInit;
     procedure Init;
     procedure Finalize;
-    procedure ClearDirtyMask;inline;
-    function AllDirty: boolean;
+    procedure ClearDirtyMask;
+    function AllDirty: boolean;inline;
+    function AnyDirty: boolean;inline;
     function ClusterIsDirty(iClusterOff: ni): TDirtiness;
+    function ByteDirtyMask(iOFF: ni): byte;
+    function ByteIsDirty(iOFF: ni): boolean;
+    procedure SetDirty(offset, cnt: ni);overload;inline;
+    procedure SetAllDirty;
+    function SetDirty(offset: ni): boolean;overload;inline;
+
+
     procedure SetPageNumber(const Value: int64);
     procedure Needread;
-    property AllDirtyCached: boolean read FAllDirtyCached write FAllDirtyCached;
-    property AllDirtyChecked: boolean read FAllDirtyChecked write fAllDirtyChecked;
     procedure DebugWAtch(bWriting: boolean; iPosition: int64; iByteCount:int64; bAlarm: boolean);inline;
     function PageStart: int64;inline;
     property Dirtytime: ticker read FDirtyTime;
-    property AnyDirty: boolean read FPageIsDirty;
     property PageNumber: int64 read FPageNumber write SetPageNumber;
     procedure Lock;inline;
     procedure Unlock;inline;
@@ -529,7 +541,7 @@ type
     procedure FlushPageBruteForce(buf: PUnBuffer; iRecursions: ni=0);
     procedure FlushPage(buf: PUnBuffer; iRecursions: ni=0);inline;
     procedure FetchPage(const iPage: int64; const buf: PUnbuffer; const stage: TFetchBufferStage = fbInitial);//
-    procedure SeekPage(const iPage: int64);inline;//
+    procedure SeekPage(const iPage: int64; bForEof: boolean = false);//inline;//
     procedure WriteEOF();inline;
     procedure FetchPageAndApplyMask(buf: PUnbuffer);inline;//
     procedure OnUnbufferThreadxExecute(thr: Tmanagedthread);//
@@ -568,7 +580,7 @@ type
     upperqueue: TSimpleQueue;
     writefailures: int64;
     periodic: Tevent_UBFSCheckFLush;
-
+//    rsWrite0, rsWrite1, rsWrite2, rsEOF, rsFlush: TRingStats;
     prefetchposition: int64;
     prefetchwritemode: boolean;
     hits, misses: int64;
@@ -577,10 +589,12 @@ type
     in_perform_op: boolean;
     opcount: ni;
     debugme: boolean;
+    lastuse: ticker;
     rsPrefetchInterruption: TRingSTats;
     UseBackSeek: boolean;
     FREcommendedPrefetchAllowance: ni;
     UpStreamHints: PPerformancehints;
+//    EnableDirtyDebug: boolean;
     //property FlexSeek: int64 read GetFlexSeek write SetFlexSeek;
     procedure CheckFlush;
     constructor Create(const AFileName: string; Mode: cardinal; Rights: Cardinal; Flags: cardinal);override;
@@ -611,7 +625,7 @@ type
     procedure FlushAll;//
     function SmartSideFetch(EXTQueue: TAbstractSimpleQueue): boolean;//
     property PrefetchBytePos: int64 read GEtPrefetchbytepos write SetPrefetchBytePos;//
-    function PrePareAndLockPAge(iPAge: int64; bNeedREad: boolean): TUnbufferobj;//
+    function PrePareAndLockPAge(iPAge: int64; bNeedREad: boolean; bForEof: boolean = false): TUnbufferobj;//
     function PerformOp: boolean;//
     procedure PerformAllOps; inline;//
     procedure PerformOps_FallingBehind; inline;//
@@ -640,6 +654,7 @@ type
 //  g_alarm: boolean;
 var
   g_FORCE_UB_PREFETCH : ni = 64;
+  FLUSH_TIME_LIMIT : nativeint;
 
 {$ENDIF}
 
@@ -1680,33 +1695,60 @@ end;
 
 { TUnbufferedFileStream }
 
+function Tunbuffer.AnyDirty: boolean;
+begin
+  result := DirtyCount > 0;
+end;
+
+function Tunbuffer.ByteDirtyMask(iOFF: ni): byte;
+{$IFDEF PACKED_MASK}////
+begin
+  result := (FDirtyMask[iOff shr 3] shr (iOff and 7)) and 1;//ok
+  if result <> 0 then
+    result := $ff;
+end;
+{$ELSE}
+begin
+  result := FDirtyMask[iOff];
+end;
+{$ENDIF}
+
+function Tunbuffer.ByteIsDirty(iOFF: ni): boolean;
+{$IFDEF PACKED_MASK}////
+var
+  bo,br: ni;
+begin
+  bo := iOff shr 3;
+  br := iOff and 7;
+  result := 0 = ((FDirtyMask[br] shr br) and 1);//ok
+end;
+{$ELSE}
+begin
+  result := FDirtyMask[iOff] = 0;
+end;
+{$ENDIF}
+
 procedure TUnbuffer.ClearDirtyMask;
 begin
-  FPageIsDirty := false;
-  fillmem(@Fdirtymask[0],sizeof(Fdirtymask),$ff);
-  AllDirtyCached := false;
-  AllDirtyChecked := true;
+  if DirtyCount = 0 then
+    exit;
+  fillmem(@Fdirtymask[0],sizeof(Fdirtymask),$ff);//ok
+  DirtyCount := 0;
+
 end;
 
 function Tunbuffer.ClusterIsDirty(iClusterOff: ni): TDirtiness;
 var
   bAny, bAll: boolean;
-  iStart: ni;
-  pb: pbyte;
   cx: ni;
   cnt: ni;
 begin
-  iStart := iClusterOff shl 9;
-
-  //get a pointer to the dirty mask
-  pb := pbyte(@FDirtyMask[iStart]);
   cx := 512;
   cnt := 0;
   while cx > 0 do begin
-    //COUNT number of CLEAN bytes indicated by 0xFF
-    if pb^ = $FF then
+    if not byteisdirty(iClusterOff) then
       inc(cnt);
-    inc(pb);
+    inc(iClusterOff);
     dec(cx);
   end;
 
@@ -1755,6 +1797,11 @@ var
   rec, mx: ni;
   r: single;
 begin
+{$IFDEF MINIMAL_UB_PREFETCH}
+  FRecommendedPrefetchAllowance := 1;
+  exit;
+{$ENDIF}
+
   mx := FREcommendedPrefetchAllowance;
   r := rsPrefetchInterruption.PEriodicAverage/greaterof(mx,1);
   if (r) > 0.50 then
@@ -1774,8 +1821,6 @@ procedure TUnbufferedFileStream.CancelPrefetches;
 var
   was: ni;
 begin
-  allowed_prefetches := 0;
-  exit;
   was := greaterof(0,allowed_prefetches);
   allowed_prefetches := 0;
   //sfthread.waitforidle;//protected by lckOp so.... probably don't need to wait for this
@@ -1793,6 +1838,8 @@ var
   pct: single;
   workingMaxdirtyTime: ni;
 begin
+  if GEtTimeSince(lastuse) < 8000 then
+    exit;
   bRepeat := true;
   tm := 0;
   tm := GetTicker;
@@ -1807,9 +1854,9 @@ begin
         buf := @FBuffers[t];//todo 1: use Fbufferorders
         if TECS(buf.lck) then
         try
-          if (buf.FPageIsDirty and (gettimesince(buf.Dirtytime) > workingMaxDirtyTime)) or buf.AllDirty then begin
+          if (buf.AnyDirty and (gettimesince(buf.Dirtytime) > workingMaxDirtyTime)) or buf.AllDirty then begin
             FlushPage(buf);
-            if GetTimeSince(tm)>500 then begin
+            if GetTimeSince(tm)>FLUSH_TIME_LIMIT then begin
               break;
             end;
 
@@ -1878,6 +1925,8 @@ begin
     FBuffers[t].ubs := self;
     obj := TUnbufferObj.create;
     obj.buf := @Fbuffers[t];
+    obj.buf.dirtycount := -1;
+    obj.buf.ClearDirtyMask;
     FBufferOrders.Add(obj);
   end;
   {$ELSE}
@@ -1955,7 +2004,12 @@ end;
 
 constructor TUnbufferedFileStream.Create(const AFileName: string; Mode: cardinal; Rights: Cardinal; Flags: cardinal);
 begin
-  inherited Create(AfileName, Mode, Rights, Flags{$IFDEF ALLOW_UNBUFFERED_FLAG}  or FILE_FLAG_NO_BUFFERING{$ENDIF});
+  inherited Create(AfileName, Mode, Rights, Flags{$IFDEF ALLOW_UNBUFFERED_FLAG} or FILE_FLAG_NO_BUFFERING{$ENDIF});
+//  rsWrite0 := TRingStats.create;
+//  rsWrite1 := TRingStats.create;
+//  rsWrite2 := TRingStats.create;
+//  rsEOF := TRingSTats.create;
+//  rsFlush := TRingStats.create;
   aligned_temp.MEMSIZE := UNBUFFERSIZE;
   aligned_temp.Allocate;
   rsIndividualRead := TRingStats.create;
@@ -2056,26 +2110,8 @@ end;
 
 
 function TUnbuffer.AllDirty: boolean;
-var
-  p: Pint64;
-  cnt: ni;
 begin
-  if AllDirtyChecked then begin
-    result := AllDirtyCAched;
-    exit;
-  end;
-  result := true;
-  p := pint64(@FDirtymask[0]);
-  cnt := sizeof(Fdirtymask) shr 3;
-  while cnt > 0 do begin
-    result := p^ = 0;
-    if not result then break;
-    inc(p);
-    dec(cnt);
-  end;
-  AllDirtyCached := result;
-  AllDirtyChecked := true;
-
+  result := DirtyCount = UNBUFFERSIZE;
 end;
 
 
@@ -2154,6 +2190,11 @@ begin
   rsPrefetchInterruption := nil;
   writebuilder.free;
   WriteBuilder := nil;
+//  rsWrite0.free;
+//  rsWrite1.free;
+//  rsWrite2.free;
+//  rsEof.Free;
+//  rsFlush.free;
 
   aligned_temp.Unallocate;
   inherited;
@@ -2192,7 +2233,9 @@ var
   iJustRead, iTotalToRead, iTogo: int64;
   p: Pbyte;
   iCnt: ni;
-  iUnderPos, iUnderSize: int64;
+  iUnderPos: int64;
+  iUnderPos2: int64;
+  iUnderSize: int64;
   iBeyond: int64;
   iDif: ni;
   iSz: ni;
@@ -2208,12 +2251,15 @@ begin
 //      exit;
 //    end;
 
+{$IFDEF CHECK_SIZE_BEFORE_READ}
     iUnderSize := FileSeekPx(FHandle, int64(0), int64(ord(soEnd)));
     if iUndersize = -1 then begin
       Debug.Log(filename+' unable to determine file size error '+inttostr(GetlastError));
     end;
+{$ENDIF}
 
-    iUnderPos := FileSeekPx(FHandle, iPage*UNBUFFERSIZE, int64(soBeginning));//ok
+    iUnderPos := iPage*UNBUFFERSIZE;
+    iUnderPos2 := FileSeekPx(FHandle, iUnderPos, int64(soBeginning));//ok
 //    iUnderPos :=  FileSeekPx(FHandle, 0, int64(soCurrent));//ok
 
     case stage of
@@ -2229,17 +2275,19 @@ begin
 
     iTotalToRead := sizeof(buf.data);
 
-    if iUnderPos >= iUnderSize then begin
+{$IFDEF CHECK_SIZE_BEFORE_READ}
+    if iUnderPos2 >= iUnderSize then begin
+{$ELSE}
+    if iUnderPos2 <> iUnderPos then begin
+{$ENDIF}
       fillmem(p, iTotalToRead, 0);
       buf.wasfetched := true;
       exit;
     end;
 
 
-
     //iRead := 0;
     iTogo := iTotalToRead;
-
 
     iCnt := 0;
     while iTogo > 0 do begin
@@ -2249,7 +2297,11 @@ begin
 //      if rsIndividualRead.NewBAtch then
 //        rsIndividualRead.OptionDebug('IRTime for '+self.filename);
       if iJustREad <= 0 then begin
+{$IFDEF CHECK_SIZE_BEFORE_READ}
         Debug.Log(self.filename+' FileRead returned '+inttostr(iJustRead)+' beyond end:'+inttostr(iUnderPos-iUnderSize)+' after count:'+inttostr(iCnt)+' error:'+inttostr(getlasterror));
+{$ELSE}
+        Debug.Log(self.filename+' FileRead returned '+inttostr(iJustRead));
+{$ENDIF}
         break;
       end;
 //      inc(iRead, iJustRead);
@@ -2257,8 +2309,10 @@ begin
       dec(iTogo, iJustREad);
       inc(iCnt);
       inc(iUnderPos, iJustRead);
+{$IFDEF CHECK_SIZE_BEFORE_READ}
       if(iUnderPos = iUnderSize) then
         break;
+{$ENDIF}
     end;
 //        if iPAge = 0 then
 //          if (buf.data[81+600] <> 1) then
@@ -2312,12 +2366,16 @@ begin
   with buf^ do begin
     ECS(lck);
     try
-      if FPageIsDirty then begin
+      if Anydirty then begin
         ecs(lckTEmp);
         try
           movemem32(@ftemp[0],@data[0],sizeof(data));
           fetchpage(buf.pagenumber, buf);
+{$IFDEF PACKED_MASK}////
+          MoveMem32WithMaskPacked(@data[0], @Ftemp[0], @fdirtymask[0], 0 , sizeof(data));//ok
+{$ELSE}
           MoveMem32WithMask(@data[0], @Ftemp[0], @fdirtymask[0], sizeof(data));
+{$ENDIF}
         finally
           lcs(lckTEmp);
         end;
@@ -2388,18 +2446,22 @@ function TUnbufferedFileStream.FindPageObj(iPage: int64): TUnbufferObj;
 var
   t: ni;
   b: PUnbuffer;
+  bo: TUnbufferObj;
 begin
   ecs(LckBuffers);
   try
     result := nil;
     if iPage < 0 then exit;
-    for t:= high(Fbuffers) downto 0 do begin
-
-      b := FBufferOrders[t].buf;
+    bo := FBufferOrders.Last;
+    while bo <> nil do begin
+      b := bo.buf;
       if b.pagenumber = iPage then begin
-        result := FBufferorders[t];
+        result := bo;
         exit;
       end;
+      bo := TUnbufferObj(bo.prev);
+      if bo = nil then
+        exit(nil);
     end;
   finally
     lcs(lckBuffers);
@@ -2428,8 +2490,8 @@ end;
 
 procedure TUnbufferedFileStream.FlushPage(buf: PUnBuffer; iRecursions: ni);
 begin
-  if buf.PageNumber = 1479 then
-      Debug.Log('page 1479');
+//  if buf.PageNumber = 6 then
+//      Debug.Log('page 6');
 {$ifdef USE_SPOT_FLUSH}
   if buf.AnyDirty then
     FlushWithoutRead(buf);
@@ -2450,6 +2512,7 @@ var
   iPage: int64;
   writesize: ni;
 begin
+  if buf^.pagenumber < 0 then exit;
 //  if buf.pagenumber = ((1664 *512) shr unbuffershift) then begin
 //    debug.log('trap flush page  '+inttostr(((1664 *512) shr unbuffershift)));
 //      Debug.Log('X[0]: '+memorydebugstring(pbyte(@buf.data[0]), 2048));
@@ -2457,17 +2520,20 @@ begin
 //      Debug.Log('X[1024]: '+memorydebugstring(pbyte(@buf.data[1024]), 2048));
 //
 //  end;
+//  if EnableDirtyDebug then begin
+//    Debug.Log('DirtyDebug Page:'+buf.PageNumber.tostring);
+//  end;
   if iRecursions > 9 then
     exit;
   iPAge := -1;
   with buf^ do begin
     ECS(lck);
     try
-      if not FPageIsDirty  then begin
+//      rsFlush.BeginTime;
+      if not AnyDirty then begin
   //      Debug.Log('page '+inttostr(buf.pagenumber)+' is not dirty, no flushing.');
         exit;
       end;
-      if pagenumber < 0 then exit;
       if not wasfetched then begin
         if not AllDirty then begin
           FetchPageAndApplyMask(buf);
@@ -2484,12 +2550,14 @@ begin
       //Debug.ConsoleLog('Flushing page: '+inttostr(buf.pagenumber));
   //    Debug.ConsoleLog('Flush page '+inttostr(buf.pagenumber));
       iSeek := buf.pagenumber*UNBUFFERSIZE;
+
       ECS(lckUnder);
       try
         FileSeekPx(FHandle, iSeek, 0);
 //        if iSeek = 0 then
 //          if (buf.data[81+600] <> 1) then
 //            Debug.Log('AHA!');
+
         GuaranteeWriteUnder(@buf.data[0], sizeof(buf.data));
         iPAge := buf.pagenumber;
 
@@ -2499,9 +2567,11 @@ begin
         LCS(lckUnder);
       end;
 
+
+
   //    Debug.ConsoleLog('Done page'+inttostr(buf.pagenumber));
       Cleardirtymask;
-      FPageIsDirty := false;
+//      rsFlush.EndTime; if rsFlush.NewBAtch then Debug.log('flush='+rsFlush.debugtiming);
     finally
       LCS(lck);
     end;
@@ -2631,9 +2701,17 @@ begin
 
             //move into scratch2, data read from disk scratch1, but keep only bytes
             //bits/bytes that are  dirty 0x00
+{$IFDEF PACKED_MASK}
+            MoveMem32WithMaskPacked_NOT(@scratch2[0], @scratch1[0], @buf.FDirtyMAsk[iOFFbyte shr 3], iOffByte, 512);//ok
+{$ELSE}
             MoveMem32WithMask_NOT(@scratch2[0], @scratch1[0], @buf.FDirtyMAsk[iOFFbyte], 512);
+{$ENDIF}
             //move the loaded data to the final buffer output, merging with dirty data
+{$IFDEF PACKED_MASK}
+            MoveMem32WithMaskPacked(@scratch2[0], @buf.data[iOFFByte], @buf.FDirtyMAsk[iOFFbyte shr 3], iOffByte, 512);//ok
+{$ELSE}
             MoveMem32WithMask(@scratch2[0], @buf.data[iOFFByte], @buf.FDirtyMAsk[iOFFbyte], 512);
+{$ENDIF}
             //if nothing started then begin
             if iStart <0 then begin
               writebuilder.startpoint := iSeekPos;
@@ -2885,6 +2963,10 @@ procedure TUnbufferedFileStream.GuaranteeWriteUnder(pb: Pbyte; sz: ni);
 var
   iJustWrote, iTotalToWrite, iToGo, writesize, iWritten: int64;
 begin
+{x$DEFINE SIMPLE}
+{$IFDEF SIMPLE}
+   iJustWrote := FileWrite(FHandle, pb^, lesserof(iTogo, sz));
+{$ELSE}
   {$IFDEF ALERT_WRITE}
     Debug.Log('WRITE ALERT! '+self.filename);
   {$ENDIF}
@@ -2894,16 +2976,17 @@ begin
     iWritten := 0;
     iTotalToWrite := sz;
     iTogo := iTotalToWrite;
-    writesize := 262144;
+    writesize := 262144*8;
     while iTogo > 0 do begin
       iJustWrote := FileWritePx(@self.aligned_temp,FHandle, pb^, lesserof(iTogo, 262144));
-      if iJustWrote < 0 then begin
-        writesize := writesize shr 1;
-        if writesize < 512 then begin
-          inc(writefailures);
-          exit;
-        end;
-      end;
+//      iJustWrote := FileWrite(FHandle, pb^, lesserof(iTogo, 262144));
+//      if iJustWrote < 0 then begin
+//        writesize := writesize shr 1;
+//        if writesize < 512 then begin
+//          inc(writefailures);
+//          exit;
+//        end;
+//      end;
       if iJustWrote > 0 then begin
         inc(iWritten, iJustWrote);
         dec(iTogo, iJustWrote);
@@ -2913,6 +2996,7 @@ begin
   finally
     lcs(lckUnder);
   end;
+{$ENDIF}
 end;
 
 function TUnbufferedFileStream.FindWriteThroughPage(
@@ -3127,12 +3211,13 @@ begin
 end;
 
 function TUnbufferedFileStream.PrePareAndLockPAge(iPAge: int64;
-  bNeedREad: boolean): TUnbufferobj;
+  bNeedREad: boolean; bForEof: boolean = false): TUnbufferobj;
 begin
   ecs(lckBuffers);
   try
 //    Debug.Log('Page: '+iPAge.ToString);
-    SeekPage(iPAge);
+
+    SeekPage(iPAge, bForEof);
     result := FBufferOrders.First;
     result.buf.Lock;
 
@@ -3258,8 +3343,12 @@ begin
       try
       while x < y do begin
   {$IFDEF USE_LINKED_BUFFERS}
+{$IFDEF PACKED_MASK}////
+        FBufferOrders[0].buf^.SetDirty(0, UNBUFFERSIZE);//ok
+{$ELSE}
         fillmem(@FBufferOrders[0].buf.FDirtyMask[0], sizeof(FBufferOrders[0].buf.FDirtyMask), 0);
-        FBufferOrders[0].buf.FPageIsDirty := true;
+{$ENDIF}
+        FBufferOrders[0].buf.SetAllDirty;
   {$ELSE}
         fillmem(@FBufferOrders[0].FDirtyMask[0], sizeof(FBufferOrders[0].FDirtyMask), 0);
         FBufferOrders[0].FPageIsDirty := true;
@@ -3319,6 +3408,7 @@ end;
 function TUnbufferedFileStream.Seek(const offset: int64;
   Origin: TSeekOrigin): int64;
 begin
+  lastuse := getticker;
   result := FrontSeek(offset, origin);
 end;
 
@@ -3402,15 +3492,19 @@ begin
   allowed_prefetches := RecommendedPrefetchAllowance;
 end;
 
-procedure TUnbufferedFileStream.SeekPage(const iPage: int64);
+procedure TUnbufferedFileStream.SeekPage(const iPage: int64; bForEof: boolean = false);
 var
   i: ni;
   bufo: TUnbufferObj;
   buf: PUnBuffer;
   obj: TUnbufferObj;
+  timing: boolean;
 begin
+  timing := false;
+  try
   ecs(lckBuffers);
   try
+
   if FSeekPAge = iPage then exit;
 {$IFDEF USE_LINKED_BUFFERS}
 
@@ -3441,9 +3535,11 @@ begin
   end;
   buf := FBufferOrders[LASTPAGE];
 {$ENDIF}
-  if buf.FPageIsDirty then begin
+  if buf.AnyDirty then begin
+
     OptimalFlush;
-    if buf.Fpageisdirty then
+//    if bForEof then begin rsEof.BeginTime; timing := true; end;
+    if buf.AnyDirty then
       FlushPage(buf);
   end;
 
@@ -3451,7 +3547,6 @@ begin
   with buf^ do begin
     pagenumber := iPage;
     wasfetched := false;
-    FPageIsDirty := false;
   end;
 //  DebugPAges;
 {$IFDEF USE_LINKED_BUFFERS}
@@ -3466,6 +3561,12 @@ begin
   end;
   finally
     lcs(lckBuffers);
+  end;
+  finally
+    if bForEof and timing then begin
+//      rsEof.EndTime;
+//      if rsEof.NewBAtch then Debug.Log('Eof='+rsEof.DebugTiming);
+    end;
   end;
 end;
 
@@ -3505,6 +3606,8 @@ var
   was: ni;
   seekpos: int64;
 begin
+//  rsWrite0.BeginTime;
+  try
   seekpos := FBack_SeekPOsition;
 //  CancelPrefetches;
 
@@ -3533,8 +3636,7 @@ begin
 
       bufin := @byte(buffer);
       movemem32(@buf.data[iOffset],bufin, result);
-      if not buf.FPageIsDirty then begin
-        buf.FPageIsDirty := true;
+      if not buf.AnyDirty then begin
         buf.FDirtyTime := Getticker;
       end;
     //  if bMoreDebug then begin
@@ -3543,28 +3645,41 @@ begin
     //  end;
 
 
+//      rsWrite1.BeginTime;
       if not buf.wasfetched then begin
         if not buf.AllDirty then begin
-          fillmem(@buf.Fdirtymask[iOffset],result,00);
-          buf.AllDirtyChecked := false;
+          buf.SetDirty(iOffset, result);
         end;
+      end else begin
+        buf.SetAllDirty;
       end;
+//      rsWrite1.EndTime;
+
+
+
+
+
 
       FBack_SeekPosition  := FBack_SeekPosition  + result;
       if FBack_SeekPosition  >  FSizeCommittedToBuffers then begin
         FReportedSize := FBack_SeekPosition ;
-        if not buf.FPageIsDirty then begin
-          buf.FPageIsDirty := true;
+        if not buf.AnyDirty then begin
           buf.FDirtyTime := Getticker;
         end;
         buf.Unlock;
         buf := nil;
+//        rsWrite2.BeginTime;
         WriteEof();
+//        rsWrite2.EndTime;
       end
     finally
       if buf <> nil then
         buf.Unlock;
     end;
+
+
+
+
     prefetchwritemode := true;
     prefetchposition := FBack_SeekPosition  shr unbuffershift;
 //    allowed_prefetches := RecommendedPrefetchAllowance;
@@ -3575,6 +3690,15 @@ begin
 {$ENDIF}
   finally
     UnlockBack;
+  end;
+  finally
+//    rsWrite0.EndTime;
+//    if rsWrite0.NewBatch then
+//      debug.log('Write0='+rsWrite0.DebugTiming);
+//    if rsWrite1.NewBatch then
+//      debug.log('Write1='+rsWrite1.DebugTiming);
+//    if rsWrite2.NewBatch then
+//      debug.log('Write2='+rsWrite2.DebugTiming);
   end;
 end;
 
@@ -3638,6 +3762,7 @@ function TUnbufferedFileStream.Write(const Buffer; Count: Integer): Longint;
 var
   pb: PByte;
 begin
+  lastuse := getticker;
 {$IFDEF DISABLE_WRITES}
   Debug.Log('Writes are disabled!');
   exit(count);
@@ -3768,10 +3893,14 @@ var
   iPAge: int64;
   bufo: TUnbufferObj;
 begin
+//  if FReportedSize = $2001000 then
+//    Debug.Log('here');
   iSZ := fReportedSize+16;
   iPAge := (iSZ-1) shr UNBUFFERSHIFT;
 
-  bufo := PrePareAndLockPAge(iPage, false);
+//  rsEof.BeginTime;
+  bufo := PrePareAndLockPAge(iPage, false, true);
+//  rsEof.endTime;
   buf := bufo.buf;
   try
     iOffset := UNBUFFERSIZE - 16;
@@ -3781,19 +3910,20 @@ begin
 
     movemem32(@buf.data[iOffset],@iTemp, 8);
     movemem32(@buf.data[iOffset+8],@FreportedSize, 8);
-    fillmem(@buf.Fdirtymask[iOffset],16,0);
-    buf.FPageIsDirty := true;
+//    Debug.Log('wrote size '+FReportedSize.tohexstring+' to page '+iPage.ToString);
+    buf.SetDirty(iOffset, 16);
     FSizeCommittedToBuffers := FReportedSize;
 
   finally
     buf.Unlock;
   end;
 
+
 end;
 
 function TUnbufferedFileStream.Read(var Buffer; Count: Integer): Longint;
 begin
-
+  lastuse := getticker;
   try
     ecs(lckOp);
     LockBack('Read');
@@ -3980,6 +4110,7 @@ end;
 procedure Tunbuffer.Init;
 begin
   pagenumber := -1;
+  DirtyCount := -1;
   CLearDirtyMAsk;
 end;
 
@@ -3994,6 +4125,65 @@ begin
 end;
 
 
+
+procedure Tunbuffer.SetDirty(offset, cnt: ni);
+var
+  t: ni;
+  dc: ni;
+  bchanged: boolean;
+begin
+  //SHORTCUT! - if we're writing to the entire buffer, we can
+  //just skip the dirty mask as the time it takes to track the
+  //stuff ADDS up to potentially multiple MS per write.
+  //when flushing the buffer, if the dirtycount matches
+  //the unbuffer size, then the dirty mask is not used anyway.
+  if cnt = UNBUFFERSIZE then begin
+    DirtyCount := UNBUFFERSIZE;
+    exit;
+  end;
+
+  dc := DirtyCount;
+  if alldirty then exit;
+  for t:= offset to offset+cnt-1 do begin
+    if SetDirty(t) then inc(dc);
+  end;
+  DirtyCount := dc;
+
+
+
+end;
+
+procedure Tunbuffer.SetAllDirty;
+begin
+  DirtyCount := UNBUFFERSIZE;
+end;
+
+function Tunbuffer.SetDirty(offset: ni): boolean;
+//DO NOT CALL EXTERNALLY unless you're MAINTAINING DIRTY COUNT
+{$IFDEF PACKED_MASK}
+var
+  bo: nativeint;
+  pb: PByte;
+  nu: byte;
+  byt: byte;
+{$ENDIF}
+begin
+{$IFDEF PACKED_MASK}
+  bo := offset shr 3;//div
+  nu := offset and 7;//remainder
+  nu := 1 shl nu;
+
+  pb := @FDirtyMask[bo];
+  byt := pb^;
+  result := (byt and nu) <> 0;//check if bit was set previously
+  byt := byt and (not nu);//turn off bit
+  pb^ := byt;//save result
+{$ELSE}
+  result := FDirtyMask[offset] = $FF;
+  FDirtyMask[offset] := 0;
+{$ENDIF}
+
+end;
 
 procedure Tunbuffer.SetPageNumber(const Value: int64);
 begin
@@ -4181,7 +4371,9 @@ end;
 
 {$ENDIF}
 
+
 initialization
+  FLUSH_TIME_LIMIT := 50;
 //  g_alarm := false;
 end.
 

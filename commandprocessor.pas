@@ -29,7 +29,7 @@ uses
   backgroundthreads, commandicons;
 {$DEFINE RAISE_EXCEPTIONS_FROM_COMMANDS_ON_WAITFOR}
 {$DEFINE LOCK_RESOURCE_SCAN}
-{$DEFINE ENABLE_QUICKPOOL}  //reduces potential stress on thread pool, not typically necessary
+{x$DEFINE ENABLE_QUICKPOOL}  //reduces potential stress on thread pool, not typically necessary
 {x$DEFINE OVERSPILL}
 {x$DEFINE QUEUE_INCOMING}
 {x$DEFINE ALLOW_EARLY_THREADDONE_SIGNAL}
@@ -1447,7 +1447,7 @@ begin
             if assigned(onFinish) then
               onFinish(self);
             if assigned(onFinishGUI) then begin
-              TThread.Synchronize(thr.realthread, SyncFinishGUI);
+              TThread.Synchronize(TThread.CurrentThread, SyncFinishGUI);
             end;
 
           end;
@@ -1481,6 +1481,7 @@ begin
 
       // CAREFUL HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+//      sleep(8000);///xxx - force failures
       IsExecutingNow := false;
       p := processor;
       if assigned(p) then begin
@@ -1880,8 +1881,8 @@ begin
 //  Lock;
 //  try
     progress.step := Value;
-  if assigned(Thread) then
-    thread.step := value;
+//  if assigned(Thread) then
+//    thread.step := value;
 //  finally
 //    Unlock;
 //  end;
@@ -1893,8 +1894,8 @@ begin
 //  Lock;
 //  try
     progress.StepCount := Value;
-    if assigned(Thread) then
-      thread.stepcount := value;
+//    if assigned(Thread) then
+//      thread.stepcount := value;
 //  finally
 //    Unlock;
 //  end;
@@ -3364,6 +3365,12 @@ procedure TCommandProcessorChildThread.SetCommand(const Value: TCommand);
 begin
   Lock;
   try
+    if FCommand <> nil then begin
+      //if unassigning a command, copy its progress to remember it
+      self.Step := FCommand.Step;
+      self.StepCount := FCommand.StepCount;
+      self.Status := FCommand.Status;
+    end;
     Fcommand := Value;
   finally
     Unlock;

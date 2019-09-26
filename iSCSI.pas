@@ -709,6 +709,7 @@ threadvar
   debugpinger: TDebugPinger;
 var
   cmddebug: TCommandDebug;
+
 var
   scsi_session_manager: TiSCSISessionManager;
 //  scsi_session: TiSCSI_Session;

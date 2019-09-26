@@ -3,14 +3,17 @@ unit VirtualDisk_Advanced;
 {x$DEFINE DISABLE_3AM_ENFORCEMENT}
 {x$DEFINE COMPARE_ENTIRE_VAT_ON_SAVE}
 {x$DEFINE NO_SCRUBBER}
-{$DEFINE PAYLOAD_IS_UNBUFFERED}//<!--------------------
-{x$DEFINE ASYNC_READS}//uses multiple threads to read from each RAID piece simultaneously - if disabled blocks during each RAID piece read
+{$DEFINE ALLOW_CLEAN_CACHE_PREFERENCE}//changed 2019/9/17 to see if we can better saturate back-end
+{x$DEFINE PAYLOAD_IS_UNBUFFERED}//<!--------------------
+{$DEFINE PREDICTIVE_SIDEFETCH_FLUSH}
+{$DEFINE ASYNC_READS}//uses multiple threads to read from each RAID piece simultaneously - if disabled blocks during each RAID piece read
 {$DEFINE PAYLOAD_HAS_QUEUED_INTERFACE}
+{$DEFINE RETRY_FLUSH}
 {x$DEFINE DONT_USE_QUEUED}
 {x$DEFINE ASYNC_REBUILD}
 
 
-{x$DEFINE ALLOW_DRIVE_SKIPPING}
+{$DEFINE ALLOW_DRIVE_SKIPPING}
 {$DEFINE PREFETCH_ON_BRING_ONLINE}
 {x$DEFINE RECORD_OPS}
 {x$DEFINE PLAY_OPS}
@@ -34,7 +37,7 @@ unit VirtualDisk_Advanced;
 {x$DEFINE ALERT_WRITE}
 {x$DEFINE VDREAD_LOG}
 {x$DEFINE QUEUE_ITEM_DEBUG}
-{x$DEFINE DISABLE_VD_SIDEFETCH}//<<------------
+{$DEFINE DISABLE_VD_SIDEFETCH}//<<------------
 {$DEFINE DEBUG_NEWPHYSICAL}
 {$DEFINE ALLOW_SYNCHRONOUS_READS}//<<-----we want this? BUT BUT only once all backup-restores are complete
 {$DEFINE ALLOW_DRIVE_SKIPPING}//ok to enable
@@ -96,7 +99,7 @@ const
   SET_CS = 2;
   FILE_COUNT_VAT_FUXORED = -1;
   FILE_COUNT_NO_FETCH_FROM_SOURCE_ARCHIVE = -4;
-  DEFAULT_CACHED_STRIPES = 2048*3;
+  DEFAULT_CACHED_STRIPES = 2048;//*3*4;
 //  DEFAULT_CACHED_STRIPES = 32;
   MAX_DIRTY_BUFFERS = DEFAULT_CACHED_STRIPES shr 1;
 //  ALLOWED_PREFETCH_STRIPES = 256;
@@ -649,6 +652,7 @@ type
     function TailStartAddr: int64;
 
 
+    procedure WantLock;
     procedure GuaranteeReadBlocks(lba: int64; cnt: nativeint; p: pbyte);
     procedure GuaranteeWriteBlocks(lba: int64; cnt: nativeint; p: pbyte; bDontArchive: boolean = false);
 
@@ -932,7 +936,7 @@ type
     online: boolean;
     enablelegittagging: boolean;
     rsPrefetch: TRingstats;
-    rs0,rs1,rs2,rs3,rs4,rs5,rs6,rs7: TRingSTats;
+    rs0,rs1,rs2,rs3,rs4,rs5,rs6,rs7, rsCacheHit: TRingSTats;
     csScrubber: TCLXCRiticalSection;
     SourceArchiveHost, SourceARchiveEndpoint: string;
     SourceArchive: string;
@@ -1238,6 +1242,9 @@ var
   gQuickFix: boolean;
   gQuickFixNeedsSave: boolean;
   vdh: TVirtualDiskHub;
+  INLINE_WRITE_FLUSH_TIMEOUT : nativeint;
+  GENERAL_FLUSH_TIMEOUT : nativeint;
+  INLINE_FLUSH_Age: nativeint;
 
 implementation
 
@@ -1890,7 +1897,7 @@ begin
 //              Debug.Log(self, 'wtf');
             try
               while not qis[u].WAitFor(8000) do
-                Debug.Log('Waiting for: '+ps.filename);
+                Debug.Log('Waiting for: '+ps.filename+' in #'+qis[u].thread.realthread.threadid.tostring);
 //              qis[u].WAitFor();
             except
               on E: Exception do begin
@@ -2064,7 +2071,7 @@ begin
 //      Debug.Log('Needs to buddy up: '+vart.debugstring);
 
       if not online_bigblocks[vart.VatIndex] then begin
-//        Debug.Log('block was not online, most buddy up later');
+//        Debug.Log('block was not online, must buddy up later');
         exit(false);
       end;
 
@@ -2149,6 +2156,12 @@ begin
   rs5 := TRingStats.create;
   rs6 := TRingStats.create;
   rs7 := TRingStats.create;
+  rsCacheHit := TRingStats.create;
+  rsCacheHit.size := 512;
+//  rsCacheHit.OnNewBatch := procedure (rs: TRingstats)
+//    begin
+//      Debug.Log('Cache Hit %: '+stringx.FloatPrecision(rs.GetAverage*100,4)+'%');
+//    end;
 
 
   inherited;
@@ -2172,7 +2185,7 @@ begin
   primary_buffer := FRaidsByLastUsed.LastItem.rab;
   queue := tpm.needthread<TVDQueue>(nil);
   queue.betterpriority := bpTimeCritical;
-  queue.MaxItemsInQueue := 2; //DO NOT set higher than # of tolerable resurrections before disk timeout
+  queue.MaxItemsInQueue := 16; //DO NOT set higher than # of tolerable resurrections before disk timeout
   queue.OnIdle := self.vdqueue_onidle;
 {$IFDEF ENABLE_IDLE_QUEUE}
   queue.noworkruninterval := 1;
@@ -2709,6 +2722,8 @@ var
   pvar: PVirtualAddressRecord;
   l: TLock;
   postsleeptime: ticker;
+  postmultiplier: single;
+  tmScrubberIterationStart: ticker;
 const
   SCRUBBER_COLD_INTERVAL = 1000;
   MIN_ACTIVE_USE_WAIT_TIME = 8000;
@@ -2716,11 +2731,19 @@ const
   MAX_SHOVEL_INTERVAL = 1000;
   MAX_CONSTITUTION_CHECK_INTERVAL = 60000;
 begin
+  tmScrubberIterationStart := GetTicker;
+
+        if  hint_requests_waiting or ((GetTimeSince(ActiveUseTime) < 1000)) then begin
+          thr.RunHot := false;
+          thr.coldruninterval := SCRUBBER_COLD_INTERVAL;
+          exit;
+        end;
 {$IFDEF NO_SCRUBBER}
   thr.runhot := false;
   exit;
 {$ENDIF}
   postsleeptime := 0;
+  postmultiplier := 0;
   backgroundlock.LockWrite;
 
   if gettimesince(last_critical_work_time) > 50 then begin
@@ -2729,14 +2752,14 @@ begin
       if trygetlock(l) then
       try
 //          Debug.Log('scrubber flush buffers');
-        last_flush_status := FlushBuffers(false,60000,false,false);
+        last_flush_status := FlushBuffers(false,6000,false,false);
+{$IFDEF RETRY_FLUSH}
         if last_flush_status = bsNoBuffersToFlush then begin
-//            Debug.Log('scrubber flush buffers (1)');
-          last_flush_status := FlushBuffers(false,45000,false,true)
+          last_flush_status := FlushBuffers(false,4500,false,true)
         end else begin
-//            Debug.Log('scrubber flush buffers (2)');
-          last_flush_status := FlushBuffers(false,30000,true,true);
+          last_flush_status := FlushBuffers(false,3000,true,true);
         end;
+{$ENDIF}
 
         BackupVat;
         EvalRunHot(thr);
@@ -2753,16 +2776,17 @@ begin
 
 
   try
+
   if GEtTimeSince(tmLastBringOnline) > 10000 then begin
     thr.IterationComplete;
     ContinueBringOnline(thr);
   end;
   if self.queue.estimated_backlog_size > 0 then begin
-    postsleeptime := 10;
+    postmultiplier := postmultiplier + 1;
 //    exit;
   end;
   if (GetTimeSince(ActiveUseTime) < MIN_ACTIVE_USE_WAIT_TIME) and (gettimesince(FLastScrubberExecuteTime) < Max_ACTIVE_USE_WAIT_TIME) then begin
-    postsleeptime := 100;
+    postmultiplier := postmultiplier + 1;
 //    exit;
   end;
   thr.IterationComplete;
@@ -2771,7 +2795,7 @@ begin
     tm1 := GetTicker;
     tm2 := gettimesince(tm1, FLastScrubberExecuteTime);
     if tm2 < 100 then begin
-      postsleeptime := 100-tm2;
+      postmultiplier := 1;
       exit;
     end;
 
@@ -2925,6 +2949,8 @@ begin
   end;
   finally
     backgroundlock.UnlockWrite;
+    if online then postmultiplier := postmultiplier * 4;
+    postsleeptime := round(GEtTimeSince(tmScrubberIterationStart) * postmultiplier);
     if postsleeptime > 0 then
       sleep(postsleeptime);
   end;
@@ -3356,6 +3382,7 @@ begin
 
 
   inherited;
+  rsCacheHit.free;
   rs0.free;
   rs1.free;
   rs2.free;
@@ -3462,7 +3489,7 @@ end;
 procedure TVirtualDisk_Advanced.EvalRunHot(thr: TExternalEVentThread);
 begin
   thr.RunHot := (((reads_at_last_scrub = reads) and
-    (writes_at_last_scrub = writes) and Operational)) or (last_flush_status = bsFlushedSome {FRaidsByDirtyTime.count > 0}) or Migrating;
+    (writes_at_last_scrub = writes) and Operational)) and (last_flush_status = bsFlushedSome {FRaidsByDirtyTime.count > 0}) or Migrating;
           //  ^^^^ IDLE and OPERATIONAL               or      DIRTY STUFF
 end;
 
@@ -3512,9 +3539,14 @@ function TVirtualDisk_Advanced.GetBusiestPhysical
 var
   t: ni;
 begin
+{$DEFINE SKIP_BY_BLOCK_INDEX}
+{$IFDEF SKIP_BY_BLOCK_INDEX}
+  exit((vart.startingblock shr BIG_BLOCK_BLOCK_SHIFT) mod vart.filecount);
+{$ELSE}
   result := lastdriveskipped+1;
   if result > vart.FileCount then
     result := 0;
+{$ENDIF}
 
 end;
 
@@ -4254,9 +4286,10 @@ var
   l: TLock;
   bGot: boolean;
   bs: TBufferStatus;
-const
-  MAX_FLUSH_LOCK_TIME = 9;
 begin
+//  bOnlyIfAllDirty := false;
+//  bOnlyIfDiskInactive := false;
+//  bFindAllDirty := false;
   result := bsNoBuffersToFlush;
   {$DEFINE ALWAYS_FORCE_FLUSH_LOCK}
   {$IFNDEF ALWAYS_FORCE_FLUSH_LOCK}
@@ -4305,7 +4338,7 @@ begin
 
       while true do begin
         if (itm = nil) or (gettimesince(itm.rab.DirtyTime) < iOlderThan) then
-
+          break;
         if itm = last then
           break; // we're spinning our wheels... get out of here, there's nothing to do
 
@@ -4348,12 +4381,10 @@ begin
 
           // ^^^ syncAWayBuffer will cause the linked list to resort for time, so LastItem should change (in theory)
           itm := next;
-        end else
-          if cnt > 64 then
-            break; //break any time the buffers are not old enough
+        end;
 
-
-        if gettimesince(tmNow) > MAX_FLUSH_LOCK_TIME then begin
+        if gettimesince(tmNow) > GENERAL_FLUSH_TIMEOUT  then begin
+          Debug.Log('Flush LOCKED for too long');
           result := bsFlushingTakingTooLong;
           break;
         end;
@@ -4571,6 +4602,10 @@ var
   r: single;
   bt: TRaidTreeItem_ByLastUsedTime;
 begin
+{$DEFINE SIMPLE_PREFETCH_CALC}
+{$IFDEF SIMPLE_PREFETCH_CALC}
+  front_RecommendedPrefetchAllowance := 2;
+{$ELSE}
   mx := front_RecommendedPrefetchAllowance;
   r := 0;
   cx := 256;
@@ -4593,6 +4628,7 @@ begin
   mx := greaterof(1, lesserof(CachedSTripes shr 8, mx));
   mx := g_FORCE_VD_PREFETCH;
   front_RecommendedPrefetchAllowance := mx;
+{$ENDIF}
 //  sfthread.stepcount := mx;
 
 end;
@@ -4603,13 +4639,13 @@ var
   was: ni;
   l: TLock;
 begin
-  exit;
-  l := GetLock;
+//  exit;
+//  l := GetLock;
   try
     was := front_allowed_prefetches;
     front_allowed_prefetches := 0;
   finally
-    unlocklock(l);
+//    unlocklock(l);
   end;
 //  sfthread.waitforidle;
 end;
@@ -4783,13 +4819,20 @@ var
   daypart: double;
 begin
   inherited;
+
   Loop := true;
   runhot := false;
-{x$DEFINE DISABLE_3AM_ENFORCEMENT}
-{$IFNDEF DISABLE_3AM_ENFORCEMENT}
-  if not vd.IsOnline then
+
+{x$IFNDEF DISABLE_3AM_ENFORCEMENT}
+  if not vd.IsOnline then begin
+    runhot := false;
     exit;
-{$ENDIF}
+  end;
+{x$ENDIF}
+  if vd.hint_requests_waiting then begin
+    runhot := false;
+    exit;
+  end;
 
   if (not Prepped) or (GEtTimeSince(lastpreptime) > (60000*60*24)) then begin
     daypart := now-trunc(now);
@@ -4831,11 +4874,11 @@ begin
       end;
       repSuccess: begin
         runhot := false;
-        coldruninterval := GetTimeSince(tm) * 20;
+        coldruninterval := lesserof(GetTimeSince(tm) * 4, 10000);
       end;
       repFailed: begin
         runhot := false;
-        coldruninterval := GetTimeSince(tm) * 20;
+        coldruninterval := lesserof(GetTimeSince(tm) * 4, 10000);
         nextindex := -1;
       end;
 
@@ -5719,6 +5762,7 @@ begin
   begin
 
     itm := FRaidsByLastUsed.firstitem;
+{$IFDEf ALLOW_CLEAN_CACHE_PREFERENCE}
     cx := Self.CachedSTripes shr 1;
     if bPreferClean then
     while itm.rab.AnyDirty do begin
@@ -5730,6 +5774,7 @@ begin
       end;
 
     end;
+{$ENDIF}
 
 
     result := itm.rab;
@@ -5842,7 +5887,7 @@ begin
       xxx := vat.PayloadConfig.filelist[payloadindex].priority;
 
 
-      if iMinPriority > xxx then begin
+      if xxx < iMinPriority then begin
         iMinPriority := xxx;
       end;
     end;
@@ -6106,18 +6151,18 @@ begin
 
     ps := PayloadStreams[t];
     if ps <> nil then begin
-      {$IFNDEF PAYLOAD_IS_UNBUFFERED}
+      {$IFDEF PAYLOAD_IS_UNBUFFERED}
       ubs := ps.understream as TUnbufferedFileSTream;
       if bSTopOnHit then
         PrefetchPayload(t, self.back_prefetchposition, 1, ubs, bWriteMode)
       else
         PrefetchPayload(t, self.back_prefetchposition, 32, ubs, bWriteMode);
       {$ELSE}
-      ubs := ps;
-      if bSTopOnHit then
-        PrefetchPayload(t, self.back_prefetchposition, 1, ubs, bWriteMode)
-      else
-        PrefetchPayload(t, self.back_prefetchposition, 32, ubs, bWriteMode);
+//      ubs := ps;
+//      if bSTopOnHit then
+//        PrefetchPayload(t, self.back_prefetchposition, 1, ubs, bWriteMode)
+//      else
+//        PrefetchPayload(t, self.back_prefetchposition, 32, ubs, bWriteMode);
 
       {$ENDIF}
 
@@ -6870,8 +6915,9 @@ begin
     // look for something to reconstitute... (priority < 0)???
 
     //if nothing found then exit
-    if pvar = nil then
+    if pvar = nil then begin
       exit;
+    end;
 
     if pvar.SelfCheckOk(pvar.VatIndex, self)<>scrOk then begin
       zl.Log(pvar.vatindex,'Reconst VAR entry that was previously failed self-check');
@@ -7906,20 +7952,30 @@ begin
 
 
     // if this buffer was read from the disk
-    if buffer.ReadFromDisk then
-      exit
+    if buffer.ReadFromDisk then begin
+      rsCacheHit.AddStat(1.0);
+      exit;
+
+    end
     else
     begin
       // if it has been written to
       if (buffer.AnyDirty) then
       begin
         // fetch but merge written blocks
-        if not(buffer.AllDirty) then
+        if not(buffer.AllDirty) then begin
           FetchAndMergeRaid(buffer);
+          rsCacheHit.AddStat(0.0);
+        end else begin
+          rsCacheHit.AddStat(1.0);//reading from an "all-dirty" cache is considered a HIT
+        end;
       end
-      else
+      else begin
         // fetch blocks
+        rsCacheHit.AddStat(0.0);
         FixFetchRaid(buffer);
+
+      end;
     end;
   end;
 
@@ -8158,12 +8214,24 @@ begin
 
     end;
     FRaidsByDirtyTime.add(buffer.treeItemDirtyTime);
-//    while FRAidsByDirtyTime.count > MAX_DIRTY_BUFFERS do begin
-      while FRAidsByDirtyTime.count > 0 do begin
-        if (FlushBuffers(true, 1000, true, true) <> bsFlushedSome) then
+    if INLINE_WRITE_FLUSH_TIMEOUT > 0 then begin
+      var tmStart := GetTicker;
+      while FRAidsByDirtyTime.count > MAX_DIRTY_BUFFERS do begin
+
+        while FRAidsByDirtyTime.count > (MAX_DIRTY_BUFFERS shr 1) do begin
+          if (FlushBuffers(true, INLINE_FLUSH_AGE, true, true) <> bsFlushedSome) then begin
+            break;
+          end;
+          if GetTimeSince(tmSTart) > INLINE_WRITE_FLUSH_TIMEOUT then begin
+            Debug.Log('flush timeout, there are still:'+FRAidsByDirtyTime.count.ToString+' buffers');
+            break;
+          end;
+        end;
+        if GetTimeSince(tmSTart) > INLINE_WRITE_FLUSH_TIMEOUT then begin
           break;
+        end;
       end;
-//    end;
+    end;
 
   finally
     UnlockLock(l);
@@ -8710,6 +8778,11 @@ end;
 function TAbstractVirtualDisk_Advanced.TailStartAddr: int64;
 begin
   result := Size - TailSize;
+end;
+
+procedure TAbstractVirtualDisk_Advanced.WantLock;
+begin
+  ActiveUseTime := Getticker;
 end;
 
 function TAbstractVirtualDisk_Advanced.TailSize: int64;
@@ -9810,6 +9883,7 @@ begin
 
   for u := 0 to FileCount-1 do begin
     id := self.FPs[u].FileID;
+    if id < 0 then continue;
     ps := vda.PayloadStreams[id];
     if ps = nil then begin
       zl.Log(myidx,'Payload stream '+inttostr(id)+' is not active.');
@@ -11393,6 +11467,7 @@ end;
 procedure TVDWriteCommand.DoExecute;
 begin
   inherited;
+  var tmStart := GetTicker;
 {$IFDEF QUEUE_ITEM_DEBUG}Debug.Log('execute '+getobjectdebug);{$ENDIF}
   vd.Front_CancelPrefetches;
   vd.front_prefetchwritemode := true;
@@ -11403,12 +11478,16 @@ begin
 
 
   //continue prefetching empty writebuffers (flushes away dirty ones potentially)
+{$IFDEF PREDICTIVE_SIDEFETCH_FLUSH}
   vd.front_prefetchwritemode := true;
   vd.front_prefetchposition := addr+count;
   if self.queue.estimated_queue_size < 2 then
     vd.Front_StartPrefetches;
-
-
+{$ENDIF}
+  var tmEnd := GetTicker;
+  if GetTimeSince(tmEnd, tmStart) > 8000 then begin
+    debug.Log(self.ClassName+' took '+GetTimeSince(tmEnd, tmStart).tostring);
+  end;
 
 
 end;
@@ -11980,9 +12059,9 @@ begin
         end;
       end;
 
+  while not (d.FlushBuffers(true, 0)= bsNoBuffersToFlush) do
+    sleep(0);
 
-
-    while not (d.FlushBuffers(true, 0)= bsNoBuffersToFlush) do sleep(0);
 //      FlushBuffersInBlockOrder(zidx shl ARC_ZONE_BLOCK_SHIFT, false, false);
 
 
@@ -11993,7 +12072,11 @@ begin
   result := false;
 end;
 
+
 initialization
+  INLINE_WRITE_FLUSH_TIMEOUT := 50;
+  GENERAL_FLUSH_TIMEOUT := 50;
+  INLINE_FLUSH_AGE := 10000;
 
 orderlyinit.Init.RegisterProcs('VirtualDisk_Advanced', oinit, ofinal,
   'ManagedThread,CommandProcessor,ApplicationParams,raid');

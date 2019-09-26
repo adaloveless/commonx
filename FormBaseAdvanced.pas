@@ -303,10 +303,12 @@ begin
     BusyRect.Align := TAlignLayout.contents;
     ShowFancy(working);
 {$ENDIF}
-    Tmm(mock).ShowFancy;
+    if assigned(mock) then
+      Tmm(mock).ShowFancy;
   end else
   begin
-    Tmm(mock).HideFancy;
+    if assigned(mock) then
+      Tmm(mock).HideFancy;
 {$IFDEF OLDBUSY}
     BusyRect.Visible := false;
     BusyTimer.Enabled:=false;

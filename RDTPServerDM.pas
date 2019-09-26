@@ -4,7 +4,7 @@ interface
 
 {$DEFINE BETTERTCP}
 uses
-  SysUtils, Classes, better_sockets, rdtpprocessor, SimpleReliableUDP, simpleabstractprivateserversocket;
+  SysUtils, Classes, better_sockets, rdtpprocessor, SimpleReliableUDP, simpleabstractprivateserversocket, sockfix;
 
 type
   TRDTPServer = class(TDataModule)
@@ -110,16 +110,19 @@ begin
 {$IFDEF BETTERTCP}
   tcp := TBetterTCPServer.create(self);
   tcp.localport := inttostr(iPort);
+  tcp.BlockMode := bmThreadBlocking;
   tcp.OnAccept := self.tcpAccept;
 
 {$ELSE}
   tcp := TTCPServer.create(self);
   tcp.localport := inttostr(iPort);
   tcp.OnAccept := self.tcpAccept;
+  tcp.BlockMode := bmThreadBlocking;
 {$ENDIF}
   udp := TMultiplexedUDPServer.CReate(self);
   udp.OnDataAvailable := udpAccept;
   udp.BindToport(iPort);
+  udp.ThreadedEvent := true;
 
 
 

@@ -4,8 +4,12 @@ unit GenericRDTPClient;
 //--SYSTEM THREAD is waiting for USER ACTIONS to complete and connection times out - receive AV
 
 {$IFDEF MSWINDOWS}
-  {$DEFINE ALLOW_TCP}
+  {x$DEFINE USE_WINSOCK}
 {$ENDIF}
+{$DEFINE ALLOW_TCP}
+
+
+{x$ENDIF}
 {$DEFINE ENABLE_RDTP_COMPRESSION}
 {x$DEFINE ALLOW_CALLBACKS}
 
@@ -17,9 +21,11 @@ uses
   simplereliableudp, simplebufferedconnection, betterobject, sharedobject, packet,
   classes,
   sysutils, exceptions,
-{$IFDEF MSWINDOWS}
+{$IFDEF USE_WINSOCK}
   simplewinsock,
   windows,
+{$ELSE}
+  Simpletcpconnection,
 {$ENDIF}
   simpleabstractconnection,
   managedthread, DtNetConst, networkbuffer, debug, typex, systemx;
@@ -168,7 +174,7 @@ type
   end;
 
 var
-  RDTP_USE_TCP: boolean = false;
+  RDTP_USE_TCP: boolean = true;
   RDTP_USE_SOCKS: boolean = false;
 
 implementation
@@ -221,15 +227,15 @@ function TGenericRDTPClient.BeginTransact2(inPacket: TRDTPPacket;
   bForget: boolean): boolean;
 var
   buffer : PByte;
-  length : integer;
+  length : ni;
   pcHeader: PByte;
-  iBytesRead: integer;
-  iLength, t: integer;
+  iBytesRead: ni;
+  iLength, t: ni;
   bufTemp: PByte;
-  iBytesToRead: integer;
+  iBytesToRead: ni;
   tmBegin: cardinal;
-  iBytesPerSec: cardinal;
-  iBytesThisRead: cardinal;
+  iBytesPerSec: ni;
+  iBytesThisRead: ni;
 //  bLegitResponse: boolean;
 begin
   Lock;
@@ -559,13 +565,23 @@ begin
   end;
 
 {$IFDEF ALLOW_TCP}
+{$IFDEF USE_WINSOCK}
   IF UseTCP then begin
-    result := TSimpleWinsockconnection.create;
+    result := TSimpleWinsockConnection.create;
 
     if UseTor then
       TSimpleWinsockConnection(result).UseSocks := true;
   end
   else
+{$ELSE}
+  IF UseTCP then begin
+    result := TSimpleTCPconnection.create;
+
+    if UseTor then
+      TSimpleTCPconnection(result).UseSocks := true;
+  end
+  else
+{$ENDIF}
 {$ENDIF}
     result := TGenericConnectionType.create;
 
@@ -909,16 +925,17 @@ function TGenericRDTPClient.EndTransact2(inPacket: TRDTPPacket;
   bForget: boolean): boolean;
 var
   buffer : PByte;
-  length : integer;
+  length : ni;
   pcHeader: PByte;
-  iBytesRead: integer;
-  iLength, t: integer;
+  iBytesRead: ni;
+  iLength, t: ni;
   bufTemp: PByte;
-  iBytesToRead: integer;
-  tmBegin: cardinal;
-  iBytesPerSec: cardinal;
-  iBytesThisRead: cardinal;
+  iBytesToRead: ni;
+  tmBegin: ticker;
+  iBytesPerSec: ni;
+  iBytesThisRead: ni;
   tmActive: ticker;
+  header_read_count: ni;
 //  bLegitResponse: boolean;
 const
   iTimeoutMS = 300000;
@@ -943,6 +960,7 @@ begin
       getmem(pcHeader, 18);
       //Read Header
       iBytesRead := 0;
+      header_read_count := 0;
       while iBytesRead < 18 do begin
         if FConnection = nil then
           raise ETransportError.create('Connection dropped unexpectedly');
@@ -955,7 +973,7 @@ begin
 
         iBytesThisREad := FConnection.ReadData(pcHeader+iBytesRead, 18-iBytesRead);
 
-        if iBytesThisRead = 0 then
+        if iBytesThisRead <= 0 then
           raise ETransportError.create('client disconnected');
 
         inc(iBytesRead, iBytesThisREAd);
@@ -963,6 +981,9 @@ begin
         if GetTimeSince(tmActive) > itimeoutMS then
           raise ETransportError.create('Connection dropped during header read');
 
+        inc(header_read_count);
+        if header_read_count > 18 then
+          raise Ecritical.create('transport layer error! Header Read took more than 18 iterations!');
       end;
 
       //Get info on packet

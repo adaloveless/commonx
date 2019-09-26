@@ -123,7 +123,8 @@ begin
 
     if FPool.IndexOf(si) >=0 then
       raise ECritical.create('already in pool!');
-    si.Rollback;
+    if si.IsInTransaction then
+      si.Rollback;
     if not si.IsInTransaction then
       FPool.add(si)
     else

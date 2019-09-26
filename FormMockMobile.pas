@@ -38,6 +38,7 @@ type
     function GetShowingForm: TfrmFMXBase;
 
   protected
+    lastbusytimertime: ticker;
     FTemporaryMessageQueue: IHolder<TStringList>;
     FTempMsgInfo: TMQInfo;
     formstack: TBetterList<TfrmFMXBase>;
@@ -54,6 +55,7 @@ type
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
     procedure ToggleBusy(busy: Boolean); override;
+    function WatchCommands: Boolean; override;
 
     { Public declarations }
     property showingform: TfrmFMXBase read GetShowingForm;
@@ -72,6 +74,7 @@ type
     procedure HideFancy;
     procedure Fancyupdate(intv: ni);
     procedure FancyMessage(s: string);
+
 
 
   end;
@@ -171,10 +174,13 @@ end;
 procedure Tmm.BusyTimerTimer(Sender: TObject);
 begin
   inherited;
+  var tmSince := gettimesince(lastbusytimertime);
+  lastbusytimertime := getticker;
   WatchCommands;
   if Assigned(OnFancyUpdate) then begin
-    OnFancyUpdate(busytimer.Interval);
+    OnFancyUpdate(tmSince);
   end;
+  Curtains_Frame(tmSince);
 end;
 
 constructor Tmm.Create(AOwner: TComponent);
@@ -188,8 +194,10 @@ procedure Tmm.DoShow;
 begin
   inherited;
   if showingform = nil then begin
-    var f := frmDefault.create(application);
-    showform(f);
+    Curtains(procedure begin
+      var f := frmDefault.create(application);
+      showform(f);
+    end);
   end;
 
 end;
@@ -265,6 +273,7 @@ end;
 
 procedure Tmm.ShowForm(f: TfrmFMXBase);
 begin
+
   if showingform <> nil then begin
       showingform.Parent := nil;
     giveBackControls;
@@ -275,6 +284,9 @@ begin
   f.mock := self;
   PushForm(f);
   if showingform <> nil then begin
+    Debug.Log(CLR_F+'*********************************************************');
+    Debug.Log(CLR_F+'Form: '+showingform.classname);
+    Debug.Log(CLR_F+'*********************************************************');
     showingform.parent := self;
     showingform.left := 0;
     showingform.width := width;
@@ -554,6 +566,13 @@ begin
   end else begin
     HideFancy;
   end;
+end;
+
+function Tmm.WatchCommands: boolean;
+begin
+  inherited;
+  if not BusyTimer.Enabled then
+    BusyTimer.Enabled := true;
 end;
 
 procedure ConfigureMM();

@@ -1948,11 +1948,11 @@ begin
       result := FList.objects[i];
       FList.delete(i);
       if not TBetterobject(result).shouldReturn then begin
-        Debug.Log('FREE '+result.classname);
+        Debug.Log('FREE from Pool (expired/should not return) '+result.classname);
         result.Free;
         result := nil;
       end else begin
-        Debug.Log('RETURN '+result.classname);
+        Debug.Log('Give from Pool '+result.classname);
         Debug.Log('there are now '+Flist.count.ToString);
       end;
     until (result <> nil) or (Flist.count = 0);

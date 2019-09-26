@@ -7791,6 +7791,8 @@ end;
 procedure TEndPOintInputQueueItem.SetIfo(
   const Value: TReliableUDPPacketLogRecord);
 begin
+  if Fifo = value  then
+    exit;
   if value <> FIfo then begin
     if Fifo <> nil then
       FIfo.ReleasePacketRef;

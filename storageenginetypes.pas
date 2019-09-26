@@ -1066,6 +1066,7 @@ begin
     for fld := 0 to h.o.Count-1 do begin
       sValue := h.o[fld];
       if sValue <> '' then begin
+        sValue := stringreplace(sValue, 'CHANGE', '_CHANGE', [rfReplaceAll, rfIgnoreCase]);
         sValue := stringreplace(sValue, ' ', '_', [rfReplaceAll]);
         sValue := stringreplace(sValue, '-', '_', [rfReplaceAll]);
         sValue := stringreplace(sValue, '/', '_per_', [rfReplaceAll]);

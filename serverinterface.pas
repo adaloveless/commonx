@@ -824,6 +824,8 @@ end;
 
 function TServerInterface.IsInTransaction: boolean;
 begin
+  if cli = nil then
+    exit(false);
   result := cli.IsInTransaction;
 end;
 

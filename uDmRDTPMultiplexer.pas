@@ -49,10 +49,12 @@ begin
     tcp.ServerSocketThread.ThreadCacheSize := 99999;
     tcp.OnAccept := self.tcpAccept;
     tcp.active := true;
+    tcp.BlockMode := TServerSocketBlockMode.bmThreadBlocking;
 
     udp := TMultiplexedUDPServer.create(self);
     udp.BindToport(ap.GetItemEx('MultiplexerPort', G_RDTP_DEFAULT_MULTIPLEXER_PORT));
     udp.OnDataAvailable := Self.udpAccept;
+    udp.ThreadedEvent := true;
 
     rdtpservers.Lockread;
     try

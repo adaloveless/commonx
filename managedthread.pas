@@ -24,7 +24,11 @@ uses
 {$ENDIF}
   ThreadManager, typex, systemx, sysutils, sharedobject, Generics.collections.fixed, orderlyinit;
 const
-  DEFAULT_THREAD_POOL_TIME = 1000;
+{$IFDEF POOL_STRESS_TEST}
+  DEFAULT_THREAD_POOL_TIME = 0;
+{$ELSE}
+  DEFAULT_THREAD_POOL_TIME = 60000;
+{$ENDIF}
 type
   EThreadViolation = class(Exception);
 //  TManagedThreadState = (mtsInit, mtsNotStarted, mtsStartRequested, mtsRunning, mtsFinished, mtsTerminated);
@@ -1827,6 +1831,10 @@ end;
 
 procedure TManagedThread.SetThreadManager(const Value: TThreadManager);
 begin
+  if Value = FThreadManager then begin
+    Debug.Log('Thread Manager already set!');
+    exit;
+  end;
   if assigned(FThreadManager) then
     FthreadManager.DeRegisterThread(self);
 

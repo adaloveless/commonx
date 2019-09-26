@@ -67,6 +67,7 @@ type
     grav : array[0..7] of TGravityPoint;
     proj: array[0..PROJECTILE_COUNT-1] of TProjectile;
     master_fader: single;
+    peak_fader: single;
 
     procedure DoDraw;
     procedure UpdatePhysics(deltaTime: ticker);
@@ -97,7 +98,8 @@ end;
 
 procedure TframBusyFMX.AnimateTransitionIn;
 begin
-  if AnimStage <> asIn then begin
+  if not (AnimStage in [asIn, asPlay]) then begin
+    peak_fader := 0;
     bringtofront;
     starttime := getticker;
     keyframetime := starttime;
@@ -110,7 +112,8 @@ end;
 
 procedure TframBusyFMX.AnimateTransitionOut;
 begin
-  if AnimStage <> asOUT then begin
+//    Debug.Log('why are you going to transtion-out from stop state?');
+  if not (AnimStage in [asOut, asStop]) then begin
     keyframetime := getticker;
     AnimStage := asOut;
   end;
@@ -123,6 +126,8 @@ begin
 end;
 
 procedure TframBusyFMX.DoDraw;
+const
+  MAX_BG_ALPHA = 240;
 var
   x: integer;
   x1,y1,x2,y2: single;
@@ -136,26 +141,30 @@ begin
     asIn, asPlay: begin
 
             RectBusyAnim.visible := true;
-            var alpha := lesserof(255, gettimesince(keyframetime) div 4);
+            master_fader := lesserof(1.0,gettimesince(keyframetime) / 250);
+            if peak_fader < master_fader then
+              peak_fader := master_fader;
+
+            var alpha := lesserof(MAX_BG_ALPHA, round(master_fader*255));
             RectBusyAnim.Fill.Color := alpha shl 24;
-            if alpha = 0 then
+            if master_fader = 1.0 then
               animStage := asPlay;
-            master_fader := alpha / 255;
             self.Opacity := master_fader;
 
 
           end;
     asOut: begin
             RectBusyAnim.visible := true;
-            var alpha := 255-lesserof(255, gettimesince(keyframetime) div 4);
-            RectBusyAnim.Fill.Color := alpha shl 24;
-            if alpha = 0 then begin
-              animStage := asStop;
-              Visible := false;
-              RectBusyAnim.HitTest := false;
+            master_fader := peak_fader-lesserof(1.0,gettimesince(keyframetime) / 250);
+            master_fader := greaterof(0.0, master_fader);
 
+            var alpha := lesserof(MAX_BG_ALPHA, round(master_fader*255));
+            RectBusyAnim.Fill.Color := alpha shl 24;
+            if master_fader = 0.0 then begin
+              animStage := asStop;
+              visible := false;
+              REctBusyAnim.Visible := false;
             end;
-            master_fader := alpha / 255;
             self.Opacity := master_fader;
           end;
   end;
@@ -214,6 +223,8 @@ end;
 procedure TframBusyFMX.UpdatePhysics(deltatime: ticker);
 var
   t: integer;
+const
+  TIME_SCALE = 0.1;
 begin
   inherited;
   if parent = nil then
@@ -225,7 +236,7 @@ begin
   exit;
   {$ENDIF}
   var deltatimeinseconds: single := DeltaTime / 1000;
-  physicstime := physicstime + deltatimeinseconds;
+  physicstime := physicstime + (deltatimeinseconds * TIME_SCALE);
   var center: pxl.types.TVector4;
   center.Init;
   center.w := 1;
@@ -255,7 +266,7 @@ begin
     if grav[t].deltaFrameTimeInSeconds = 0 then begin
       grav[t].oldpos := grav[t].pos;
     end;
-    grav[t].deltaFrameTimeInSeconds := deltatimeinseconds;
+    grav[t].deltaFrameTimeInSeconds := deltatimeinseconds*TIME_SCALE;
 
 //    grav[t].pos := grav[t].pos * trans;
   end;
@@ -292,7 +303,7 @@ begin
         p.velocity := p.Velocity / (p.velocity.Length / (0-terminal));
 
 
-    p.pos := p.pos + (p.Velocity * deltatimeinSeconds);
+    p.pos := p.pos + (p.Velocity * deltatimeinSeconds*TIME_SCALE);
     proj[t] := p;
   end;
 
