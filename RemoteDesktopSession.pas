@@ -1,8 +1,9 @@
 unit RemoteDesktopSession;
 {$DEFINE OLD_PERFORMANCE}
+{$DEFINE VISTA}
 interface
 
-uses ping, comctrls,graphics, dialogs, windows, sysutils, stringx, velocitypanel, systemx, stdctrls, controls, glasscontrols, extctrls, betterobject, classes, generics.collections.fixed, MSTSCLib_TLB;
+uses ping, comctrls,graphics, numbers, dialogs, windows, sysutils, stringx, velocitypanel, systemx, stdctrls, controls, glasscontrols, extctrls, betterobject, classes, generics.collections.fixed, MSTSCLib_TLB;
 
 const
   BARSIZE = 15;
@@ -21,7 +22,7 @@ const
   TS_PERF_RESERVED1 = $80000000;
 type
 {$IFDEF VISTA}
-  TNativeClient = TMsRDPClient7;
+  TNativeClient = TMsRdpClient9NotSafeForScripting;
 {$ELSE}
   TNativeClient = TMsRDPClient2;
 {$ENDIF}
@@ -66,6 +67,7 @@ type
 
     procedure CreateNativeClient;
   public
+    NeedScaleSet: boolean;
     property Client: TNativeclient read FClientImmediate;
     constructor Create(aowner: TComponent);override;
 
@@ -124,6 +126,7 @@ type
     function PIng_IsComplete: boolean;
     procedure Ping_End;
     property DoNotPIng: boolean read FDoNotPing write FDoNotPing;
+    procedure TrySetScale(pixelsperinch: nativeint);
   end;
 
 
@@ -147,6 +150,7 @@ end;
 
 procedure TRemoteDesktopSession.Connect;
 begin
+  NeedScaleSet := true;//scale has to be set AFTER connection via try..except block;
   CreateNativeClient;
 
   FClientImmediate.Server := FServer;
@@ -161,7 +165,7 @@ begin
   end;
 
 {$IFDEF VISTA}
-  FClientImmediate.AdvancedSettings7.ConnectToAdministerServer := Admin;
+  FClientImmediate.AdvancedSettings2.ConnectToServerConsole := Admin;
   //FClient.AdvancedSettings8.RedirectDirectX := true;
 
   //FClient.AdvancedSettings8.
@@ -209,8 +213,8 @@ begin
   FClientImmediate.parent := self;
   FClientImmediate.width := self.width;
   FClientImmediate.height := self.height;
-  FClientImmediate.AdvancedSettings8.RedirectDirectX := false;
-  FClientImmediate.AdvancedSettings8.Compress := 0;
+//  FClientImmediate.AdvancedSettings2..RedirectDirectX := false;
+//  FClientImmediate.AdvancedSettings8.Compress := 0;
 //  FclientImmediate.AdvancedSettings8.NegotiateSecurityLayer := false;
 end;
 
@@ -497,8 +501,8 @@ begin
   if not assigned(FClientImmediate) then
     exit;
 {$IFDEF VISTA}
-  FClientImmediate.AdvancedSettings6.RedirectDevices := true;
-  FClientImmediate.AdvancedSettings6.RedirectPOSDevices := true;
+//  FClientImmediate.AdvancedSettings6.RedirectDevices := true;
+//  FClientImmediate.AdvancedSettings6.RedirectPOSDevices := true;
 
 {
   MSTSCLibMinorVersion = 0;
@@ -574,7 +578,7 @@ begin
 
 
 //  FClient.AdvancedSettings6.BitmapVirtualCache32BppSize := 48000000;
-  FClientImmediate.AdvancedSettings6.AudioRedirectionMode := 0;
+//  FClientImmediate.AdvancedSettings6.AudioRedirectionMode := 0;
 {$ENDIF}
   FClientImmediate.AdvancedSettings2.ShadowBitmap := 1;
   FClientImmediate.AdvancedSettings2.EnableWindowsKey := 1;
@@ -641,12 +645,34 @@ begin
 //  FClient.left := 0;
 //  fClient.Top := 0;
   FClientImmediate.Width := width;
+  FClientimmediate.DesktopWidth := lesserof(width, 1920);
   FClientImmediate.height := height;
+  FClientimmediate.Desktopheight := lesserof(height, 1080);
   //FClient.align := alClient;
 //  self.align := alClient;
 
 
 
+end;
+
+procedure TRemoteDesktopSession.TrySetScale(pixelsperinch: nativeint);
+begin
+  try
+    var sf1 := 100;
+    if pixelsperinch > 96 then
+//      sf1 := (pixelsperinch *100) div 96;
+      sf1 := 200;
+    var sf2 := 100;
+    if pixelsperinch > 96 then
+//      sf2 := (pixelsperinch * 100) div 96;
+      sf2 := 180;
+    var nuwidth := (width div 96)*96;
+    var nuheight := (height div 96)*96;
+
+    self.FClientImmediate.UpdateSessionDisplaySettings(nuwidth, nuheight, nuwidth, nuheight, 0, sf1, sf2);
+    NeedScaleSet := false;
+  except
+  end;
 end;
 
 procedure TRemoteDesktopSession.UpdateStatus;

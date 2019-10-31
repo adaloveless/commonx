@@ -251,7 +251,7 @@ end;
 
 function TfrmFMXBaseAdvanced._AddRef: Integer;
 begin
-  EnterCriticalSection(FRefSect);
+  ecs(FRefSect);
   inc(FrefCount);
   Result := FRefCount;
 {$IFDEF MSWINDOWS}
@@ -264,26 +264,26 @@ begin
   end;
 {$ENDIF}
 
-  LeaveCriticalSection(FRefSect);
+  lcs(FRefSect);
 
 
 end;
 
 function TfrmFMXBaseAdvanced._RefCount: Integer;
 begin
-  EnterCriticalSection(FRefSect);
+  ecs(FRefSect);
   result := FRefCount;
-  LeaveCriticalSection(FRefSect);
+  lcs(FRefSect);
 
 end;
 
 function TfrmFMXBaseAdvanced._Release: Integer;
 begin
 
-  EnterCriticalSection(FRefSect);
+  ecs(FRefSect);
   dec(FRefCount);
   Result := FRefCount;
-  LeaveCriticalSection(FRefSect);
+  lcs(FRefSect);
 
   if (Result = 0) and FreeWithReferences then begin
 {$IFDEF WINDOWS}

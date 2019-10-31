@@ -2504,7 +2504,7 @@ begin
   FFreeCommands := TLocalCommandList.Create;
   FResourceStats := TResourceHealthStats.Create;
   FIncomingCommands := TLocalCommandList.create;
-  initializeCriticalSEction(sect_incoming);
+  ics(sect_incoming);
   FActiveThreads := TList<TCommandProcessorChildThread>.create;
 
   // FRolledupCommands := TLocalCommandList.create;
@@ -3273,7 +3273,7 @@ end;
 procedure TCommandProcessorChildThread.MenuAction(idx: ni);
 begin
   inherited;
-  if idx = 0 then begin
+  if idx = 1 then begin
     lock;
     if assigned(command) then begin
       if assigned(command.processor) then begin
@@ -3628,7 +3628,7 @@ end;
 
 procedure TCommandProcessor.LockIncoming;
 begin
-  EnterCriticalSection(sect_incoming);
+  ecs(sect_incoming);
 end;
 
 procedure TCommandProcessor.MoveToEnd(cmd: TCommand);
@@ -4145,7 +4145,7 @@ end;
 
 function TCommandProcessor.TryLockIncoming: boolean;
 begin
-  result := TryEnterCriticalSection(sect_incoming);
+  result := tecs(sect_incoming);
 end;
 
 procedure TCommandProcessor.Unlock;
@@ -4255,7 +4255,7 @@ begin
         FMenu.add('Nudge processor lock');
         FMenu.add('-');
 {$IFDEF WINDOWS}
-        FMenu.add('Processor Lock Owner:'+inttostr(command.FProcessor.sect.OwningThread));
+        FMenu.add('Processor Lock Owner:'+inttostr(command.FProcessor.sect.cs.OwningThread));
 {$ELSE}
         FMenu.add('Processor Lock Owner: (unknown on mobile)');
 {$ENDIF}

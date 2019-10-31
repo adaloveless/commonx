@@ -16,10 +16,10 @@ with font color, background color and mouse over color properties.
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, StdCtrls, Buttons, ExtCtrls;
+  colorblending, Windows, Messages, SysUtils, Classes, Graphics, Controls, StdCtrls, Buttons, ExtCtrls, touchcontrols_vcl;
 
 type
-  TColorButton = class(TButton)
+  TColorButton = class(TTouchButton)
   private
     FBackBeforeHoverColor: TColor;
   private
@@ -156,6 +156,7 @@ procedure TColorButton.SetBackColor(const Value: TColor);
 begin
   if FBackColor <> Value then begin
     FBackColor:= Value;
+    HoverColor := colorblend(FBackColor, clWhite, 0.5);
     Invalidate;
   end;
 end; (*SetButtonColor*)

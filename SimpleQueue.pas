@@ -66,8 +66,8 @@ type
     property Queue: TAbstractSimpleQueue read FQueue write FQueue;
     function DebugString: string;virtual;
     property AllowSynchronous: boolean read FAllowSynchronous write FAllowSynchronous;
-
   end;
+
 
   TIndirectlyLinkableQueueItem = class(TQueueItem, IIndirectlyLinkable<TIndirectlyLinkableQueueItem>)
   private
@@ -87,10 +87,7 @@ type
   public
     procedure Init; override;
     property AnonMethod: TAnonymousQueueProc read FAnonMethod write FAnonMethod;
-
   end;
-
-
 
 
   TQueueItemList = class(TDirectlyLinkedList_Shared<TQueueItem>);
@@ -105,6 +102,8 @@ type
     FOnEmpty: TNotifyEvent;
     FEnableItemDebug: boolean;
     FOnNotEmpty: TNotifyEvent;
+    FTotalActiveTime: int64;
+    FActiveNow: boolean;
     procedure ProcessItem;virtual;abstract;
 
     procedure BlockIncoming;
@@ -120,6 +119,7 @@ type
     FWorkingIndex: nativeint;
     function GetNextItem: TQueueItem;virtual;
     function IdleBreak: Boolean; override;
+    procedure AfterUrgentCopy;virtual;
   public
     shutdown: boolean;
     evHold: TSignal;
@@ -371,6 +371,11 @@ begin
   //
 end;
 
+procedure TAbstractSimpleQueue.AfterUrgentCopy;
+begin
+//no implementation required
+end;
+
 procedure TAbstractSimpleQueue.BlockIncoming;
 begin
   if not FBlockIncoming then begin
@@ -421,6 +426,7 @@ begin
       estimated_backlog_size := 0;
       estimated_queue_size := FWorkingItems.count;
       urgent := false;
+      AfterUrgentCopy;
     finally
       FIncomingItems.Unlock;
     end;
@@ -573,6 +579,8 @@ begin
   or (FWorkingItems.count = 0);
 
 end;
+
+
 
 function TAbstractSimpleQueue.EstimatedSize: ni;
 begin

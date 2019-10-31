@@ -394,7 +394,8 @@ type
     property FlatLIghts: TDMXChannelClusterList read FFLatlights;
     procedure SetDataPointer(p: PByte);
     function GetSupportingList<i: IDMXInterface>(guid: TGUID;
-      iGROUPMAsk, iGroupResult: integer): TList<i>;
+      iGROUPMAsk, iGroupResult: integer): TList<i>;overload;
+    function GetSupportingList<TYP: TDmxObject>(iGROUPMAsk, iGroupResult: integer): TBetterList<TYP>;overload;
     property X: NativeFloat read GetX write SetX;
     property Y: NativeFloat read gety write SetY;
     property XX: NativeFloat read GetXX write SetXX;
@@ -817,7 +818,13 @@ type
     property FlatLights: TDMXChannelClusterList read FFlatLights;
 
     function GetSupportingList<i: IDMXInterface>(guid: TGUID;
-      iGROUPMAsk, iGroupResult: integer): TList<i>;
+      iGROUPMAsk, iGroupResult: integer): TList<i>;overload;
+    function GetSupportingList<i: TDMXObject>(iGROUPMAsk, iGroupResult: integer): TBetterList<i>;overload;
+
+    function GetSupportingListH<i: IDMXInterface>(guid: TGUID;
+      iGROUPMAsk, iGroupResult: integer): IHolder<TList<i>>;overload;
+    function GetSupportingListH<i: TDMXObject>(iGROUPMAsk, iGroupResult: integer): IHolder<TBetterList<i>>;overload;
+    function GetSinglelightOfType<T: TDMXObject>(iGroupMask: integer = 0; iGroupResult: integer = 0): T;
 
   end;
 
@@ -2179,6 +2186,8 @@ begin
   if i < 0.0 then
     i := 0.0;
   FTargetIntensity := i / RelativeLumens;
+//  if FTargetIntensity > 1.0 then
+//    Debug.Log('!');
   // WriteDMxData;
 end;
 
@@ -2500,6 +2509,22 @@ begin
 
 end;
 
+function TDMXChannelCluster.GetSupportingList<TYP>(iGROUPMAsk,
+  iGroupResult: integer): TBetterList<TYP>;
+begin
+  result := TBetterList<TYP>.Create;
+
+  for var T := 0 to FFLatlights.count - 1 do
+  begin
+    if FFLatlights[T] is TYP and
+      ((FFLatlights[T].Group and iGROUPMAsk) = iGroupResult) then
+    begin
+      result.Add(FFlatLights[t] as TYP);
+    end;
+  end;
+
+end;
+
 function TDMXChannelCluster.GetusePictureMap: boolean;
 begin
   result := FUsePicturemap;
@@ -2814,6 +2839,51 @@ end;
 function TDMXMultiverse.GetJoys(idx: integer): TDMXExternalJoyControl;
 begin
   result := Fjoys[idx mod length(Fjoys)];
+end;
+
+function TDMXMultiVerse.GetSinglelightOfType<T>(iGroupMask,
+  iGroupResult: integer): T;
+begin
+  var l := MultiVerse.GEtsupportingListH<T>(0,0);
+  if l.o.count > 0 then
+    result := l.o[0];
+
+end;
+
+function TDMXMultiVerse.GetSupportingList<i>(iGROUPMAsk,
+  iGroupResult: integer): TBetterList<i>;
+var
+  t,u: ni;
+  tmp: TBetterList<i>;
+
+begin
+  result := TBetterList<i>.create;
+  for t:= 0 to count-1 do begin
+    tmp := Items[t].GetSupportingList<i>(iGroupMask, iGroupResult);
+    for u := 0 to tmp.count-1 do begin
+      result.Add(tmp[u]);
+    end;
+
+    tmp.free;
+
+
+
+  end;
+end;
+
+function TDMXMultiVerse.GetSupportingListH<i>(iGROUPMAsk,
+  iGroupResult: integer): IHolder<TBetterList<i>>;
+begin
+  result := THolder<TBetterList<i>>.create;
+  result.o := GetSupportingList<i>(iGroupMask, iGroupResult);
+
+end;
+
+function TDMXMultiVerse.GetSupportingListH<i>(guid: TGUID; iGROUPMAsk,
+  iGroupResult: integer): IHolder<TList<i>>;
+begin
+  result := THolder<TList<i>>.create;
+  result.o := GetSupportingList<i>(guid, iGroupMask, iGroupResult);
 end;
 
 function TDMXMultiVerse.GetSupportingList<i>(guid: TGUID; iGROUPMAsk,
@@ -3563,7 +3633,7 @@ begin
   MultiVerse.Update;
 //  Universe.Update;
   RunHot := false;
-  ColdRunInterval := (1000 div 90);
+  ColdRunInterval := (1000 div 45);
 
 end;
 

@@ -513,7 +513,7 @@ end;
 
 procedure TTripleBufferMemoryFileStream.Init;
 begin
-  InitializeCriticalSection(sectSize);
+  ics(sectSize);
   FPrimaryBuffer := @Buffers[0];
   FSecondaryBuffer := @Buffers[1];
   FTertiaryBuffer := @Buffers[2];
@@ -557,7 +557,7 @@ end;
 
 procedure TTripleBufferMemoryFileStream.LockSize;
 begin
-  EnterCriticalSection(sectSize);
+  ecs(sectSize);
 end;
 
 procedure TTripleBufferMemoryFileStream.Prefetch(iPosition: int64; iLength: int64 = 0);

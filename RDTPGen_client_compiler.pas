@@ -364,6 +364,9 @@ begin
     end else
     if uppercase(sLEft) = 'USES' then begin
     end else
+    if uppercase(sLEft) = 'USES_BACKEND' then begin
+//      FUSES_BACKEND.add(sParams);
+    end else
     if uppercase(sLEft) = 'USING' then begin
       FUSES.add('using '+sParams+';');
     end else
@@ -1746,6 +1749,8 @@ begin
   AddToImplementation('    packet.AddVariant('+sConstant+');');
   AddToImplementation('    packet.AddVariant(0);');
   AddToImplementation('    packet.AddString('''+FServiceName+''');');
+  AddToImplementation('{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log(''RDTP'+sConstant+':'+FClass+'.'+sFunctionName+''');{$ENDIF}');
+
 
   sRemainder := sParams;
   sReverse := '';

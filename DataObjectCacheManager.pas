@@ -113,7 +113,7 @@ end;
 constructor TDataObjectCacheManager.create(DOSV: TObject);
 begin
   inherited Create;
-  InitializeCriticalSection(sect);
+  ics(sect);
   lstCaches:= Tlist.create;
   lstDeadCaches2 := TList.create;
   lstDecommisionedCaches := TList.create;

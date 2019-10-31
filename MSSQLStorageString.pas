@@ -3,7 +3,7 @@ unit MSSQLStorageString;
 interface
 
 uses
-  variants, stringx, systemx;
+  variants, stringx, systemx, sysutils;
 
 function GetStorageString(vT: integer; v: variant): string;
 function gss(vT: integer; v: variant): string;inline;
@@ -15,6 +15,12 @@ function gvs(v: variant): string;inline;
 
 implementation
 
+function MSSQLEscape(s: string): string;
+begin
+  result := s;
+  result := stringreplace(result, '''', '''''', [rfReplaceAll]);
+end;
+
 function gss(vT: integer; v: variant): string;inline;
 begin
   result := GetStorageString(vT, v);
@@ -22,12 +28,17 @@ end;
 
 function GetStorageString(vT: integer; v: variant): string;
 begin
-
+  if vt=varInteger then begin
+    result := inttostr(int64(v));
+  end else
+  if vt=varInt64 then begin
+    result := inttostr(int64(v));
+  end else
   if VarIsNull(v) then begin
     result := 'NULL';
   end else
   if (vt=varSTring) or (vt=varUString) or (vt=varOleStr) then begin
-    result := Quote(SQLEscape(vartostr(v)),'''');
+    result := Quote(MSSQLEscape(vartostr(v)),'''');
   end else
   if vt = varDate then begin
     result := Quote(datetoMYSQLDate(v),'''');

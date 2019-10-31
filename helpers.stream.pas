@@ -4,7 +4,7 @@ unit helpers.stream;
 interface
 
 uses
-  classes, sysutils, debug, numbers, systemx, variants,
+  classes, sysutils, debug, numbers, systemx, variants, tickcount,
 {$IFDEF MSWINDOWS}
   queuestream,
 {$ENDIF}
@@ -27,9 +27,9 @@ function Stream_GuaranteeRead(const s: TUnbufferedFileStream; const p: PByte; co
 function Stream_GuaranteeRead(const s: TStream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): nativeint;overload;inline;
 function Stream_GuaranteeRead(const s: TStream; const p: PByte; const iSize: nativeint; prog: PProgress; const bThrowExceptions: boolean = true): nativeint;overload;
 {$IFDEF WINDOWS}
-function Stream_GuaranteeRead(const s: TAdaptiveQueuedSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): nativeint;overload;
+function Stream_GuaranteeRead(const s: TAdaptiveQueuedSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true; bForget: boolean = false): nativeint;overload;
 function Stream_GuaranteeRead(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): nativeint;overload;
-function Stream_GuaranteeRead_Begin(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): TObject;overload;inline;
+function Stream_GuaranteeRead_Begin(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true; bForget: boolean = false): TObject;overload;inline;
 function Stream_GuaranteeRead_End(const s: TAdaptiveQueuedFileStream; const o: TObject): nativeint;
 {$ENDIF}
 
@@ -47,6 +47,7 @@ procedure Stream_Grow(const s: TAdaptiveQueuedFileStream; iSize: int64);overload
 function stream_Compare(const s1, s2: TStream): integer;overload;
 function stream_Compare(const s1, s2: TStream; out dif_addr: int64): integer;overload;
 
+procedure ScrambleFile(f1: string);
 
 function Stream_CalculateChecksum(const s: TStream): int64;overload;
 function Stream_CalculateChecksum(const s: TStream; start, length: int64): int64;overload;
@@ -169,8 +170,7 @@ end;
 function Stream_GuaranteeRead(const s: TStream; const p: PByte; const iSize: nativeint; prog: PProgress; const bThrowExceptions: boolean = true): nativeint;overload;
 var
   iLeft, iRead, iJustRead: int64;
-  rptr: Pbyte;
-
+  op, rptr: Pbyte;
 begin
   //if reading just 1 byte, use a simpler path (faster)
 
@@ -182,34 +182,43 @@ begin
   end;
   //ELSE do the more complex stuff
   rptr := p;
-  result := 0;
-  if iSize = 0 then  exit;
-  iREad := 0;
-  iLEft := iSize;
-  if prog <> nil then begin
-    prog.stepcount := iSize;
-  end;
-  while iLeft > 0 do begin
+  if rptr = nil then
+    rptr  := GetMemory(iSize);
+  op := rptr;
+  try
+    result := 0;
+    if iSize = 0 then  exit;
+    iREad := 0;
+    iLEft := iSize;
     if prog <> nil then begin
-      prog.step := result;
+      prog.stepcount := iSize;
     end;
-{$IFDEF LOCAL_DEBUG}    Debug.Log('Inner read in Stream_GuaranteeRead ToGo:'+inttostr(nativeint(rptr-ni(p))), 'helpers.stream');{$ENDIF}
-    //Debug.Log('Read@'+inttostr(s.position)+' where size is '+inttostr(s.size));
-    iJustread := s.Read(rptr^, iLeft);
-
-{$IFDEF LOCAL_DEBUG}    Debug.Log('Inner read in Stream_GuaranteeRead JustRead:'+inttostr(iJustRead), 'helpers.stream');{$ENDIF}
-    inc(rptr, iJustRead);
-    dec(iLEft, iJustRead);
-    inc(result, iJustRead);
-
-    //extra checking.
-    if ijustread = 0 then begin
-      if bThrowExceptions then
-        raise EStreamGuarantee.create('Unable to guarantee read of '+s.classname+' at position '+inttostr(s.Position)+' after ' +inttostr(nativeint(rptr-ni(p)))+' bytes.  where size='+inttostr(s.Size))
-      else begin
-        result := 0;
-        exit;
+    while iLeft > 0 do begin
+      if prog <> nil then begin
+        prog.step := result;
       end;
+  {$IFDEF LOCAL_DEBUG}    Debug.Log('Inner read in Stream_GuaranteeRead ToGo:'+inttostr(nativeint(rptr-ni(p))), 'helpers.stream');{$ENDIF}
+      //Debug.Log('Read@'+inttostr(s.position)+' where size is '+inttostr(s.size));
+      iJustread := s.Read(rptr^, iLeft);
+
+  {$IFDEF LOCAL_DEBUG}    Debug.Log('Inner read in Stream_GuaranteeRead JustRead:'+inttostr(iJustRead), 'helpers.stream');{$ENDIF}
+      inc(rptr, iJustRead);
+      dec(iLEft, iJustRead);
+      inc(result, iJustRead);
+
+      //extra checking.
+      if ijustread = 0 then begin
+        if bThrowExceptions then
+          raise EStreamGuarantee.create('Unable to guarantee read of '+s.classname+' at position '+inttostr(s.Position)+' after ' +inttostr(nativeint(rptr-ni(p)))+' bytes.  where size='+inttostr(s.Size))
+        else begin
+          result := 0;
+          exit;
+        end;
+      end;
+    end;
+  finally
+    if p = nil then begin
+      FreeMemory(op);
     end;
   end;
 end;
@@ -318,15 +327,15 @@ function Stream_GuaranteeRead(const s: TAdaptiveQueuedFileSTream; const p: PByte
 var
   qi: TReadCommand;
 begin
-  qi := s.BeginAdaptiveRead(p, iSize, false);
+  qi := s.BeginAdaptiveRead(p, iSize, false, false);
   result := s.EndAdaptiveRead(qi);
 end;
 {$ENDIF}
 
 {$IFDEF MSWINDOWS}
-function Stream_GuaranteeRead_Begin(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): TObject;overload;inline;
+function Stream_GuaranteeRead_Begin(const s: TAdaptiveQueuedFileSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true; bForget: boolean = false): TObject;overload;inline;
 begin
-  result := s.BeginAdaptiveRead(p, iSize, true);
+  result := s.BeginAdaptiveRead(p, iSize, true, bForget);
 end;
 {$ENDIF}
 
@@ -339,11 +348,11 @@ end;
 
 
 {$IFDEF MSWINDOWS}
-function Stream_GuaranteeRead(const s: TAdaptiveQueuedSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true): nativeint;overload;
+function Stream_GuaranteeRead(const s: TAdaptiveQueuedSTream; const p: PByte; const iSize: nativeint; const bThrowExceptions: boolean = true; bForget: boolean = false): nativeint;overload;
 var
   qi: TReadCommand;
 begin
-  qi := s.BeginAdaptiveRead(p, iSize);
+  qi := s.BeginAdaptiveRead(p, iSize, false);
   result := s.EndAdaptiveRead(iSize, qi);
 
 
@@ -366,7 +375,7 @@ begin
     iMoved := 0;
     while iMoved < iSize do begin
       iToMove := LesserOf(MOVESIZE, iSize-iMoved);
-      iJustMoved := sFrom.EndAdaptiveRead(sFrom.BeginAdaptiveRead(p, iToMove, false));
+      iJustMoved := sFrom.EndAdaptiveRead(sFrom.BeginAdaptiveRead(p, iToMove, false, false));
       sTo.AdaptiveWrite(p, iJustMoved);
       inc(iMoved, iJustMoved);
     end;
@@ -391,7 +400,7 @@ begin
     iMoved := 0;
     while iMoved < iSize do begin
       iToMove := LesserOf(MOVESIZE, iSize-iMoved);
-      sFrom.EndAdaptiveRead(iToMove, sFrom.BeginAdaptiveRead(p, iToMove));
+      sFrom.EndAdaptiveRead(iToMove, sFrom.BeginAdaptiveRead(p, iToMove, false));
       sTo.AdaptiveWrite(p, iToMove);
       inc(iMoved, iToMove);
     end;
@@ -731,6 +740,34 @@ begin
   end;
 end;
 {$ENdif}
+
+procedure ScrambleFile(f1: string);
+var
+  garbage: int64;
+  tmStarT: ticker;
+begin
+  begin
+    var fs := TFileStream.create(f1, fmCReate);
+    fs.free;
+    exit;
+  end;
+  begin
+    var fs := TFileStream.create(f1, fmOpenWrite);
+    try
+      fs.Seek(0, soBeginning);
+      tmSTart := GetTicker;
+      while fs.Position < fs.size do begin
+        garbage := (random($7FFFFFFF) shl 32)+random($7fffffff);
+        Stream_GuaranteeWrite(fs, @garbage, sizeof(garbage));
+        if gettimesince(tmStart) > 10000 then
+          exit;
+      end;
+      fs.size := fs.position;
+    finally
+      fs.free;
+    end;
+  end;
+end;
 
 end.
 

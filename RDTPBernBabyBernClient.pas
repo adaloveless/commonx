@@ -83,6 +83,7 @@ begin
     packet.AddVariant($3001);
     packet.AddVariant(0);
     packet.AddString('BernBabyBern');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$3001:TRDTPBernBabyBernClient.ListFiles');{$ENDIF}
     WritestringToPacket(packet, filespec);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -147,6 +148,7 @@ begin
     packet.AddVariant($3002);
     packet.AddVariant(0);
     packet.AddString('BernBabyBern');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$3002:TRDTPBernBabyBernClient.GetFile');{$ENDIF}
     WritestringToPacket(packet, filename);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -211,6 +213,7 @@ begin
     packet.AddVariant($3003);
     packet.AddVariant(0);
     packet.AddString('BernBabyBern');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$3003:TRDTPBernBabyBernClient.PutFile');{$ENDIF}
     WritestringToPacket(packet, filename);
     WriteTStreamToPacket(packet, bytes);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -277,6 +280,7 @@ begin
     packet.AddVariant($3004);
     packet.AddVariant(0);
     packet.AddString('BernBabyBern');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$3004:TRDTPBernBabyBernClient.PutSpriteSheet');{$ENDIF}
     WritestringToPacket(packet, filename);
     WriteTStreamToPacket(packet, bytes0);
     WriteTStreamToPacket(packet, bytes1);
@@ -328,6 +332,7 @@ begin
     packet.AddVariant($3005);
     packet.AddVariant(0);
     packet.AddString('BernBabyBern');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$3005:TRDTPBernBabyBernClient.GetSpriteSheet');{$ENDIF}
     WritestringToPacket(packet, filename);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -398,6 +403,7 @@ begin
     packet.AddVariant($3006);
     packet.AddVariant(0);
     packet.AddString('BernBabyBern');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$3006:TRDTPBernBabyBernClient.PutSpriteSheet2');{$ENDIF}
     WritestringToPacket(packet, filename);
     WriteTStreamToPacket(packet, bytes0);
     WriteTStreamToPacket(packet, bytes1);
@@ -451,6 +457,7 @@ begin
     packet.AddVariant($3007);
     packet.AddVariant(0);
     packet.AddString('BernBabyBern');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$3007:TRDTPBernBabyBernClient.GetSpriteSheet2');{$ENDIF}
     WritestringToPacket(packet, filename);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);

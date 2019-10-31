@@ -73,6 +73,8 @@ var
   il: ILock;
 begin
   il := vdh.locki;
+  vdh.vdlist[iDiskID].hint_rdtp_waiting := true;
+  try
   if iDISKID >= vdh.vdlist.count then
     raise Exception.create('VAT not found.');
   vd := vdh.vdlist[iDISKID];
@@ -81,6 +83,10 @@ begin
   vd.AddPayload(sFile, max_size, physical, priority, flags);
 
   result := true;
+  finally
+    vdh.vdlist[iDiskID].hint_rdtp_waiting := false;
+  end;
+
 end;
 
 procedure TVirtualDiskServer.RQ_ClearRepairLog(iDISKID: integer);
@@ -231,9 +237,11 @@ begin
   try
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
+    vdh.vdlist[iDiskID].hint_rdtp_waiting := true;
     result := vdh.vdlist[iDISKID].GetPayloadConfig;
     //windows.beep(100,100);
   finally
+    vdh.vdlist[iDiskID].hint_rdtp_waiting := false;
 //    vdh.Unlock;
   end;
 end;
@@ -244,13 +252,14 @@ var
 begin
   il := vdh.locki;
   try
+    vdh.vdlist[iDiskID].hint_rdtp_waiting := true;
     if iDISKID >= vdh.vdlist.count then
       raise Exception.create('VAT not found.');
 
     result := vdh.vdlist[iDISKID].GetRepairLog;
     //windows.beep(100,100);
   finally
-//    vdh.Unlock;
+    vdh.vdlist[iDiskID].hint_rdtp_waiting := false;
   end;
 
 end;
@@ -269,12 +278,14 @@ begin
     setlength(result, vdh.vdlist.count);
     for t:= 0 to vdh.vdlist.count-1 do begin
       vd := vdh.vdlist[t];
+      vd.hint_rdtp_waiting := true;
 //      if vd.TryGetLock(l, 60000,1) then
       try
         stat.FileName := vd.filename;
         stat.operational := vd.Operational;
         stat.Status := vd.OperationalStatus;
       finally
+        vd.hint_rdtp_waiting := false;
 //        vd.Unlocklock(l);
       end; //else begin
 //        raise Ecritical.create('failed to get disk lock');

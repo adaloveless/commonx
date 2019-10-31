@@ -9,7 +9,7 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, ScaledLayoutProportional,
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls, typex, numbers,
   formFMXBase, FMX.Objects, FMX.Controls.Presentation, better_collections, guihelpers_fmx,
-  FMX.Gestures, tickcount, betterobject, geometry, stringx;
+  FMX.Gestures, tickcount, betterobject, geometry, stringx, FMX.Effects;
 
 type
   TSetupProc = reference to procedure (frm: TfrmFMXBAse);

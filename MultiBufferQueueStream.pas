@@ -394,7 +394,7 @@ end;
 
 function TMultiBufferQueueStream.BaseRead(var Buffer; Count: integer): Longint;
 begin
-  result := understream.EndAdaptiveRead(count, understream.BeginAdaptiveRead(pbyte(@char(buffer)), count));
+  result := understream.EndAdaptiveRead(count, understream.BeginAdaptiveRead(pbyte(@char(buffer)), count, false));
 end;
 
 function TMultiBufferQueueStream.BaseSeek(iPosition: int64; so: TSeekOrigin = soBeginning): int64;
@@ -447,14 +447,14 @@ end;
 
 destructor TSharedStream.Destroy;
 begin
-  DeleteCriticalSection(sect);
+  dcs(sect);
   inherited;
 
 end;
 
 procedure TSharedStream.Init;
 begin
-  InitializeCriticalSection(sect);
+  ics(sect);
 end;
 
 
@@ -477,7 +477,7 @@ begin
 {$ENDIF}
   FinalizeBuffers;
 
-  DeleteCriticalSection(sectSize);
+  dcs(sectSize);
 {$IFDEF SECTSEEK}  dcs(sectSeek);{$ENDIF}
   if FOwnsStream then
      understream.free;
@@ -727,7 +727,7 @@ end;
 
 procedure TMultiBufferQueueStream.UnlockSize;
 begin
-  LeaveCriticalSection(sectSize);
+  lcs(sectSize);
   seekunlock;
 end;
 
@@ -748,7 +748,7 @@ begin
 {$ENDIF}
 
 {$IFDEF SECTSEEK}  ics(sectSeek);{$ENDIF}
-  InitializeCriticalSection(sectSize);
+  ics(sectSize);
   BufferSegments := DEFAULT_BUFFER_SEGMENTS;
   MinimumPrefetchSize := DEFAULT_MINIMUM_PREFETCH_SIZE;
 
@@ -792,7 +792,7 @@ end;
 procedure TMultiBufferQueueStream.LockSize;
 begin
   seeklock;
-  EnterCriticalSection(sectSize);
+  ecs(sectSize);
 end;
 
 procedure TMultiBufferQueueStream.LogFatalDiagnosticInformation;
@@ -1733,7 +1733,7 @@ end;
 
 procedure TSharedStream.Lock;
 begin
-  EnterCriticalSection(sect);
+  ecs(sect);
 end;
 
 function TSharedStream.TryLock: boolean;
@@ -1743,7 +1743,7 @@ end;
 
 procedure TSharedStream.Unlock;
 begin
-  LeaveCriticalSection(sect);
+  lcs(sect);
 end;
 
 

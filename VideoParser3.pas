@@ -1008,7 +1008,7 @@ end;
 procedure TMediaClock.StartThread;
 begin
   StopThread;
-  thr := TMediaClockThread.Create(self, nil);
+  thr := TPM.Needthread<TMediaClockThread>(nil);
   thr.OnExecute := Self.OnThreadExecute;
   thr.loop := true;
   thr.Start;

@@ -346,14 +346,12 @@ begin
   //memRingStats.lines.text := rsMon.GetDebugString;
 //  memo1.text := RUDPMon.GetDebugInfoString;
 
-  SyncListView(lvrudp, RUDPMon.Count, 24);//hint
+  SyncListView(lvrudp, RUDPMon.Count, 24);//hint so that we're waiting less time under lock
   //rsACkTime.periodicAverage
   //FlexREtransTime
   //Ping
   //Retrans
   //BadOrder
-
-
 
   RUDPMon.Lock;
   try
@@ -422,6 +420,7 @@ begin
         li.SubItems[22] := friendlysizename(iTEmpCalc)+'/sec';
         li.SubItems[23] := inttostr(iTemp);
 //        Debug.log('######TXO:'+li.subitems[22]);
+
 
 
 
@@ -546,6 +545,9 @@ var
   totalCpuTicks: int64;
   totalUsedTicks: int64;
   ts:  PThreadState;
+  lastact, lasttick: string;
+  act, prevact: int64;
+  util: single;
 begin
   temptime := GetHighResTicker;
   deltaTime := (temptime-Self.LastNanotick);
@@ -554,13 +556,14 @@ begin
   temptime := GetHighResTicker;
   deltaTime := (temptime-Self.LastNanotick);
   ForceItemCount(lvBackground, length(infos));
+//  SyncListView(lvBackground, length(infos), 17);
   SetLength(threadstates, length(infos));
-  lvBackground.Columns[2].Caption := 'Threads ('+inttostr(length(Infos))+')';
+  lvBackground.Columns[3].Caption := 'Threads ('+inttostr(length(Infos))+')';
   for t:= 0 to high(infos) do begin
     thr2 := infos[t];
     item := lvBackground.Items[t];
 
-    ForceSubItems(item, 14);
+    ForceSubItems(item, 18);
     ts := @threadstates[t];
     ts.pooled := false;
     ts.expireprog := 0;
@@ -595,26 +598,56 @@ begin
         if (item.caption <> inttostr(thr2.threadid)) then
           item.caption := inttostr(thr2.threadid);
 
-        if item.subitems[1] <> thr2.Name then
-          item.subitems[1] := thr2.SignalDebug+thr2.Name;
+        if item.subitems[1+1] <> thr2.Name then
+          item.subitems[1+1] := thr2.SignalDebug+thr2.Name;
 
         //read last tick
-        if item.SubItems[9] <> '' then
-          cTemp1 := strtoint64(item.Subitems[9])
+        if item.SubItems[9+1] <> '' then
+          cTemp1 := strtoint64(item.Subitems[9+1])
         else
           cTemp1 := 0;
 
         //read last work value
-        if item.SubItems[4] <> '' then
-          iTemp1 := strtoint64(item.Subitems[5])
+        if item.SubItems[4+1] <> '' then
+          iTemp1 := strtoint64(item.Subitems[5+1])
         else
           iTemp1 := 0;
+
+        begin //
+          lastact := item.subitems[14+1];
+          lasttick := item.subitems[15+1];
+          act := 0;
+          if lastact <> '' then
+            act := strtoint64(lastact);
+
+          prevact := act;
+
+          var tick :int64:= 0;
+          if lasttick <> '' then
+            tick := strtoint64(lasttick);
+
+          util := thr2.GetPercentActiveTime(act, tick);
+          item.subitems[15+1] := tick.tostring;
+//          if act < prevact then begin
+//            act := prevact;
+//            Debug.Log('!!');
+//          end;
+          util := lesserof(10, round(util*10));
+          item.SubItems[14+1] := inttostr(act);
+
+          sTemp := '..........';
+          for t2:= STRZ to (round(util))+STRZ-1 do begin
+            sTemp[t2-(1-STRZ)] := '|';
+          end;
+
+          item.SubItems[1] := sTemp;
+        end;
 
 
         //get current tick
         cTemp2 := GetTicker;
 
-        item.SubItems[8] := inttostr(integer(cTemp2));
+        item.SubItems[8+1] := inttostr(integer(cTemp2));
 
         //calc tick difference
         cTEmp2 := cTemp2-cTemp1;
@@ -629,13 +662,13 @@ begin
           fTemp := 0.0;
 
         //write out values
-        item.SubItems[2] := thr2.Status;
-        item.SubItems[3] := inttostr(thr2.progress.StepCount);
-        item.SubItems[4] := inttostr(thr2.progress.Step);
-        item.SubItems[5] := inttostr(thr2.Iterations);
-        item.SubItems[6] := thr2.ColdRunInterval.tostring;
-        item.SubItems[9] := inttostr(thr2.age);
-        item.SubItems[7] := 'deprecated';
+        item.SubItems[2+1] := thr2.Status;
+        item.SubItems[3+1] := inttostr(thr2.progress.StepCount);
+        item.SubItems[4+1] := inttostr(thr2.progress.Step);
+        item.SubItems[5+1] := inttostr(thr2.Iterations);
+        item.SubItems[6+1] := thr2.ColdRunInterval.tostring;
+        item.SubItems[9+1] := inttostr(thr2.age);
+        item.SubItems[7+1] := 'deprecated';
 
 
         //-----------THREAD TIMES
@@ -646,8 +679,8 @@ begin
 
 
         //- - - - - - - - - - - - - - - - - - - -
-        if (IsInteger(item.subitems[12])) then begin
-          temp64 := strtoint64(item.subitems[12]);
+        if (IsInteger(item.subitems[12+1])) then begin
+          temp64 := strtoint64(item.subitems[12+1]);
         end else
           temp64 := 0;
 
@@ -658,32 +691,32 @@ begin
 //              IF tt.kernel > 0 then
 //                debug.consolelog('weee');
 
-        item.subitems[12] := tt.user.tostring;
+        item.subitems[12+1] := tt.user.tostring;
         totalCPUTicks := 0;
         if deltaTime > 0 then begin
           rTemp := (((temp64/tempfreq)/(deltaTime/tempfreq)));
           totalCPUTicks := temp64;
           rTemp := lesserof(1, rTemp);
           sTemp := floatprecision(rTemp*100,2)+'%';
-          item.SubItems[10] := sTemp;
+          item.SubItems[10+1] := sTemp;
         end;
 
         //- - - - - - - - - - - - - - - - - - - -
-        if (IsInteger(item.subitems[13])) then begin
-          temp64 := strtoint64(item.subitems[13]);
+        if (IsInteger(item.subitems[13+1])) then begin
+          temp64 := strtoint64(item.subitems[13+1]);
         end else
           temp64 := 0;
 
 //              temp64 := 0;
 
         temp64 := tt.kernel - temp64;
-        item.subitems[13] := tt.kernel.tostring;
+        item.subitems[13+1] := tt.kernel.tostring;
 
         if deltaTime > 0 then begin
           rTemp := (((temp64/tempfreq)/(deltaTime/tempfreq)));
           rTemp := lesserof(1, rTemp);
           sTemp := floatprecision(rTemp*100,2)+'%';
-          item.subitems[11] := sTemp;
+          item.subitems[11+1] := sTemp;
           inc(totalCPUTicks, temp64);
           rTemp := (((totalCPUTicks/tempfreq)/(deltaTime/tempfreq)));
           rTemp := lesserof(1, rTemp);

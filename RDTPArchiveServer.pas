@@ -1,5 +1,4 @@
 unit RDTPArchiveServer;
-xxx
 {GEN}
 {TYPE SERVER}
 {CLASS TRDTPArchiveServer}

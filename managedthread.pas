@@ -94,10 +94,18 @@ type
     coldruninterval: nativeint;
     tt: TThreadTimes;
     handle: THandle;
+    totalActiveTime: int64;
+    activeStartTime: int64;
+    activenow: boolean;
   private
     function GetAge: ticker;
+    procedure StartActiveTime;
+    procedure EndActiveTime;
   public
     property Age: ticker read GetAge;
+    function GetPercentActiveTime(var previoustotal,
+      previoussampletime: int64): single;
+
   end;
 
 
@@ -160,6 +168,7 @@ type
     procedure SEtReady(const Value: boolean);
 
   private
+    FActiveTime: int64;
     FStop: boolean;
     FMMTaskHandle: THandle;
     FReRaiseExceptionsInLoop: boolean;
@@ -224,7 +233,8 @@ type
     beginstoptime: ticker;
     StatusUpdated: boolean;
     NoWorkRunInterval: single;
-
+    procedure BeginActivetime;inline;
+    procedure EndActiveTime;inline;
     function StopREquested: boolean;
     property Info: TThreadInfo read Getinfo;
     property AutoCountCycles: boolean read FAutoCycle write FAutoCycle;
@@ -547,7 +557,8 @@ var
   thread_shutdown_tracking_stage: nativeint;
 
 
-
+threadvar
+  CurrentThreadObject: TManagedThread;
 
 var
   dntdebug: ni;
@@ -635,6 +646,7 @@ begin
     FMenu := TStringList.create;
   end;
   FMenu.clear;
+  FMenu.add('Force Work Signal');
 end;
 
 constructor TManagedThread.Create(Owner: TObject;
@@ -945,6 +957,7 @@ begin
   try
     try
       SetDebugThreadVar(self);
+      CurrentThreadObject := self;
     {$IFDEF DETAILED_DEBUG}
           Debug.Log(self,'Native Execute: '+self.classname);
     {$ENDIF}
@@ -1058,25 +1071,33 @@ rep_not_continue:
 
               zone := 20;
               try
-                BeforeDoExecute;
-                zone := 21;
-                tm1 := tickcount.GetTicker;
-{$IFDEF GWATCH}
-                if int64(self.threadid) = int64(GWATCHTHREAD) then
-                  Debug.Log('Trap Watch '+GetsignalDebug);
-{$ENDIF}
+                beginActiveTime;
+                try
+                  BeforeDoExecute;
+                  zone := 21;
+                  tm1 := tickcount.GetTicker;
+  {$IFDEF GWATCH}
+                  if int64(self.threadid) = int64(GWATCHTHREAD) then
+                    Debug.Log('Trap Watch '+GetsignalDebug);
+  {$ENDIF}
 
-                zone := 22;
-                DoExecute;
-                zone := 23;
-                if AutoCountCycles then
-                  inc(Finfo.Iterations);
-                tm2 := tickcount.GetTicker;
-                FTimeIndex := FTimeIndex mod length(FTimes);
-                FTimes[FTimeIndex] := GetTimeSince(tm2, tm1);
-                inc(FTimeIndex);
+                  zone := 22;
 
-                AfterDoExecute;
+                    DoExecute;
+
+                  zone := 23;
+                  if AutoCountCycles then
+                    inc(Finfo.Iterations);
+                  tm2 := tickcount.GetTicker;
+                  FTimeIndex := FTimeIndex mod length(FTimes);
+                  FTimes[FTimeIndex] := GetTimeSince(tm2, tm1);
+                  inc(FTimeIndex);
+
+                  AfterDoExecute;
+                finally
+                  EndActiveTime;
+
+                end;
               except
                 on E:Exception do begin
                   zone := 24;
@@ -1526,6 +1547,8 @@ end;
 
 procedure TManagedThread.MenuAction(idx: NativeInt);
 begin
+  if idx = 0 then
+    HasWork := true;
 
 //  raise Exception.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
@@ -1884,6 +1907,11 @@ end;
 
 
 
+procedure TManagedThread.BeginActivetime;
+begin
+  fInfo.StartActiveTime;
+end;
+
 procedure TManagedThread.BeginSTart;
 begin
 {$IFDEF QUICK_THREAD_DEBUG}  Debug.Log('At beginning of start signal '+self.GetSignalDebug);{$ENDIF}
@@ -1981,6 +2009,11 @@ begin
   beginstoptime := getticker;
   evSTop.IgnoreChecks := false;
   evStart.IgnoreChecks := false;
+end;
+
+procedure TManagedThread.EndActiveTime;
+begin
+  FInfo.EndActiveTime;
 end;
 
 procedure TManagedThread.EndStart;
@@ -2938,7 +2971,7 @@ begin
           tm := GetTicker;
           result := c.create(owner, BackGroundThreadMan, self);
           result.InitFromPool;
-          Debug.Log(self, 'Thread Creation time: '+gettimesince(tm).tostring);
+//          Debug.Log(self, 'Thread Creation time: '+gettimesince(tm).tostring);
           Signal(result.evFinished, false);
           Signal(result.evSleeping, false);
         finally
@@ -3609,6 +3642,37 @@ begin
 //  clx_windows.beep(50,50);
 end;
 
+function TThreadInfo.GetPercentActiveTime(
+  var previoustotal, previoussampletime: int64): single;
+var
+  tmNow, newstart, tat, tot: int64;
+begin
+  tmNow := gethighResTicker;
+  tat := TotalActiveTime;
+  if ActiveNow then
+    tat := tat + GetTimeSince(tmNow, activestartTime);
+
+  newstart := tat;
+  tat := tat - previoustotal;
+  if tat < 0 then tat := 0;
+  previoustotal := newstart;
+
+  //ACTIVETIME/TOTAL_TIME
+  tot := GetTimeSince(tmNow, previoussampletime);
+  previoussampletime := tmNow;
+  if tot = 0 then
+    exit(0.0)
+  else
+    result := lesserof(1.0,tat/tot);
+
+end;
+
+procedure TThreadInfo.StartActiveTime;
+begin
+  activestartTime := tickcount.GetHighResTicker;
+  ActiveNow := true;
+end;
+
 class procedure TManagedThread.Synchronize(const AThread: TThread;
   AMethod: TThreadMethod);
 begin
@@ -3645,6 +3709,16 @@ begin
 end;
 
 { TThreadInfo }
+
+procedure TThreadInfo.EndActiveTime;
+var
+  nao: int64;
+
+begin
+  nao := GetHighREsticker;
+  totalActiveTime := totalActiveTime + GetTimeSince(nao, activestarttime);
+  ActiveNow := false;
+end;
 
 function TThreadInfo.GetAge: ticker;
 begin

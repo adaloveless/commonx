@@ -55,7 +55,7 @@ type
     FCursorStack: array of TCursor;
     FManager: TForm;
     FPreviousWindowState: TWindowState;
-    sect: _RTL_Critical_Section;
+    sect: TCLXCriticalSection;
     FonMove: TNotifyEvent;
     function GetCAnvasPLus: TCanvasPlus;
     procedure SetManager(const Value: TForm);
@@ -284,7 +284,7 @@ begin
   FMonitoringcommands := TList<TCommand>.create;
   FToken := name;
   FCreatingThreadID := GetCurrentThreadId;
-  InitializeCriticalSEction(sect);
+  ics(sect);
   FSectReady:= true;
   FDisabledtimers := TList<TTimer>.create;
 
@@ -527,7 +527,7 @@ end;
 
 procedure TfrmBase.Lock;
 begin
-  EnterCriticalSection(sect);
+  ecs(sect);
 end;
 
 procedure TfrmBase.Move(var Msg: TWMMove);
@@ -612,7 +612,7 @@ end;
 
 procedure TfrmBase.Unlock;
 begin
-  LeaveCriticalSection(sect);
+  lcs(sect);
 end;
 
 procedure TfrmBase.UpdateState;
@@ -753,7 +753,7 @@ end;
 destructor TfrmBase.Destroy;
 begin
   inherited;
-  DeleteCriticalSection(sect);
+  dcs(sect);
 end;
 
 procedure TfrmBase.Detach;
@@ -1030,7 +1030,7 @@ end;
 
 function TfrmBase.TryLock: boolean;
 begin
-  result := TryEnterCriticalSection(sect);
+  result := tecs(sect);
 end;
 
 function TfrmBase.AsInterface<T>(guid: TGUID): T;

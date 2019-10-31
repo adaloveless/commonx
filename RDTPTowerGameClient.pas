@@ -93,6 +93,7 @@ begin
     packet.AddVariant($6666);
     packet.AddVariant(0);
     packet.AddString('TOWERGAME');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6666:TTowerGameClient.Login');{$ENDIF}
     WritestringToPacket(packet, UserName);
     WritestringToPacket(packet, Password);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -159,6 +160,7 @@ begin
     packet.AddVariant($6667);
     packet.AddVariant(0);
     packet.AddString('TOWERGAME');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6667:TTowerGameClient.Logout');{$ENDIF}
     Writeint64ToPacket(packet, SessionID);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -204,6 +206,7 @@ begin
     packet.AddVariant($6668);
     packet.AddVariant(0);
     packet.AddString('TOWERGAME');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6668:TTowerGameClient.JoinBestGame');{$ENDIF}
     Writeint64ToPacket(packet, SessionID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -270,6 +273,7 @@ begin
     packet.AddVariant($6669);
     packet.AddVariant(0);
     packet.AddString('TOWERGAME');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6669:TTowerGameClient.GetGameStatus');{$ENDIF}
     Writeint64ToPacket(packet, iGameID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -338,6 +342,7 @@ begin
     packet.AddVariant($6670);
     packet.AddVariant(0);
     packet.AddString('TOWERGAME');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6670:TTowerGameClient.GetUserIDForSession');{$ENDIF}
     Writeint64ToPacket(packet, SessionID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -402,6 +407,7 @@ begin
     packet.AddVariant($6671);
     packet.AddVariant(0);
     packet.AddString('TOWERGAME');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6671:TTowerGameClient.CrossStreams');{$ENDIF}
     Writeint64ToPacket(packet, iGameID);
     Writeint64ToPacket(packet, iSessionID);
     WriteTGameStreamToPacket(packet, InStream);
@@ -476,6 +482,7 @@ begin
     packet.AddVariant($6672);
     packet.AddVariant(0);
     packet.AddString('TOWERGAME');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6672:TTowerGameClient.ShareClientDetails');{$ENDIF}
     Writeint64ToPacket(packet, iGameID);
     Writeint64ToPacket(packet, iSessionID);
     WritedoubleToPacket(packet, LocalGameTime);
@@ -544,6 +551,7 @@ begin
     packet.AddVariant($6673);
     packet.AddVariant(0);
     packet.AddString('TOWERGAME');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6673:TTowerGameClient.GetSimplePlayerList');{$ENDIF}
     Writeint64ToPacket(packet, iGameID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -608,6 +616,7 @@ begin
     packet.AddVariant($6674);
     packet.AddVariant(0);
     packet.AddString('TOWERGAME');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6674:TTowerGameClient.StorePerformanceMetrics');{$ENDIF}
     WritestringToPacket(packet, sUserName);
     WritestringToPacket(packet, sData);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -674,6 +683,7 @@ begin
     packet.AddVariant($6675);
     packet.AddVariant(0);
     packet.AddString('TOWERGAME');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6675:TTowerGameClient.TransportLayerTest');{$ENDIF}
     WritestringToPacket(packet, sSomethingToConvertToLowercase);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);

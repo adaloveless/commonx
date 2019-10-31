@@ -113,7 +113,7 @@ begin
     addr := GetentryAddress(idx);
     bCreate := fs.Size < (addr+sizeof(result));
     if bCreate then begin
-      stream_Grow(fs, addr+sizeof(result));
+      stream_Grow(fs, (((addr+sizeof(result)) div MEGA)+1)*(MEGA));
     end;
     fs.Seek(addr, soBeginning);
     stream_GuaranteeRead(fs, pbyte(@r), sizeof(r));

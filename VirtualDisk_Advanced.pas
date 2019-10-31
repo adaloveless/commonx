@@ -3,18 +3,24 @@ unit VirtualDisk_Advanced;
 {x$DEFINE DISABLE_3AM_ENFORCEMENT}
 {x$DEFINE COMPARE_ENTIRE_VAT_ON_SAVE}
 {x$DEFINE NO_SCRUBBER}
-{$DEFINE ALLOW_CLEAN_CACHE_PREFERENCE}//changed 2019/9/17 to see if we can better saturate back-end
-{x$DEFINE PAYLOAD_IS_UNBUFFERED}//<!--------------------
-{$DEFINE PREDICTIVE_SIDEFETCH_FLUSH}
-{$DEFINE ASYNC_READS}//uses multiple threads to read from each RAID piece simultaneously - if disabled blocks during each RAID piece read
+{$DEFINE RAB_PACKED_DIRTY} //also change in raid.pas
+{$DEFINE NO_BUDDYUP_OFFLINE}//prevents deadlocks
+{x$DEFINE ALLOW_CLEAN_CACHE_PREFERENCE}//changed 2019/9/17 to see if we can better saturate back-end
+{x$DEFINE PAYLOAD_IS_UNBUFFERED}//<!--------------------   if enabled there is no queued interface to the streams.... instead it goes DIRECTLY to the unbuffered stream (which has a simple sidefetch thread and some buffers)
+{x$DEFINE PREDICTIVE_SIDEFETCH_FLUSH}
+{$IFNDEF PAYLOAD_IS_UNBUFFERED}
+  {$DEFINE ASYNC_READS}//uses multiple threads to read from each RAID piece simultaneously - if disabled blocks during each RAID piece read
+{$ENDIF}
 {$DEFINE PAYLOAD_HAS_QUEUED_INTERFACE}
-{$DEFINE RETRY_FLUSH}
+{x$DEFINE RETRY_FLUSH}
+{x$DEFINE QI_RAID_READ}
 {x$DEFINE DONT_USE_QUEUED}
 {x$DEFINE ASYNC_REBUILD}
 
 
 {$DEFINE ALLOW_DRIVE_SKIPPING}
 {$DEFINE PREFETCH_ON_BRING_ONLINE}
+{x$DEFINE PREFETCH_ON_READ}
 {x$DEFINE RECORD_OPS}
 {x$DEFINE PLAY_OPS}
 {$DEFINE FIX_OP_CS}
@@ -41,7 +47,7 @@ unit VirtualDisk_Advanced;
 {$DEFINE DEBUG_NEWPHYSICAL}
 {$DEFINE ALLOW_SYNCHRONOUS_READS}//<<-----we want this? BUT BUT only once all backup-restores are complete
 {$DEFINE ALLOW_DRIVE_SKIPPING}//ok to enable
-{$DEFINE ALWAYS_FORCE_FLUSH_LOCK}
+{x$DEFINE ALWAYS_FORCE_FLUSH_LOCK}
 {$DEFINE PAYLOAD_HAS_QUEUED_INTERFACE}
 {x$DEFINE ALLOW_SIDEFETCH_REQUEUE}
 {x$DEFINE USE_STANDARD_STREAM }
@@ -50,7 +56,7 @@ unit VirtualDisk_Advanced;
 {x$DEFINE ENABLE_IDLE_QUEUE}
 {$DEFINE RELEASE}
 {$DEFINE USE_VAT}
-{$DEFINE ENABLE_DEEP_CHECKS_IN_BRING_ONLINE}
+{x$DEFINE ENABLE_DEEP_CHECKS_IN_BRING_ONLINE}
 {$DEFINE READ_BEFORE_WRITE_VD_QUEUE}//<<--- I haven't had any real problems with this lately
 {x$DEFINE ALLOW_PRIMARY_READS_TO_BE_SYNCHRONOUS}
 {x$DEFINE DONT_PRIORITIZE}//<<-----------------------------
@@ -72,7 +78,7 @@ unit VirtualDisk_Advanced;
 { x$DEFINE MQ }
 {$DEFINE SHIFTOPT}
 {$DEFINE VD_QUEUE}
-{$DEFINE WALK_FLUSH}//x
+{x$DEFINE WALK_FLUSH}//x
 interface
 
 
@@ -81,7 +87,7 @@ uses
 {$IFDEF MQ}
   globalMultiQueue,
 {$ENDIF}
-  windows, adminalert, globaltrap,
+  windows, adminalert, globaltrap, globalmultiqueue,
   linked_list_btree_compatible, system.Types, system.rtlconsts, better_collections, ringstats,lockqueue,
   betterfilestream, gapanal, btree, virtualdiskparams, COMMANDICONS,
   queuestream, raid, stringx, unittest, numbers, tickcount, applicationparams, rtti_helpers,
@@ -94,12 +100,13 @@ uses
   commandprocessor, virtualdiskconstants, arclogshipper, arcmap, zonelog;
 
 const
+  REQUIRED_BLOCKS_FREE_SPACE = 10;//1650
   FPs_PER_VAR = 20;
   CONCURRENT_SOURCE_ARCHIVER_CONNECTIONS = 16;
   SET_CS = 2;
   FILE_COUNT_VAT_FUXORED = -1;
   FILE_COUNT_NO_FETCH_FROM_SOURCE_ARCHIVE = -4;
-  DEFAULT_CACHED_STRIPES = 2048;//*3*4;
+  DEFAULT_CACHED_STRIPES = 2048*8;//*3*4;
 //  DEFAULT_CACHED_STRIPES = 32;
   MAX_DIRTY_BUFFERS = DEFAULT_CACHED_STRIPES shr 1;
 //  ALLOWED_PREFETCH_STRIPES = 256;
@@ -178,6 +185,7 @@ CMD_ICON_REBUIlD: TCommandIcon = (BitDepth: 32; RDepth:8;GDepth:8;BDepth:8;ADept
   MAX_PAYLOADS_PER_VD = 2048;
 
 type
+  TbolResult = (bolNothingToBringOnLine, bolBroughtOnline, bolAlreadyOnline);
   TRecordFileStream = TFileStream;
   TPrioritizerStage = (psDowngradeFrom, psUpgradeTo);
   TBringOnlineStatus = (bolOnline, bolBringing, bolStall);
@@ -297,7 +305,7 @@ type
   PVirtualDiskBigBlockHeader = ^TVirtualDiskBigBlockHeader;
 
 
-  TPayloadStream = class({$IFNDEF PAYLOAD_IS_UNBUFFERED}TAdvancedAdaptiveQueuedFileStream{$ELSE}TUnbufferedFileStream{$ENDIF})
+  TPayloadStream = class({$IFNDEF PAYLOAD_IS_UNBUFFERED}TAdvancedAdaptiveQueuedFileStream{$ELSE}xxTUnbufferedFileStream{$ENDIF})
   private
     FCollapsable: boolean;
     function GetNextBigBlockAddress(iTotalSizeIncludingHeaders: int64): int64;
@@ -339,7 +347,7 @@ type
       Rights: cardinal; Flags: cardinal); override;
     destructor Destroy; override;
 
-    function Expand(iSizeBeyondCurrentExcludingHeaders: int64;
+    function Expand(raidcount, iSizeBeyondCurrentExcludingHeaders: int64;
       virtual_addr: int64; bConsume: boolean=false): int64;
     procedure CheckInit; inline;
     function IsEmpty: boolean;
@@ -375,6 +383,8 @@ type
   private
     function GetVirtualAddress: int64;
     procedure SetVatIndex(const Value: int64);
+    function GetNeedsRepair: boolean;
+    procedure SetNeedsRepair(const Value: boolean);
   public
     function GetVatIndex: int64;inline;
     procedure ChangeFileID(ifrom, ito: ni; newphysical: int64);
@@ -401,7 +411,7 @@ type
     property StartingBlock: int64 read FStartingBlock write SetStartingblock;
     function IsDead: boolean;
     property VirtualAddress: int64 read GetVirtualAddress;
-
+    property NeedsRepair: boolean read GetNeedsRepair write SetNeedsRepair;
   end;
 
   TPayloadFileInformation = packed record
@@ -638,12 +648,14 @@ type
     procedure WriteBlock(const lba: int64; const p: pbyte); virtual; abstract;
   public
     ActiveUseTime: ticker;
+    hint_rdtp_waiting: boolean;
     hint_requests_waiting: boolean;
     vat: TVirtualAddressTable;
     shipper: TArcLogShipper;
     zonerevs: TArcMap;
     disableArcRestore: boolean;
     backgroundlock: TLockQueuedObject;
+    ReadOnly: boolean;
     constructor Create; override;
     procedure BeforeDestruction; override;
     destructor Destroy; override;
@@ -680,6 +692,7 @@ type
     procedure PreShutdown;
     property Status: string read GetStatus write SetStatus;
     function VerifyAgainstArchive(zone: integer; out csa,csb, difstart: int64): boolean;virtual;abstract;
+
   end;
 
 
@@ -835,14 +848,21 @@ type
     tmLAstShovel: ticker;
     lastDriveSkipped: ni;
     resurrector: TResurrector;
+{$IFDEF DEGAUSS}
+    FDegaussList: array of int64;
+{$ENDIF}
 
     FprioritySort: array of TPayloadPrioritySort;
-    function BringBigBlockOnline(idx: ni): boolean;
+    function BringBigBlockOnline(idx: ni): Tbolresult;
     function DeepCheck(idx: ni): boolean;
     function BringBigBlockOffline(idx: ni): boolean;
+    procedure AddToDegaussList(bbid: int64);
+    function GetNextDegauss: int64;
 
     procedure SetCAcheSize(const Value: int64);
+    procedure Degauss(bbid: int64);
     procedure ScrubberExecute(thr: TExternalEVentThread);
+    procedure ContinueDegauss;
     function PercentPayloadBuffersFlushed: single;
 
     function ContinueBringOnline(thr: TExternalEventThread): TBringOnlineStatus;
@@ -852,7 +872,7 @@ type
       bOnlyIfALLDirty: boolean = false; bOnlyIfDiskInactive: boolean = true): TBufferStatus;
     function BuddyUp: boolean;
     function RaidUP: boolean;
-    function Reconstitute(pvar: PVirtualAddressRecord = nil): boolean;
+    function Reconstitute(IsRepair: boolean; pvar: PVirtualAddressRecord = nil): boolean;
     procedure ZoneLog(idx: int64; sMessage: string);
     function ForceReconstitution(pvar: PVirtualAddressRecord): boolean;
     function FindHighestOverVar(FileID: ni; out bOver: boolean): PVirtualAddressRecord;
@@ -888,7 +908,7 @@ type
     procedure FlushRaid(r: TRaidAssembledBuffer);
     function IsStreamUnderQuota(t: nativeint): boolean;
     function VirtualToPhysicalAddr(addr: int64): TVirtualAddressRecord;
-    function GetBusiestPhysical(const vart: PVirtualAddressRecord): ni;
+    function GetBusiestPhysical(const vart: PVirtualAddressRecord; const lba: int64): ni;
     procedure Shovel(thr: TExternalEVentThread; bShrinkOnly: boolean);
     procedure ShrinkPayloads;
     function GEtCachedSTripes: ni;
@@ -908,6 +928,7 @@ type
     function REbuildBigBlockFromTargetArchive(bbid: int64): boolean;
     function MaxPercentPayloadBuffersUnFlushed: single;
     function GetPayloadStreams(idx: ni): TPayloadStream;
+
   protected
     currentRebuildOperation: Tcmd_RebuildOperation;
     procedure ReadBlock(const lba: int64; const p: pbyte); override;
@@ -921,6 +942,7 @@ type
     procedure QuickCheckVat;
     procedure SaveVat(bAll: boolean); // override;
     procedure SaveVatAndConfig(sTo: string = ''); // override;
+    procedure WriteExpandedVar(virtual_addr: int64; t: ni; var vart: TVirtualAddressRecord; physaddr: Pint64);
     function NewPhysicalBlockAddress(virtual_addr: int64; iMinPriority, iMaxPriority: ni; placed_by_reason: byte)
       : TVirtualAddressRecord;
 {$ENDIF}
@@ -937,6 +959,7 @@ type
     enablelegittagging: boolean;
     rsPrefetch: TRingstats;
     rs0,rs1,rs2,rs3,rs4,rs5,rs6,rs7, rsCacheHit: TRingSTats;
+    rsWrite, rsWrite0, rsWrite1: TRingStats;
     csScrubber: TCLXCRiticalSection;
     SourceArchiveHost, SourceARchiveEndpoint: string;
     SourceArchive: string;
@@ -1095,7 +1118,10 @@ type
     function QueueFull: boolean;
     function WaitForQueueSpace(itimeout: ni = -1): boolean;
     procedure ReplayLog;
-    procedure DumpBigBlock(bbid: int64);
+    procedure DumpBigBlock(bbid: int64; topath: string = '');
+    procedure CompareBigBlock(bbid: int64; againstpath: string = ''; cb: TProc<string> = nil);
+    procedure Dump(topath: string; cb: TProc<string> = nil);
+    procedure CompareDump(againstpath: string; cb: TProc<string> = nil);
   end;
 
   TVirtualDisk_Comparative = class(TFileBasedVirtualdisk)
@@ -1402,9 +1428,25 @@ begin
   end;
 end;//ok
 
+procedure TVirtualDisk_Advanced.AddToDegaussList(bbid: int64);
+begin
+{$IFDEF DEGAUSS}
+  Lock;
+  try
+    for var t := 0 to high(FDegaussList) do
+      if (FDegaussList[t] = bbid) then exit;
+
+    setlength(FDegaussList, length(FDegaussList)+1);
+    FDegaussList[high(FDegaussList)] := bbid;
+  finally
+    Unlock;
+  end;
+{$ENDIF}
+end;
+
 procedure TVirtualDisk_Advanced.AnalyzeGaps;
 var
-  t, u: fi;
+  t, u: ni;
   vart: PVirtualAddressRecord;
   fp: PFilePhysical;
   iStart, iLen,istreamsize: int64;
@@ -1457,10 +1499,11 @@ begin
   //FOR all table entries
   for t := low(vat.table) to high(vat.table) do
   begin
-    if (t and $FFFF) = 0 then begin
+    vart := @vat.table[t];
+    if ((t and $FFFF) = 0) {or (vart.FileCount > 0)} then begin
       Debug.Log('Checking GAPS:'+inttohex(t,0));
     end;
-    vart := @vat.table[t];
+
 
     //for all files in this table entry
     for u := 0 to vart.FileCount - 1 do
@@ -1469,7 +1512,7 @@ begin
       fp := @vart.FPs[u];
 
       //if file is defined and payload object exists
-      if (fp.FileID>=0) and (PayloadStreams[fp.FileID] <> nil)  then
+      if (fp.FileID>=0) and (fp.FileID < MAX_PAYLOADS_PER_VD) and (PayloadStreams[fp.FileID] <> nil)  then
       begin
         //determine start and length
         //start is physical address MINuS the big block header length
@@ -1480,11 +1523,13 @@ begin
         if (fpAddr<0) or (iStart < 0) then begin
           Self.LogRepair(t,'payload start would be negative, invalidating');
           fp.FileID := -1;
+          AddtoDegaussList(t);
           vat.MarkTableEntryDirtyByPtr(vart);
         end else
         // debug.Log(inttostr(fp.fileid)+' will consume ['+inttohex(iStart, 0)+'-'+inttohex(iLen, 0)+']');
         if iStart+iLen > payloadstreams[fp.fileid].size then begin
           Self.LogRepair(t,'payload is beyond the end of file, invalidating');
+          AddtoDegaussList(t);
           fp.FileID := -1;
           vat.MarkTableEntryDirtyByPtr(vart);
 
@@ -1493,6 +1538,7 @@ begin
         then
         begin
           Self.LogRepair(t,'File '+fp.fileid.tostring+' GAP ERROR! Placed By: '+vart.placedby.tostring+' could not consume region ['+inttohex(iStart,1)+'-'+inttohex(iStart+iLen-1,1)+']');
+          AddtoDegaussList(t);
           fp.FileID := -1;
           vat.MarkTableEntryDirtyByPtr(vart);
         end
@@ -1687,7 +1733,7 @@ begin
   end;
 end;//ok
 
-function TVirtualDisk_Advanced.BringBigBlockOnline(idx: ni): boolean;
+function TVirtualDisk_Advanced.BringBigBlockOnline(idx: ni): TbolResult;
 var
   t, u: ni;
   ta: PVirtualAddressRecord;
@@ -1709,15 +1755,14 @@ begin
   if (idx  < 0) or (idx >= MAX_BIG_BLOCKS) then
     raise ECritical.create('Big Block index cannot be '+inttohex(idx,1));
   // if the block is already online then forget it
-  result := false;
   if online_bigblocks[idx] then
-    exit;
+    exit(bolAlreadyonline);
 
   if idx = 0 then
     debug.log('trap');
 
   tmOnTime := getticker;
-  result := true;
+  result := bolBroughtOnline;
 
   bChanged := false;
 
@@ -1755,8 +1800,7 @@ begin
 
     if ta.FileCount <= 0 then begin
       online_bigblocks[idx] := true;
-      result := false;
-      exit;
+      exit(bolNothingToBringOnline);
     end;
     vat.CheckSanity;
 
@@ -1815,7 +1859,10 @@ begin
       // check that the vat entry exists in the physical
       if ta.FPs[u].FileID >= 0 then
       begin
-        ps := PayloadStreams[ta.FPs[u].FileID];
+        if not validpayloadid(ta.FPs[u].FileID) then
+          ps := nil
+        else
+          ps := PayloadStreams[ta.FPs[u].FileID];
         if ps <> nil then
         begin
 
@@ -1897,7 +1944,7 @@ begin
 //              Debug.Log(self, 'wtf');
             try
               while not qis[u].WAitFor(8000) do
-                Debug.Log('Waiting for: '+ps.filename+' in #'+qis[u].thread.realthread.threadid.tostring);
+                Debug.Log('Waiting for: '+ps.filename);
 //              qis[u].WAitFor();
             except
               on E: Exception do begin
@@ -1946,20 +1993,23 @@ begin
               // if the file isn't big enough, then expand the file to it's intended size
               if ps.Size < itemp then
               begin
-                itemp := vat.GetSafePhysicalAddr(ta.FPs[u].FileID);
-                LogRepair(ta.vatindex, 'File has incomplete block, growing to ' +
-                  inttostr(itemp));
-                ps.GrowFile(vat.GetSafePhysicalAddr(ta.FPs[u].FileID));
-                LogRepair(ta.vatindex, 'RAID5 piece could not be found. Expanding file size to accomodate.');
-                ta.FPs[u].PhysicalAddr_afterheader :=
-                  ps.Expand(GetBigBlockSizeInBytes(ta.FileCount, false),
-                  ta.StartingBlock * BLOCKSIZE);
-                PayloadStreams[ta.FPs[u].FileID].gaps.Length := ps.Size;
-                PayloadStreams[ta.FPs[u].FileID].gaps.ConsumeRegion
-                  (ta.FPs[u].PhysicalAddr_afterheader - sizeof(TVirtualDiskBigBlockHeader),
-                  GetBigBlockSizeInBytes(ta.FileCount, true));
-                vat.MarkTableEntryDirtyByPtr(ta);
-                bChanged := true;
+                var fid := ta.Fps[u].fileid;
+                if ValidPayLoadID(fid) then begin
+                  itemp := vat.GetSafePhysicalAddr(ta.FPs[u].FileID);
+                  LogRepair(ta.vatindex, 'File has incomplete block, growing to ' +
+                    inttostr(itemp));
+                  ps.GrowFile(vat.GetSafePhysicalAddr(ta.FPs[u].FileID));
+                  LogRepair(ta.vatindex, 'RAID5 piece could not be found. Expanding file size to accomodate.');
+                  ta.FPs[u].PhysicalAddr_afterheader :=
+                    ps.Expand(ta.FileCount, GetBigBlockSizeInBytes(ta.FileCount, false),
+                    ta.StartingBlock * BLOCKSIZE);
+                  PayloadStreams[ta.FPs[u].FileID].gaps.Length := ps.Size;
+                  PayloadStreams[ta.FPs[u].FileID].gaps.ConsumeRegion
+                    (ta.FPs[u].PhysicalAddr_afterheader - sizeof(TVirtualDiskBigBlockHeader),
+                    GetBigBlockSizeInBytes(ta.FileCount, true));
+                  vat.MarkTableEntryDirtyByPtr(ta);
+                  bChanged := true;
+                end;
               end;
             end;
           end;
@@ -2023,7 +2073,7 @@ begin
     bRepaired := false;
 
     online_bigblocks[idx] := true;
-    result := true;
+    result := bolBroughtonline;
 
     {$IFDEF ENABLE_DEEP_CHECKS_IN_BRING_ONLINE}
       DeepCheck(idx);
@@ -2057,23 +2107,26 @@ var
   l: Tlock;
 label rep;
 begin
-
   result := false;
+  if REadonly then exit;
   if self.vat.MaxDiskSpan = 1 then exit;
 
   l := Getlock;
   try
     vart := vat.FindVARToBuddyUp;
 
-
     if vart <> nil then
     begin
 //      Debug.Log('Needs to buddy up: '+vart.debugstring);
 
+{$IFDEF NO_BUDDYUP_OFFLINE}
       if not online_bigblocks[vart.VatIndex] then begin
 //        Debug.Log('block was not online, must buddy up later');
         exit(false);
       end;
+{$ELSE}
+    BringBigBlockOnline(vart.GetVatIndex);
+{$ENDIF}
 
 
       toS := GEtUnderQuotaStream(vart, toID, false);
@@ -2156,6 +2209,12 @@ begin
   rs5 := TRingStats.create;
   rs6 := TRingStats.create;
   rs7 := TRingStats.create;
+  rsWrite := TRingStats.create;
+  rsWrite.size := 2048;
+  rsWrite0 := TRingStats.create;
+  rsWrite0.size := 2048;
+  rsWrite1 := TRingStats.create;
+  rsWrite1.size := 2048;
   rsCacheHit := TRingStats.create;
   rsCacheHit.size := 512;
 //  rsCacheHit.OnNewBatch := procedure (rs: TRingstats)
@@ -2165,7 +2224,7 @@ begin
 
 
   inherited;
-  LockTimeout := 60000;
+  LockTimeout := 300000;
 
 
   icsSC(csScrubber, 0);
@@ -2274,7 +2333,6 @@ procedure TVirtualDisk_Advanced.MovePayloadBigBlock(pvar: PVirtualAddressRecord;
   bMirror: boolean; placed_by_reason: byte);
 var
   pfh_from, pfh_to: TVirtualDiskPayloadFileHeader;
-var
   buf: pointer;
   i: int64;
   npa: int64;
@@ -2286,6 +2344,7 @@ var
   iOldSize: int64;
   sz:int64;
   frompay, topay: int64;
+  fp: PFilePhysical;
 begin
 {$IFDEF USESEEKLOCK} fromstream.SeekLock; {$ENDIF}
 {$IFDEF USESEEKLOCK} tostream.SeekLock; {$ENDIF}
@@ -2298,19 +2357,32 @@ begin
 
     ZoneLog(pvar.vatindex,'Start of '+sOp+' operation');
     // debug.Log(inttostr(toStream.size)+' // '+inttostr(fromstream.size));
-    bringbigblockonline(pvar.VatIndex);
+    if bringbigblockonline(pvar.VatIndex) = bolBroughtOnline then begin
+      Debug.Log('Big block is not online, will not copy/move just yet.');
+      exit;
+    end;
 
 {$IFDEF REDUNDANT_PHYSICAL}
     pfh_from._NextPhysicalAddress := i;
 {$ENDIF}
-    bbh_from := fromstream.GetBigBlockHeaderFromPhysicalStart(pvar.GetFP(FromID).PhysicalAddr_afterheader);
+    fp := pvar.GetFP(FromID);
+    fpTemp := fp;
+    if fpTemp <> nil then begin
+      fpTemp.FileID := -1;
+      vat.MarkTableEntryDirtyByPtr(Pvar);
+    end;
+
+    if fpTemp = nil then begin
+      BringBigBlockOffline(pvar.VatIndex);
+      BringBigBlockOnline(pvar.VatIndex);
+      vat.MarkTableEntryDirtyByPtr(Pvar);
+      exit;
+    end;
+
+    bbh_from := fromstream.GetBigBlockHeaderFromPhysicalStart(fp.PhysicalAddr_afterheader);
     bbh_from.CheckAddressValidity(GetBigBlockSizeInBytes(pvar.FileCount, false), pvar, fromid);
     fromaddr := bbh_from.headerstart;
     if not bbh_from.VAlid(fromAddr) then begin
-      fpTemp := pvar.GetFP(FromID);
-      if fpTemp <> nil then
-        fpTemp.FileID := -1;
-
       BringBigBlockOffline(pvar.VatIndex);
       BringBigBlockOnline(pvar.VatIndex);
       //pvar.FileCount := -2;//???? why mark the whole vat bad because of one bad bbh?
@@ -2320,7 +2392,7 @@ begin
 
     // expand the target stream
     iOldSize := tostream.Size;
-    npa := tostream.Expand(GetBigBlockSizeInBytes(greaterof(pvar.FileCount,1), false), bbh_from.VirtualAddress,true);
+    npa := tostream.Expand(greaterof(pvar.FileCount,1), GetBigBlockSizeInBytes(greaterof(pvar.FileCount,1), false), bbh_from.VirtualAddress,true);
     PayloadStreams[toID].gaps.Length := tostream.Size;
     pfh_to := tostream.GetPFH;
 
@@ -2339,8 +2411,6 @@ begin
       try
         // tostream.CopyFrom(fromstream,  GetBigBlockSizeInBytes(1));
         // Debug.Log(sOP+' From:'+inttostr(fromid)+':???? to '+inttostr(toid)+':'+inttohex(npa,0));
-        if not bMirror then
-          PayloadStreams[FromID].gaps.FreeRegion(fromaddr, sz);
         // FGapTrees[ToID].Length := greaterof(FGapTrees[toid].length, bbh_to.EndofFooter); don't do this, the region has already been consumed
 
 
@@ -2371,6 +2441,10 @@ begin
 {$IFDEF HEADER_COPY}
         stream_guaranteeWrite(tostream, @bbh_to, sizeof(bbh_to));
 {$ENDIF}
+
+        if not bMirror then
+          PayloadStreams[FromID].gaps.FreeRegion(fromaddr, sz);
+
 
 
         // Debug.Log('Completed '+sOP+' From:'+inttostr(fromid)+':???? to '+inttostr(toid)+':'+inttohex(npa,0));
@@ -2490,11 +2564,14 @@ begin
       tm := tickcount.getticker;
       scrubber.RunHot := FBringOnlineIdx > 0;
       repeat
-        bWas := not BringBigBlockOnline(FBringOnlineIdx);
+        bWas := BringBigBlockOnline(FBringOnlineIdx) in [bolAlreadyOnline, bolNothingToBringOnline] ;
 
         if bWas then
           if FBringOnlineIdx = 0 then break else
             dec(FBringOnlineIdx);
+
+        if GetTimeSince(tm) > 1000 then
+          break;
 //        if (FBringOnlineIdx and $FFFF) = 0 then
 //           scrubber.Status := 'Bring Online:' + inttohex(FBringOnlineIdx, 1);
       until not bWas;
@@ -2563,6 +2640,33 @@ begin
   end;
 end;
 
+procedure TVirtualDisk_Advanced.ContinueDegauss;
+begin
+{$IFDEF DEGAUSS}
+  if REadonly then exit;
+  if trylock then
+  try
+
+    var x := GetNextDegauss;
+
+    if x >= MAX_BIG_BLOCKS then begin
+      Debug.Log('Bad IDX to degauss!');
+      exit;
+    end;
+
+    if x >= 0 then begin
+      BringBigBlockOnline(x);
+      if vat.table[x].InvalidCount > 0 then
+        Reconstitute(@vat.table[x])
+      else
+        Degauss(x);
+    end;
+  finally
+    unlock;
+  end;
+{$ENDIF}
+end;
+
 function TVirtualDisk_Advanced.Collapse(FileID: ni): boolean;
 var
   pvar, pvar2: PVirtualAddressRecord;
@@ -2571,11 +2675,13 @@ var
   ps: TPayloadStream;
   fp: PFilePhysical;
   gi: TGapInfo;
+  gapsize: int64;
   movefrom, moveto: int64;
   bIsFinalRegion: boolean;
   bOver: boolean;
   newsz: int64;
 begin
+  if REadonly then exit(false);
   try
 {$IFNDEF ALLOW_COLLAPSE}
   exit(false);
@@ -2610,17 +2716,17 @@ begin
     ps.Size := sz;
 
 
-  // get the highest over var for the particular file
+  // get the highest over-capacity VirtualAddressRecord for the particular file
   pvar := FindHighestOverVar(FileID, bOver);
   if pvar = nil then begin
     exit;
   end;
   ZoneLog(pvar.vatindex, 'Collapse');
   // determine the size of the payload
-  sz := GetBigBlockSizeInBytes(pvar.FileCount, true);
+  gapsize := GetBigBlockSizeInBytes(pvar.FileCount, true);
 
   //get the payload stream
-  ps := Self.PayloadStreams[FileID];
+  ps := Self.PayloadStreams[FileID];//rc ok
   if ps = nil then
     exit;
 
@@ -2633,6 +2739,8 @@ begin
   end;
 
   if not bOver then begin
+    //if not over capacity
+    //then just make sure the size of the payload matches the end of the highest block
     newsz := fp.PhysicalAddr_afterheader+GetBigBlockSizeInBytes(pvar.FileCount)+sizeof(TvirtualDiskBigBlockHeader);
     if newsz < ps.Size then begin
       ps.Size := newsz;
@@ -2644,10 +2752,12 @@ begin
   // query VAT to find a gap that is suitable for this block
   // if self.vat.FindGapLocation_Deprecated({size required}sz, {fileid}fileid, gap_address, fp.physicaladdr) then begin
   movefrom := fp.PhysicalAddr_afterheader - sizeof(TVirtualDiskBigBlockHeader);
-  if movefrom >= ps.size then
+  if movefrom >= ps.size then begin
+    Debug.Log('Move From Location is beyond end of file!');
     exit;
+  end;
 
-  gi := ps.gaps.FindGap({size}sz, {lessthan} movefrom, {minimize fragmentation}true);
+  gi := ps.gaps.FindGap({size}gapsize, {lessthan} movefrom, {minimize fragmentation}true);
 
   // if a gap was found, copy the data from the old location to the new one.
   if gi.Length > 0 then
@@ -2666,9 +2776,9 @@ begin
 //      debug.Log(ps.gaps.getdebuggaps);
 //      exit;
 //    end;
-    ps.gaps.ConsumeRegion(moveto, sz);
-    ps.MoveBigBlock(movefrom, moveto, sz);
-    ps.gaps.FreeRegion(movefrom, sz);
+    ps.gaps.ConsumeRegion(moveto, gapsize);
+    ps.MoveBigBlock(movefrom, moveto, gapsize);
+    ps.gaps.FreeRegion(movefrom, gapsize);
     if bIsFinalRegion then begin
       if movefrom < ps.size then begin
         ps.Size := movefrom;
@@ -2725,15 +2835,26 @@ var
   postmultiplier: single;
   tmScrubberIterationStart: ticker;
 const
-  SCRUBBER_COLD_INTERVAL = 1000;
+  SCRUBBER_COLD_INTERVAL_ONLINE = 1000;
+  SCRUBBER_COLD_INTERVAL_COMING_ONLINE = 10;
   MIN_ACTIVE_USE_WAIT_TIME = 8000;
   MAX_ACTIVE_USE_WAIT_TIME = 12000;
   MAX_SHOVEL_INTERVAL = 1000;
   MAX_CONSTITUTION_CHECK_INTERVAL = 60000;
+  function SCRUBBER_COLD_INTERVAL: ni;
+  begin
+    if online then exit(SCRUBBER_COLD_INTERVAL_ONLINE)
+    else exit(SCRUBBER_COLD_INTERVAL_COMING_ONLINE);
+  end;
 begin
+  if Readonly then begin
+    Online := true;
+    exit;
+  end;
   tmScrubberIterationStart := GetTicker;
 
-        if  hint_requests_waiting or ((GetTimeSince(ActiveUseTime) < 1000)) then begin
+        if  hint_rdtp_waiting or hint_requests_waiting or ((GetTimeSince(ActiveUseTime) < 1000) and (GEtTimeSince(tmLastBringOnline) < 10000)) then begin
+          if (hint_requests_waiting) then activeusetime := GetTicker;
           thr.RunHot := false;
           thr.coldruninterval := SCRUBBER_COLD_INTERVAL;
           exit;
@@ -2777,11 +2898,15 @@ begin
 
   try
 
+    ContinueDegauss;
+    if getTimeSince(tmScrubberIterationStart) > 1000 then
+      exit;
+
   if GEtTimeSince(tmLastBringOnline) > 10000 then begin
     thr.IterationComplete;
     ContinueBringOnline(thr);
   end;
-  if self.queue.estimated_backlog_size > 0 then begin
+  if self.queue.estimatedsize > 0 then begin
     postmultiplier := postmultiplier + 1;
 //    exit;
   end;
@@ -2804,7 +2929,7 @@ begin
     FOperational := PayloadsOk;
 
 
-    if hint_requests_waiting then begin
+    if hint_rdtp_waiting or hint_requests_waiting then begin
       thr.RunHot := false;
       thr.coldruninterval := SCRUBBER_COLD_INTERVAL;
       exit;
@@ -2821,7 +2946,7 @@ begin
 
 
 
-    if hint_requests_waiting then begin
+    if hint_rdtp_waiting or hint_requests_waiting then begin
       thr.RunHot := false;
       thr.coldruninterval := SCRUBBER_COLD_INTERVAL;
       exit;
@@ -2844,7 +2969,7 @@ begin
         exit;
       end;
       bolBringing: begin
-        thr.ColdRunInterval := 1000;
+        thr.ColdRunInterval := SCRUBBER_COLD_INTERVAL;
         stall_time := 100;
       end;
     end;
@@ -2908,8 +3033,8 @@ begin
       begin
         tm1 := getticker;
 //        Debug.Log('scrubber reconstitute check');
-        reconstituting := Reconstitute;
-        if hint_requests_waiting then begin
+        reconstituting := Reconstitute(false);
+        if hint_rdtp_waiting or hint_requests_waiting then begin
           thr.RunHot := false;
           thr.coldruninterval := SCRUBBER_COLD_INTERVAL;
           exit;
@@ -2918,7 +3043,7 @@ begin
 //          Debug.Log('scrubber reconst shovel');
           Shovel(thr, true);
         end;
-        if hint_requests_waiting then begin
+        if hint_rdtp_waiting or hint_requests_waiting then begin
           thr.RunHot := false;
           thr.coldruninterval := SCRUBBER_COLD_INTERVAL;
           exit;
@@ -2936,7 +3061,7 @@ begin
         Shovel(thr, false);
         tmLAstShovel := getTicker;
       end;
-      if hint_requests_waiting then begin
+      if hint_rdtp_waiting or hint_requests_waiting then begin
         thr.RunHot := false;
         thr.coldruninterval := SCRUBBER_COLD_INTERVAL;
         exit;
@@ -2952,7 +3077,7 @@ begin
     if online then postmultiplier := postmultiplier * 4;
     postsleeptime := round(GEtTimeSince(tmScrubberIterationStart) * postmultiplier);
     if postsleeptime > 0 then
-      sleep(postsleeptime);
+      sleep(lesserof(10, postsleeptime));
   end;
 
 end;
@@ -2983,6 +3108,8 @@ begin
       PayloadStreams[overid].Collapsable := true;
       pvar := FindHighestOverVar_AfterCollapse(overid);
 
+
+
       if pvar = nil then
       begin
         Status :=
@@ -2994,6 +3121,20 @@ begin
       end
       else
       begin
+{$DEFINE RECONST_INSTEAD_OF_SHOVEL}
+{$IFDEF RECONST_INSTEAD_OF_SHOVEL}
+        ForceReconstitution(pvar);
+        exit;
+
+{$ELSE}
+{$ENDIF}
+
+        if pvar.startingblock = -1 then begin
+          Debug.log('starting block invalid (-1), cannot shovel');
+          self.AnalyzeGaps;
+
+          exit;
+        end;
 
         Status := 'Migrating.';
         ZoneLog(pvar.vatindex,Status);
@@ -3296,8 +3437,8 @@ var
   t: ni;
   a: array of byte;
 begin
-//  setlength(a, BIG_BLOCK_SIZE_IN_BYTES);
-//  self.ReadData(idx shl BIG_BLOCK_BYTE_SHIFT, BIG_BLOCK_SIZE_IN_BYTES, @a[0]);
+  setlength(a, BIG_BLOCK_SIZE_IN_BYTES);
+  self.ReadData(idx shl BIG_BLOCK_BYTE_SHIFT, BIG_BLOCK_SIZE_IN_BYTES, @a[0]);
   result := true;
 
 end;
@@ -3391,6 +3532,9 @@ begin
   rs5.free;
   rs6.free;
   rs7.free;
+  rsWrite.free;
+  rsWrite0.free;
+  rsWrite1.free;
   rsPrefetch.free;
 {$IFDEF USE_OPLOG}
   oplog.free;
@@ -3447,12 +3591,83 @@ begin
   end;
 end;
 
-procedure TVirtualDisk_Advanced.DumpBigBlock(bbid: int64);
+procedure TVirtualDisk_Advanced.Dump(topath: string; cb: TProc<string> = nil);
+begin
+  for var t := 0 to high(vat.table) do begin
+    var vart := vat.table[t];
+    if vart.filecount > 0 then begin
+      if assigned(cb) then cb('Dumping '+inttohex(t,0));
+      Lock;
+      try
+        DumpBigBlock(t,topath);
+      finally
+        Unlock;
+      end;
+    end;
+  end;
+
+end;
+
+procedure TVirtualDisk_Advanced.CompareBigBlock(bbid: int64; againstpath: string = ''; cb: TProc<string> = nil);
+var
+  fs: TUnbufferedFileStream;
+  p,p2: pbyte;
+begin
+  againstpath := slash(againstpath);
+  forcedirectories(againstpath);
+  fs := TUnbufferedFileStream.create(slash(againstpath)+inttohex(bbid,16)+'.dmp', fmOpenRead);
+  try
+    p := GetMemory(BIG_BLOCK_SIZE_IN_BYTES);
+    p2 := GetMemory(BIG_BLOCK_SIZE_IN_BYTES);
+    try
+      if bbid = 1 then begin
+        debug.log('here');
+      end;
+      self.guaranteeReadBlocks(bbid shl BIG_BLOCK_BLOCK_SHIFT, _BIG_BLOCK_SIZE_IN_BLOCKS, p);
+      stream_GuaranteeRead(fs, p2, BIG_BLOCK_SIZE_IN_BYTES);
+      for var t:= 0 to BIG_BLOCK_SIZE_IN_BYTES-1 do begin
+        if p[t] <> p2[t] then begin
+          if assigned(cb) then begin
+            cb('Block '+bbid.tostring+' is different @'+t.tostring);
+          end;
+        end;
+      end;
+
+    finally
+      freememory(p);
+      freememory(p2);
+    end;
+
+  finally
+    fs.free;
+  end;
+end;
+
+procedure TVirtualDisk_Advanced.CompareDump(againstpath: string; cb: TProc<string> = nil);
+begin
+  for var t := 0 to high(vat.table) do begin
+    var vart := vat.table[t];
+    if vart.filecount > 0 then begin
+      if assigned(cb) then cb('Compare '+inttohex(t,0));
+      Lock;
+      try
+        CompareBigBlock(t,againstpath, cb);
+      finally
+        Unlock;
+      end;
+    end;
+  end;
+
+end;
+
+procedure TVirtualDisk_Advanced.DumpBigBlock(bbid: int64; topath: string = '');
 var
   fs: TUnbufferedFileStream;
   p: pbyte;
 begin
-  fs := TUnbufferedFileStream.create(dllpath+inttohex(bbid,16)+'.dmp', fmCreate);
+  topath := slash(topath);
+  forcedirectories(topath);
+  fs := TUnbufferedFileStream.create(slash(topath)+inttohex(bbid,16)+'.dmp', fmCreate);
   try
     p := GetMemory(BIG_BLOCK_SIZE_IN_BYTES);
     try
@@ -3509,8 +3724,8 @@ begin
     // fetch from disk (overwrites current)
     rfs := FixFetchRaid(r);
 
-    iFirstdirty := 0;
-    iFirstClean := 0;
+    iFirstdirty := -1;
+    iFirstClean := -1;
     while iFirstClean < RAID_STRIPE_SIZE_IN_BLOCKS do
     begin
       iFirstdirty := rCopied.FirstDirty(iFirstClean);
@@ -3523,7 +3738,11 @@ begin
 //        Debug.Log('CRITICAL');
     end;
     r._dirty := rCopied._dirty;
+{$IFDEF RAB_PACKED_DIRTY}
+    r.DirtyCount := rCopied.DirtyCount;
+{$ELSE}
     r.AnyDirty := rCopied.AnyDirty;
+{$ENDIF}
 
   finally
     rCopied.free;
@@ -3534,14 +3753,14 @@ begin
 end;
 
 function TVirtualDisk_Advanced.GetBusiestPhysical
-  (const vart: PVirtualAddressRecord): ni;
+  (const vart: PVirtualAddressRecord; const lba: int64): ni;
 {$IFNDEF OLD}
 var
   t: ni;
 begin
 {$DEFINE SKIP_BY_BLOCK_INDEX}
 {$IFDEF SKIP_BY_BLOCK_INDEX}
-  exit((vart.startingblock shr BIG_BLOCK_BLOCK_SHIFT) mod vart.filecount);
+  exit((lba shr STRIPE_SHIFT) mod vart.filecount);
 {$ELSE}
   result := lastdriveskipped+1;
   if result > vart.FileCount then
@@ -3641,6 +3860,27 @@ begin
 
 end;
 
+function TVirtualDisk_Advanced.GetNextDegauss: int64;
+begin
+  result := -1;
+{$IFDEF DEGAUSS}
+  Lock;
+  try
+    if length(FDegaussList) = 0 then
+      exit(-1);
+
+    result := FDegaussList[0];
+    for var t := 1 to high(FDegaussList) do
+      FDegausslist[t-1] := FDegausslist[t];
+
+    setlength(FDegaussList, length(FDegaussList)-1);
+
+  finally
+    Unlock;
+  end;
+{$ENDIF}
+end;
+
 function TVirtualDisk_Advanced.GEtCachedSTripes: ni;
 begin
   result := FRaidsByBlock.count;
@@ -3651,7 +3891,7 @@ var
   raidlock: ni = 0;
 function TVirtualDisk_Advanced.TryFetchRaid(r: TRaidAssembledBuffer): TRaidFetchStatus;
 var
-  t: ni;
+//  t: ni;
   ps: TPayloadStream;
   fp: PFilePhysical;
   bo, so: int64;
@@ -3720,7 +3960,7 @@ begin
     begin
 
       if not bInReconstitution then begin
-        Debug.log(self, 'Raid has undefined locations, force reconstitution: '+localvat.debugstring);
+//        Debug.log(self, 'Raid has undefined locations, force reconstitution: '+localvat.debugstring);
         ForceReconstitution(localvat);
       end;
     end;
@@ -3754,7 +3994,7 @@ begin
     if AllowDriveSkipping then
     begin
       if localvat.FileCount > 1 then
-        driveToSkip := GetBusiestPhysical(localvat);
+        driveToSkip := GetBusiestPhysical(localvat, r.StartingBlock);
 
       lastDriveSkipped := drivetoSkip;
     end;
@@ -3775,7 +4015,7 @@ begin
     //CANCEL ALL PREFETCHES!  else we might slow down uncomfortably
     if assigned(self.sfthread) then
       self.sfthread.runhot := false;
-    for t := 0 to localvat.FileCount - 1 do
+    for var t := 0 to localvat.FileCount - 1 do
     begin
       // get the file-physical record
       fp := @localvat.FPs[t];
@@ -3793,7 +4033,7 @@ begin
       end;
     end;
 
-    for t := 0 to localvat.FileCount - 1 do begin
+    for var t := 0 to localvat.FileCount - 1 do begin
       rc.pieceDebug[t].Init;
     end;
   //  rs7.EndTime;
@@ -3802,8 +4042,11 @@ begin
 
     rc.REset;
 
+    if r.startingblock = 262656 then
+      Debug.Log('here raid!');
+
     //make a quick pass.. are all of our addresses sane?
-    for t := 0 to localvat.FileCount - 1 do
+    for var t := 0 to localvat.FileCount - 1 do
     begin
       ps := nil;
       // get the file-physical record
@@ -3834,18 +4077,23 @@ begin
       end;
     end;
 
-    for t := 0 to localvat.FileCount - 1 do
+//    if r.startingblock = 262656 then
+//      Debug.Log('here raid!');
+
+    // determine the block-size for the RAID pieces
+    bs := rc.GetPieceSizePAdded(localvat.FileCount);
+
+    for var t := 0 to localvat.FileCount - 1 do
     begin
       ps := nil;
 
-      if t = driveToSkip then
+      if (not rc.invalid_determined) and (t = driveToSkip) then
         continue;
 
       // get the file-physical record
       fp := @localvat.FPs[t];
 
-      // determine the block-size for the RAID pieces
-      bs := rc.GetPieceSizePAdded(localvat.FileCount);
+
       a[t] := nil;
 
       // get the payload stream
@@ -3858,9 +4106,6 @@ begin
 
         if ps <> nil then
         begin
-
-
-
           // determine the byte offset in the big-block
           byte_off := bs * so;
           if (byte_off < 0) then
@@ -3877,11 +4122,16 @@ begin
   {$IFNDEF ASYNC_READS}
               ps.Seek(seekpos, soBeginning);
   {$ENDIF}
+{$IFDEF PIECE_DEBUG}
                 rc.pieceDebug[t].piece_idx := t;
                 rc.pieceDebug[t].big_block_index := tidx;
-                rc.pieceDebug[t].PayloadAddr := ps.Position;
+                rc.pieceDebug[t].PayLoadPieceAddr := ps.Position;
+                rc.pieceDebug[t].PayloadBigBlockAddr := fp.PhysicalAddr_afterheader;
                 rc.pieceDebug[t].FileOrigin := ps.FileNAme;
-                rc.pieceDebug[t].BigBlockFileBaseAddr :=  fp.PhysicalAddr_afterheader;
+                rc.pieceDebug[t].VirtualBigBlockAddr :=  tidx shl BIG_BLOCK_BYTE_SHIFT;
+                rc.pieceDebug[t].VirtualPieceAddr :=  byte_off;
+{$ENDIF}
+
               // write piece of data to physical location
               if not ps.IsAfterEOF(seekpos) then
               begin
@@ -3958,7 +4208,7 @@ begin
   //  Self.TryHintNExtBigBlock(localvat.GetVatIndex+1, localvat);
     //WaitForMultipleObjects(hidx, @waithandles[0], true, $FFFFFFFF);
   //  rs2.begintime;
-    for t := 0 to localvat.FileCount - 1 do
+    for var t := 0 to localvat.FileCount - 1 do
     begin
       if t = driveToSkip then
         continue;
@@ -3967,12 +4217,12 @@ begin
         continue;
       a[t].waitfor;
       fp := @localvat.FPs[t];
-      ps := PayloadStreams[fp.FileID];
-      ps.stats.AddStat(a[t].executiontime);
-
-      fp := @localvat.FPs[t];
       if fp.FileID < 0 then
         continue;
+      ps := PayloadStreams[fp.FileID];
+      if ps <> nil then
+        ps.stats.AddStat(a[t].executiontime);
+
 
       if assigned(a[t]) then
       begin
@@ -4001,7 +4251,7 @@ begin
     //or >= 2 bad pieces found (with drive skipping enabled)
     if (rc.invalid_count > BoolToint(AllowDriveSkipping)) then
     begin
-
+      AddToDegaussList(tidx);
       { BPF }
       if ((rc.invalid_count - BoolToint(AllowDriveSkipping)) <=1) and (rc.drives > 1)  then
       begin
@@ -4017,7 +4267,8 @@ begin
           { BPF } // determine the byte offset in the big-block
           { BPF } byte_off := bs * so;
           { BPF } fp := @localvat.FPs[driveToSkip];
-          { BPF } ps := PayloadStreams[fp.FileID];
+                  ps := nil;
+          { BPF } if ValidPayloadID(fp.fileid) then ps := PayloadStreams[fp.FileID];
           { BPF } if ps = nil then
           { BPF } begin
           { BPF }   FopStatus := 'Broken raid';
@@ -4051,7 +4302,6 @@ begin
 
         result := TRaidFetchStatus.rsRepaired;
         if rc.invalid_piece >= 0 then begin
-          Debug.Log('not sure why I''m here');
 {$IFDEF KILL_BB_ON_BROKEN_RAID}
           Debug.Log('Marking Piece '+rc.invalid_piece.tostring+' invalid (-1)');
           localvat.FPs[rc.invalid_piece].FileID := -1;
@@ -4071,26 +4321,34 @@ begin
       begin
         FopStatus := 'Broken raid';
         // Foperational := false;
-        Debug.Log('Recover From Archive!!!!!');
-        if (shipper.Archive <> '') and Shipper.Enabled then begin
-          shipper.pauseforfetch := true;
-          try
+
+        if (shipper.Archive <> '') then begin
+          Debug.Log('Recover From Archive!!!!!');
+          if (shipper.Archive <> '') and Shipper.Enabled then begin
+            shipper.pauseforfetch := true;
             try
-              Debug.Log('Fetch Log for stripe repair @block '+inttohex(r.startingblock,1));
-              while not shipper.FetchLog(r.StartingBlock, RAID_STRIPE_SIZE_IN_BLOCKS,r.byteptr(0)) do begin
-                FopStatus := 'Broken raid';
-                Debug.Log('Retry Fetch Log');
-                sleep(1000);
+              try
+                Debug.Log('Fetch Log for stripe repair @block '+inttohex(r.startingblock,1));
+                while not shipper.FetchLog(r.StartingBlock, RAID_STRIPE_SIZE_IN_BLOCKS,r.byteptr(0)) do begin
+                  FopStatus := 'Broken raid';
+                  Debug.Log('Retry Fetch Log');
+                  sleep(1000);
+                end;
+                r.SetDirtyRange(0, RAID_STRIPE_SIZE_IN_BLOCKS,true);
+                r.ReadFromDisk := true;
+                flushRaid(r);
+                result := rsRecoveredFromArchive;
+              finally
               end;
-              r.SetDirtyRange(0, RAID_STRIPE_SIZE_IN_BLOCKS);
-              r.ReadFromDisk := true;
-              flushRaid(r);
-              result := rsRecoveredFromArchive;
             finally
+              shipper.pauseforfetch := false;
             end;
-          finally
-            shipper.pauseforfetch := false;
           end;
+        end else begin
+          Debug.Log('No archive available for recovery, erasing!!!!!');
+          r.SetDirtyRange(0, RAID_STRIPE_SIZE_IN_BLOCKS, true);
+          r.ReadFromDisk := true;
+          flushRaid(r);
         end;
         exit;////<<---------------------EARLY EXIT
       end;
@@ -4098,20 +4356,58 @@ begin
     end;
 
 
-    rc.PiecesToSingle;
-    if r.StartingBlock =   1713351168 then
-      Debug.Log('CS: '+commaize(r.GetChecksum));
 
+{$IFDEF QI_RAID_READ}
+    var qi := InlineProcQI( procedure
+      begin
+{$ENDIF}
+        rc.PiecesToSingle;
+{$IFDEF QI_RAID_READ}
+      end
+    );
 
-    r.ReadFromDisk := true;
+    try
+{$ENDIF}
+{$IFDEF PREFETCH_ON_READ}
+{x$DEFINE QUICK_PREFETCH}
+{$IFDEF QUICK_PREFETCH}
+    for var t := 0 to localvat.FileCount - 1 do
+    begin
+      if t = driveToSkip then
+        continue;
 
-
-    if bFlushimmediate then begin
-      Debug.Log(self, 'Writing reconstructed RAID piece');
-      FlushRaid(r);
+      fp := @localvat.FPs[t];
+      if fp.FileID < 0 then
+        continue;
+      ps := PayloadStreams[fp.FileID];
+      if ps <> nil then
+        ps.BeginAdaptiveRead(nil, 262144, true, true);
     end;
+{$ELSE}
+      PrefetchAllPayloads(((r.startingblock) shl BLOCKSHIFT)+RAID_STRIPE_SIZE_IN_BYTES,false,false);
+{$ENDIF}
+{$ENDIF}
 
-    PrefetchAllPayloads(((r.startingblock) shl BLOCKSHIFT)+RAID_STRIPE_SIZE_IN_BYTES,false,false);
+  //    if r.StartingBlock =   1713351168 then
+  //      Debug.Log('CS: '+commaize(r.GetChecksum));
+
+
+      r.ReadFromDisk := true;
+
+
+      if bFlushimmediate then begin
+        Debug.Log(self, 'Writing reconstructed RAID piece');
+        r.SetdirtyRange(0,1 shl STRIPE_SHIFT, true);
+  //      FlushRaid(r);
+      end;
+{$IFDEF QI_RAID_READ}
+      qi.Waitfor;
+    finally
+      qi.Free;
+    end;
+{$ENDIF}
+
+
   //  rs3.EndTime;
   //  if rs3.NewBAtch then
   //    Debug.Log('Post Read Time: '+rs3.DebugTiming);
@@ -4229,7 +4525,7 @@ var
 begin
   result := bsNoBuffersToFlush;
   if bOnlyIfDiskInactive then begin
-    if (hint_requests_waiting or (queue.estimated_queue_size > 0))  then begin
+    if (hint_rdtp_waiting or hint_requests_waiting or (queue.estimated_queue_size > 0))  then begin
       exit(bsdiskTooActive);
     end;
   end;
@@ -4269,7 +4565,7 @@ begin
       break;
     end;
     inc(iStartingBlock, RAID_STRIPE_SIZE_IN_BLOCKS);
-    if (hint_requests_waiting or (queue.estimated_queue_size > 0)) {and (gettimesince(tm) > 100)} then begin
+    if (hint_rdtp_waiting or hint_requests_waiting or (queue.estimated_queue_size > 0)) {and (gettimesince(tm) > 100)} then begin
       exit(bsDisktooActive);
     end;
   until itm = nil;
@@ -4291,7 +4587,6 @@ begin
 //  bOnlyIfDiskInactive := false;
 //  bFindAllDirty := false;
   result := bsNoBuffersToFlush;
-  {$DEFINE ALWAYS_FORCE_FLUSH_LOCK}
   {$IFNDEF ALWAYS_FORCE_FLUSH_LOCK}
   if bForceLock then begin
   {$ENDIF}
@@ -4384,7 +4679,7 @@ begin
         end;
 
         if gettimesince(tmNow) > GENERAL_FLUSH_TIMEOUT  then begin
-          Debug.Log('Flush LOCKED for too long');
+          Debug.Log('Flush LOCKED for too long '+gettimesince(tmNow).tostring);
           result := bsFlushingTakingTooLong;
           break;
         end;
@@ -4415,7 +4710,8 @@ var
   tmStart, tmEnd: ticker;
   bRetry: boolean;
 begin
-
+  if REadonly then exit;
+  byte_off := 0;
   if r.Archive then begin
     if r.AnyDirty then begin
       zonerevs.IncrementZoneRevForStartingBlock(r.StartingBlock);
@@ -4465,127 +4761,140 @@ begin
 
       ps := PayloadStreams[fp.fileid];
       rc.pieceDebug[t].piece_idx := t;
-      rc.pieceDebug[t].FileOrigin := ps.FileName;
       rc.pieceDebug[t].big_block_index := tidx;
-      rc.pieceDebug[t].PayloadAddr := -1;
-      rc.pieceDebug[t].BigBlockFileBaseAddr := fp.PhysicalAddr_afterheader;
+      rc.pieceDebug[t].PayLoadPieceAddr := ps.Position;
+      rc.pieceDebug[t].PayloadBigBlockAddr := fp.PhysicalAddr_afterheader;
+      rc.pieceDebug[t].FileOrigin := ps.FileNAme;
+      rc.pieceDebug[t].VirtualBigBlockAddr :=  tidx shl BIG_BLOCK_BYTE_SHIFT;
+      rc.pieceDebug[t].VirtualPieceAddr :=  byte_off;
+
     end;
   end;
 
-  rc.SingleToPieces;
+  var qi := InlineProcQI( procedure
+    begin
+      rc.SingleToPieces;
+    end
+  );
+  try
 
 
-  repeat
-    bRetry := false;
+    repeat
+      bRetry := false;
+      for t := 0 to localvat.FileCount - 1 do
+      begin
+        fp := @localvat.FPs[t];
+        if fp.FileID < 0 then begin
+          NewPhysicalBlockAddress(BigBlockAlign(r.StartingBlock * BLOCKSIZE),localvat.priority_target,localvat.priority_target, PLACED_BY_TABLEERR0);
+          bRetry := true;
+          break;
+        end;
+        ps := PayloadStreams[fp.fileid];
+        if ps = nil then begin
+          Debug.Log(self, 'Payload stream is nil so marking piece invalid (-1)');
+          fp.FileID := -1;
+          AddtoDegaussList(t);
+          NewPhysicalBlockAddress(BigBlockAlign(r.StartingBlock * BLOCKSIZE),localvat.priority_target,localvat.priority_target, PLACED_BY_TABLEERR1);
+          bRetry := true;
+          break;
+        end;
+        if ((fp.PhysicalAddr_afterheader-sizeof(TVirtualDiskbigblockheader))+GetBigBlockSizeInBytes(localvat.filecount,true)) > ps.Size then begin
+          NewPhysicalBlockAddress(BigBlockAlign(r.StartingBlock * BLOCKSIZE),localvat.priority_target,localvat.priority_target, PLACED_BY_TABLEERR2);
+          bRetry := true;
+          break;
+        end;
+      end;
+    until not bRetry;
+
     for t := 0 to localvat.FileCount - 1 do
     begin
+      // get the file-physical record
       fp := @localvat.FPs[t];
-      if fp.FileID < 0 then begin
-        NewPhysicalBlockAddress(BigBlockAlign(r.StartingBlock * BLOCKSIZE),localvat.priority_target,localvat.priority_target, PLACED_BY_TABLEERR0);
-        bRetry := true;
-        break;
-      end;
-      ps := PayloadStreams[fp.fileid];
-      if ps = nil then begin
-        Debug.Log(self, 'Payload stream is nil so marking piece invalid (-1)');
-        fp.FileID := -1;
-        NewPhysicalBlockAddress(BigBlockAlign(r.StartingBlock * BLOCKSIZE),localvat.priority_target,localvat.priority_target, PLACED_BY_TABLEERR1);
-        bRetry := true;
-        break;
-      end;
-      if ((fp.PhysicalAddr_afterheader-sizeof(TVirtualDiskbigblockheader))+GetBigBlockSizeInBytes(localvat.filecount,true)) > ps.Size then begin
-        NewPhysicalBlockAddress(BigBlockAlign(r.StartingBlock * BLOCKSIZE),localvat.priority_target,localvat.priority_target, PLACED_BY_TABLEERR2);
-        bRetry := true;
-        break;
-      end;
-    end;
-  until not bRetry;
 
-  for t := 0 to localvat.FileCount - 1 do
-  begin
-    // get the file-physical record
-    fp := @localvat.FPs[t];
+      // get the payload stream
+      if fp.FileID < 0 then
+      begin
+        ps := nil;
+      end
+      else
+      begin
+        ps := PayloadStreams[fp.FileID];
+      end;
 
-    // get the payload stream
-    if fp.FileID < 0 then
-    begin
-      ps := nil;
-    end
-    else
-    begin
-      ps := PayloadStreams[fp.FileID];
-    end;
-
-    if ps = nil then
-    begin
-      // raise ECritical.create('wtf');
-      // this piece cannot be flushed
-      // find new functional piece
-      ps := GEtUnderQuotaStream(localvat, newfunct_id, false);
       if ps = nil then
       begin
+        // raise ECritical.create('wtf');
+        // this piece cannot be flushed
+        // find new functional piece
+        ps := GEtUnderQuotaStream(localvat, newfunct_id, false);
+        if ps = nil then
+        begin
+          FOperational := false;
+          FopStatus := 'need new payloads for reconsitution of bad blocks';
+          continue; // our data is corrupt
+        end;
+      end;
+
+      // determine the block offset in the big-block
+      bo := r.StartingBlock - localvat.StartingBlock; // block offset
+      if (bo < 0) or (bo >= _BIG_BLOCK_SIZE_IN_BLOCKS) then
+      begin
+        FopStatus := 'block offset invalid ' + inttostr(bo);
         FOperational := false;
-        FopStatus := 'need new payloads for reconsitution of bad blocks';
-        continue; // our data is corrupt
+        ForceReconstitution(localvat);
+
       end;
-    end;
 
-    // determine the block offset in the big-block
-    bo := r.StartingBlock - localvat.StartingBlock; // block offset
-    if (bo < 0) or (bo >= _BIG_BLOCK_SIZE_IN_BLOCKS) then
-    begin
-      FopStatus := 'block offset invalid ' + inttostr(bo);
-      FOperational := false;
-      ForceReconstitution(localvat);
+      // determine the block-size for the RAID pieeces
+      bs := rc.GetPieceSizePAdded(localvat.FileCount);
 
-    end;
+      // determine STRIPE offset (in number of stripes)
+      so := bo shr STRIPE_SHIFT;
 
-    // determine the block-size for the RAID pieeces
-    bs := rc.GetPieceSizePAdded(localvat.FileCount);
+      // determine the byte offset in the big-block
+      byte_off := bs * so;
 
-    // determine STRIPE offset (in number of stripes)
-    so := bo shr STRIPE_SHIFT;
-
-    // determine the byte offset in the big-block
-    byte_off := bs * so;
-
-{$IFDEF USESEEKLOCK} ps.SeekLock; {$ENDIF}
-    try
-      // seek to [start of the physical location] + [byte offset post raid]
-
-//      if r.StartingBlock = 1664 then
-//        debug.Log('trap raid flush');
-
-
-      // write piece of data to physical location
-
-//      if r.StartingBlock = 1664 then begin
-//        debug.Log('trap raid flush 2');
-//        debug.log(memorydebugstring(pbyte(@rc.pieces[t])+48128, 512),'');
-//      end;
-
-      tmStart := GetHighResTicker;
-      {$IFNDEF PAYLOAD_IS_UNBUFFERED}
-//      ps.Lock;
+  {$IFDEF USESEEKLOCK} ps.SeekLock; {$ENDIF}
       try
-        ps.Seek(fp.PhysicalAddr_afterheader + byte_off, soBeginning);
-        Stream_GuaranteeWrite(ps, pbyte(@rc.pieces[t]), bs);
-      finally
-        //ps.Unlock;
-      end;
+        // seek to [start of the physical location] + [byte offset post raid]
 
-      {$ELSE}
-      ps.WriteBehind(fp.PhysicalAddr_afterheader + byte_off, pbyte(@rc.pieces[t]), bs);
-      ps.prefetchwritemode := true;
-      ps.prefetchposition := fp.PhysicalAddr_afterheader+byte_off;
-      {$ENDIF}
-      tmEnd := GetHighResTicker;
-      ps.stats.AddStat(tmEnd - tmStart);
-    finally
-{$IFDEF USESEEKLOCK} ps.seekunlock; {$ENDIF}
+  //      if r.StartingBlock = 1664 then
+  //        debug.Log('trap raid flush');
+
+
+        // write piece of data to physical location
+
+  //      if r.StartingBlock = 1664 then begin
+  //        debug.Log('trap raid flush 2');
+  //        debug.log(memorydebugstring(pbyte(@rc.pieces[t])+48128, 512),'');
+  //      end;
+
+        tmStart := GetHighResTicker;
+        {$IFNDEF PAYLOAD_IS_UNBUFFERED}
+  //      ps.Lock;
+        try
+          ps.Seek(fp.PhysicalAddr_afterheader + byte_off, soBeginning);
+          qi.WAitFor();
+          Stream_GuaranteeWrite(ps, pbyte(@rc.pieces[t]), bs);
+        finally
+          //ps.Unlock;
+        end;
+
+        {$ELSE}
+        ps.WriteBehind(fp.PhysicalAddr_afterheader + byte_off, pbyte(@rc.pieces[t]), bs);
+        ps.prefetchwritemode := true;
+        ps.prefetchposition := fp.PhysicalAddr_afterheader+byte_off;
+        {$ENDIF}
+        tmEnd := GetHighResTicker;
+        ps.stats.AddStat(tmEnd - tmStart);
+      finally
+  {$IFDEF USESEEKLOCK} ps.seekunlock; {$ENDIF}
+      end;
     end;
+    PrefetchAllPayloads((r.StartingBlock shl BLOCKSHIFT) + RAID_STRIPE_SIZE_IN_BYTES, false,true);
+  finally
+    qi.free;
   end;
-  PrefetchAllPayloads((r.StartingBlock shl BLOCKSHIFT) + RAID_STRIPE_SIZE_IN_BYTES, false,true);
 
   //r.ClearDirty;
 end;
@@ -4593,7 +4902,7 @@ end;
 function TVirtualDisk_Advanced.ForceReconstitution
   (pvar: PVirtualAddressRecord): boolean;
 begin
-  result := Reconstitute(pvar);
+  result := Reconstitute(true,pvar);
 end;
 
 procedure TVirtualDisk_Advanced.Front_CalculateRecommendedPrefetches;
@@ -4716,7 +5025,10 @@ begin
 
     //VOLATILE read because seeking this pointer should not change at any time
     // the disk is running
-    localvat := Self.tablecopy[nextindex].rec;
+    if (nextindex > 0) and (nextindex <= high(self.tablecopy))then
+      localvat := Self.tablecopy[nextindex].rec
+    else
+      exit(repNothingToDo);
 
     if localvat.filecount <= 0 then
       exit(repNothingToDo);
@@ -4725,7 +5037,7 @@ begin
     fid := localvat.FPs[0].FileID;//look at the first payload's priority for the zone
 
     //if not provisioned then exit
-    if fid < 0 then
+    if not ValidPayloadID(fid) then
       exit(repNothingToDo);
 
 
@@ -4765,7 +5077,7 @@ begin
     status := 'Reconstitute '+inttostr(nextindex);
     zl.log(nextindex, nextindex.tohexstring+' is switching from priority '+pri.tostring+' to '+pri_target.tostring);
 
-    vd.Reconstitute(localvat);
+    vd.Reconstitute(false, localvat);
 {x$IFDEF NU}
     //after reconsistution, check that priority_target remains the same
     //if it changed then we should skip targeting this priority from now on
@@ -4822,6 +5134,8 @@ begin
 
   Loop := true;
   runhot := false;
+  if vd.ReadOnly then
+    exit;
 
 {x$IFNDEF DISABLE_3AM_ENFORCEMENT}
   if not vd.IsOnline then begin
@@ -4829,7 +5143,7 @@ begin
     exit;
   end;
 {x$ENDIF}
-  if vd.hint_requests_waiting then begin
+  if vd.hint_rdtp_waiting or vd.hint_requests_waiting then begin
     runhot := false;
     exit;
   end;
@@ -5062,7 +5376,7 @@ begin
         iSizeMax := vd.vat.PayloadConfig.filelist[t].size_limit;
         //if no quote is defined, allow currentsize + free space on path
         if (iSizeMax < 0) then
-          iSizeMAx := GetFreeSpaceOnPath(extractfilepath(ps.FileNAme))+ps.Size;
+          iSizeMAx := GetFreeSpaceOnPath(extractfilepath(ps.FileNAme))+ps.Size-(BIG_BLOCK_SIZE_IN_BYTES*4);
         //determine how much gap space is in the file and add that to total estimate
         iSizeMax := iSizeMax{+ps.gaps.sum};
 
@@ -5311,8 +5625,10 @@ begin
       continue;
 
     if GetFreeSpaceOnPath(extractfilepath(str.FileName)) <
-      (int64(BIG_BLOCK_SIZE_IN_BYTES) * 4) then
+      (int64(BIG_BLOCK_SIZE_IN_BYTES) * REQUIRED_BLOCKS_FREE_SPACE) then begin
+      debug.log('free space is limited on '+extractfilepath(str.FileName)+'  will NOT use '+str.filename);
       continue;
+    end;
 
     if (i1 < i2) or (i2 = -1) then
     begin
@@ -5377,17 +5693,17 @@ begin
     exit;
   iFree := GetFreeSpaceOnPath(extractfilepath(str.FileName));
   result := iFree >=
-    (int64(BIG_BLOCK_SIZE_IN_BYTES) * 4);
+    (int64(BIG_BLOCK_SIZE_IN_BYTES) * REQUIRED_BLOCKS_FREE_SPACE);
   IF not RESULT THEN BEGIN
     Debug.log(self, str.filename+' is low on space.  Size: '+friendlysizename(iFree));
   end else begin
-  i1 := str.Size;
-  i1 := i1 + GetBigBlockSizeInBytes(1, true);
+    i1 := str.Size;
+    i1 := i1 + GetBigBlockSizeInBytes(1, true);
 
-  i2 := vat.PayloadConfig.filelist[t].size_limit;
+    i2 := vat.PayloadConfig.filelist[t].size_limit;
 
-  result := ((i1 < i2) or (i2 = -1)) and
-    (vat.PayloadConfig.filelist[t].priority >= 0);
+    result := ((i1 < i2) or (i2 = -1)) and
+      (vat.PayloadConfig.filelist[t].priority >= 0);
   END;
 end;
 
@@ -5781,12 +6097,20 @@ begin
     rab := result;
 
 
-    if SyncAwayBuffer(rab) then
+    rsWrite0.BeginTime;
+    if SyncAwayBuffer(rab) then begin
+//      rsWrite1.BeginTime;
       // sync up to half the buffers if the syncaway buffer was dirty
       // (this means we're in heavy write mode) and flushing the buffers
       // together means that we'll have a better chance to perform write combines.
-      FlushBuffers(true, 1000, true, true);
+//      FlushBuffers(true, 1000, true, true);
+//      rsWrite1.Endtime;
+//      rsWrite1.OptionDebug('rsWrite1');
+    end else begin
 
+    end;
+    rsWrite0.Endtime;
+    rsWrite0.OptionDebug('rsWrite0');
 {$IFDEF USE_VAT_HINTS}
     if result <> nil then
     begin
@@ -5832,6 +6156,7 @@ var
   vidx: int64;
   physaddrs: array [0..31] of int64;
   a: array [0 .. 31] of ni;
+  qis: array [0..31] of TAnonymousIteratorQI;
   aidx: ni;
   payloadindex: ni;
   localvat: PVirtualAddressRecord;
@@ -5871,7 +6196,6 @@ begin
   // todo  2: this next line can be implementd with a mask
   result.InitVirgin(vIDX);
 
-
   // put all under-quota streams in the list
   aidx := 0;
   iPriority := iMinPriority;
@@ -5896,7 +6220,8 @@ begin
       t := FPrioritySort[tt].index;
       fs := FprioritySort[tt].str;
       if fs.Warnings > 0 then begin
-        self.vat.PayloadConfig.filelist[t].size_limit := fs.size;
+        Debug.Log(self.vat.PayloadConfig.filelist[t].name+' is running slow.  Could disrupt system.');
+//        self.vat.PayloadConfig.filelist[t].size_limit := fs.size;
         continue;
       end;
 
@@ -5996,60 +6321,31 @@ begin
 
   // now that we know how many there are... we need to expand them all
 {$IFDEF DEBUG_NEWPHYSICAL}zl.log(tindex,'New physical will span '+result.filecount.tostring+' disks.');{$ENDIF}
-  for t := 0 to result.FileCount - 1 do
+  var res := result;
   begin
-    tt := result.FPs[t].FileID;
-    fs := PayloadStreams[tt];
-    fs.CheckInit;
-    // blockstart := fs.Size;
-
-    iOldSize := fs.Size;
-    iExpandBy := GetBigBlockSizeInBytes(result.FileCount, false);
-    fp := @result.FPs[t];
-
-    repeat
-      bRetry := false;
-{$DEFINE TRUST_EXPAND_TO_FILL_GAPS}
-{$IFNDEF TRUST_EXPAND_TO_FILL_GAPS}
-      if physaddrs[tt] < 0 then begin
+{$DEFINE MULTI_EXPAND}
+{$IFDEF MULTI_EXPAND}
+    for t := 0 to result.FileCount - 1 do
+    begin
+      qis[t] := InlineIteratorProcQI( t, procedure (idx: ni)
+        begin
+          WriteExpandedVar(virtual_addr, idx, res, @physaddrs[0]);
+        end
+      );
+  //    WriteExpandedVar(virtual_addr, t, result, @physaddrs[0]);
+    end;
+    for t := 0 to result.FileCount - 1 do
+    begin
+      qis[t].waitfor;
+      qis[t].free;
+      qis[t] := nil;
+    end;
+    result := res;
+{$ELSE}
+    for t := 0 to result.FileCount - 1 do
+      WriteExpandedVar(virtual_addr, t, res, @physaddrs[0]);
+    result := res;
 {$ENDIF}
-        fp.PhysicalAddr_afterheader := fs.Expand(iExpandBy, virtual_addr);
-{$IFNDEF TRUST_EXPAND_TO_FILL_GAPS}
-      end
-      else begin
-        fp.physicaladdr := physaddrs[tt]+sizeof(TVirtualDiskBigBlockHeader);
-        bbh.HeaderStart := physaddrs[tt];
-        bbh.PayloadStart := fp.physicaladdr;
-        bbh.VirtualAddress := virtual_addr;
-        bbh.TotalSizeIncludingHeaders := GetBigBlockSizeInBytes(result.FileCount, true);
-        bbh.UpdateFooterStart;
-
-        bbh.UpdateCheckSum;
-        fs.Seek(bbh.HeaderStart, soBeginning);
-        // Header
-        Stream_GuaranteeWrite(fs, pbyte(@bbh), sizeof(bbh));
-        // payload
-        Stream_WriteZeros(fs, iExpandBy);
-        // footer
-        Stream_GuaranteeWrite(fs, pbyte(@bbh), sizeof(bbh));
-//        fs.gaps.ConsumeRegion(physaddrs[t], iExpandBy+(sizeof(TVirtualDiskBigBlockHeader) shl 1));
-      end;
-{$ENDIF}
-      fs.gaps.Length := fs.Size;
-      iStart := fp.PhysicalAddr_afterheader-sizeof(TVirtualdiskbigblockheader);
-      iEnd := iStart + (iExpandBy-1);
-      iExpandExt := iExpandBy+(sizeof(TVirtualDiskBigBlockHeader) shl 1);
-      if not fs.gaps.canconsumeregion(iStart,iExpandExt) then begin
-        zl.log(tindex,'Payload reports that it cannot consume region that was previously chosen @'+inttohex(iStart,1)+' sz='+friendlysizename(iExpandExt));
-        logrepair(tt,fs.gaps.GetDebugGaps);
-        logrepair(t,'wtf... cannot consume region?  '+inttohex(iStart,1)+'-'+inttohex(iEnd, 1));
-        StreamHasGaps(result.FPs[t].FileID, physaddrs[tt]);
-        raise ECritical.create('crash!');
-        bRetry := true;
-      end;
-    until bRetry = false;
-
-    // !NO! GETS Consumed by RecordVarInGapTrees//FGapTrees[fp.fileid].ConsumeRegion(iOldSize, fs.size-iOldSize);
   end;
 
   result.StartingBlock := virtual_addr shr BLOCKSHIFT;
@@ -6151,18 +6447,18 @@ begin
 
     ps := PayloadStreams[t];
     if ps <> nil then begin
-      {$IFDEF PAYLOAD_IS_UNBUFFERED}
+      {$IFNDEF PAYLOAD_IS_UNBUFFERED}
       ubs := ps.understream as TUnbufferedFileSTream;
       if bSTopOnHit then
         PrefetchPayload(t, self.back_prefetchposition, 1, ubs, bWriteMode)
       else
         PrefetchPayload(t, self.back_prefetchposition, 32, ubs, bWriteMode);
       {$ELSE}
-//      ubs := ps;
-//      if bSTopOnHit then
-//        PrefetchPayload(t, self.back_prefetchposition, 1, ubs, bWriteMode)
-//      else
-//        PrefetchPayload(t, self.back_prefetchposition, 32, ubs, bWriteMode);
+      ubs := ps;
+      if bSTopOnHit then
+        PrefetchPayload(t, self.back_prefetchposition, 1, ubs, bWriteMode)
+      else
+        PrefetchPayload(t, self.back_prefetchposition, 32, ubs, bWriteMode);
 
       {$ENDIF}
 
@@ -6281,8 +6577,8 @@ var
 label
   rep;
 begin
-
   result := false;
+  if REadonly then exit;
   if self.vat.maxdiskspan in [1,2] then exit;
 
   l := GetLock;
@@ -6292,10 +6588,14 @@ begin
     if vart <> nil then
     begin
       ZoneLog(vart.vatindex,'Needs to RAID-up: '+vart.debugstring);
+{$IFDEF NO_BUDDYUP_OFFLINE}
       if not online_bigblocks[vart.vatindex] then begin
         Debug.Log('block to RAID-up was not online');
         exit(false);
       end;
+{$ELSE}
+    BringBigBlockOnline(vart.GetVatIndex);
+{$ENDIF}
 
       toS := GEtUnderQuotaStream(vart, toID, false);
       if toS <> nil then
@@ -6304,7 +6604,7 @@ begin
         ZoneLog(vart.vatindex,Status);
         // allocate space in a new file
         iOldSize := toS.Size;
-        phys := toS.Expand(GetBigBlockSizeInBytes(vart.FileCount, false),vart.StartingBlock * BLOCKSIZE, true);
+        phys := toS.Expand(vart.FileCount, GetBigBlockSizeInBytes(vart.FileCount, false),vart.StartingBlock * BLOCKSIZE, true);
                             //^ growth                                   ^ virtual address (to consume)^ ^consume
         if vart.HasFile(toID) then begin
           ZoneLog(vart.vatindex,'In RAIDUP, target already has fileid '+inttostr(toID));
@@ -6563,9 +6863,12 @@ begin
   qi.addr := addr;
   qi.count := cnt;
   qi.p := p;
+  qi.autodestroy := false;
   queue.AddItem(qi);
   queue.urgent := true;
-  qi.WAitFor();
+  if not qi.WAitFor() then begin
+    raise ECritical.create('Queue Item timed out '+qi.classname);
+  end;
   IF NOT qi.wasexecuted then
     raise ECritical.create('wtf');
   qi.Free;
@@ -6850,7 +7153,7 @@ begin
       if IsAllZeros(@da[0], BIG_BLOCK_SIZE_IN_BYTES) then begin
         if (vat.table[bbid].FileCount < 0) or (vat.table[bbid].IsDead) then
           vat.table[bbid].FileCount := 0;
-        exit(true);
+        exit(false);
       end;
 
 
@@ -6865,7 +7168,7 @@ begin
 {$ENDIF}
         FlushBuffersInBlockOrder(bbid shl BIG_BLOCK_BLOCK_SHIFT, false, false);
         //while not FlushBuffers(0) do sleep(0);
-        exit(true);
+        exit(false);
       end;
     finally
       shipper.pauseforfetch := false;
@@ -6883,9 +7186,10 @@ begin
 end;
 
 function TVirtualDisk_Advanced.Reconstitute
-  (pvar: PVirtualAddressRecord = nil): boolean;
+  (IsRepair: boolean; pvar: PVirtualAddressRecord = nil): boolean;
 var
   varsave: TVirtualAddressRecord;
+  fp: PFilePhysical;
   p: pbyte;
   t: fi;
   l: TLock;
@@ -6893,9 +7197,11 @@ var
   idx: int64;
   bDone: boolean;
 begin
+
 //  if pvar = nil then
 //    exit(false);
   result := false; // start with result false
+  if Readonly then exit;
   l := getLock; // lock the whole disk
   try
     if bInReconstitution then begin
@@ -6910,8 +7216,13 @@ begin
     //turn off stats (so we don't overscore stuff)
     disablecallupstats := true;
 
-    if pvar = nil then
+    if pvar = nil then begin
       pvar := vat.FindVARToReconstitute;
+      if pvar <>nil then
+        if pvar.NeedsRepair then
+          IsRepair := true;
+
+    end;
     // look for something to reconstitute... (priority < 0)???
 
     //if nothing found then exit
@@ -6997,7 +7308,8 @@ begin
 
 
           // wipe out the vat entry from the gap trees
-          RemoveVatFromGapTrees(varsave);
+          if not isRepair then
+            RemoveVatFromGapTrees(varsave);
 
         finally
           Freememory(p);
@@ -7019,13 +7331,23 @@ begin
     end;
     ShrinkPayloads; // shrink the payloads
     // flag all these files as potentially collapsable
-    for t := 0 to varsave.FileCount - 1 do
+    for t := 0 to lesserof(FPs_PER_VAR,varsave.FileCount) - 1 do
     begin
-      if (varsave.FPs[t].FileID > 2047) then
+      fp := @varsave.FPs[t];
+      if fp = nil then
+        continue;
+      if (fp.FileID > 2047) then
       begin
-        debug.Log('wtf');
+        debug.Log('wtf! FileID > 2047!');
+        continue;
       end;
-      Collapse(varsave.FPs[t].FileID);//WE CAN'T DO THIS HERE BECAUSE
+      if (fp.FileID < 0) then begin
+        continue;
+      end;
+      var ps := self.PayLoadStreams[varsave.FPs[t].fileid];
+      if ps <> nil then
+        ps.Collapsable := true;
+//      Collapse(varsave.FPs[t].FileID);//WE CAN'T DO THIS HERE BECAUSE
     end;
 
   finally
@@ -7147,6 +7469,7 @@ end;
 procedure TVirtualDisk_Advanced.RepairbigBlock(varr: PVirtualAddressRecord;
   ps: TPayloadStream; pbbh: TVirtualDiskBigBlockHeader);
 begin
+  if REadonly then exit;
   if pbbh.FooterStart + sizeof(TVirtualDiskBigBlockHeader) >= ps.Size then
   begin
     ps.GrowFile(pbbh.FooterStart + sizeof(TVirtualDiskBigBlockHeader));
@@ -7376,6 +7699,7 @@ end;
 
 procedure TVirtualDisk_Advanced.SaveVat(bAll: boolean);
 begin
+  if REadOnly then exit;
 {$IFDEF DETAILED_DEBUGGING}
   Debug.Log('Saving Vat with config '+self.debugvatstructure);
 {$ENDIF}
@@ -7799,9 +8123,11 @@ var
   iOldStart, iOldEnd: int64;
   l: TLock;
 begin
+  rsWrite.BeginTime;
   result := false;
   l := GetLock;
   try
+
     // flush buffer
     iStart := 0;
     iEnd := -1;
@@ -7860,7 +8186,6 @@ begin
 
       FlushRaid(buf);// this does the actual splitting into pieces based on VAT information
       result := true;
-
       FRaidsByDirtyTime.Remove(buf.treeItemDirtyTime, true);
       buf.ClearDirty;
     end;
@@ -7868,7 +8193,8 @@ begin
 
 
   finally
-
+    rsWrite.EndTime;
+    rsWrite.optionDebug('rsWrite');
     UnlockLock(l);
   end;
 
@@ -7916,7 +8242,7 @@ begin
         end;
       end;
     end else begin
-      if (self.SourceArchiveHost <> '') and (vat.table[vidx].FileCount <= 0) and (vat.table[vidx].FileCount <> FILE_COUNT_NO_FETCH_FROM_SOURCE_ARCHIVE) then begin
+      if (vat.table[vidx].FileCount <= 0) and (self.SourceArchiveHost <> '') and (vat.table[vidx].FileCount <> FILE_COUNT_NO_FETCH_FROM_SOURCE_ARCHIVE) then begin
         RebuildBigBlockFromSourceArchive(vidx);
       end;
     end;
@@ -7935,7 +8261,10 @@ begin
   if bForWriting then
   begin
     // if this is for writing then we just need to get a buffer, period
-    buffer := NeedRaid(lba, true)
+    rsWrite.BeginTime;
+    buffer := NeedRaid(lba, true);
+    rsWrite.EndTime;
+    rsWrite.OptionDebug('rswrite');
   end
   else
   begin
@@ -7973,6 +8302,8 @@ begin
       else begin
         // fetch blocks
         rsCacheHit.AddStat(0.0);
+        if lba = 262656 then
+          Debug.log('here');
         FixFetchRaid(buffer);
 
       end;
@@ -7988,13 +8319,13 @@ var
   tmLockSTart, tmDif: ticker;
 begin
   hint_requests_waiting := true;
-
+  ActiveUseTime := getticker;
   l := getLock;
   try
     GuaranteeReadBlocks(addr shr BLOCKSHIFT, cnt shr BLOCKSHIFT, p);
 
   finally
-    hint_requests_waiting := false;
+    hint_requests_waiting := false;//queue.EstimatedSize > 0;
     UnlockLock(l);
   end;
 
@@ -8013,6 +8344,7 @@ var
   l: Tlock;
 begin
   hint_requests_waiting := true;
+  ActiveUseTime := getticker;
   l := GetLock;
   try
 //    if (cnt mod BLOCKSIZE) <> 0 then
@@ -8023,7 +8355,8 @@ begin
 
     GuaranteeWriteBlocks(addr shr BLOCKSHIFT, cnt shr BLOCKSHIFT, p);
   finally
-    hint_requests_waiting := false;
+    hint_requests_waiting := false;//queue.EstimatedSize > 0;
+    ActiveuseTime := getticker;
     UnlockLock(l);
   end;
 end;
@@ -8209,7 +8542,7 @@ begin
     buffer.archive := true;
     for i := ioffset to (ioffset + result) - 1 do
     begin
-      buffer.dirty[i] := true;//todo 1 - use byte pointer instead of array indexing
+      buffer.__dirty[i] := true;//todo 1 - use byte pointer instead of array indexing
       // !FIXME! Set them all dirty?  Is that important?
 
     end;
@@ -8409,6 +8742,81 @@ begin
 //  qi.waitfor;
 //  qi.Free;
 {$ENDIF}
+end;
+
+procedure TVirtualDisk_Advanced.WriteExpandedVar(virtual_addr: int64; t: ni; var vart: TVirtualAddressRecord; physaddr: Pint64);
+begin
+    var tt := vart.FPs[t].FileID;
+    var fs := PayloadStreams[tt];
+    fs.CheckInit;
+    // blockstart := fs.Size;
+
+    var iOldSize := fs.Size;
+    var iExpandBy := GetBigBlockSizeInBytes(vart.FileCount, false);
+    var fp : PFilePhysical := @vart.FPs[t];
+
+    var bRetry := false;
+    repeat
+      bRetry := false;
+{$DEFINE TRUST_EXPAND_TO_FILL_GAPS}
+{$IFNDEF TRUST_EXPAND_TO_FILL_GAPS}
+      if physaddrs[tt] < 0 then begin
+{$ENDIF}
+        fp.PhysicalAddr_afterheader := fs.Expand(vart.FileCount, iExpandBy, virtual_addr);
+{$IFNDEF TRUST_EXPAND_TO_FILL_GAPS}
+      end
+      else begin
+        fp.physicaladdr := physaddrs[tt]+sizeof(TVirtualDiskBigBlockHeader);
+        bbh.HeaderStart := physaddrs[tt];
+        bbh.PayloadStart := fp.physicaladdr;
+        bbh.VirtualAddress := virtual_addr;
+        bbh.TotalSizeIncludingHeaders := GetBigBlockSizeInBytes(result.FileCount, true);
+        bbh.UpdateFooterStart;
+
+        bbh.UpdateCheckSum;
+        fs.Seek(bbh.HeaderStart, soBeginning);
+        // Header
+        Stream_GuaranteeWrite(fs, pbyte(@bbh), sizeof(bbh));
+        // payload
+        {$IFDEF DUMB_RAID_INIT}
+        Stream_WriteZeros(fs, iExpandBy);
+        {$ELSE}
+        var iz: int64 := 0;
+        var i1: uint64 := $FFFFFFFFFFFFFFFF;
+        var lPiece :=     TRaidCalculator.GetPieceSizePadded(result.filecount, false);
+        for var p := 0 to STRIPES_PER_BIG_BLOCK-1 do begin
+          Stream_GuaranteeWrite(fs, @iz, sizeof(iz));
+          Stream_GuaranteeWrite(fs, @iz, sizeof(iz));
+          Stream_GuaranteeWrite(fs, @i1, sizeof(i1));
+          Stream_WriteZeros(fs, lPiece);
+        end;
+        {$ENDIF}
+
+        // footer
+        Stream_GuaranteeWrite(fs, pbyte(@bbh), sizeof(bbh));
+//        fs.gaps.ConsumeRegion(physaddrs[t], iExpandBy+(sizeof(TVirtualDiskBigBlockHeader) shl 1));
+    // !NO! GETS Consumed by RecordVarInGapTrees//FGapTrees[fp.fileid].ConsumeRegion(iOldSize, fs.size-iOldSize);
+
+      end;
+{$ENDIF}
+      fs.gaps.Length := fs.Size;
+      var iStart : int64  := fp.PhysicalAddr_afterheader-sizeof(TVirtualdiskbigblockheader);
+      var iEnd : int64 := iStart + (iExpandBy-1);
+      var iExpandExt : int64 := iExpandBy+(sizeof(TVirtualDiskBigBlockHeader) shl 1);
+      if not fs.gaps.canconsumeregion(iStart,iExpandExt) then begin
+        var tindex := virtual_addr shr BIG_BLOCK_BLOCK_SHIFT;
+        zl.log(tindex,'Payload reports that it cannot consume region that was previously chosen @'+inttohex(iStart,1)+' sz='+friendlysizename(iExpandExt));
+        logrepair(tt,fs.gaps.GetDebugGaps);
+        logrepair(t,'wtf... cannot consume region?  '+inttohex(iStart,1)+'-'+inttohex(iEnd, 1));
+        var phys: int64;
+        StreamHasGaps(vart.FPs[t].FileID, phys);
+        var write_phys_to : PInt64 := PInt64(pbyte(physaddr) + (sizeof(int64)*tt));
+        write_phys_to^ := phys;
+        raise ECritical.create('crash!');
+        bRetry := true;
+      end;
+    until bRetry = false;
+
 end;
 
 procedure TVirtualDisk_Advanced.ZoneLog(idx: int64; sMessage: string);
@@ -8690,6 +9098,8 @@ begin
     iJustRead := 0;
     while cnt > 0 do
     begin
+      if lba = 262656 then
+        Debug.log('here');
       iJustRead := ReadBlocks(lba, cnt, @p[iRead * BLOCKSIZE]);
       inc(lba, iJustRead);
       dec(cnt, iJustRead);
@@ -9070,11 +9480,12 @@ begin
   result := nil;
   for t := low(table) to high(table) do
   begin
-    if table[t].HasFile(-1) then
+    if table[t].HasFile(-1) and (not table[t].IsDead) then
     begin
       result := @table[t];
       exit;
     end;
+
   end;
 end;
 
@@ -9637,6 +10048,11 @@ begin
   end;
 end;
 
+function TVirtualAddressRecord.GetNeedsRepair: boolean;
+begin
+  exit((placedby and $80) <>0);
+end;
+
 function TVirtualAddressRecord.GetVatIndex: int64;
 begin
   result := startingblock shr BIG_BLOCK_BLOCK_SHIFT;
@@ -9992,8 +10408,15 @@ begin
 
 end;
 
+procedure TVirtualAddressRecord.SetNeedsRepair(const Value: boolean);
+begin
+  placedby := placedby or $80;
+end;
+
 procedure TVirtualAddressRecord.SetStartingblock(const Value: int64);
 begin
+  if value = -1 then
+    raise ECritical.create('You cannot set starting block to '+value.tostring);
 //  if value = 42112 then
 //    Debug.log('init trap');
   FStartingBlock := Value;
@@ -10359,7 +10782,7 @@ begin
   // TODO -cunimplemented: unimplemented block
 end;
 
-function TPayloadStream.Expand(iSizeBeyondCurrentExcludingHeaders: int64;
+function TPayloadStream.Expand(raidcount, iSizeBeyondCurrentExcludingHeaders: int64;
 virtual_addr: int64; bConsume: boolean=false): int64;
 var
   bbh: TVirtualDiskBigBlockHeader;
@@ -10391,7 +10814,19 @@ begin
   // Header
   Stream_GuaranteeWrite(Self, pbyte(@bbh), sizeof(bbh));
   // payload
+{$IFDEF DUMB_RAID_INIT}
   Stream_WriteZeros(Self, iSizeBeyondCurrentExcludingHeaders);
+{$ELSE}
+  var iz: int64 := 0;
+  var i1: uint64 := $FFFFFFFFFFFFFFFF;
+  var lPiece := TRaidCalculator.GetPieceSizePadded(raidcount, false);
+  for var p := 0 to STRIPES_PER_BIG_BLOCK-1 do begin
+    Stream_GuaranteeWrite(self, @iz, sizeof(iz));
+    Stream_GuaranteeWrite(self, @iz, sizeof(iz));
+    Stream_GuaranteeWrite(self, @i1, sizeof(i1));
+    Stream_WriteZeros(self, lPiece);
+  end;
+{$ENDIF}
   // footer
   Stream_GuaranteeWrite(Self, pbyte(@bbh), sizeof(bbh));
   // result := self.Size;
@@ -10795,6 +11230,22 @@ begin
 
 end;
 
+procedure TVirtualDisk_Advanced.Degauss(bbid: int64);
+var
+  byts: TDynByteArray;
+begin
+{$IFDEF DEGAUSS}
+  Lock;
+  try
+    setlength(byts, BIG_BLOCK_SIZE_IN_BYTES);
+    self.GuaranteeReadBlocks(bbid shl BIG_BLOCK_BLOCK_SHIFT, _BIG_BLOCK_SIZE_IN_BLOCKS, @byts[0]);
+    self.GuaranteeWriteBlocks(bbid shl BIG_BLOCK_BLOCK_SHIFT, _BIG_BLOCK_SIZE_IN_BLOCKS, @byts[0]);
+  finally
+    Unlock;
+  end;
+{$ENDIF}
+end;
+
 destructor TVirtualDisk_Comparative.Destroy;
 var
   a: array [0 .. BLOCKSIZE - 1] of byte;
@@ -10969,7 +11420,7 @@ var
   tmSinceIdle: ticker;
   avg: ticker;
 begin
-  if hint_requests_waiting then begin
+  if hint_rdtp_waiting or hint_requests_waiting then begin
     sleep(1);
     exit;
   end;
@@ -11467,6 +11918,8 @@ end;
 procedure TVDWriteCommand.DoExecute;
 begin
   inherited;
+  if vd.ReadOnly then exit;
+
   var tmStart := GetTicker;
 {$IFDEF QUEUE_ITEM_DEBUG}Debug.Log('execute '+getobjectdebug);{$ENDIF}
   vd.Front_CancelPrefetches;
@@ -12074,7 +12527,7 @@ end;
 
 
 initialization
-  INLINE_WRITE_FLUSH_TIMEOUT := 50;
+  INLINE_WRITE_FLUSH_TIMEOUT := 0;
   GENERAL_FLUSH_TIMEOUT := 50;
   INLINE_FLUSH_AGE := 10000;
 

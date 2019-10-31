@@ -2,6 +2,7 @@ unit raid;
 {$DEFINE RELEASE}
 {x$DEFINE USE_LINKED_RAID}
 {$DEFINE SHIFTOPT}
+{$DEFINE RAB_PACKED_DIRTY}
 interface
 
 uses linked_list_btree_compatible, sysutils, btree, typex, debug, orderlyinit, virtualdiskconstants, betterobject, systemx, tickcount, linked_list, generics.collections.fixed, better_collections, stringx;
@@ -17,9 +18,11 @@ type
   TRaidPieceInfo = record
     piece_idx: ni;
     big_block_index: int64;
-    PayloadAddr: int64;
-    VirtualAddr: int64;
-    BigBlockFileBaseAddr: int64;
+    PayloadPieceAddr: int64;
+    PayloadPieceOffset: int64;
+    VirtualPieceAddr: int64;
+    PayloadBigBlockAddr: int64;
+    VirtualBigBlockAddr: int64;
     FileOrigin: string;
     function DebugString: string;
     procedure Init;
@@ -29,6 +32,7 @@ type
   TRaidPiece = packed record
     _piece_checksum: int64;
     _stripe_checksum: int64;
+    _piece_checksum_mirror: int64;
     payload: array[0..MAX_STRIPE_SIZE_IN_QWORDS-1] of int64;
     procedure Reset;inline;
     procedure Put(idx: ni; val: int64);inline;
@@ -58,7 +62,13 @@ type
     Fdirtytime: ticker;
     //IF YOU ADD ANY FIELDS... CHANGE CopyFROM() function
     Fstartingblock: int64;
-
+  public
+{$IFDEF RAB_PACKED_DIRTY}
+    _dirty: array[0..((RAID_STRIPE_SIZE_IN_BLOCKS-1) div 8)] of byte;
+    dirtycount: ni;
+{$ELSE}
+    _dirty: array[0..RAID_STRIPE_SIZE_IN_BLOCKS-1] of boolean;
+{$ENDIF}
   private
     procedure SetDirtyTime(const Value: int64);
     procedure SEtLastUsed(const Value: int64);
@@ -71,7 +81,7 @@ type
     //IF YOU ADD ANY FIELDS... CHANGE CopyFROM() function
     single: array[0..MAX_STRIPE_SIZE_IN_QWORDS-1] of int64;
     //IF YOU ADD ANY FIELDS... CHANGE CopyFROM() function
-    _dirty: array[0..RAID_STRIPE_SIZE_IN_BLOCKS-1] of boolean;
+
   strict private
     FAnyDirty: boolean;
   public
@@ -89,11 +99,19 @@ type
 
     procedure SEtSizeInBytes(const Value: ni);inline;
     property PayloadSizeInBytes: ni read GetSizeInBytes write SEtSizeInBytes;
-    procedure SetDirty(idx: ni; const Value: boolean);inline;
+    procedure SetDirty(idx: ni; cnt: ni; const Value: boolean);inline;
+    procedure SetDirtyByte(idx: ni; Value: boolean);inline;
+
     function GetDirty(idx: ni): boolean;inline;
     function SlowAnyDirty: boolean;inline;
-    property dirty[idx: ni]: boolean read GetDirty write SetDirty;
+
+    procedure SetDirtyRange(const idx, cnt: ni; const value: boolean);inline;
+    property __dirty[idx: ni]: boolean read GetDirty write SetDirtyByte;
+{$IFDEF RAB_PACKED_DIRTY}
+    function AnyDirty: boolean;
+{$ELSE}
     property AnyDirty: boolean read FAnyDirty write SetAnyDirty;
+{$ENDIF}
     function AllDirty: boolean;inline;
     function FirstDirty(iAfter: ni): ni;inline;
     function FirstClean(iAfter: ni): ni;inline;
@@ -105,7 +123,7 @@ type
     property DirtyTime: int64 read FDirtyTime write SetDirtyTime;
     function DebugString: string;
     function GetChecksum: int64;
-    procedure SetdirtyRange(idx, cnt: ni);
+//    procedure SetdirtyRange(idx, cnt: ni);
     function VatIndex: int64;
   end;
 
@@ -234,7 +252,7 @@ type
 
 
     class function GetPieceSizeUnPadded(iRaidCount: ni): int64;inline;
-    class function GetPieceSizePadded(iRaidCount: ni): int64;inline;
+    class function GetPieceSizePadded(iRaidCount: ni; bIncludeHeaders : boolean = true): int64;inline;
     class function GetPayloadSizeInQWords(iRaidCount: ni): int64;inline;
     class function BytesToQWORDS(iBytes: ni): ni;inline;
 
@@ -271,7 +289,11 @@ var
 begin
   result := false;
   for t := low(_dirty) to high(_dirty) do begin
-    result := dirty[t];
+{$IFDEF RAB_PACKED_DIRTY}
+    result := _dirty[t] <>0;
+{$ELSE}
+    result := _dirty[t];
+{$ENDIF}
     if result then exit;
   end;
 
@@ -285,12 +307,21 @@ function TRaidAssembledBuffer.AllDirty: boolean;
 var
   t: ni;
 begin
+{$IFDEF RAB_PACKED_DIRTY}
+  exit(DirtyCount = RAID_STRIPE_SIZE_IN_BLOCKS);
+{$ENDIF}
   result := true;
   for t := low(_dirty) to high(_dirty) do begin
+{$IFDEF RAB_PACKED_DIRTY}
+    if _dirty[t] <> 255 then begin
+      exit(false);
+    end;
+{$ELSE}
     if _dirty[t] = false then begin
       result := false;
       exit;
     end;
+{$ENDIF}
   end;
 
 end;
@@ -299,6 +330,11 @@ procedure TRaidCalculator.BeforeDestruction;
 begin
   inherited;
 //  Debug.Log(self.classname+'.BeforeDestruction');
+end;
+
+function TRaidAssembledBuffer.AnyDirty: boolean;
+begin
+  exit(DirtyCount > 0);
 end;
 
 function TRaidAssembledBuffer.byteptr(addr: int64): pbyte;
@@ -434,17 +470,18 @@ end;
 
 function TRaidAssembledBuffer.FirstClean(iAfter: ni): ni;
 begin
-
+  inc(iAFter);
   result := iAfter;
-  while (dirty[result]) and (result < +RAID_STRIPE_SIZE_IN_BLOCKS) do
+  while (__dirty[result]) and (result < +RAID_STRIPE_SIZE_IN_BLOCKS) do
     inc(result);
 
 end;
 
 function TRaidAssembledBuffer.FirstDirty(iAfter: ni): ni;
 begin
+  inc(iAfter);
   result := iAfter;
-  while (not dirty[result]) and (result < +RAID_STRIPE_SIZE_IN_BLOCKS) do
+  while (not __dirty[result]) and (result < +RAID_STRIPE_SIZE_IN_BLOCKS) do
     inc(result);
 
 end;
@@ -459,7 +496,13 @@ end;
 
 function TRaidAssembledBuffer.GetDirty(idx: ni): boolean;
 begin
+  if DirtyCount = RAID_STRIPE_SIZE_IN_BYTES then exit(true);
+{$IFDEF RAB_PACKED_DIRTY}
+  result := ((_Dirty[idx shr 3] shr (idx and 3)) and 1) = 1
+{$ELSE}
   result := _Dirty[idx];
+{$ENDIF}
+
 end;
 
 class function TRaidCalculator.GetPayloadSizeInQWords(iRaidCount: ni): int64;
@@ -470,11 +513,13 @@ begin
 end;
 
 
-class function TRaidCalculator.GetPieceSizePadded(iRaidCount: ni): int64;
+class function TRaidCalculator.GetPieceSizePadded(iRaidCount: ni; bIncludeHeaders : boolean = true): int64;
 begin
   result := 0;
   if iRaidCount >= 0 then begin
-    result := (GetPayloadSizeInQWords(iRAidCount) * sizeof(int64))+TRaidPiece.HeaderSize;
+    result := (GetPayloadSizeInQWords(iRAidCount) * sizeof(int64));
+    if bincludeHeaders then
+      inc(result, TRaidPiece.HeaderSize);
   end;
 end;
 
@@ -506,7 +551,11 @@ begin
   single_size := rab.single_size;
   movemem32(@single[0], @rab.single[0], sizeof(self.single));
   _dirty := rab._dirty;
+{$IFDEF RAB_PACKED_DIRTY}
+  DirtyCount := rab.Dirtycount;
+{$ELSE}
   anyDirty := rab.AnyDirty;
+{$ENDIF}
   dirtytime := rab.dirtytime;
   startingblock := rab.startingblock;
   lastused := rab.lastused;
@@ -533,8 +582,14 @@ end;
 
 procedure TRaidAssembledBuffer.cleardirty;
 begin
-  fillmem(pointer(@_dirty), sizeof(_dirty),0);
+  fillmem(pointer(@_dirty[0]), sizeof(_dirty),0);
+{$IFDEF RAB_PACKED_DIRTY}
+  DirtyCount := 0;
+{$ELSE}
   AnyDirty := false;
+{$ENDIF}
+
+
 end;
 
 procedure TRaidCalculator.Init;
@@ -773,11 +828,16 @@ var
 begin
   result := 0;
   for t:= 0 to drives-1 do begin
-    if pieces[t]._stripe_checksum = cs then
+    if pieces[t]._stripe_checksum = cs then begin
       inc(result);
+      if pieces[t]._piece_checksum = not pieces[t]._piece_checksum_mirror then
+        inc(result);
 
-    if (drives = 2) and (pieces[t]._stripe_checksum <> 0) then
-      inc(result);
+      if (drives = 2) and (pieces[t]._stripe_checksum <> $BAD) then
+        inc(result);
+    end;
+
+
   end;
 
 end;
@@ -805,11 +865,42 @@ begin
   end;
 end;
 
-procedure TRaidAssembledBuffer.SetDirty(idx: ni; const Value: boolean);
+procedure TRaidAssembledBuffer.SetDirty(idx: ni; cnt: ni; const Value: boolean);
 var
   tr: TLocalList<TRaidTreeItem_ByDirtyTime>;
 begin
+{$IFDEF RAB_PACKED_DIRTY}
+  //!!! IMPORTANT SHORT CUT vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+  // this is the quickest way to mark everything dirty
+  // if the dirty count matches the buffer size, then
+  // we can ignore this mask entirely.
+  if cnt = RAID_STRIPE_SIZE_IN_BYTES then begin
+    DirtyCount := cnt;
+    exit;
+  end;
+  //HOWEVER -- if Dirtycount was already max and we're unsetting
+  //dirty (should never happen, but theoretically could be called
+  //this logic falls apart
+  if (value = false) and (DirtyCount=RAID_STRIPE_SIZE_IN_BYTES) then
+    raise Ecritical.create('cannnot set byte clean after all-dirty without calling cleardirty');
+  //--------------------------------
+
+
+  if GetDirty(idx) = value then
+    exit;
+
+  if value then begin
+    _Dirty[idx shr 3] := _Dirty[idx shr 3] or (1 shl (idx and 3));
+  end else begin
+    _Dirty[idx shr 3] := _Dirty[idx shr 3] and (not (1 shl (idx and 3)));
+  end;
+  if value then
+    inc(DirtyCount)
+  else
+    dec(DirtyCount);
+{$ELSE}
   _Dirty[idx] := value;
+{$ENDIF}
   if not anydirty then begin
     tr := nil;
     if (treeItemDirtyTime <> nil) and (treeItemDirtyTime.tree <> nil) then begin
@@ -826,17 +917,16 @@ begin
   end;
 end;
 
-procedure TRaidAssembledBuffer.SetdirtyRange(idx, cnt: ni);
-var
-  t: ni;
+procedure TRaidAssembledBuffer.SetDirtyByte(idx: ni; Value: boolean);
 begin
-  t := 0;
-  while cnt > 0 do begin
-    Dirty[t] := true;
-    inc(t);
-    dec(cnt);
-  end;
+  SetDirtyRange(idx, 1, value);
 end;
+
+procedure TRaidAssembledBuffer.SetDirtyRange(const idx, cnt: ni; const value: boolean);
+begin
+  SetDirty(idx, cnt, value);
+end;
+
 
 procedure TRaidAssembledBuffer.SetDirtyTime(const Value: int64);
 var
@@ -1014,7 +1104,9 @@ begin
   for iDrive := 0 to drives-1 do begin
     if idxpiece <> psz then
       idxpiece := psz;
-    pieces[iDRive]._piece_checksum := pieces[iDRive].CalcPieceChecksum(idxpiece);
+    var pcs := pieces[iDRive].CalcPieceChecksum(idxpiece);
+    pieces[iDRive]._piece_checksum := pcs;
+    pieces[iDrive]._piece_checksum_mirror := not pcs;
     pieces[iDrive]._stripe_checksum := stripesum;
   end;
 
@@ -1157,7 +1249,9 @@ begin
   for iDrive := 0 to drives-1 do begin
     if idxpiece <> psz then
       idxpiece := psz;
-    pieces[iDRive]._piece_checksum := pieces[iDRive].CalcPieceChecksum(idxpiece);
+    var pcs := pieces[iDRive].CalcPieceChecksum(idxpiece);
+    pieces[iDRive]._piece_checksum := pcs;
+    pieces[iDRive]._piece_checksum_mirror := not pcs;
     pieces[iDrive]._stripe_checksum := stripesum;
   end;
 
@@ -1210,16 +1304,19 @@ end;
 
 class function TRaidPiece.HeaderSize: int64;
 begin
-  result := 16;
+  result := 24;
 end;
 
 function TRaidPiece.IsValidPiece(size: ni; idx_ForDebugging: ni): boolean;
 var
   accum: int64;
 begin
-  accum := CalcPieceCheckSum(size);
-
-  result := accum = _piece_checksum;
+  if _piece_checksum <> not _piece_checksum_mirror then
+    result := false
+  else begin
+    accum := CalcPieceCheckSum(size);
+    result := accum = _piece_checksum;
+  end;
   if not result then begin
 //    WriteLn('piece is not valid.');
     if idx_fordebugging >=0 then
@@ -1243,6 +1340,7 @@ end;
 procedure TRaidPiece.Reset;
 begin
   _piece_checksum := $BAD;
+  _piece_checksum_MIRROR := $BAD;
   _stripe_checksum := $BAD;
   //fillmem(@payload[0], sizeof(payload), 0);
 
@@ -1601,22 +1699,34 @@ end;
 
 function TRaidPieceInfo.DebugString: string;
 begin
-  result := '['+piece_idx.tostring+'] BB:0x'+big_block_index.ToHexString+' PI:'+PieceIndex.tostring+' @'+inttohex(self.PAyloadAddr,16)+'base @'+inttohex(self.BigBlockFileBaseAddr,16)+' F:'+self.FileOrigin;
+  result :=
+    '[piece_idx='+piece_idx.tostring+' '+
+    'big_block_index='+big_block_index.tostring+' '+
+    'PayloadPieceAddr='+PayloadPieceAddr.tostring+' '+
+    'PayloadPieceOffset='+PayloadPieceOffset.tostring+' '+
+    'PayloadBigBlockAddr='+PayloadBigBlockAddr.tostring+' '+
+    'VirtualPieceAddr='+VirtualPieceAddr.tostring+' '+
+    'VirtualBigBlockAddr='+VirtualBigBlockAddr.tostring+' '+
+    'FileOrigin='+FileOrigin+']';
+//  result := '['+piece_idx.tostring+'] BB:0x'+big_block_index.ToHexString+' PI:'+PieceIndex.tostring+' @'+inttohex(self.PAyloadAddr,16)+'base @'+inttohex(self.BigBlockFileBaseAddr,16)+' F:'+self.FileOrigin;
 end;
 
 procedure TRaidPieceInfo.Init;
 begin
   piece_idx := 0;
   big_block_index := 0;
-  PayloadAddr := 0;
-  BigBlockFileBaseAddr := 0;
+  PayloadPieceAddr := 0;
+  PayloadPieceOffset := 0;
+  VirtualPieceAddr := 0;
+  VirtualBigBlockAddr := 0;
   FileOrigin := 'Skipped';
 
 end;
 
 function TRaidPieceInfo.PieceIndex: int64;
 begin
-  result := (VirtualAddr-((big_block_index shl BIG_BLOCK_BYTE_SHIFT) shr STRIPE_SHIFT));
+//  result := (Virtual_Addr-((big_block_index shl BIG_BLOCK_BYTE_SHIFT) shr STRIPE_SHIFT));
+  result := 0;
 end;
 
 initialization

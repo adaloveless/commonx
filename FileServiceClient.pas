@@ -121,6 +121,7 @@ begin
     packet.AddVariant($6000);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6000:TFileServiceClient.PutFile');{$ENDIF}
     WriteTFileTransferReferenceToPacket(packet, oFile);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -185,6 +186,7 @@ begin
     packet.AddVariant($6001);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6001:TFileServiceClient.GetFile');{$ENDIF}
     WriteTFileTransferReferenceToPacket(packet, oFile);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -251,6 +253,7 @@ begin
     packet.AddVariant($6002);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6002:TFileServiceClient.OpenFile');{$ENDIF}
     WritestringToPacket(packet, sFile);
     WriteintegerToPacket(packet, iMode);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -319,6 +322,7 @@ begin
     packet.AddVariant($6003);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6003:TFileServiceClient.CloseFile');{$ENDIF}
     WriteTFileTransferReferenceToPacket(packet, oFile);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -383,6 +387,7 @@ begin
     packet.AddVariant($6004);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6004:TFileServiceClient.Dir');{$ENDIF}
     WritestringToPacket(packet, sRemotePath);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -447,6 +452,7 @@ begin
     packet.AddVariant($6005);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6005:TFileServiceClient.GetUpgradePath');{$ENDIF}
     WritestringToPacket(packet, sProgramName);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -511,6 +517,7 @@ begin
     packet.AddVariant($6006);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6006:TFileServiceClient.GetUpgradeScript');{$ENDIF}
     WritestringToPacket(packet, sProgramName);
     WriteintegerToPacket(packet, iFromVersion);
     WriteintegerToPacket(packet, iToVersion);
@@ -579,6 +586,7 @@ begin
     packet.AddVariant($6007);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6007:TFileServiceClient.GetUpgradeVersion');{$ENDIF}
     WritestringToPacket(packet, sProgramName);
     WritebooleanToPacket(packet, bBeta);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -645,6 +653,7 @@ begin
     packet.AddVariant($6008);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6008:TFileServiceClient.GetFileChecksum');{$ENDIF}
     WritestringToPacket(packet, sFile);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -709,6 +718,7 @@ begin
     packet.AddVariant($6009);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6009:TFileServiceClient.BuildHueFile');{$ENDIF}
     WritestringToPacket(packet, sFile);
     WriterealToPacket(packet, LengthInSeconds);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -775,6 +785,7 @@ begin
     packet.AddVariant($6010);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6010:TFileServiceClient.DeleteFile');{$ENDIF}
     WritestringToPacket(packet, sFile);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -839,6 +850,7 @@ begin
     packet.AddVariant($6011);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6011:TFileServiceClient.Execute');{$ENDIF}
     WritestringToPacket(packet, sPath);
     WritestringToPacket(packet, sProgram);
     WritestringToPacket(packet, sParams);
@@ -907,6 +919,7 @@ begin
     packet.AddVariant($6012);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6012:TFileServiceClient.BuildHueFileFromStream');{$ENDIF}
     WriteTStreamToPacket(packet, str);
     WritestringToPacket(packet, sExt);
     WriterealToPacket(packet, LengthInSeconds);
@@ -975,6 +988,7 @@ begin
     packet.AddVariant($6013);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6013:TFileServiceClient.EchoStream');{$ENDIF}
     WriteTStreamToPacket(packet, strin);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -1039,6 +1053,7 @@ begin
     packet.AddVariant($6014);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6014:TFileServiceClient.AppendTextFile');{$ENDIF}
     WritestringToPacket(packet, filename);
     WritestringToPacket(packet, text);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -1105,6 +1120,7 @@ begin
     packet.AddVariant($6015);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6015:TFileServiceClient.GetFileSize');{$ENDIF}
     WritestringToPacket(packet, filename);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -1169,6 +1185,7 @@ begin
     packet.AddVariant($6016);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6016:TFileServiceClient.ExecuteAndCapture');{$ENDIF}
     WritestringToPacket(packet, sPath);
     WritestringToPacket(packet, sProgram);
     WritestringToPacket(packet, sParams);
@@ -1237,6 +1254,7 @@ begin
     packet.AddVariant($6017);
     packet.AddVariant(0);
     packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6017:TFileServiceClient.GetFileList');{$ENDIF}
     WritestringToPacket(packet, sRemotePath);
     WritestringToPacket(packet, sFileSpec);
     WriteintegerToPacket(packet, attrmask);

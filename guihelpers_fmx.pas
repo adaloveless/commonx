@@ -32,7 +32,8 @@ function Control_IterateChildren(c: TFMXObject; p: TChildIterator): boolean;
 
 type
   TGuiHelper = class
-    class function control_GetControl<TC: TControl>(parent: fmx.controls.TControl; bRecurse: boolean = true): TC;
+    class function control_GetControl<TC: TControl>(parent: fmx.controls.TControl; bRecurse: boolean = true): TC;overload;
+    class function control_GetControl<TC: TControl>(parent: TForm; bRecurse: boolean = true): TC;overload;
     class function control_GetParentOfType<TC: TFMXObject>(startingcontrol: TFMXObject): TC;
     class procedure DestroySubControls(parent: fmx.controls.TControl);
     class procedure DestroySubComponents(owner: TComponent; cc: TComponentClass);
@@ -92,6 +93,40 @@ begin
       else
         FService.HideVirtualKeyboard;
     end;
+end;
+
+class function TGuiHelper.control_GetControl<TC>(parent: TForm;
+  bRecurse: boolean): TC;
+var
+  t: ni;
+  c: TFMXObject;
+begin
+  result := nil;
+  for t := 0 to parent.Children.Count-1 do begin
+    c := parent.children[t];
+    if not (c is TControl) then
+      continue;
+
+    var cc := c as TControl;
+
+    if cc is TC then
+      exit(cc as TC);
+  end;
+
+  if bRecurse then begin
+    for t := 0 to parent.Children.Count-1 do begin
+      c := parent.children[t];
+      if not (c is TControl) then
+        continue;
+
+      var cc := c as TControl;
+
+      result := control_GetControl<TC>(cc);
+      if result <> nil then
+        exit;
+    end;
+  end;
+
 end;
 
 class function TGuiHelper.control_GetParentOfType<TC>(

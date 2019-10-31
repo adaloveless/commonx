@@ -5162,7 +5162,7 @@ end;
 constructor TMultiplexedUDPEndpoint.CReate(AOwner: TComponent);
 begin
   inherited CReate(AOwner);
-  InitializeCriticalSection(sect);
+  ics(sect);
   ICS(sect_send);
   ICS(sectUDPsend);
   ThreadedEvent := true;
@@ -6126,7 +6126,7 @@ end;
 
 procedure TMultiplexedUDPEndpoint.Lock;
 begin
-  systemx.EnterCriticalSection(sect);
+  ecs(sect);
 end;
 
 function TMultiplexedUDPEndpoint.NextConnectionId: cardinal;
@@ -6909,12 +6909,12 @@ end;
 
 class procedure TMultiplexedUDPClient.InitClass;
 begin
-  InitializeCriticalSection(class_sect);
+  ics(class_sect);
 end;
 
 class procedure TMultiplexedUDPClient.LockClass;
 begin
-  EnterCriticalSection(class_sect);
+  ecs(class_sect);
 
 end;
 

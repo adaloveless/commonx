@@ -132,6 +132,8 @@ type
 threadvar
   threadlog: TThreadLog;
 
+
+
 procedure LogToThreadStatus(s: string);
 begin
   threadlog.Log(s);

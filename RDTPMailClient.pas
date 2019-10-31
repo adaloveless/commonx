@@ -84,6 +84,7 @@ begin
     packet.AddVariant($6005);
     packet.AddVariant(0);
     packet.AddString('Mail');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6005:TMailClient.GetBlacklistStatus');{$ENDIF}
     WritestringToPacket(packet, sIP);
     WritebooleanToPacket(packet, bFullCheck);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -150,6 +151,7 @@ begin
     packet.AddVariant($6006);
     packet.AddVariant(0);
     packet.AddString('Mail');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6006:TMailClient.Blacklist');{$ENDIF}
     WritestringToPacket(packet, sIP);
     WritestringToPacket(packet, sReason);
     WriteintegerToPacket(packet, iCode);
@@ -201,6 +203,7 @@ begin
     packet.AddVariant($6007);
     packet.AddVariant(0);
     packet.AddString('Mail');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6007:TMailClient.GetSpamProbability');{$ENDIF}
     WritestringToPacket(packet, sText);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -265,6 +268,7 @@ begin
     packet.AddVariant($6008);
     packet.AddVariant(0);
     packet.AddString('Mail');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6008:TMailClient.BayesianCommit');{$ENDIF}
     WritestringToPacket(packet, sText);
     WritebooleanToPacket(packet, bSpam);
     WriterealToPacket(packet, iMultiplier);
@@ -333,6 +337,7 @@ begin
     packet.AddVariant($6009);
     packet.AddVariant(0);
     packet.AddString('Mail');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6009:TMailClient.Debug');{$ENDIF}
     WritestringToPacket(packet, sText);
     WritebooleanToPacket(packet, bSay);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
@@ -380,6 +385,7 @@ begin
     packet.AddVariant($6010);
     packet.AddVariant(0);
     packet.AddString('Mail');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6010:TMailClient.GetBlacklistCountIncludingContent');{$ENDIF}
     WritestringToPacket(packet, sIP);
     WritestringToPacket(packet, sPLainText);
     WritestringToPacket(packet, sHTMLText);
@@ -450,6 +456,7 @@ begin
     packet.AddVariant($6011);
     packet.AddVariant(0);
     packet.AddString('Mail');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6011:TMailClient.SetWordCommonality');{$ENDIF}
     WritestringToPacket(packet, sWord);
     Writeint64ToPacket(packet, iCommonality);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
@@ -497,6 +504,7 @@ begin
     packet.AddVariant($6012);
     packet.AddVariant(0);
     packet.AddString('Mail');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6012:TMailClient.MailCommand');{$ENDIF}
     WritestringToPacket(packet, sSubject);
     WritestringToPacket(packet, sBody);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');

@@ -61,14 +61,21 @@ type
   end;
 
 {$IFDEF USE_SYNCOBJS}
+  TPlatformCriticalSection = TCriticalSection;
+{$ELSE}
+  TPlatformCriticalSection = _RTL_CRITICAL_SECTION;
+{$ENDIF}
 
-  TCLXCriticalSection = TCriticalSection;
+{$IFDEF USE_SYNCOBJS}
   _SYSTEM_INFO = record
     dwNumberOfProcessors: nativeint;
   end;
-{$ELSE}
-  TCLXCriticalSection = _RTL_CRITICAL_SECTION;
 {$ENDIF}
+  TCLXCriticalSection = record
+    cs: TPlatformCriticalSection;
+    lastlocker: THandle;
+    throttle:nativeint;
+  end;
 
 
 function StringToAnsiByteArray(s: string): TDynByteArray;
@@ -88,6 +95,7 @@ procedure MoveMem_Down(const D,S: pointer; const Size: ni);
 procedure MoveMem32Xor(const D,S: pointer; const size: ni);inline;
 procedure MoveMem32WithMask(D,S,M: pointer; Size: integer);
 procedure MoveMem32WithMaskPacked(D,S,Mbase: pointer; MOff: ni; Size: integer);
+procedure MoveMem32WithMaskPacked_DualSource(D,S0,S1,Mbase: pointer; MOff: ni; Size: integer);
 procedure MoveMem32WithMaskPacked_NOT(D,S,Mbase: pointer; MOff: ni; Size: integer);
 procedure MoveMem32WithMask_NOT(D,S,M: pointer; Size: integer);
 function JStr(s: string): string;
@@ -120,10 +128,10 @@ function GetVolumeInformation(lpRootPathName: PChar;
 function InterlockedIncrement(var whatever: integer): integer;inline;
 function InterlockedDecrement(var whatever: integer): integer;inline;
 
-function InitializeCriticalSection(var sect: TCLXCriticalSection): Integer;stdcall;
-function EnterCriticalSection(var sect: TCLXCriticalSection): Integer;stdcall;
+function _ics_(var sect: TCLXCriticalSection): Integer;stdcall;
+function _ecs_(var sect: TCLXCriticalSection): Integer;stdcall;
 function LeaveCriticalSection(var sect: TCLXCriticalSection): Integer;stdcall;
-function TryEnterCriticalSection(var sect: TCLXCriticalSection): Boolean;stdcall;
+function _tecs_(var sect: TCLXCriticalSection): Boolean;stdcall;
 function DeleteCriticalSection(var sect: TCLXCriticalSection): Integer;stdcall;
 function PathSeparator: char;
 function ComplyFilePath(const sPath: string; sSlash: string = ''): string;
@@ -171,9 +179,9 @@ procedure NotImplemented;
 procedure ics(var cs: TCLXCriticalSection);inline;
 procedure icssc(var cs: TCLXCriticalSection; spin: ni);inline;
 procedure dcs(var cs: TCLXCriticalSectioN);inline;
-procedure ecs(var cs: TCLXcriticalSection);inline;
+procedure ecs(var cs: TCLXcriticalSection);
 procedure lcs(var cs: TCLXcriticalSection);inline;
-function tecs(var cs: TCLXcriticalSection; iTimeout: integer=0): boolean;inline;
+function tecs(var cs: TCLXcriticalSection; iTimeout: integer=0): boolean;
 procedure ecs2(var cs1,cs2: TCLXCRiticalSection; retryInterval: ni);inline;
 procedure lcs2(var cs1,cs2: TCLXCRiticalSection);inline;
 function ResolveFileName(sFile: string): string;
@@ -730,6 +738,56 @@ begin
   until (t =0);
 end;
 
+procedure MoveMem32WithMaskPacked_DualSource(D,S0,S1,Mbase: pointer; MOff: ni; Size: integer);
+//p: D: Destination Pointer
+//p: S: Source Pointer
+//p: Size: Size to move in bytes
+VAR
+  t: NativeInt;
+  M,bd,bs0,bs1,bm: PByte;
+  bmb: ni;
+  sz: nativeint;
+  maskbyte: byte;
+begin
+  if size = 0  then
+    exit;
+
+  bmb := (MOff+size) and $7;
+  M := MBase;
+
+  t := size;
+
+  //1..1 -- 7..1 -- 8..1 -- 9..2
+  //
+
+
+
+
+  //setup pointers
+  bd := PByte(pbyte(D)+size);
+  bs0 := PByte(pbyte(S0)+size);
+  bs1 := PByte(pbyte(S1)+size);
+  bm := PByte(pbyte(M)+(((size-1) shr 3)+1));
+
+  if (t > 0) then
+  repeat
+    dec(t);
+    bd := bd-1;
+    bs0 := bs0-1;
+    bs1 := bs1-1;
+    dec(bmb);
+    if bmb < 0 then begin
+      bmb := 7;
+      bm := bm-1;
+    end;
+    maskbyte := (bm^ shr bmb) and 1;
+    if maskbyte <> 0 then
+      maskbyte := 255;
+
+    bd^ := ((bs1^) and (maskbyte)) or ((bs0^) and not (maskbyte));
+  until (t =0);
+end;
+
 
 
 procedure MoveMem32WithMask(D,S,M: pointer; Size: integer);
@@ -879,12 +937,12 @@ end;
 
 
 
-function InitializeCriticalSection(var sect: TCLXCriticalSection): Integer;
+function _ics_(var sect: TCLXCriticalSection): Integer;
 
 begin
 
   {$IFDEF USE_SYNCOBJS}
-    sect := TCriticalSection.Create;
+    sect.cs := TPLatformCriticalSection.Create;
     result := 0;
   {$ELSE}
   {$IFDEF LINUX}
@@ -893,7 +951,7 @@ begin
 
   {$ELSE}
 
-  Windows.InitializeCriticalSection(sect);
+  Windows.InitializeCriticalSection(sect.cs);
 
   result := 0;
 
@@ -905,20 +963,20 @@ end;
 
 
 
-function EnterCriticalSection(var sect: TCLXCriticalSection): Integer;
+function _ecs_(var sect: TCLXCriticalSection): Integer;
 
 begin
 
   {$IFDEF USE_SYNCOBJS}
-    sect.Enter;
+    sect.cs.Enter;
   {$ELSE}
   {$IFDEF LINUX}
 
-  result := Libc.EnterCriticalSection(sect);
+  result := Libc.EnterCriticalSection(sect.cs);
 
   {$ELSE}
 
-  Windows.EnterCriticalSection(sect);
+  Windows.EnterCriticalSection(sect.cs);
 
   result := 0;
 
@@ -934,15 +992,15 @@ function LeaveCriticalSection(var sect: TCLXCriticalSection): Integer;
 begin
 
   {$IFDEF USE_SYNCOBJS}
-    sect.Leave;
+    sect.cs.Leave;
   {$ELSE}
   {$IFDEF LINUX}
 
-  result := Libc.LeaveCriticalSection(sect);
+  result := Libc.LeaveCriticalSection(sect.cs);
 
   {$ELSE}
 
-  Windows.LeaveCriticalSection(sect);
+  Windows.LeaveCriticalSection(sect.cs);
 
 
 
@@ -955,19 +1013,19 @@ end;
 
 
 
-function TryEnterCriticalSection(var sect: TCLXCriticalSection): Boolean;
+function _tecs_(var sect: TCLXCriticalSection): Boolean;
 begin
 
   {$IFDEF USE_SYNCOBJS}
-    result := sect.TryEnter;
+    result := sect.cs.TryEnter;
   {$ELSE}
   {$IFDEF LINUX}
 
-  result := Libc.TryEnterCriticalSection(sect);
+  result := Libc.TryEnterCriticalSection(sect.cs);
 
   {$ELSE}
 
-  result := Windows.TryEnterCriticalSection(sect);
+  result := Windows.TryEnterCriticalSection(sect.cs);
 
   {$ENDIF}
   {$ENDIF}
@@ -979,16 +1037,16 @@ end;
 function DeleteCriticalSection(var sect: TCLXCriticalSection): Integer;
 begin
   {$IFDEF USE_SYNCOBJS}
-    sect.Free;
-    sect := nil;
+    sect.cs.Free;
+    sect.cs := nil;
   {$ELSE}
   {$IFDEF LINUX}
 
-  result := Libc.DeleteCriticalSection(sect);
+  result := Libc.DeleteCriticalSection(sect.cs);
 
   {$ELSE}
 
-  Windows.DeleteCriticalSection(sect);
+  Windows.DeleteCriticalSection(sect.cs);
 
   result := 0;
 
@@ -1184,10 +1242,10 @@ end;
 function InterlockedIncrement(var whatever: integer): integer;inline;
 begin
 {$IFNDEF WINDOWS}
-  EnterCriticalSection(ios_lock);
+  ecs(ios_lock);
   inc(whatever);
   result := whatever;
-  LeaveCriticalSection(ios_lock);
+  lcs(ios_lock);
 {$ELSE}
   result := windows.InterlockedIncrement(whatever);
 {$ENDIF}
@@ -1197,10 +1255,10 @@ end;
 function InterlockedDecrement(var whatever: integer): integer;inline;
 begin
 {$IFNDEF WINDOWS}
-  EnterCriticalSection(ios_lock);
+  ecs(ios_lock);
   dec(whatever);
   result := whatever;
-  LeaveCriticalSection(ios_lock);
+  lcs(ios_lock);
 
 {$ELSE}
   result := windows.InterlockedDecrement(whatever);
@@ -1990,12 +2048,13 @@ end;
 
 procedure ics(var cs: TCLXCriticalSection);inline;
 begin
-  initializecriticalsection(cs);
+  cs.throttle := -1;
+  _ics_(cs);
 end;
 procedure icssc(var cs: TCLXCriticalSection; spin: ni);inline;
 begin
 {$IFDEF MSWINDOWS}
-  InitializeCriticalSectionAndSpinCount(cs, spin);
+  InitializeCriticalSectionAndSpinCount(cs.cs, spin);
 {$ELSE}
   ics(cs);
 {$ENDIF}
@@ -2004,13 +2063,15 @@ procedure dcs(var cs: TCLXCriticalSectioN);inline;
 begin
   deletecriticalsection(cs);
 end;
-procedure ecs(var cs: TCLXcriticalSection);inline;
+procedure ecs(var cs: TCLXcriticalSection);
 begin
 {$IFDEF DEBUG_BLOCKING}
   if not tecs(cs, 1000) then begin
-    Debug.Log('blocked on thread '+inttostr(GetCurrentThreadID())+' by '+inttostr(cs.owningthread),'error');
+    Debug.Log('blocked on thread '+inttostr(GetCurrentThreadID())+' by '+inttostr(cs.cs.owningthread),'error');
 {$ENDIF}
-    entercriticalsection(cs);
+    if (cs.throttle > 0) and (cs.lastlocker = GetCurrentThreadID) then
+      sleep(0);
+   _ecs_(cs);
 {$IFDEF DEBUG_BLOCKING}
   end;
 {$ENDIF}
@@ -2019,17 +2080,20 @@ procedure lcs(var cs: TCLXcriticalSection);inline;
 begin
   leavecriticalsection(cs);
 end;
-function tecs(var cs: TCLXcriticalSection; iTimeout: integer=0): boolean;inline;
+function tecs(var cs: TCLXcriticalSection; iTimeout: integer=0): boolean;
 var
   tm1, tm2: cardinal;
 begin
+  if (cs.throttle >= 0) and (cs.lastlocker = GetCurrentThreadID) then
+    sleep(cs.throttle);
+
   if iTimeOUt <= 0 then
-    exit(TryEnterCriticalSection(cs));
+    exit(_tecs_(cs));
 
   tm1 := GetTicker;
   result := true;
-  while not TryEnterCriticalSection(cs) do begin
-    sleep(1);
+  while not _tecs_(cs) do begin
+    sleep(random(255) shr 7);
     tm2 := GetTicker;
     if tm2<tm1 then
       tm2 := tm1;
@@ -2039,6 +2103,10 @@ begin
       break;
     end;
   end;
+
+  cs.lastlocker := GEtCurrentthreadId;
+
+
 
 end;
 
@@ -2468,7 +2536,7 @@ end;
 procedure oinit;
 begin
 {$IFNDEF WINDOWS}
-  InitializeCriticalSection(ios_lock);
+  ics(ios_lock);
 {$ENDIF}
 
 end;

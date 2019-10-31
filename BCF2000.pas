@@ -705,6 +705,8 @@ end;
 procedure TBCF2000DataSource.SliderOut(iChannel: nativeint; rLevel: nativefloat;
   bForce: boolean);
 begin
+  //if bcf = nil then exit;
+
   sliders[iChannel].Position := rLevel;
   if assigned(BCF) then
     BCF.SliderOut(iChannel, rLevel, bForce);

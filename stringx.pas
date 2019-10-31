@@ -2124,9 +2124,9 @@ begin
   result := stringreplace(result, '\', '\\', [rfReplaceAll]);
   result := stringreplace(result, '"', '\"', [rfReplaceAll]);
   result := stringreplace(result, '''', '\''', [rfReplaceAll]);
-
-
 end;
+
+
 
 function VArtoJSONStorage(v: variant): string;
 var

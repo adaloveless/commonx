@@ -10,7 +10,7 @@ interface
 
 
 uses
-  PacketHelpers_VirtualDisk, VirtualDisk_Status, Classes, VirtualDiskParams, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions, virtualdisk_advanced;
+  PacketHelpers_VirtualDisk, VirtualDisk_Status, Classes, VirtualDiskParams, packet, betterobject, systemx, genericRDTPClient, variants, packethelpers, debug, typex, exceptions;
 
 
 
@@ -160,6 +160,7 @@ begin
     packet.AddVariant($6674);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6674:TVirtualDiskClient.GetPayloadConfiguration');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -224,6 +225,7 @@ begin
     packet.AddVariant($6675);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6675:TVirtualDiskClient.ListDisks');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -286,6 +288,7 @@ begin
     packet.AddVariant($6676);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6676:TVirtualDiskClient.SetPayloadQuota');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     WriteintegerToPacket(packet, iFileID);
     Writeint64ToPacket(packet, max_size);
@@ -354,6 +357,7 @@ begin
     packet.AddVariant($6677);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6677:TVirtualDiskClient.AddPayload');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     WritestringToPacket(packet, sFile);
     Writeint64ToPacket(packet, max_size);
@@ -428,6 +432,7 @@ begin
     packet.AddVariant($6678);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6678:TVirtualDiskClient.Decommissionpayload');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     WritestringToPacket(packet, sFile);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -494,6 +499,7 @@ begin
     packet.AddVariant($6679);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6679:TVirtualDiskClient.SetDefaultPayloadCacheParams');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     Writeint64ToPacket(packet, iSegmentSize);
     Writeint64ToPacket(packet, iSegmentCount);
@@ -564,6 +570,7 @@ begin
     packet.AddVariant($6680);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6680:TVirtualDiskClient.SetPayloadCacheParams');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     WriteintegerToPacket(packet, iFileID);
     Writeint64ToPacket(packet, iSegmentSize);
@@ -636,6 +643,7 @@ begin
     packet.AddVariant($6681);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6681:TVirtualDiskClient.SetPayloadPriorty');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     WriteintegerToPacket(packet, iFileID);
     Writeint64ToPacket(packet, priority);
@@ -704,6 +712,7 @@ begin
     packet.AddVariant($6682);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6682:TVirtualDiskClient.SetPayloadPhysical');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     WriteintegerToPacket(packet, iFileID);
     Writeint64ToPacket(packet, physical);
@@ -772,6 +781,7 @@ begin
     packet.AddVariant($6683);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6683:TVirtualDiskClient.UnpauseScrubber');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -817,6 +827,7 @@ begin
     packet.AddVariant($6684);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6684:TVirtualDiskClient.ReSourcePayload');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     WriteintegerToPacket(packet, iPayloadID);
     WritestringToPacket(packet, sNewSource);
@@ -885,6 +896,7 @@ begin
     packet.AddVariant($6685);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6685:TVirtualDiskClient.RefunctPayload');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     WriteintegerToPacket(packet, iPayLoadID);
     WritestringToPacket(packet, sNewSource);
@@ -953,6 +965,7 @@ begin
     packet.AddVariant($6686);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6686:TVirtualDiskClient.ForceRepair');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -998,6 +1011,7 @@ begin
     packet.AddVariant($6687);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6687:TVirtualDiskClient.GetDebugInfo');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -1062,6 +1076,7 @@ begin
     packet.AddVariant($6688);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6688:TVirtualDiskClient.GetRepairLog');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -1126,6 +1141,7 @@ begin
     packet.AddVariant($6689);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6689:TVirtualDiskClient.DrainRepairLog');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -1190,6 +1206,7 @@ begin
     packet.AddVariant($6690);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6690:TVirtualDiskClient.ClearRepairLog');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -1235,6 +1252,7 @@ begin
     packet.AddVariant($6691);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6691:TVirtualDiskClient.SetCachedStripes');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     WriteintegerToPacket(packet, value);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -1301,6 +1319,7 @@ begin
     packet.AddVariant($6692);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6692:TVirtualDiskClient.GetCachedStripes');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -1365,6 +1384,7 @@ begin
     packet.AddVariant($6693);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6693:TVirtualDiskClient.QuickOnline');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -1410,6 +1430,7 @@ begin
     packet.AddVariant($6694);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6694:TVirtualDiskClient.SetMaxDriveSpan');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     WriteintegerToPacket(packet, ival);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
@@ -1457,6 +1478,7 @@ begin
     packet.AddVariant($6695);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6695:TVirtualDiskClient.SetMinDriveSpan');{$ENDIF}
     WriteintegerToPacket(packet, iDISKID);
     WriteintegerToPacket(packet, ival);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
@@ -1504,6 +1526,7 @@ begin
     packet.AddVariant($6696);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6696:TVirtualDiskClient.NewDisk');{$ENDIF}
     WriteTNewDiskParamsToPacket(packet, di);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -1568,6 +1591,7 @@ begin
     packet.AddVariant($6697);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6697:TVirtualDiskClient.VerifyArcZone');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     Writeint64ToPacket(packet, zoneidx);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -1634,6 +1658,7 @@ begin
     packet.AddVariant($6698);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6698:TVirtualDiskClient.RepairArcZone');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     Writeint64ToPacket(packet, zoneidx);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -1700,6 +1725,7 @@ begin
     packet.AddVariant($6699);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6699:TVirtualDiskClient.SelfTest');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     Writeint64ToPacket(packet, testid);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -1766,6 +1792,7 @@ begin
     packet.AddVariant($669A);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$669A:TVirtualDiskClient.SetTargetArchive');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     WritestringToPacket(packet, sTargetHost);
     WritestringToPacket(packet, sEndPoint);
@@ -1834,6 +1861,7 @@ begin
     packet.AddVariant($669B);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$669B:TVirtualDiskClient.DeleteDisk');{$ENDIF}
     WritestringToPacket(packet, sDiskName);
     WritebooleanToPacket(packet, DeletePayloads);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -1900,6 +1928,7 @@ begin
     packet.AddVariant($669C);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$669C:TVirtualDiskClient.PauseArchive');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     WritebooleanToPacket(packet, Pause);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -1966,6 +1995,7 @@ begin
     packet.AddVariant($669D);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$669D:TVirtualDiskClient.ResetAndRepairFromTargetArchive');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -2030,6 +2060,7 @@ begin
     packet.AddVariant($669E);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$669E:TVirtualDiskClient.ResetZone');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     Writeint64ToPacket(packet, iZoneID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -2096,6 +2127,7 @@ begin
     packet.AddVariant($669F);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$669F:TVirtualDiskClient.ResetDisk');{$ENDIF}
     WriteintegerToPacket(packet, iDiskID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -2160,6 +2192,7 @@ begin
     packet.AddVariant($6670);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6670:TVirtualDiskClient.VerifyAgainstArchive');{$ENDIF}
     WriteintegerToPacket(packet, diskid);
     Writeint64ToPacket(packet, zone);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -2232,6 +2265,7 @@ begin
     packet.AddVariant($6671);
     packet.AddVariant(0);
     packet.AddString('VirtualDisk');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6671:TVirtualDiskClient.DumpBigBlock');{$ENDIF}
     WriteintegerToPacket(packet, diskid);
     Writeint64ToPacket(packet, bbid);
     if not Transact(packet) then raise ECritical.create('transaction failure');

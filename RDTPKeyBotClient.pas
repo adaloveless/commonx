@@ -77,6 +77,7 @@ begin
     packet.AddVariant($0050);
     packet.AddVariant(0);
     packet.AddString('KeyBot');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$0050:TKeyBotClient.GetNextID');{$ENDIF}
     WriteintegerToPacket(packet, iID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -141,6 +142,7 @@ begin
     packet.AddVariant($0051);
     packet.AddVariant(0);
     packet.AddString('KeyBot');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$0051:TKeyBotClient.GetNextID_str');{$ENDIF}
     WritestringToPacket(packet, sID);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -205,6 +207,7 @@ begin
     packet.AddVariant($0052);
     packet.AddVariant(0);
     packet.AddString('KeyBot');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$0052:TKeyBotClient.SetNextID_str');{$ENDIF}
     WritestringToPacket(packet, sID);
     Writeint64ToPacket(packet, val);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -271,6 +274,7 @@ begin
     packet.AddVariant($0053);
     packet.AddVariant(0);
     packet.AddString('KeyBot');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$0053:TKeyBotClient.SetNextID');{$ENDIF}
     WriteintegerToPacket(packet, iID);
     Writeint64ToPacket(packet, val);
     if not Transact(packet) then raise ECritical.create('transaction failure');

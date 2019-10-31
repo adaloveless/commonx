@@ -61,7 +61,7 @@ end;
 
 constructor TBetterObjectRegistry.Create;
 begin
-  systemx.InitializeCriticalSection(sect);
+  systemx.ics(sect);
   FObjects := TList<TBOREntry>.create;
 end;
 
@@ -115,7 +115,7 @@ end;
 
 procedure TBetterObjectRegistry.Lock;
 begin
-  EnterCriticalSection(sect);
+  ecs(sect);
 end;
 
 procedure TBetterObjectRegistry.ObjectCreated(ref: TClass; sTag: string);

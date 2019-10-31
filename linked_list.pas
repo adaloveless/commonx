@@ -7,7 +7,7 @@ uses
 
 {x$DEFINE DBG}  //debugs the paths taken on removal
 {x$DEFINE validate_count} //will validate count after every operation
-{$DEFINE HAS_CHECKS} //will validate that the linked list HAS an item. Important for maintaining counts.. but WAY slow.
+{x$DEFINE HAS_CHECKS} //will validate that the linked list HAS an item. Important for maintaining counts.. but WAY slow.
 
 
 type

@@ -101,6 +101,7 @@ begin
     packet.AddVariant($5500);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$5500:TRDTPArchiveClient.LogThis');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     Writeint64ToPacket(packet, fromid);
     Writeint64ToPacket(packet, toid);
@@ -175,6 +176,7 @@ begin
     packet.AddVariant($5501);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$5501:TRDTPArchiveClient.GetLog');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     WriteTDateTimeToPacket(packet, pin);
     Writeint64ToPacket(packet, startblock);
@@ -247,6 +249,7 @@ begin
     packet.AddVariant($5502);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$5502:TRDTPArchiveClient.GetNextLogID');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     Writeint64ToPacket(packet, zone);
     Writeint64ToPacket(packet, ids_to_reserve);
@@ -315,6 +318,7 @@ begin
     packet.AddVariant($5503);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$5503:TRDTPArchiveClient.Flush');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -377,6 +381,7 @@ begin
     packet.AddVariant($5504);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$5504:TRDTPArchiveClient.GetLogRev');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     Writeint64ToPacket(packet, idx);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -443,6 +448,7 @@ begin
     packet.AddVariant($5505);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$5505:TRDTPArchiveClient.GetLogRevs');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     Writeint64ToPacket(packet, startidx);
     Writeint64ToPacket(packet, count);
@@ -511,6 +517,7 @@ begin
     packet.AddVariant($5506);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$5506:TRDTPArchiveClient.GetStoredParam');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     WritestringToPacket(packet, sParamName);
     WritestringToPacket(packet, sDefault);
@@ -579,6 +586,7 @@ begin
     packet.AddVariant($5507);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$5507:TRDTPArchiveClient.SetStoredParam');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     WritestringToPacket(packet, sParamName);
     WritestringToPacket(packet, sValue);
@@ -628,6 +636,7 @@ begin
     packet.AddVariant($5508);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$5508:TRDTPArchiveClient.ListArchives');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -690,6 +699,7 @@ begin
     packet.AddVariant($550E);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$550E:TRDTPArchiveClient.GetZoneChecksum');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     Writeint64ToPacket(packet, z);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -760,6 +770,7 @@ begin
     packet.AddVariant($550F);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$550F:TRDTPArchiveClient.GetZoneStackReport');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     Writeint64ToPacket(packet, z);
     WritebooleanToPacket(packet, fullstack);
@@ -828,6 +839,7 @@ begin
     packet.AddVariant($5510);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$5510:TRDTPArchiveClient.NextZoneHint');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     Writeint64ToPacket(packet, z);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
@@ -875,6 +887,7 @@ begin
     packet.AddVariant($5511);
     packet.AddVariant(0);
     packet.AddString('Archive');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$5511:TRDTPArchiveClient.GetArcVatCheckSum');{$ENDIF}
     WritestringToPacket(packet, sArchive);
     Writeint64ToPacket(packet, zStart);
     Writeint64ToPacket(packet, zCount);

@@ -7,6 +7,7 @@ unit GenericRDTPClient;
   {x$DEFINE USE_WINSOCK}
 {$ENDIF}
 {$DEFINE ALLOW_TCP}
+{x$DEFINE ALLOW_UDP}
 
 
 {x$ENDIF}
@@ -157,6 +158,10 @@ type
     property PlatformOptions: cardinal read FplatformOptions write SetPlatformOptions;
     property SupportedPlatformOptions: cardinal read GetSupportedPlatformoptions;
     function NeedPacket: TRDTPPacket;
+
+    function ShouldGive: Boolean; override;
+    function ShouldREturn: boolean; override;
+
   end;
 
   TRDTPCallback = class(TObject)
@@ -352,7 +357,11 @@ begin
   FTIMEOUT := 300000*20;
   FCallback := TRDTPCAllback.create;
   FCallback.client := self;
+{$IFNDEF ALLOW_UDP}
+  UseTCP := true;
+{$ELSE}
   UseTCP := RDTP_USE_TCP;
+{$ENDIF}
   UseTor := RDTP_USE_SOCKS;
   Init;
 end;
@@ -564,6 +573,9 @@ begin
     end;
   end;
 
+{$IFNDEF ALLOW_UDP}
+  UseTCP := true;
+{$ENDIF}
 {$IFDEF ALLOW_TCP}
 {$IFDEF USE_WINSOCK}
   IF UseTCP then begin
@@ -716,6 +728,16 @@ begin
   FplatformOptions := SupportedPlatformOptions and Value;
 end;
 
+function TGenericRDTPClient.ShouldGive: Boolean;
+begin
+  result := connected;
+end;
+
+function TGenericRDTPClient.ShouldREturn: boolean;
+begin
+  result := errors = 0;
+end;
+
 function TGenericRDTPClient.ThreadTransact(var Packet: TRDTPPacket;
   bForget: boolean): boolean;
 begin
@@ -819,8 +841,10 @@ begin
       packet := outpacket;
 
       if not bForget then begin
-        if (not assigned(packet)) then
-        raise ETransportError.create('Server did not respond, packet is nil');
+        if (not assigned(packet)) then begin
+          Disconnect;
+          raise ETransportError.create('Server did not respond, packet is nil');
+        end;
 
         if slDebug <> nil then
           slDebug.add(packet.GetDebugMessage);

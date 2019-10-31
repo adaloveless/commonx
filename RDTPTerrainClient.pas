@@ -70,6 +70,7 @@ begin
     packet.AddVariant($1110);
     packet.AddVariant(0);
     packet.AddString('Terrain');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1110:TTerrainClient.Test');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -132,6 +133,7 @@ begin
     packet.AddVariant($1112);
     packet.AddVariant(0);
     packet.AddString('Terrain');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1112:TTerrainClient.GetSingleTileData');{$ENDIF}
     WritedoubleToPacket(packet, Long);
     WritedoubleToPacket(packet, Lat);
     if not Transact(packet) then raise ECritical.create('transaction failure');

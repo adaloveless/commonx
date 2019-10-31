@@ -60,7 +60,7 @@ uses
 constructor TPersistentInterfacedObject.Create;
 begin
   inherited;
-  InitializeCriticalSection(sectCOM);
+  ics(sectCOM);
 
   //upon initialization, the object holds a reference to itself
   bInternalRef := true;

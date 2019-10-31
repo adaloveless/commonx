@@ -71,6 +71,7 @@ begin
     packet.AddVariant($7000);
     packet.AddVariant(0);
     packet.AddString('Ambassador');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$7000:TRDTPAmbassadorClient.RouteMe');{$ENDIF}
     WritestringToPacket(packet, ComputerNAme);
     WritestringToPacket(packet, ApplicationName);
     Writeint64ToPacket(packet, myport);
@@ -120,6 +121,7 @@ begin
     packet.AddVariant($7001);
     packet.AddVariant(0);
     packet.AddString('Ambassador');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$7001:TRDTPAmbassadorClient.HasRoute');{$ENDIF}
     WritestringToPacket(packet, ComputerNAme);
     WritestringToPacket(packet, ApplicationName);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -186,6 +188,7 @@ begin
     packet.AddVariant($7002);
     packet.AddVariant(0);
     packet.AddString('Ambassador');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$7002:TRDTPAmbassadorClient.CrossPing');{$ENDIF}
     WritestringToPacket(packet, ComputerName);
     WritestringToPacket(packet, ApplicationNAme);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');

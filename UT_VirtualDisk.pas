@@ -14,8 +14,10 @@ type
     ridx: int64;
     predictable_randoms: array[0..RANDOMS-1] of double;
     function UT_CompareWithNonLinear: string;
+    function UT_CompareWithNonLinear_BrokenMirror(iMirrorIDX: ni): string;
     function UT_CompareWithNonLinear_forwardbuild: string;
     function UT_CompareWithNonLinearAfterPayloadMove: string;
+    function UT_CompareWithNonLinearComplexArrange: string;
     function UT_CompareWithNonLinearDuringPayloadMove: string;
     function UT_Variable(BLOCKS: ni; ITERATIONS: ni; MoveDuringPayload: boolean): string;
     function UT_VariableRaid(BLOCKS: ni; ITERATIONS: ni; payCount: ni; MoveDuringPayload: boolean): string;
@@ -44,18 +46,20 @@ implementation
 
 procedure TUT_VirtualDisk_Advanced.CleanupOldStuff;
 var
-  f1,f2,f3,f4: string;
+  f1,f2,f3,f4,f5: string;
   t: ni;
 begin
   f1 := GetTempPath+'vdnl.vd';
   f2 := GEtTempPath+'vda.vda';
   f3 := GEtTempPath+'vda.vdpayload';
   f4 := GEtTempPath+'vda2.vdpayload';
+  f5 := GEtTempPath+'mirror.vdpayload';
 
   if fileexists(f1) then deletefile(f1);
   if fileexists(f2) then deletefile(f2);
   if fileexists(f3) then deletefile(f3);
   if fileexists(f4) then deletefile(f4);
+  if fileexists(f5) then deletefile(f5);
 
   for t:= 0 to 10 do begin
     f3 := GEtTempPath+'vda'+inttostr(t)+'.vdpayload';
@@ -68,10 +72,10 @@ procedure TUT_VirtualDisk_Advanced.DoExecute;
 begin
   inherited;
   CleanupOldStuff;
-  if variation < 82 then begin
-    utresult := 'success';
-    exit;
-  end;
+//  if variation < 82 then begin
+//    utresult := 'success';
+//    exit;
+//  end;
 
     //if variation < 60 then exit;//variation := 60;
     case variation of
@@ -121,14 +125,14 @@ begin
 
       end;
       8: begin
-//        VariationName := 'TwoBigBlock(3)';
+        VariationName := 'BrokenMirror(0)';
+        utresult := UT_CompareWithNonLinear_BrokenMirror(0);
+
 //        utresult := UT_TwoBigBlock(-1, 3);
       end;
-
-
       9: begin
-//        VariationName := 'CreateAndDestroy';
-//        utresult := UT_CreateAndDestroy;
+        VariationName := 'BrokenMirror(1))';
+        utresult :=  UT_CompareWithNonLinear_BrokenMirror(1);
       end;
       10: begin
         VariationName := 'Compare with older less advanced VD forward-built';
@@ -607,6 +611,192 @@ begin
 
 end;
 
+function TUT_VirtualDisk_Advanced.UT_CompareWithNonLinearComplexArrange: string;
+var
+  vdnl: TVirtualDisk_SimpleNonLinear;
+  vda: TVirtualDisk_Advanced;
+  vda_array, vdnl_array, rarray: array[0..(BLOCKSIZE-1)] of byte;
+  blk: cardinal;
+  t,u: ni;
+  sRandomFile: string;
+  fs: TFileSTream;
+  f1,f2: string;
+  fPayloads: array of string;
+const
+  BLOCKS:int64 = 100000*4;
+  ITERATIONS = 20000;
+  TOTAL_PAYLOADS = 5;
+  PRIORITY_0_PAYLOADS = 4;
+begin
+  vdnl := TVirtualDisk_SimpleNonLinear.create;
+  vda := TVirtualDisk_Advanced.create;
+  try
+    sRandomFile := GetTempPath+'random.random';
+    if not fileexists(sRandomFile) then begin
+      fs := TFileStream.create(sRAndomFile, fmCreate);
+      try
+        for t:= 0 to 65535 do begin
+          blk := random(65535);
+          fs.Write(blk, sizeof(blk));
+
+        end;
+      finally
+        fs.free;
+
+      end;
+
+    end;
+    f1 := GetTempPath+'vdnl.vd';
+    f2 := GEtTempPath+'vda.vda';
+    setlength(Fpayloads, 5);
+    FPayloads[0] := GEtTempPath+'vda.vdpayload';
+    for t := 1 to to TOTAL_PAYLOADS-1 do begin
+      Fpayloads[t] := GEtTempPath+'vda'+t.tostring+'.vdpayload';
+      if fileexists(FPayloads[t])
+    end;
+
+
+    if fileexists(f1) then deletefile(f1);
+    if fileexists(f2) then deletefile(f2);
+
+    vdnl.FileName := f1;
+    vda.FileName := f2;
+    vdnl.Size := BLOCKS*BLOCKSIZE;
+    vda.Size := BLOCKS*BLOCKSIZE;
+
+    //fill disk with randoms
+    fs := TFileStream.create(sRandomFile, fmOpenRead+fmShareExclusive);
+    fs.Seek(0,0);
+
+
+    //ConsoleLog('Filling '+inttostr(u));
+    for t:= 0 to (BLOCKSIZE-1) do begin
+      rarray[t] := random(255);
+    end;
+//    vdnl.WriteBlocks(6555648, 1, @rarray[0]);
+//    vda.WriteBlocks(6555648, 1, @rarray[0]);
+
+    //this is the WRITE part
+    for u := BLOCKS-1 downto 0 do begin
+      //ConsoleLog('Filling '+inttostr(u));
+      for t:= 0 to (BLOCKSIZE-1) do begin
+        rarray[t] := random(255);
+//        rarray[t] := t and $FF;
+      end;
+      vdnl.GuaranteeWriteBlocks(u, 1, @rarray[0]);
+      vda.GuaranteeWriteBlocks(u, 1, @rarray[0]);
+    end;
+
+    //now lets add payload
+    vda.AddPayload(f4, -1, 1, 0, 0);
+    //and change the payload quota for the original file
+    vda.SetPayloadQuota(0, 0);
+    //wait a few seconds or data migration to start
+    sleep(4000);
+    //wait for data migration to end.
+    while vda.Migrating do
+      sleep(100);
+
+//    vdnl.WriteBlocks(u, 1, @rarray[0]);
+//    vda.WriteBlocks(u, 1, @rarray[0]);
+
+    for u := 0 to ITERATIONS-1 do begin
+      if u mod 1000 = 0 then
+        Debug.Log(self,'Iteration '+inttostr(u));
+      //ConsoleLog('Testing '+inttostr(u));
+
+      //blk := random(BLOCKS-1);
+      fs.REad(blk, sizeof(blk));
+
+//      Debug.Log('Random write block = '+inttostr(blk));
+
+      //write some random block
+      for t:= 0 to (BLOCKSIZE-1) do begin
+        rarray[t] := ((BLOCKSIZE-1)-t) and $FF;//random(255);
+      end;
+
+//      Debug.Log('RAndom write vdnl');
+      vdnl.WriteBlocks(blk, 1, @rarray[0]);
+//      Debug.Log('Random Write vda');
+      vda.GuaranteeWriteBlocks(blk, 1, @rarray[0]);
+
+//      Debug.Log('RAndom Read vdnl');
+      vdnl.GuaranteeReadBlocks(blk, 1, @vdnl_array[0]);
+//      Debug.Log('Random Read vda');
+      vda.GuaranteeREadBlocks(blk, 1, @vda_array[0]);
+//      Debug.Log('Compare vda against original');
+      if (not CompareMem(@vda_array[0], @rarray[0], sizeof(vda_array))) then begin
+        Debug.Log(self,vda.DebugVatSTructure);
+        Debug.Log(self,'vda: '+MemoryDebugString(@vda_array[0], BLOCKSIZE));
+        Debug.Log(self,'vdnl:'+MemoryDebugString(@rarray[0], BLOCKSIZE));
+        Debug.Log(self,'*****************RECONCILE******* Attempt write of predictable values.');
+
+
+        //rewrite prediactable stuff
+        for t:= 0 to (BLOCKSIZE-1) do begin
+          rarray[t] := t and $FF;
+        end;
+
+        Debug.Log(self,'bring vda back to predictable');
+        vda.GuaranteeWriteBlocks(blk, 1, @rarray[0]);
+        vda.GuaranteeReadBlocks(blk, 1, @vda_array[0]);
+        Debug.Log(self,'vda: '+MemoryDebugString(@vda_array[0], BLOCKSIZE));
+        Debug.Log(self,'orig:'+MemoryDebugString(@rarray[0], BLOCKSIZE));
+        if (not CompareMem(@vda_array[0], @rarray[0], sizeof(vda_array))) then begin
+          Debug.Log(self,'Predicatable does not match.');
+        end;
+
+        raise ECritical.create('fail @'+inttostr(blk));
+
+      end;
+
+//      Debug.Log('Compare Random Writes (should still be cached).');
+      if (not CompareMem(@vda_array[0], @vdnl_array[0], sizeof(vda_array))) then begin
+        Debug.Log(self,vda.DebugVatSTructure);
+        Debug.Log(self,MemoryDebugString(@vda_array[0], BLOCKSIZE));
+        Debug.Log(self,MemoryDebugString(@vdnl_array[0], BLOCKSIZE));
+        raise ECritical.create('fail @'+inttostr(blk));
+      end;
+
+      //if (u mod 100) = 0 then
+      //read some other random block
+      blk := {15700+}u;//random(BLOCKS-1);
+
+//      Debug.Log('Linear Verify');
+//      Debug.Log('Read vda');
+      vda.GuaranteeReadBlocks(blk, 1, @vda_array[0]);
+//      Debug.Log('Read vdnl');
+      vdnl.GuaranteeReadBlocks(blk, 1, @vdnl_array[0]);
+
+//      if (blk = 122) then
+//        Debug.Log('Trap!');
+
+
+//      Debug.Log('Compare Linear Reads.');
+      if (not CompareMem(@vda_array[0], @vdnl_array[0], sizeof(vda_array))) then begin
+        Debug.Log(self,vda.DebugVatSTructure);
+        Debug.Log(self,MemoryDebugString(@vda_array[0], BLOCKSIZE));
+        Debug.Log(self,MemoryDebugString(@vdnl_array[0], BLOCKSIZE));
+        raise ECritical.create('fail @'+inttostr(blk));
+      end;
+    end;
+    Debug.Log(self,vda.DebugVatSTructure);
+    //showmessage('success');
+    result := 'success';
+  finally
+    vdnl.free;
+    vda.free;
+    fs.free;
+    fs := nil;
+  end;
+
+  if fileexists(f1) then deletefile(f1);
+  if fileexists(f2) then deletefile(f2);
+  if fileexists(f3) then deletefile(f3);
+  if fileexists(f4) then deletefile(f4);
+
+end;
+
 function TUT_VirtualDisk_Advanced.UT_CompareWithNonLinearDuringPayloadMove: string;
 var
   vdnl: TVirtualDisk_SimpleNonLinear;
@@ -778,6 +968,180 @@ begin
   if fileexists(f2) then deletefile(f2);
   if fileexists(f3) then deletefile(f3);
   if fileexists(f4) then deletefile(f4);
+
+end;
+
+function TUT_VirtualDisk_Advanced.UT_CompareWithNonLinear_BrokenMirror(
+  iMirrorIDX: ni): string;
+var
+  vdnl: TVirtualDisk_SimpleNonLinear;
+  vda: TVirtualDisk_Advanced;
+  vda_array, vdnl_array, rarray: array[0..BLOCKSIZE-1] of byte;
+  blk: cardinal;
+  t,u: ni;
+  sRandomFile: string;
+  fs: TFileSTream;
+  f1,f2,f3: string;
+const
+  BLOCKS:int64 = 65536*4;
+  ITERATIONS:int64 = 65536*4;
+begin
+  vdnl := TVirtualDisk_SimpleNonLinear.create;
+  vda := TVirtualDisk_Advanced.create;
+  try
+    sRandomFile := GEtTempPath+'random.random';
+    if not fileexists(sRandomFile) then begin
+      fs := TFileStream.create(sRAndomFile, fmCreate);
+      try
+        for t:= 0 to 65535 do begin
+          blk := random(BLOCKS-1);
+          fs.Write(blk, sizeof(blk));
+
+        end;
+      finally
+        fs.free;
+      end;
+
+    end;
+    f1 := GetTempPath+'vdnl.vd';
+    f2 := GEtTempPath+'vda.vda';
+    f3 := GEtTempPath+'vda.vdpayload';
+
+    if fileexists(f1) then deletefile(f1);
+    if fileexists(f2) then deletefile(f2);
+    if fileexists(f3) then deletefile(f3);
+    vdnl.FileName := f1;
+    vda.FileName := f2;
+    vdnl.Size := BLOCKS*BLOCKSIZE*4;
+    vda.Size := 2000+MEGA;//BLOCKS*BLOCKSIZE*4;
+    vda.AddPayload(GetTempPath+'mirror.vda',400*GIGA, 1, 0,0);
+
+    //fill disk with randoms
+    fs := TFileStream.create(sRandomFile, fmOpenRead+fmShareExclusive);
+    fs.Seek(0,0);
+
+
+    //ConsoleLog('Filling '+inttostr(u));
+    for t:= 0 to BLOCKSIZE-1 do begin
+      rarray[t] := random(255);
+    end;
+
+    //-------------------------------------------------------------------------
+    Debug.Log(self,'Initial write.');
+    //vda.EnableOptionalDebugging := true;
+    for u := 0 to BLOCKS-1  do begin
+      for t:= 0 to BLOCKSIZE-1 do begin
+        //rarray[t] := random(255);
+        rarray[t] := u and $FF;
+      end;
+      if u = 131071 then
+        Debug.Log(self,'!'+inttostr(u));
+
+      vdnl.WriteBlocks(u, 1, @rarray[0]);
+      if u = 389247 then begin
+        Debug.Log(self,'Initial write.'+inttostr(u));
+        debug.Log(self,vda.DebugVatStructure);
+      end;
+      if u = 262143 then
+        Debug.log(self,'Trap');
+      vda.GuaranteeWriteBlocks(u, 1, @rarray[0]);
+    end;
+
+
+    vda.Free;
+    vda := nil;
+
+    if iMirrorIDX = 0 then
+      scramblefile(GetTempPath+'vda.vdpayload');
+    if iMirrorIDX = 1 then
+      scramblefile(GetTempPath+'mirror.vdpayload');
+
+    vda := TVirtualDisk_Advanced.create;
+    vda.FileName := f2;
+
+
+    //COMPARE-------------------------------------------------------------
+
+    for u := 0 to ITERATIONS-1 do begin
+      if u mod 1000 = 0 then
+        Debug.Log(self,'Iteration '+inttostr(u));
+
+//      fs.REad(blk, sizeof(blk));
+      blk := u;
+
+      //write some random block
+    (*  for t:= 0 to BLOCKSIZE-1 do begin
+        rarray[t] := ((BLOCKSIZE-1)-t) and $FF;//random(255);
+      end;
+
+
+      vdnl.WriteBlocks(blk, 1, @rarray[0]);
+      vda.GuaranteeWriteBlocks(blk, 1, @rarray[0]);*)
+
+     vdnl.ReadBlocks(blk, 1, @vdnl_array[0]);
+      vda.GuaranteeREadBlocks(blk, 1, @vda_array[0]);
+      if (not CompareMem(@vda_array[0], @vdnl_array[0], sizeof(vda_array))) then begin
+        Debug.Log(self,vda.DebugVatSTructure);
+        Debug.Log(self,'***** MISMATch! ***************');
+        Debug.Log(self,'vda: '+MemoryDebugString(@vda_array[0], BLOCKSIZE));
+        Debug.Log(self,'vdnl:'+MemoryDebugString(@vdnl_array[0], BLOCKSIZE));
+
+
+
+(*
+        //rewrite prediactable stuff
+        for t:= 0 to (BLOCKSIZE-1) do begin
+          rarray[t] := t and $FF;
+        end;
+
+        Debug.Log(self,'bring vda back to predictable');
+        vda.GuaranteeWriteBlocks(blk, 1, @rarray[0]);
+        vda.GuaranteeReadBlocks(blk, 1, @vda_array[0]);
+        Debug.Log(self,'vda: '+MemoryDebugString(@vda_array[0], BLOCKSIZE));
+        Debug.Log(self,'orig:'+MemoryDebugString(@rarray[0], BLOCKSIZE));
+        if (not CompareMem(@vda_array[0], @rarray[0], sizeof(vda_array))) then begin
+          Debug.Log(self,'Predicatable does not match.');
+        end;
+
+        raise ECritical.create('fail @ iteration'+inttostr(u)+' blk:'+inttostr(blk));*)
+
+      end;
+
+(*      if (not CompareMem(@vda_array[0], @vdnl_array[0], sizeof(vda_array))) then begin
+        Debug.Log(self,vda.DebugVatSTructure);
+        Debug.Log(self,MemoryDebugString(@vda_array[0], BLOCKSIZE));
+        Debug.Log(self,MemoryDebugString(@vdnl_array[0], BLOCKSIZE));
+        raise ECritical.create('fail @ iteration'+inttostr(u)+' blk:'+inttostr(blk));
+      end;
+
+      blk := u;
+
+      vda.GuaranteeReadBlocks(blk, 1, @vda_array[0]);
+      vdnl.GuaranteeReadBlocks(blk, 1, @vdnl_array[0]);
+
+
+
+//      Debug.Log('Compare Linear Reads.');
+      if (not CompareMem(@vda_array[0], @vdnl_array[0], sizeof(vda_array))) then begin
+        Debug.Log(self,vda.DebugVatSTructure);
+        Debug.Log('vda='+MemoryDebugString(@vda_array[0], BLOCKSIZE));
+        Debug.Log('vdnl='+MemoryDebugString(@vdnl_array[0], BLOCKSIZE));
+        raise ECritical.create('fail @ iteration'+inttostr(u)+' blk:'+inttostr(blk));
+      end;*)
+    end;
+    Debug.Log(self,vda.DebugVatSTructure);
+    //showmessage('success');
+    result := 'success';
+  finally
+    vdnl.free;
+    vda.free;
+    fs.free;
+    fs := nil;
+  end;
+
+  if fileexists(f1) then deletefile(f1);
+  if fileexists(f2) then deletefile(f2);
+  if fileexists(f3) then deletefile(f3);
 
 end;
 

@@ -54,6 +54,16 @@ type
     procedure DoExecute;override;
   end;
 
+  TStringLoadQI = class(TQueueItem)
+  private
+    FFileName: string;
+    FREsult: string;
+  public
+    property FileName: string read FFileName write FFileName;
+    property Result: string read FREsult write FResult;
+    procedure DoExecute;override;
+  end;
+
 
 procedure ParseStringEx(sInput: string; sDelimiter: string; slOutputList: TStringlist; iThreadSplitSize: ni = 1024);
 function StringReplace_ComparativeSample(sSource: string; sPattern, sReplacement: string; flags: TReplaceFlags): string;
@@ -311,6 +321,15 @@ end;
 function StringReplace_Fastest(sSource: string; sPattern, sReplacement: string; flags: TReplaceFlags): string;
 begin
   Result := StringReplace_MultiThreadedX(sSource, sPattern, sReplacement, flags);
+end;
+
+{ TStringLoadQI }
+
+procedure TStringLoadQI.DoExecute;
+begin
+  inherited;
+  FResult := LoadStringFromFile(FileName);
+
 end;
 
 end.

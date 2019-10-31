@@ -8,7 +8,7 @@ uses
 type
   TUT_RAID = class(TUnitTest)
   protected
-    function RaidTest(iDrives: ni; iStripeSize: ni; iDestroyDrive: ni = -1): string;
+    function RaidTest(iDrives: ni; iStripeSize: ni; iDestroyDrive: ni = -1; bDestroyWithZeroes: boolean = false): string;
   public
     procedure DoExecute;override;
 
@@ -41,6 +41,10 @@ begin
       VariationName := 'RAID, basic Mirror destroy drive 0';
       utresult := RaidTest(2,8*2,0);
     end;
+    21: begin
+      VariationName := 'RAID, basic Mirror erase drive 0';
+      utresult := RaidTest(2,8*2,0, true);
+    end;
     30: begin
       VariationName := 'RAID, basic Mirror destroy drive 1';
       utresult := RaidTest(2,8*2,1);
@@ -69,7 +73,7 @@ begin
 
 end;
 
-function TUT_RAID.RaidTest(iDrives: ni; iStripeSize: ni; iDestroyDrive: ni = -1): string;
+function TUT_RAID.RaidTest(iDrives: ni; iStripeSize: ni; iDestroyDrive: ni = -1; bDestroyWithZeroes: boolean = false): string;
 var
   rc: TRaidCalculator;
   bIn, bOut: array of byte;
@@ -93,7 +97,10 @@ begin
       rc.SingleToPieces;
 
       if iDestroyDrive > -1 then begin
-        fillmemrandom(@rc.pieces[iDestroyDrive].payload[0], SizeOf(rc.pieces[iDestroyDrive].payload));
+        if bDestroyWithZeroes then
+          fillmem(@rc.pieces[iDestroyDrive].payload[0], SizeOf(rc.pieces[iDestroyDrive].payload),0)
+        else
+          fillmemrandom(@rc.pieces[iDestroyDrive].payload[0], SizeOf(rc.pieces[iDestroyDrive].payload));
       end;
 
       rc.PiecesToSingle;

@@ -77,16 +77,16 @@ begin
   Lock;
   try
     CleanPool;
-    debug.log('1. there are '+FPool.count.tostring+' in the pool.');
+//    debug.log('1. there are '+FPool.count.tostring+' in the pool.');
     for t:= 0 to FPool.count-1 do begin
-      debug.log('2. there are '+FPool.count.tostring+' in the pool.');
+//      debug.log('2. there are '+FPool.count.tostring+' in the pool.');
       si := FPool[t];
 
       if (si.MWHost+'/'+si.MWEndPoint+'/'+si.Context) = key  then begin
         result := FPool[t];
         FPool.delete(t);
-        debug.log('get from pool '+inttostr(t));
-        debug.log('3. there are '+FPool.count.tostring+' in the pool.');
+//        debug.log('get from pool '+inttostr(t));
+//        debug.log('3. there are '+FPool.count.tostring+' in the pool.');
         exit;
       end;
     end;

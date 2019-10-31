@@ -2,7 +2,7 @@ unit dx9_tools;
 
 interface
 uses
-  direct3d9_jedi, sysutils, classes, controls, windows, graphics, dialogs, debug;
+  direct3d9_jedi, sysutils, classes, controls, windows, graphics, dialogs, debug, math;
 const
   ABSTRACT_RHW_FVF = D3DFVF_XYZRHW or  D3DFVF_DIFFUSE;
   ABSTRACT_FVF = D3DFVF_XYZ or   D3DFVF_DIFFUSE or D3DFVF_NORMAL or D3DFVF_TEX1;
@@ -240,10 +240,11 @@ begin
   Debug.log(self,'vp='+inttostr((vp)));
 //  Debug.log(self,'dev='+inttostr(ord(dev)));
 
-
+  Math.SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide, exOverflow,
+    exUnderflow, exPrecision]);
   hr:= pEnum.CreateDevice(D3DADAPTER_DEFAULT, halsal, displayhandle,
     vp, @d3dpp, {out} dev);
-
+  Math.SetExceptionMask([exOverflow, exUnderflow, exPrecision]);
 
   if (FAILED(hr)) then begin
     d3dpp.MultiSampleType := D3DMULTISAMPLE_NONE;

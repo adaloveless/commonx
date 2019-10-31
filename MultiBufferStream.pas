@@ -412,7 +412,7 @@ end;
 
 procedure TSharedStream.Init;
 begin
-  InitializeCriticalSection(sect);
+  ics(sect);
 end;
 
 
@@ -653,7 +653,7 @@ var
 begin
   inherited;
 {$IFDEF SECTSEEK}  ics(sectSeek);{$ENDIF}
-  InitializeCriticalSection(sectSize);
+  ics(sectSize);
   BufferSegments := DEFAULT_BUFFER_SEGMENTS;
   MinimumPrefetchSize := DEFAULT_MINIMUM_PREFETCH_SIZE;
 
@@ -685,7 +685,7 @@ end;
 procedure TMultiBufferStream.LockSize;
 begin
   seeklock;
-  EnterCriticalSection(sectSize);
+  ecs(sectSize);
 end;
 
 procedure TMultiBufferStream.LogFatalDiagnosticInformation;
@@ -1507,7 +1507,7 @@ end;
 
 procedure TSharedStream.Lock;
 begin
-  EnterCriticalSection(sect);
+  ecs(sect);
 end;
 
 procedure TSharedStream.Unlock;

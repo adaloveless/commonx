@@ -87,6 +87,7 @@ begin
     packet.AddVariant($1001);
     packet.AddVariant(0);
     packet.AddString('BEEPER');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1001:TRDTPBeeperClient.Beep');{$ENDIF}
     WriteintegerToPacket(packet, freq);
     WriteintegerToPacket(packet, duration);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -153,6 +154,7 @@ begin
     packet.AddVariant($1002);
     packet.AddVariant(0);
     packet.AddString('BEEPER');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1002:TRDTPBeeperClient.BeepForget');{$ENDIF}
     WriteintegerToPacket(packet, freq);
     WriteintegerToPacket(packet, duration);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
@@ -200,6 +202,7 @@ begin
     packet.AddVariant($1003);
     packet.AddVariant(0);
     packet.AddString('BEEPER');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1003:TRDTPBeeperClient.TestInteger');{$ENDIF}
     WriteintegerToPacket(packet, a);
     WriteintegerToPacket(packet, b);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -266,6 +269,7 @@ begin
     packet.AddVariant($1004);
     packet.AddVariant(0);
     packet.AddString('BEEPER');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1004:TRDTPBeeperClient.TestInt64');{$ENDIF}
     WriteInt64ToPacket(packet, a);
     WriteInt64ToPacket(packet, b);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -332,6 +336,7 @@ begin
     packet.AddVariant($1005);
     packet.AddVariant(0);
     packet.AddString('BEEPER');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1005:TRDTPBeeperClient.TestString');{$ENDIF}
     WritestringToPacket(packet, a);
     WritestringToPacket(packet, b);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -398,6 +403,7 @@ begin
     packet.AddVariant($1006);
     packet.AddVariant(0);
     packet.AddString('BEEPER');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1006:TRDTPBeeperClient.HelloTroy');{$ENDIF}
     WriteintegerToPacket(packet, ErectPenis);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -462,6 +468,7 @@ begin
     packet.AddVariant($1007);
     packet.AddVariant(0);
     packet.AddString('BEEPER');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1007:TRDTPBeeperClient.HelloIvana');{$ENDIF}
     WritestringToPacket(packet, WriteToLog);
     WriteintegerToPacket(packet, freq);
     WriteintegerToPacket(packet, duration);

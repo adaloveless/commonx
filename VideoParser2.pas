@@ -652,7 +652,7 @@ end;
 procedure TVideoParser2.StartThread;
 begin
   StopThread;
-  thr := TVideoReadAheadThread.Create(self, nil);
+  thr := TPM.Needthread<TVideoReadAheadThread>(nil);
   thr.Parser := self;
   thr.Start;
 end;
@@ -754,10 +754,10 @@ begin
     //work to complete the array... not under lock
     for t := 0 to FRAME_BUFFER_SIZE-1 do begin
       v := @FParser.FFrameBuffers[t];
-      if v.framenumber = iStartFrame then
-        Priority := tpHighest
-      else
-        Priority := tpLower;
+//      if v.framenumber = iStartFrame then
+//        Priority := tpHighest
+//      else
+//        Priority := tpLower;
       if (not v.ready) then begin
         parser.Direct_GetFrameBits(v.frametime, v);
 
@@ -867,7 +867,7 @@ end;
 procedure TMediaClock.StartThread;
 begin
   StopThread;
-  thr := TMediaClockThread.Create(self, nil);
+  thr := TPM.Needthread<TMediaClockThread>(nil);
   thr.OnExecute := Self.OnThreadExecute;
   thr.loop := true;
   thr.start;

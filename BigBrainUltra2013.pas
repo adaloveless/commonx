@@ -18,6 +18,11 @@ type
   BOOL = LONGBOOL;
 
 type
+{$IFDEF CPUx86}
+  SIZE_T = cardinal;
+{$else}
+  SIZE_T = uint64;
+{$Endif}
   THeapObject=class
   public
     class function NewInstance:TObject; override;
@@ -38,6 +43,7 @@ type
     Lock: Cardinal;
     LockCount: Cardinal;
   end;
+
 
 const
   PageSize = 65536;
@@ -534,6 +540,11 @@ function HeapSize; external kern name 'HeapSize';
 function HeapUnlock; external kern name 'HeapUnlock';
 function HeapValidate; external kern name 'HeapValidate';
 function GetProcessHeap; external kern name 'GetProcessHeap';
+
+function VirtualLock(lpAddress: Pointer; dwSize: SIZE_T): BOOL; stdcall;
+{$EXTERNALSYM VirtualLock}
+function VirtualLock; external kern name 'VirtualLock';
+{$EXTERNALSYM VirtualLock}
 
 
 {$ENDIF}
@@ -1075,6 +1086,9 @@ begin
 
 
   if result = nil then continue;
+
+  VirtualLock(result, iNewSize);
+
   //Initialize the result
   smb_Init(result, UserSize);
 

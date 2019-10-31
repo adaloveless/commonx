@@ -124,6 +124,7 @@ type
     procedure FreeByInterface;
     property IsDead: boolean read GetIsDead;
     function ShouldReturn: boolean;virtual;
+    function ShouldGive: boolean;virtual;
 {$IFDEF GIVER_IN_TOBJECT}
     property ReturnTo: TGiver read FReturnTo;//if taken from a giver, this property will be set.
     procedure Return;//INSTEAD OF calling FREE, try giving it to the giver instead (pooling)
@@ -229,6 +230,7 @@ type
     procedure AfterReturn(obj: Tobject);virtual;
   public
     procedure Return(obj: TObject; sContext: string = '');
+    function GivenIsGivable(obj: Tobject): boolean;virtual;
 
 
     constructor Create; override;
@@ -486,7 +488,7 @@ end;
 constructor TBetterObject.create;
 begin
 {$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
-  InitializeCriticalSection(FRefSect);
+  ics(FRefSect);
 {$ENDIF}
 {$IFDEF REGISTER_OBJECTS}
   if TBetterObject.EnableRegistry then
@@ -517,7 +519,7 @@ begin
     bor.ObjectDestroyed(TBetterClass(self.ClassType), '');
 {$ENDIF}
 {$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
-  DeleteCriticalSection(FRefSect);
+  dcs(FRefSect);
 {$ENDIF}
 {$IFDEF UNDEAD_PROTECTION}
   FDead := $DEAD;
@@ -630,6 +632,11 @@ end;
 
 
 
+function TBetterObject.ShouldGive: boolean;
+begin
+  result := true;
+end;
+
 function TBetterObject.ShouldReturn: boolean;
 begin
   result := true;
@@ -646,10 +653,10 @@ begin
 {$IFDEF AUTOREFCOUNT}
   result := inherited _AddRef;
 {$ELSE}
-  EnterCriticalSection(FRefSect);
+  ecs(FRefSect);
   inc(FrefCount);
   Result := FRefCount;
-  LeaveCriticalSection(FRefSect);
+  lcs(FRefSect);
 {$ENDIF}
 
 end;
@@ -659,9 +666,9 @@ begin
 {$IFDEF AUTOREFCOUNT}
   result := RefCount;
 {$ELSE}
-  EnterCriticalSection(FRefSect);
+  ecs(FRefSect);
   result := FRefCount;
-  LeaveCriticalSection(FRefSect);
+  lcs(FRefSect);
 {$ENDIF}
 
 end;
@@ -671,7 +678,7 @@ begin
   if FDead = $DEAD then
     raise ECritical.create('trying to release a dead object');
 {$IFDEF AUTOREFCOUNT}
-  EnterCriticalSection(FRefSect);
+  ecs(FRefSect);
 {$ENDIF}
   DeadCheck;
 
@@ -681,7 +688,7 @@ begin
   dec(FRefCount);
   Result := FRefCount;
 
-  LeaveCriticalSection(FRefSect);
+  lcs(FRefSect);
 
   if (Result = FreeAtRef) or ((Result = 0) and FreeWithReferences) then begin
 {$IFDEF WINDOWS}
@@ -867,12 +874,17 @@ begin
   inherited;
 end;
 
+function TGiver.GivenIsGivable(obj: Tobject): boolean;
+begin
+  //
+end;
+
 {$ENDIF}
 
 {$IFDEF MSWINDOWS}
 function TSharedObject.IsLocked: boolean;
 begin
-  result := self.sect.LockCount > 0;
+  result := self.sect.cs.LockCount > 0;
 end;
 {$ENDIF}
 
@@ -907,21 +919,21 @@ begin
     if not (TryLock(1000)) then begin
 //      if not (self.ClassName='TCommandProcessor') then
 //      if self.ClassName = 'Tmodosc_EQ' then
-      Debug.Log(self, self.ClassName+' is blocked on thread '+inttostr(GetCurrentThreadID())+' by '+inttostr(sect.owningthread),'error');
+      Debug.Log(self, self.ClassName+' is blocked on thread '+inttostr(GetCurrentThreadID())+' by '+inttostr(sect.cs.owningthread),'error');
       if LockTimeout = 0 then
-        EnterCriticalSection(sect)
+        EnterCriticalSection(sect.cs)
       else
         if not TryLock(LockTimeout) then
-          raise ELockTimeout.create('lock timeout waiting for '+self.ClassName+' owned by #'+sect.OwningThread.tostring);
+          raise ELockTimeout.create('lock timeout waiting for '+self.ClassName+' owned by #'+sect.cs.OwningThread.tostring);
       Debug.Log(self, self.ClassName+' is unblocked on thread '+inttostr(GetCurrentThreadID()),'error');
     end;
     {$ELSE}
     if LockTimeout = 0 then
-      EnterCriticalSection(sect)
+      ecs(sect)
     else
       if not TryLock(LockTimeout) then begin
 {$IFDEF MSWINDOWS}
-        raise ELockTimeout.create('lock timeout waiting for '+self.ClassName+' owned by #'+sect.OwningThread.tostring);
+        raise ELockTimeout.create('lock timeout waiting for '+self.ClassName+' owned by #'+sect.cs.OwningThread.tostring);
 {$ELSE}
         raise ELockTimeout.create('lock timeout waiting for '+self.ClassName);
 {$ENDIF}
@@ -962,7 +974,7 @@ end;
 {$IFDEF MSWINDOWS}
 function TSharedObject.LockOwner: cardinal;
 begin
-  result := sect.OwningThread;
+  result := sect.cs.OwningThread;
 end;
 {$ENDIF}
 
@@ -970,7 +982,7 @@ procedure TSharedObject.SetSpinCount(const Value: ni);
 begin
   FSpinCount := Value;
 {$IFDEF MSWINDOWS}
-  SetCriticalSectionSpinCount(sect, value);
+  SetCriticalSectionSpinCount(sect.cs, value);
 {$ENDIF}
 end;
 
@@ -986,7 +998,7 @@ end;
 
 function TSharedObject.TryLock: boolean;
 begin
-  result := TryEnterCriticalSection(sect);
+  result := tecs(sect);
   if result then
     lockrefs := lockrefs+1;
 
@@ -998,7 +1010,7 @@ var
 begin
   tm1 := GetTicker;
   result := true;
-  while not TryEnterCriticalSection(sect) do begin
+  while not tecs(sect) do begin
     sleep(1);
     tm2 := GetTicker;
     if tm2<tm1 then
@@ -1028,7 +1040,7 @@ end;
 procedure TSharedObject.Unlock;
 begin
   lockrefs := lockrefs - 1;
-  LeaveCriticalSection(sect);
+  lcs(sect);
 
   {$IFDEF LOCK_DEBUG}
   if not nodebug then
@@ -1041,7 +1053,7 @@ end;
 constructor TLockQueuedObject.Create;
 begin
   inherited;
-  InitializeCriticalSection(sect);
+  ics(sect);
   FLockQueues := TList<TLockREcord>.create;
 
 end;
@@ -1049,7 +1061,7 @@ end;
 destructor TLockQueuedObject.Destroy;
 begin
   FLockQueues.free;
-  DeleteCriticalSection(sect);
+  dcs(sect);
   inherited;
 
 end;
@@ -1260,7 +1272,7 @@ end;
 procedure TLockQueuedObject.Lock;
 begin
   inherited;
-  EnterCriticalSection(sect);
+  ecs(sect);
 end;
 
 function TLockQueuedObject.LockQueueLength: ni;
@@ -1275,7 +1287,7 @@ end;
 
 procedure TLockQueuedObject.UnLock;
 begin
-  LeaveCriticalSection(sect);
+  lcs(sect);
   inherited;
 
 end;
@@ -1899,7 +1911,7 @@ end;
 
 constructor TSharedObject.Create;
 begin
-  InitializeCriticalSection(sect);
+  ics(sect);
   inherited Create;
   //Init;
 
@@ -1911,7 +1923,7 @@ destructor TSharedObject.Destroy;
 begin
 
   inherited;
-  DeleteCriticalSection(sect);
+  dcs(sect);
 
 end;
 
@@ -1947,8 +1959,8 @@ begin
 
       result := FList.objects[i];
       FList.delete(i);
-      if not TBetterobject(result).shouldReturn then begin
-        Debug.Log('FREE from Pool (expired/should not return) '+result.classname);
+      if not TBetterobject(result).shouldGive then begin
+        Debug.Log('FREE from Pool (expired/should not give) '+result.classname);
         result.Free;
         result := nil;
       end else begin

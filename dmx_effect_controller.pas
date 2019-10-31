@@ -172,7 +172,8 @@ begin
 
 
   currenteffect.SetParam(pd.Name, iVAlue);
-  BCFDataSource.SliderOut(iChannel, FSliders[iChannel].FloatSlider, true);
+  if assigned(bcfdatasource) then
+    BCFDataSource.SliderOut(iChannel, FSliders[iChannel].FloatSlider, true);
 
 
 end;
@@ -260,7 +261,8 @@ begin
 
     end;
     for t := FSliders.Count to 7 do begin
-      BCFDataSource.SliderOut(t, 0, true);
+      if assigned(BCFDatasource) then
+        BCFDataSource.SliderOut(t, 0, true);
     end;
   end;
 end;
@@ -319,10 +321,12 @@ constructor TDMXEffectController.Create(aowner: TComponent);
 begin
   inherited;
   FSliders := TList<TDMXSliderControl>.create;
+{$IFDEF DOBCF}
   BCFDAtaSource := TBCF2000DAtaSource.create;
   BCFDataSource.OnSliderIn := self.BCFSlider;
   BCFDataSource.OnRotorIn := self.BCFRotor;
   BCFDataSource.OnButtonCodeIn := self.BCfButton;
+{$ENDIF}
 end;
 
 destructor TDMXEffectController.Destroy;
@@ -623,7 +627,8 @@ procedure TDMXSliderControl.SetParamDefinition(
 begin
   FParamDefinition := Value;
   REfreshControl;
-  Controller.BCFDataSource.SliderOut(Channel, FloatSlider, true);
+  if assigned(Controller.BCFDatasource) then
+    Controller.BCFDataSource.SliderOut(Channel, FloatSlider, true);
 end;
 
 procedure TDMXSliderControl.SetParamName(const Value: string);
@@ -639,7 +644,9 @@ begin
   if assigned(FOnCHange) then
     FOnChange(Channel, FloatPosition);
 
-  if Assigned(Controller.Hooker) then begin
+
+  if assigned(controller)
+  and Assigned(Controller.Hooker) then begin
     if Controller.RefreshingData = 0 then
       Controller.Hooker.AddToScript('fx_param,'+ParamDefinition.Name+','+floattostr(ParamDefinition.rValue));
   end else begin

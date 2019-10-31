@@ -63,6 +63,7 @@ type
     procedure BringDefaultCurtainsToFront;
   public
     mock: TForm;
+    WorkingHard: boolean;
     function WatchCommands: boolean;virtual;
     { Public declarations }
 
@@ -99,6 +100,10 @@ type
     procedure WorkError(sMessage: string);virtual;
     procedure HardWork(proc: TProc);overload;
     procedure HardWork(proc: TProc; guiSuccess: TProc);overload;
+    procedure BusyWork(proc: TProc);overload;
+    procedure BusyWork(proc: TProc; guiSuccess: TProc);overload;
+    procedure ShowMessage(sMessage: string);virtual;
+
 
 
 
@@ -147,6 +152,16 @@ begin
     default_curtains[t].obj.bringtofront;
   end;
 
+end;
+
+procedure TfrmFMXBase.BusyWork(proc, guiSuccess: TProc);
+begin
+  HardWork(proc, guiSuccess);
+end;
+
+procedure TfrmFMXBase.BusyWork(proc: TProc);
+begin
+  HardWork(proc);
 end;
 
 constructor TfrmFMXBase.Create(AOwner: TComponent);
@@ -460,12 +475,17 @@ procedure TfrmFMXBase.HardWork(proc, guiSuccess: TProc);
 var
   cl: TCommandLIst<TCommand>;
 begin
-  cl := ActiveCommands;
-  if mock <> nil then
-    cl := Tmm(mock).ActiveCommands;
+  WorkingHard := true;
+  try
+    cl := ActiveCommands;
+    if mock <> nil then
+      cl := Tmm(mock).ActiveCommands;
 
-  cl.Add(InlineProcWithGuiEx(proc, procedure begin guisuccess() end, procedure(s: string) begin WorkError(s) end));
-  WatchCommands;
+    cl.Add(InlineProcWithGuiEx(proc, procedure begin guisuccess() end, procedure(s: string) begin WorkError(s) end));
+    WatchCommands;
+  finally
+    WorkingHard := false;
+  end;
 
 end;
 
@@ -473,12 +493,17 @@ procedure TfrmFMXBase.HardWork(proc: TProc);
 var
   cl: TCommandLIst<TCommand>;
 begin
-  cl := ActiveCommands;
-  if mock <> nil then
-    cl := Tmm(mock).ActiveCommands;
+  WorkingHard := true;
+  try
+    cl := ActiveCommands;
+    if mock <> nil then
+      cl := Tmm(mock).ActiveCommands;
 
-  cl.Add(InlineProcWithGuiEx(proc, procedure begin end, procedure(s: string) begin WorkError(s) end));
-  WatchCommands;
+    cl.Add(InlineProcWithGuiEx(proc, procedure begin end, procedure(s: string) begin WorkError(s) end));
+    WatchCommands;
+  finally
+    WorkingHard := false;
+  end;
 
 end;
 
@@ -514,6 +539,11 @@ begin
 
 end;
 
+procedure TfrmFMXBase.ShowMessage(sMessage: string);
+begin
+  fmx.Dialogs.showmessage(sMessage);
+end;
+
 procedure TfrmFMXBase.ToggleBusy(busy: boolean);
 begin
   //no implementation requried
@@ -522,6 +552,8 @@ end;
 procedure TfrmFMXBase.Transition(proc: TProc);
 begin
 
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
 end;
 
 procedure TfrmFMXBase.UnregisterWithMockMobile;
@@ -615,7 +647,7 @@ end;
 
 procedure TfrmFMXBase.WorkError(sMessage: string);
 begin
-  showmessage('Work Error: '+sMessage);
+  showmessage(sMessage);
 
 end;
 

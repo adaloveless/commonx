@@ -305,6 +305,7 @@ begin
   //    if obj.tablelink <> '' then
   //      cli.WriteQuery('SET IDENTITY_INSERT '+obj.TableLink+' ON;');
   //  end;
+    CheckConnectedOrConnect;
     cli.WriteQuery(s);
   end;
 end;
@@ -455,7 +456,9 @@ function TServerInterface.UpdateQuery(cache: TDataObjectCache; sQuery: string;
   iSessionID: integer; bExpectMany: boolean; slDebug: TStringList;
   iTimeoutMS: integer): boolean;
 begin
-  raise ENotImplemented.create('not implemented');
+//  WriteQuery(sQuery);
+  CheckConnectedOrConnect;
+  cli.WriteQuery(sQuery);
 end;
 
 //------------------------------------------------------------------------------
@@ -489,6 +492,7 @@ end;
 //------------------------------------------------------------------------------
 function TServerInterface.GetNextID(sType: string): int64;
 begin
+  CheckConnectedOrConnect;
   result := cli.GetNextID(sType)
 end;
 

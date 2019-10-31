@@ -87,6 +87,7 @@ begin
     packet.AddVariant($4442);
     packet.AddVariant(0);
     packet.AddString('LightShow');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$4442:TLightShowClient.GetFiles');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -149,6 +150,7 @@ begin
     packet.AddVariant($4443);
     packet.AddVariant(0);
     packet.AddString('LightShow');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$4443:TLightShowClient.GetQueue');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -211,6 +213,7 @@ begin
     packet.AddVariant($4444);
     packet.AddVariant(0);
     packet.AddString('LightShow');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$4444:TLightShowClient.QueueItem');{$ENDIF}
     WritestringToPacket(packet, sName);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -256,6 +259,7 @@ begin
     packet.AddVariant($4445);
     packet.AddVariant(0);
     packet.AddString('LightShow');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$4445:TLightShowClient.NextItem');{$ENDIF}
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
     on E:Exception do begin
@@ -299,6 +303,7 @@ begin
     packet.AddVariant($4446);
     packet.AddVariant(0);
     packet.AddString('LightShow');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$4446:TLightShowClient.Pause');{$ENDIF}
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
     on E:Exception do begin
@@ -342,6 +347,7 @@ begin
     packet.AddVariant($4447);
     packet.AddVariant(0);
     packet.AddString('LightShow');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$4447:TLightShowClient.Rewind');{$ENDIF}
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
     on E:Exception do begin
@@ -385,6 +391,7 @@ begin
     packet.AddVariant($4448);
     packet.AddVariant(0);
     packet.AddString('LightShow');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$4448:TLightShowClient.GetRemoteData');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -447,6 +454,7 @@ begin
     packet.AddVariant($4450);
     packet.AddVariant(0);
     packet.AddString('LightShow');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$4450:TLightShowClient.UnQueueItem');{$ENDIF}
     WriteintegerToPacket(packet, iIndex);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -492,6 +500,7 @@ begin
     packet.AddVariant($4451);
     packet.AddVariant(0);
     packet.AddString('LightShow');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$4451:TLightShowClient.QueueMoveUp');{$ENDIF}
     WriteintegerToPacket(packet, iIndex);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -537,6 +546,7 @@ begin
     packet.AddVariant($4452);
     packet.AddVariant(0);
     packet.AddString('LightShow');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$4452:TLightShowClient.QueueMoveDown');{$ENDIF}
     WriteintegerToPacket(packet, iIndex);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except

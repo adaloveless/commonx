@@ -130,21 +130,21 @@ procedure fftw_execute(plan: Pointer); cdecl; external fftdll {$IFDEF DELAYLOAD}
 
 procedure LockFFT;
 begin
-  EnterCriticalSection(_fftw_sect);
+  ecs(_fftw_sect);
 end;
 procedure UnlockFFT;
 begin
-  LEaveCriticalSection(_fftw_sect);
+  lcs(_fftw_sect);
 end;
 
 procedure oinit;
 begin
-  InitializeCriticalSection(_fftw_sect);
+  ics(_fftw_sect);
 end;
 
 procedure ofinal;
 begin
-  DeleteCriticalSection(_fftw_sect);
+  dcs(_fftw_sect);
 
 end;
 

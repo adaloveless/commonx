@@ -54,6 +54,14 @@ type
       FreeOnComplete: Boolean = True);reintroduce;
   end;
 
+  TAnonymousIteratorCommand = class(TCommand)
+  protected
+    procedure DoExecute; override;
+  public
+    iteration: ni;
+    proc: TProc<ni>;
+  end;
+
 
 
   TAnonymousFunctionCommand = class(TAnonymousCommand<boolean>)
@@ -75,6 +83,7 @@ type
 { TAnonymousTimer }
 
 function InlineProc(proc: TProc): TAnonymousCommand<boolean>;
+function InlineIteratorProc(idx: ni; proc: TProc<ni>): TAnonymousIteratorCommand;
 function InlineProcWithGui(proc, guiproc: TProc): TAnonymousCommand<boolean>;
 function InlineProcWithGuiEx(proc, guiproc: TProc; exProc:TProc<string>): TAnonymousCommand<boolean>;
 
@@ -121,7 +130,18 @@ var
   res: TAnonymousCommand<boolean>;
 begin
   res := TAnonymousFunctionCommand.createinline(proc, false, false);
+  res.SynchronizeFinish := false;
   result := res;
+end;
+
+
+function InlineIteratorProc(idx: ni; proc: TProc<ni>): TAnonymousIteratorCommand;
+begin
+  result := TAnonymousIteratorCommand.create;
+  result.iteration := idx;
+  result.proc := proc;
+//  result.CPUExpense := 1.0;
+  result.start;
 end;
 
 function InlineProcWithGui(proc, guiproc: TProc): TAnonymousCommand<boolean>;
@@ -150,7 +170,7 @@ end;
 constructor TAnonymousCommand<T>.Create(AThreadFunc: TFunc<T>; AOnFinishedProc: TProc<T>;
   AOnErrorProc: TProc<Exception>; ACreateSuspended: Boolean = False; FreeOnComplete: Boolean = True);
 begin
-  Debug.Log('Creating '+self.GetObjectDebug);
+//  Debug.Log('Creating '+self.GetObjectDebug);
   FOnFinishedProc := AOnFinishedProc;
   FOnErrorProc := AOnErrorProc;
   FThreadFunc := AThreadFunc;
@@ -191,7 +211,7 @@ var
 {$ENDIF}
 begin
   inherited;
-  Debug.Log(self, 'Executing  '+self.GetObjectDebug);
+//  Debug.Log(self, 'Executing  '+self.GetObjectDebug);
 {$IFDEF MACOS}
   //Need to create an autorelease pool, otherwise any autorelease objects
   //may leak.
@@ -395,6 +415,14 @@ begin
   Start;
 
 
+end;
+
+{ TAnonymousIteratorCommand }
+
+procedure TAnonymousIteratorCommand.DoExecute;
+begin
+  inherited;
+  proc(iteration);
 end;
 
 end.

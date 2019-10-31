@@ -79,6 +79,7 @@ begin
     packet.AddVariant($7000);
     packet.AddVariant(0);
     packet.AddString('RemoteControl');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$7000:TRemoteControlClient.MouseClick');{$ENDIF}
     WriteintegerToPacket(packet, x);
     WriteintegerToPacket(packet, y);
     WriteintegerToPacket(packet, button);
@@ -147,6 +148,7 @@ begin
     packet.AddVariant($7001);
     packet.AddVariant(0);
     packet.AddString('RemoteControl');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$7001:TRemoteControlClient.MouseDown');{$ENDIF}
     WriteintegerToPacket(packet, x);
     WriteintegerToPacket(packet, y);
     WriteintegerToPacket(packet, button);
@@ -215,6 +217,7 @@ begin
     packet.AddVariant($7002);
     packet.AddVariant(0);
     packet.AddString('RemoteControl');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$7002:TRemoteControlClient.MouseMove');{$ENDIF}
     WriteintegerToPacket(packet, x);
     WriteintegerToPacket(packet, y);
     WriteintegerToPacket(packet, button);
@@ -283,6 +286,7 @@ begin
     packet.AddVariant($7003);
     packet.AddVariant(0);
     packet.AddString('RemoteControl');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$7003:TRemoteControlClient.MouseUp');{$ENDIF}
     WriteintegerToPacket(packet, x);
     WriteintegerToPacket(packet, y);
     WriteintegerToPacket(packet, button);
@@ -351,6 +355,7 @@ begin
     packet.AddVariant($7004);
     packet.AddVariant(0);
     packet.AddString('RemoteControl');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$7004:TRemoteControlClient.ScreenShot');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);

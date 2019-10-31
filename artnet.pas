@@ -95,6 +95,7 @@ type
   protected
     FKnownFixtures: TBetterList<TArtNetEndpoint>;
     udpc: TIdUDPServer;
+    artseq: byte;
     procedure UDPDispatch(athread:TIdUDPListenerThread; const adata:tidbytes; abinding:tidsockethandle);
     procedure Dispatch_ArtPollReply(var head: TArtPAcket; athread:TIdUDPListenerThread; const adata:tidbytes; abinding:tidsockethandle);
     procedure UDPOnUDPRead(athread:TIdUDPListenerThread; const adata:tidbytes; abinding:tidsockethandle);
@@ -257,6 +258,8 @@ var
   idb: TIDBytes;
 begin
   dmxp.Init;
+  dmxp.sequence := artseq;
+  artseq := byte(integer(artseq)+1);
   movemem32(@dmxp.Data[0], p, sz);
   idb := ToIDBytes(@dmxp, sizeof(dmxp));
   self.udpc.SendBuffer(ep.IP, 6454, idb);

@@ -68,9 +68,8 @@ type
     function GetNextIDEx(key:string; table:string; field:string):int64;overload;virtual;
     procedure GetNextIDEx_Async(key:string; table:string; field:string);overload;virtual;
     function GetNextIDEx_Response():int64;
-
-
     function DispatchCallback: boolean;override;
+
 
   end;
 
@@ -111,6 +110,7 @@ begin
     packet.AddVariant($1110);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1110:TRDTPSQLConnectionClient.Test');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -173,6 +173,7 @@ begin
     packet.AddVariant($1111);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1111:TRDTPSQLConnectionClient.WriteQuery');{$ENDIF}
     WritestringToPacket(packet, sQuery);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -237,6 +238,7 @@ begin
     packet.AddVariant($1112);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1112:TRDTPSQLConnectionClient.ReadyToWriteBehind');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -299,6 +301,7 @@ begin
     packet.AddVariant($1113);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1113:TRDTPSQLConnectionClient.WriteBehind');{$ENDIF}
     WritestringToPacket(packet, sQuery);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -344,6 +347,7 @@ begin
     packet.AddVariant($1114);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1114:TRDTPSQLConnectionClient.ReadQuery');{$ENDIF}
     WritestringToPacket(packet, sQuery);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -408,6 +412,7 @@ begin
     packet.AddVariant($1115);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1115:TRDTPSQLConnectionClient.BackProc');{$ENDIF}
     WritestringToPacket(packet, exe_no_path);
     WritestringToPacket(packet, commandlineparams);
     WritestringToPacket(packet, backinputstringcontent);
@@ -480,6 +485,7 @@ begin
     packet.AddVariant($1116);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1116:TRDTPSQLConnectionClient.BeginTransaction');{$ENDIF}
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
     on E:Exception do begin
@@ -523,6 +529,7 @@ begin
     packet.AddVariant($1117);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1117:TRDTPSQLConnectionClient.Commit');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -585,6 +592,7 @@ begin
     packet.AddVariant($1118);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1118:TRDTPSQLConnectionClient.Rollback');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -647,6 +655,7 @@ begin
     packet.AddVariant($111A);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$111A:TRDTPSQLConnectionClient.BeginTransactionOn');{$ENDIF}
     WriteintegerToPacket(packet, channel_const);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -692,6 +701,7 @@ begin
     packet.AddVariant($111B);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$111B:TRDTPSQLConnectionClient.CommitOn');{$ENDIF}
     WriteintegerToPacket(packet, channel_const);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -737,6 +747,7 @@ begin
     packet.AddVariant($111C);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$111C:TRDTPSQLConnectionClient.RollbackOn');{$ENDIF}
     WriteintegerToPacket(packet, channel_const);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -782,6 +793,7 @@ begin
     packet.AddVariant($111D);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$111D:TRDTPSQLConnectionClient.ReadOn');{$ENDIF}
     WriteintegerToPacket(packet, channel_const);
     WritestringToPacket(packet, query);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -848,6 +860,7 @@ begin
     packet.AddVariant($111E);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$111E:TRDTPSQLConnectionClient.WriteOn');{$ENDIF}
     WriteintegerToPacket(packet, channel_const);
     WritestringToPacket(packet, query);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -914,6 +927,7 @@ begin
     packet.AddVariant($111F);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$111F:TRDTPSQLConnectionClient.WriteBehindOn');{$ENDIF}
     WriteintegerToPacket(packet, channel_const);
     WritestringToPacket(packet, query);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
@@ -961,6 +975,7 @@ begin
     packet.AddVariant($1120);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1120:TRDTPSQLConnectionClient.GetNextID');{$ENDIF}
     WritestringToPacket(packet, key);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -1025,6 +1040,7 @@ begin
     packet.AddVariant($1121);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1121:TRDTPSQLConnectionClient.SetNextID');{$ENDIF}
     WritestringToPacket(packet, key);
     Writeint64ToPacket(packet, id);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
@@ -1060,6 +1076,8 @@ begin
     end;
   end;
 end;
+
+
 //------------------------------------------------------------------------------
 function TRDTPSQLConnectionClient.GetNextIDEx(key:string; table:string; field:string):int64;
 var
@@ -1072,6 +1090,7 @@ begin
     packet.AddVariant($1122);
     packet.AddVariant(0);
     packet.AddString('RDTPSQLConnection');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$1122:TRDTPSQLConnectionClient.GetNextIDEx');{$ENDIF}
     WritestringToPacket(packet, key);
     WritestringToPacket(packet, table);
     WritestringToPacket(packet, field);

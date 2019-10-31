@@ -2274,6 +2274,7 @@ begin
 
   case (common.osb1 and $7f) of
     $05: begin
+      Debug.Log('TASK MANAGEMENT function! RESET AFter : 0x'+inttohex(Self.last_good_command,1));
       resp.InitResponse(common, contextdata(context), false);
       resp.StatusClass := 0;
       resp.PrepareToSend(common, ContextData(context));
@@ -2558,7 +2559,10 @@ begin
 
 //        ClientSocket.GetThreadObject.Status := 'Idle/Reading';
         thr.Step := 0;
+
+        CurrentThreadObject.EndActiveTime;
         ctx_guarantee_read(ctx, Pbyte(@common), sizeof(common));
+        CurrentThreadObject.BeginActivetime;
         rsTCP1.EndTime;
         rsTCP2.BeginTime;
         thr.step := 1;

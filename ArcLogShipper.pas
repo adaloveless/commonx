@@ -282,7 +282,7 @@ uses
 
 const
   RESERVE_ID_COUNT = 1000000;
-  MAX_UNIQUE_CLIENTS = 64;
+  MAX_UNIQUE_CLIENTS = 16;
   RESERVE_UNIQUE_CLIENTS = 8;
   ZONES_TO_BACKUP = { $200} MAX_ZONES;
   ARC_ZONE_CHECKSUM_SIZE = $10000;
@@ -344,6 +344,7 @@ type
     function SearchValBatchForZone(zidx: int64; bCheckOnlyTransLogThis: boolean): TArcTransactionalCommand;
     function GetArcZonesInDisk: int64;
     function GetdiskSize: int64;
+    function GEtQuickClient: TRDTPArchiveClient;
     protected
     function CanActivate: boolean;
     procedure Activate;
@@ -392,7 +393,7 @@ type
 //    property SourceArchive: string read FSourceArchive write FSourceArchive;
     property ReadyForRealTime: boolean read FReadyForRealtime;
     property Client: TRDTPArchiveClient read FClient;
-    property QuickClient: TRDTPArchiveClient read FQuickClient;
+    property QuickClient: TRDTPArchiveClient read GEtQuickClient;
     property Host: string read GetHost write SetHost;
     property Endpoint: string read GetEndpoint write SetEndPOint;
     property Archive: string read FArchive write SetArchive;
@@ -627,8 +628,8 @@ end;
 
 function TArcLogShipper.CanActivate: boolean;
 begin
-  result := (Archive <> '') and (FCLient.Host <> '') and (FClient.Endpoint <> '')
-              and (FQuickCLient.Host <> '') and (FQuickCLient.Endpoint <> '');
+  result := (Archive <> '') and (FCLient.Host <> '') and (FClient.Endpoint <> '');
+//              and (FQuickCLient.Host <> '') and (FQuickCLient.Endpoint <> '');
 end;
 
 procedure TArcLogShipper.CancelValBAtches;
@@ -753,7 +754,10 @@ var
   bFinish: boolean;
   bRestart: boolean;
   a,b: int64;
+  bfound: boolean;
+  tmStart: ticker;
 begin
+  tmStart := getTicker;
   FinishValBatches(false);
   bFinish := false;
   bRestart := false;
@@ -768,64 +772,71 @@ begin
 
   //check if any valbatches are done
 //  if valbatchcount > 0 then
-  for t:= low(valbatch) to high(valbatch) do begin
-    if valbatch[t] = nil then begin
-      vidx := validateidx;//current index...
-      if vidx >= ZONES_To_BACKUP then
-        break;
+  repeat
+    bFound := false;
+    for t:= low(valbatch) to high(valbatch) do begin
+      if valbatch[t] = nil then begin
+        vidx := validateidx;//current index...
+        if vidx >= ZONES_To_BACKUP then
+          break;
 
-      ecs(csPrep);
-      try
-        //get remote rev from cache (should be equal or less than our upgraded target regardless of race condition)
-        a := GetREmoteLogRev(validateidx);
-        //GET our local log rev
-        b := TVirtualDisk_Advanced(self.disk).zonerevs.GetEntry(validateidx).logid;
-        if (a <> b) {or (b=0)} then begin
-          cmd := Tcmd_ContinueVAlidateLogRefresh.create;
-          cmd.archive := self.Archive;
-          cmd.shipper := self;
-            cmd.zidx := vidx;
-//          FThr.Status := 'VR '+vidx.tohexstring;
-          cmd.disk := self.disk;
+        ecs(csPrep);
+        try
 
-          lastc := SearchValBatchForZone(vidx, false);
-          if lastc <> nil then begin
-            cmd.AddDependency(lastc);
-            cmd.client := lastc.client;
-          end else begin
-            cmd.client := NeedClient;
+          //GET our local log rev
+          b := TVirtualDisk_Advanced(self.disk).zonerevs.GetEntry(validateidx).logid;
+          if b > 0 then begin
+            //get remote rev from cache (should be equal or less than our upgraded target regardless of race condition)
+            a := GetREmoteLogRev(validateidx);
+            if (a <> b) {or (b=0)} then begin
+              bFound := true;
+              cmd := Tcmd_ContinueVAlidateLogRefresh.create;
+              cmd.archive := self.Archive;
+              cmd.shipper := self;
+                cmd.zidx := vidx;
+    //          FThr.Status := 'VR '+vidx.tohexstring;
+              cmd.disk := self.disk;
+
+              lastc := SearchValBatchForZone(vidx, false);
+              if lastc <> nil then begin
+                cmd.AddDependency(lastc);
+                cmd.client := lastc.client;
+              end else begin
+                cmd.client := NeedClient;
+              end;
+              cmd.Start;
+              valbatch[t] := cmd;
+            end;
           end;
-          cmd.Start;
-          valbatch[t] := cmd;
-        end;
 
-        validateidx := validateidx + 1;
-        self.FThr.stepcount := ZONES_TO_BACKUP;
-        self.FThr.step := validateidx;
-        if validateidx = ZONES_To_BACKUP then
-        begin
-          validateidx := 0;
-          if not ValidateRefreshRepeat then
+          validateidx := validateidx + 1;
+          self.FThr.stepcount := ZONES_TO_BACKUP;
+          self.FThr.step := validateidx;
+          if validateidx = ZONES_To_BACKUP then
           begin
-            bFinish := true;
-            ValidateRefreshRepeat := false;
-            mode := arcRealTime;
-            exit;
-          end else begin
-            ValidateRefreshRepeat := false;
+            validateidx := 0;
+            if not ValidateRefreshRepeat then
+            begin
+              bFinish := true;
+              ValidateRefreshRepeat := false;
+              mode := arcRealTime;
+              exit;
+            end else begin
+              ValidateRefreshRepeat := false;
+            end;
           end;
+        finally
+          lcs(csPrep);
         end;
-      finally
-        lcs(csPrep);
+
+        if bFInish then
+          FinishValBatches(true);
+        if CountUniqueClients(false) >= MAX_UNIQUE_CLIENTS then
+          break;
+
       end;
-
-      if bFInish then
-        FinishValBatches(true);
-      if CountUniqueClients(false) >= MAX_UNIQUE_CLIENTS then
-        break;
-
     end;
-  end;
+  until bFound or (GetTimeSince(tmStart) > 1000);
 end;
 
 constructor TArcLogShipper.Create;
@@ -845,11 +856,7 @@ begin
   FClient.UseTCP := true;
 {$ENDIF}
 
-  FQuickClient := TRDTPARchiveClient.create('','');
-  FQuickClient.TimeOUt := 8000;
-{$IFDEF USE_TCP}
-  FQuickClient.UseTCP := true;
-{$ENDIF}
+  FQuickclient := nil;
 
   ring := TLocalRing.create;
 
@@ -969,8 +976,14 @@ begin
         FinishBackgroundCommand;
         ecs(csQuickClient);
         try
-          FQuickClient.timeout := 60000;
-          iGot := FQuickClient.GetLog(Archive, -1, blockstart, blocklength, {out} dba);
+          QuickClient.timeout := 60000;
+          try
+            iGot := QuickClient.GetLog(Archive, -1, blockstart, blocklength, {out} dba);
+          except
+            FQuickClient.free;
+            FQuickClient := nil;
+            raise;
+          end;
         finally
           lcs(csQuickClient);
         end;
@@ -1052,6 +1065,20 @@ begin
 
 end;
 
+function TArcLogShipper.GEtQuickClient: TRDTPArchiveClient;
+begin
+  if FQuickclient = nil then begin
+    FQuickClient := TRDTPARchiveClient.create('','');
+    FQuickClient.TimeOUt := 24000;
+  {$IFDEF USE_TCP}
+    FQuickClient.UseTCP := true;
+  {$ENDIF}
+    FQuickClient.Host := FClient.Host;
+    FQuickClient.endPoint := FClient.Endpoint;
+  end;
+  result := FQuickClient;
+end;
+
 function TArcLogShipper.GetREmoteLogRev(idx: int64): int64;
 var
   idx2: int64;
@@ -1063,7 +1090,13 @@ begin
     try
       if not HasRemoveRevCached(idx) then begin
         remote_block_start := 0;//(idx shr 12) shl 12;
-        remote_rev_cache := FQuickclient.GetLogRevs(archive, remote_block_start, MAX_ZONES{4096});
+        try
+          remote_rev_cache := Quickclient.GetLogRevs(archive, remote_block_start, MAX_ZONES{4096});
+        except
+          FQuickClient.free;
+          FQuickClient := nil;
+          raise;
+        end;
       end;
       idx2 := idx-remote_block_start;
       result := -1;
@@ -1493,7 +1526,7 @@ begin
 {$ENDIF}
       result.Host := host;
       result.endPoint := endpoint;
-      result.timeout := 10000;
+      result.timeout := 30000;
     end else begin
       result := FClients[FClients.count-1];
       FClients.Delete(FClients.Count-1);
@@ -1508,8 +1541,12 @@ procedure TArcLogShipper.NoNeedClient(cli: TRDTPArchiveClient);
 begin
   IF CLI= nil then
     raise ECritical.create('trying to put nil client in pool!');
-  if FClients.IndexOf(cli) < 0 then
-    FClients.Add(cli);
+  if not cli.Connected then begin
+    cli.Free;
+    cli := nil;
+  end else
+    if FClients.IndexOf(cli) < 0 then
+      FClients.Add(cli);
 
 end;
 
@@ -1622,7 +1659,7 @@ end;
 procedure TArcLogShipper.SetEndPOint(value: string);
 begin
   FClient.endpoint := value;
-  FQuickClient.endpoint := value;
+//  FQuickClient.endpoint := value;
   if canactivate then
     Activate;
 end;
@@ -1630,7 +1667,7 @@ end;
 procedure TArcLogShipper.SetHost(value: string);
 begin
   FClient.Host := value;
-  FQuickClient.Host := value;
+//  FQuickClient.Host := value;
   if canactivate then
     Activate;
 end;
@@ -1863,7 +1900,7 @@ begin
       case mode of
         arcValidateRefresh: begin
           bt := GEtTimeSInce(tmLastDiskBusyTime);
-          if bt > 8000 then begin
+          if bt > 1000 then begin
             if not TAbstractVirtualDisk_Advanced(disk).hint_requests_waiting then begin
               FThr.status := 'VR '+validateidx.tohexstring+' prt '+Commaize(ring.DAtaAvailable)+' bytes behind. Since-Busy='+bt.tostring;
               ContinueLogValidateRefresh;
@@ -1873,9 +1910,9 @@ begin
             end;
           end else begin
             FThr.status := 'VR '+validateidx.tohexstring+' prt '+Commaize(ring.DAtaAvailable)+' bytes behind. Since-Busy='+bt.tostring;
-            sleep(500);
+//            sleep(500);
           end;
-          if (bt > 100) and (((GetTicker div 2000) mod 2)=0) then begin
+          if (bt > 100) (*and (((GetTicker div 2000) mod 2)=0)*) then begin
             tm := GetTicker;
             while ring.DataAvailable > 0 do begin
               FThr.status := 'VR '+validateidx.tohexstring+' prt '+Commaize(ring.DAtaAvailable)+' bytes behind. Since-Busy='+bt.tostring;
@@ -2266,12 +2303,20 @@ begin
     disk := self.disk as TVirtualDisk_Advanced;
     bGotDisk := false;
     bIsProvisioned := false;
-    while disk.hint_requests_waiting do
-      sleep(1000*MAX_UNIQUE_CLIENTS);
+    while disk.hint_requests_waiting do begin
+      status := 'Waiting because disk is active...';
+      sleep(100*MAX_UNIQUE_CLIENTS);
+    end;
     disk.backgroundlock.LockWrite;
     try
-    if (disk.TryGetLock(ll,20000, 10)) then
+    if disk.hint_requests_waiting then begin
+      exit(trCollision);
+    end;
+    if (disk.TryGetLock(ll,1000, 10)) then
     try
+      if disk.hint_requests_waiting then begin
+        exit(trCollision);
+      end;
 //      Debug.Log(self, 'Got Disk');
       bGotDisk := true;
       bIsProvisioned := disk.vat.table[startblock shr BIG_BLOCK_BLOCK_SHIFT].FileCount > 0;

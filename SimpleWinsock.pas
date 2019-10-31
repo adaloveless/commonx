@@ -8,6 +8,7 @@ uses Winapi.Winsock, DtNetConst, Classes, sysutils, SimpleAbstractConnection, wi
 
 type
   ESocketsDisabled = class(Exception);
+  ESocketError = class(Exception);
 
   TSocksHeader = packed record
   private
@@ -56,7 +57,7 @@ type
     function DoSendData(buffer: pbyte; length: integer): integer;override;
     function DoReadData(buffer: pbyte; length: integer): integer;override;
     function CheckConnected: boolean;override;
-    procedure HandleSocketError(iJustSent: integer);
+    procedure CheckSocketError(iJustSent: nativeint);
 
 
     procedure Flush;override;
@@ -97,6 +98,7 @@ begin
   else
     result := ConnectWithSocks;
 end;
+
 
 function TSimpleWinsockconnection.ConnectDirect: boolean;
 var
@@ -230,6 +232,7 @@ var
 begin
   iJustRead :=  Recv(hSocket, Buffer[0], lesserof(length, 8000), 0);
   result:= iJustRead;
+  CheckSocketError(result);
 
 end;
 
@@ -267,11 +270,16 @@ begin
   end;
 end;
 
-procedure TSimpleWinsockconnection.HandleSocketError(iJustSent: integer);
+procedure TSimpleWinsockconnection.CheckSocketError(iJustSent: nativeint);
 begin
-  if iJustSent = SOCKET_ERROR then begin
+  if iJustSent < 0 then begin
+    if iJustSent  = WSAEINPROGRESS then exit;
+    if iJustSent  = WSAEWOULDBLOCK then exit;
+    if iJustSent  = WSAETIMEDOUT then exit;
+
     bError := true;
-    Disconnect;
+//    Disconnect;
+    raise ESocketError.Create('Socket error :'+iJustSent.tostring);
   end;
 
 end;
@@ -291,7 +299,7 @@ begin
     if iJustSent > 0 then
       inc(iSent, iJustSent)
     else begin
-      HandleSocketError(iJustSent);
+      CheckSocketError(iJustSent);
       exit(iSent);
     end;
   end;
@@ -312,9 +320,9 @@ begin
   FD_ZERO(FDSet);
   FD_SET(hSocket, FDSet);
   if timeout = 0 then
-    result := (select(0, @FDSet, nil, nil, nil) > 0)
+    result := (select(0, @FDSet, nil, nil, nil) >= 0)
   else
-    Result := (select(0, @FDSet, nil, nil, @TimeVal) > 0);
+    Result := (select(0, @FDSet, nil, nil, @TimeVal) >= 0);
 end;
 
 { TSocksHeader }

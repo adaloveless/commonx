@@ -27,12 +27,12 @@ unit Archiver;
 interface
 
 uses
-  stringx, namevaluepair, search, debug,applicationparams, helpers.stream, numbers, generics.defaults, sharedobject, systemx, typex, classes, generics.collections, sysutils, virtualdiskconstants, queuestream, compression, zip, windows{beep}, MultiBufferMemoryFileStream, memoryfilestream, better_collections, tickcount;
+  betterobject, stringx, namevaluepair, search, debug,applicationparams, helpers.stream, numbers, generics.defaults, sharedobject, systemx, typex, classes, generics.collections, sysutils, virtualdiskconstants, queuestream, compression, zip, windows{beep}, MultiBufferMemoryFileStream, memoryfilestream, better_collections, tickcount, consolelock;
 
 
 const
   NULL_PIN = 0;
-  ZONE_BUILDER_CACHE_SIZE = 32;
+  ZONE_BUILDER_CACHE_SIZE = 96;
 type
   ENoZone = class(Exception);
   EZoneRebuildError = class(Exception);
@@ -146,8 +146,12 @@ type
 
   end;
 
-
+{$IFDEF USE_MBFS}
   TLocalFileStream = TMemoryFileStream;
+{$ELSE}
+  TLocalFileStream = TFileStream;
+{$ENDIF}
+  TVatFileStream = TMemoryFileStream;
 
   TArcVat = class(TSharedObject)
   private
@@ -156,7 +160,7 @@ type
   //arcvat is a list of the fileids and final blocks associated with each ARC zone.
   protected
     FCachedNextID: int64;
-    fs: TLocalFileStream;
+    fs: TVatFileStream;
     function GetEntryAddress(idx: int64): int64;
   public
     procedure Init;override;
@@ -202,6 +206,7 @@ type
     function IsComplete: boolean;
     function RebuildData(blockaddr: int64; pOutData: PByte; blocklength:int64; pin: TDateTime; prog: PProgress): int64;
     function RecordDataEx(blockaddr: int64; pData: PByte; blocklength: int64; fromid: int64; toid: int64; var actual: int64; bShallow: boolean): boolean;
+    procedure CheckAndMoveZone;
   public
     arc: TArchiver;
     rebuilt_zone_idx: int64;
@@ -333,10 +338,15 @@ begin
         result := TLocalfileStream.Create(sFile, fmCreate);
       end;
       bSuccess := true;
-      if GetTimeSince(tmStart) > 15000 then
+      if GetTimeSince(tmStart) > 1500 then begin
+//        sleep(100);
         raise ECritical.create('failed to open: '+sFile);
+      end;
     except
-      sleep(100);
+      if GetTimeSince(tmStart) > 6000 then
+        raise
+      else
+        sleep(100);
     end;
   until bSuccess;
 end;
@@ -1053,6 +1063,10 @@ begin
 
   {$IFDEF LINKDEBUG}      debug.log(self,'Walk Back Link '+inttostr(idx-1)+' ent='+rec.rec.ToSTring);{$ENDIF}
         fs := SyncFS(rec.rec.parentfileid,false);
+        if rec.rec.parentaddr < 0 then begin
+          debug.Log(self, 'BAD ZONE PARENT! '+inttostr(zoneidx));
+          raise ECritical.create('BAD ZONE PARENT '+inttostr(zoneidx));
+        end;
         fs.Seek(rec.rec.parentaddr, soBeginning);
         //record parents fileid/addr as new record's local addr/fileid
         rec.fileid := greaterof(rec.rec.parentfileid,-1);
@@ -1194,6 +1208,7 @@ begin
   end;
 
 
+
 end;
 
 function TArchiver.RebuildData(blockaddr: int64; pOutData: PByte;
@@ -1231,7 +1246,7 @@ begin
   try
     zoneLocks.GetLock(zoneidx.tostring, false);
     try
-      result := SyncZone(zoneidx, pin);
+       result := SyncZone(zoneidx, pin);
     finally
       zoneLocks.ReleaseLock(zoneidx.tostring, false);
     end;
@@ -1245,6 +1260,7 @@ var
   builder: TZoneBuilder;
   l: TArcVatEntry;
 begin
+
 {$IFDEF USE_ZONE_LOCKS}
   zonelocks.GetLock(inttostr(blockaddr shr ARC_ZONE_BLOCK_SHIFT),false);
 //  zonelocks.GetLock('diskopt');
@@ -1332,6 +1348,7 @@ begin
       end;
 
     end;
+
 
     if rebuilt_zone_logid <> fromid then
       exit(false);
@@ -1646,8 +1663,12 @@ begin
     FFS := guaranteeOpen(sFile);
 
 
+    CheckAndMoveZone;
+
+
     result := FFS;
     FSyncedFileStreamID := iFileID;
+
 
   finally
     arc.Unlock;
@@ -1674,6 +1695,9 @@ var
   idx: nativeint;
 begin
   has := nil;
+  if zoneidx = 93901 then begin
+    Debug.Log('93901');
+  end;
 {$IFDEF USE_ZONE_LOCKS}
   zonelocks.GetLock(inttostr(zoneidx),false);
 {$ELSE}
@@ -1726,7 +1750,7 @@ begin
               zonelocks.releaseLock(inttostr(junkid), false);
             end else begin
               inc(fails);
-              if fails > ZONE_BUILDER_CACHE_SIZE then
+              if fails > ZONE_BUILDER_CACHE_SIZE shr 1 then
                 break;
             end;
           end;
@@ -2096,7 +2120,9 @@ begin
     ent.SetCalcCheck;
     stream_GuaranteeWrite(fs, pbyte(@ent), sizeof(ent));
   //  debug.log(self,'put sz='+inttostr(fs.Size));
+{$IFDEF USE_MBFS}
     fs.Flush;
+{$ENDIF}
   finally
     Unlock;
   end;
@@ -2110,9 +2136,9 @@ begin
     fs := nil;
     if not fileexists(fFileName) then begin
       forcedirectories(extractfilepath(FFileName));
-      fs := TLocalFileStream.create(FFileName, fmCreate);
+      fs := TVatFileStream.create(FFileName, fmCreate);
     end else begin
-      fs := TLocalFileStream.create(FFileName, fmOpenReadWRite+fmShareExclusive);
+      fs := TVatFileStream.create(FFileName, fmOpenReadWRite+fmShareExclusive);
     end;
   end;
 end;
@@ -2226,6 +2252,41 @@ begin
 end;
 
 { TZoneBuilder }
+
+procedure TZoneBuilder.CheckAndMoveZone;
+begin
+  try
+  if ffs = nil then
+    exit;
+
+  if GetFreeSpaceOnPath(extractfilepath(FFs.FileName)) < 1000000000 then begin
+    //YES we should move the zone
+    if arc.TryLock(1000) then
+    try
+      var newpath := arc.ChoosePath;
+      var fileid: int64 := strtoint64('$'+extractfilenamepart(ffs.filename));
+      var newfile := slash(newpath)+FileIDtoFileName(fileid);
+      var fs2 := TLocalFileStream.create(newfile, fmCreate);
+      ffs.Seek(0,soBeginning);
+      Stream_GuaranteeCopy(ffs, fs2, ffs.size);
+      var oldfile := ffs.FileName;
+      ffs.Free;
+      ffs := nil;
+      ffs := fs2;
+      try
+        deletefile(pchar(oldfile));
+      except
+      end;
+    finally
+      arc.Unlock;
+    end;
+  end;
+  except
+    on E: exception do begin
+      debug.log('when checking/moving file got: '+e.message);
+    end;
+  end;
+end;
 
 constructor TZoneBuilder.Create;
 begin

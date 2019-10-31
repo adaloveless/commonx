@@ -150,7 +150,6 @@ type
     function GetExpired: boolean;
     procedure SEtGenesis(const Value: cardinal);
 
-
     function GetExportString: string;
     function GetFetchQuery: string;
     function GetInsertQuery: string;
@@ -207,6 +206,7 @@ type
     function GetTFld(sName: string): TDataField;
     function GetTFldByIndex(idx: integer): TDataField;
     function GetFieldCount: integer;
+    function GetCustomFetchQuery(): string;virtual;
 
     function GetObject(idx: integer): TDataObject;
     function GetDetailTokens(idx: integer): TDataObjectToken;
@@ -623,7 +623,7 @@ type
 
     property ExportString: string read GetExportString;
     procedure DefineTableLink(sTableName: string; keynames: array of string; iAutoIncrementKeyCount: ni);
-    procedure DefineCustomFetchQuery(sQuery: string; keyNames: array of string; iAutoIncrementKeyCount: ni);
+    procedure DefineCustomFetchQuery(sQuery_UseNullStringForProcedurallyGenerated: string; keyNames: array of string; iAutoIncrementKeyCount: ni);
     property TableLink: string read FTableLink;
     property Orderby: string read FOrderBy write ForderBy;
     property FetchQuery: string read GetFetchQuery;
@@ -784,6 +784,8 @@ type
     function GetOnCanSave: TFieldValidationEvent;
     function GetTypeName: string;
     function GEtExportString: string;
+    function GetAsBoolean: boolean;
+    procedure SetAsBoolean(const Value: boolean);
 
   protected
     FSpecialName: string;
@@ -834,6 +836,7 @@ type
     property Name: string read GetName write SetName;
     procedure Increment;
     property AsVariant: Variant read GetAsVariant write SetAsVariantTemplate;
+    property AsBoolean: boolean read GetAsBoolean write SetAsBoolean;
     property AsString: string read GetAsString write SetAsStringTemplate;
     property AsWebString: string read GetAsWebString write SetAsWebString;
     //controller references
@@ -1028,7 +1031,13 @@ procedure TBooleanDataField.SetAsVariant(v: variant);
 //Reintroduced code that sets the boolean value
 begin
   if varType(v) = varSmallint then begin
-    if v=0 then self.AsVariant := true else AsVariant := false;
+    if v=0 then self.AsVariant := false else AsVariant := true;
+  end else
+  if varType(v) = varInteger then begin
+    if v=0 then self.AsVariant := false else AsVariant := true;
+  end else
+  if varType(v) = varInt64 then begin
+    if v=0 then self.AsVariant := false else AsVariant := true;
   end else
     owner.FFieldDefs[FMyIndex].Value := v;
 end;
@@ -1482,6 +1491,13 @@ function TDataObject.GetCaption: string;
 begin
   result := self.Token.Name;
 end;
+//------------------------------------------------------------------------------
+function TDataObject.GetCustomFetchQuery(): string;
+begin
+  result := '';
+
+end;
+
 //------------------------------------------------------------------------------
 //procedure TDataObject.AddFieldDef(sName: string; FieldType: TDataFieldClass; vInitialValue: variant; Method: TMethod;
 
@@ -2088,6 +2104,11 @@ begin
     raise EDataFieldError.create('Unregocnized boolean '''+str+'''');
 end;
 //---------------------------------------------------------
+procedure TDataField.SetAsBoolean(const Value: boolean);
+begin
+  AsVariant := value;
+end;
+
 procedure TDataField.SetAsStringTemplate(str: string);
 //Description: This is a template method for the AsString property.  It calls
 //SetAsString, but assures that necessary things happen before and/or after
@@ -2134,6 +2155,13 @@ begin
   end;
 end;
 //------------------------------------------------------------------------------
+function TDataField.GetAsBoolean: boolean;
+begin
+  if VarIsNull(asVariant) then
+    exit(false);
+  exit(asVariant);
+end;
+
 function TDataField.GetAsString: string;
 var
   v: variant;
@@ -2254,7 +2282,7 @@ begin
                   if (varBoolean and VarType(v)) = varBoolean then
                     owner.FFieldDefs[FMyIndex].Value := v
                   else
-                    if (varType(v) = varSmallint) or (varType(v) = varInteger) then begin
+                    if (varType(v) = varByte) or (varType(v) = varSmallint) or (varType(v) = varInteger) or (varType(v) = varInt64) then begin
                       if v = 0 then
                         owner.FFieldDefs[FMyIndex].Value := false
                       else
@@ -3404,12 +3432,12 @@ begin
 
 end;
 
-procedure TDataObject.DefineCustomFetchQuery(sQuery: string;
+procedure TDataObject.DefineCustomFetchQuery(sQuery_UseNullStringForProcedurallyGenerated: string;
   keyNames: array of string; iAutoIncrementKeyCount: ni);
 begin
   DefineKeys(keyNames, iAutoIncrementKeyCount);
   FTableLink := '';
-  FFetchQuery := sQuery;
+  FFetchQuery := sQuery_UseNullStringForProcedurallyGenerated;
 end;
 
 procedure TDataObject.DefineKeys(names: array of string; iAutoIncrementKeyCount: ni);
@@ -4140,14 +4168,18 @@ begin
   sOrder := OrderBy;
   sFilterPhrase := FilterPhrase;
   result := FFetchQuery;
+  if result = '' then begin
+    result := GetCustomFetchQuery();
+  end else begin
+    if sFilterPhrase <> '' then
+      result := result + FfilterPhrase;
 
-  if sFilterPhrase <> '' then
-    result := result + FfilterPhrase;
+    if sOrder <> '' then
+      result := result +' ORDER BY '+sOrder;
 
-  if sOrder <> '' then
-    result := result +' ORDER BY '+sOrder;
 
-  result := ReplaceQueryKeys(result);
+    result := ReplaceQueryKeys(result);
+  end;
 
 end;
 

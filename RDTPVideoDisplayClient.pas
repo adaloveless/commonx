@@ -109,6 +109,7 @@ begin
     packet.AddVariant($6000);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6000:TVideoDisplayClient.PrepareVideo');{$ENDIF}
     WritestringToPacket(packet, sFile);
     WritestringToPacket(packet, sAudioFile);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
@@ -156,6 +157,7 @@ begin
     packet.AddVariant($6001);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6001:TVideoDisplayClient.PlayVideo');{$ENDIF}
     WritenativefloatToPacket(packet, rStartingPoint);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -201,6 +203,7 @@ begin
     packet.AddVariant($6002);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6002:TVideoDisplayClient.GetPosition');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -263,6 +266,7 @@ begin
     packet.AddVariant($6003);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6003:TVideoDisplayClient.Pause');{$ENDIF}
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
     on E:Exception do begin
@@ -306,6 +310,7 @@ begin
     packet.AddVariant($6004);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6004:TVideoDisplayClient.Rewind');{$ENDIF}
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
     on E:Exception do begin
@@ -349,6 +354,7 @@ begin
     packet.AddVariant($6005);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6005:TVideoDisplayClient.SetVolume');{$ENDIF}
     WriteNativeFloatToPacket(packet, rVol);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -394,6 +400,7 @@ begin
     packet.AddVariant($6006);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6006:TVideoDisplayClient.Fade');{$ENDIF}
     WriteNativeFloatToPacket(packet, rVolFrom);
     WriteNativeFloatToPacket(packet, rVolTo);
     WriteNativeFloatToPacket(packet, rTime);
@@ -445,6 +452,7 @@ begin
     packet.AddVariant($6007);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6007:TVideoDisplayClient.GetLength');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -507,6 +515,7 @@ begin
     packet.AddVariant($6008);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6008:TVideoDisplayClient.GetPlaybackInfo');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -575,6 +584,7 @@ begin
     packet.AddVariant($6009);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6009:TVideoDisplayClient.SetPosition');{$ENDIF}
     WriteNativeFloatToPacket(packet, pos);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -620,6 +630,7 @@ begin
     packet.AddVariant($6010);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6010:TVideoDisplayClient.Unload');{$ENDIF}
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
     on E:Exception do begin
@@ -663,6 +674,7 @@ begin
     packet.AddVariant($6011);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6011:TVideoDisplayClient.SetBoost');{$ENDIF}
     WriteNativeFloatToPacket(packet, rMultiplier);
     if not Transact(packet, true) then raise ECritical.create('transaction failure');
   except
@@ -708,6 +720,7 @@ begin
     packet.AddVariant($6012);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6012:TVideoDisplayClient.GetPlaybackInfoEx');{$ENDIF}
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -772,6 +785,7 @@ begin
     packet.AddVariant($6013);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6013:TVideoDisplayClient.SetVideoSync');{$ENDIF}
     WriteNativeFloatToPacket(packet, rSeconds);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -836,6 +850,7 @@ begin
     packet.AddVariant($6014);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6014:TVideoDisplayClient.SetVideoZoom');{$ENDIF}
     WriteNativeFloatToPacket(packet, rZoom);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
@@ -900,6 +915,7 @@ begin
     packet.AddVariant($6015);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6015:TVideoDisplayClient.SetVideoCentering');{$ENDIF}
     WriteintegerToPacket(packet, x);
     WriteintegerToPacket(packet, y);
     if not Transact(packet) then raise ECritical.create('transaction failure');
@@ -966,6 +982,7 @@ begin
     packet.AddVariant($6016);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6016:TVideoDisplayClient.SetEQ');{$ENDIF}
     WriteNativeFloatToPacket(packet, x1);
     WriteNativeFloatToPacket(packet, x2);
     WriteNativeFloatToPacket(packet, x3);
@@ -1046,6 +1063,7 @@ begin
     packet.AddVariant($6017);
     packet.AddVariant(0);
     packet.AddString('VideoDisplay');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6017:TVideoDisplayClient.SetVideoState');{$ENDIF}
     WritebooleanToPacket(packet, bOn);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
