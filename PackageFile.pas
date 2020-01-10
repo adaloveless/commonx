@@ -3,7 +3,7 @@ unit PackageFile;
 interface
 
 uses
-  systemx, stringx, typex, classes, sysutils, betterfilestream, sharedobject, helpers.stream, dir, dirfile, zlib;
+  systemx, stringx, typex, classes, sysutils, betterfilestream, sharedobject, helpers_stream, dir, dirfile, zlib;
 
 
 type

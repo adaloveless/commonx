@@ -3,7 +3,7 @@ unit Signals;
 interface
 
 uses
-{$DEFINE DOUBLE_CHECK_SIG}
+{x$DEFINE DOUBLE_CHECK_SIG}
 {$ifdef WINDOWS}
   windows,
 {$endif}
@@ -281,13 +281,13 @@ begin
     if ev.WaitFor(iThisWait) then begin
 {$IFDEF DOUBLE_CHECK_SIG}
       if not ev.IsSignaled then
-        exit(false);
+        exit(false);//we got the signal, but it wasn't actually signalled!?1?
 {$ENDIF}
-      exit(true);
+      exit(true);//we got the signal
     end;
   until (GetTimeSince(tmStart) > iTimeout) and (iTimeout >=0);
 
-  result := false;
+  result := false; // we didn't get the signal in time
 
 end;
 

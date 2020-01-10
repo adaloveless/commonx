@@ -1,4 +1,5 @@
 unit NamedCommandList;
+{$DEFINE USE_HOLDER}
 
 interface
 
@@ -9,7 +10,11 @@ uses
 type
   TNamedCommandList = class(TsharedObject)
   protected
+{$IFDEF USE_HOLDER}
+    list: TList<IHolder<TCommand>>;
+{$ELSE}
     list: TList<TCommand>;
+{$ENDIF}
   private
     FCommandHoldtime: cardinal;
   protected
@@ -19,8 +24,8 @@ type
     function IndexOf(sKey: string): nativeint;
     function Findcommand(sKey: string): TCommand;
   public
-    function NeedCommand<T: TCommand>(sKey: string): T;
-    procedure ProvideCommand(c: TCommand);
+    function NeedCommand<T: TCommand>(sKey: string): IHolder<TCommand>;
+    procedure ProvideCommand(c: IHolder<TCommand>);
     procedure NoNeedCommand(sKey: string);
     property CommandHoldTime: cardinal read FCommandHoldtime write FCommandHoldtime;
     procedure CombStaleCommands;
@@ -38,7 +43,9 @@ begin
   Lock;
   try
     while list.count > 0 do begin
+{$IFnDEF USE_HOLDER}
       list[0].free;
+{$ENDIF}
       list.delete(0);
     end;
   finally
@@ -50,17 +57,28 @@ end;
 procedure TNamedCommandList.CombStaleCommands;
 var
   t: integer;
+  obj: TCommand;
 begin
   lock;
   try
     for t:= list.Count-1 downto 0 do begin
-      if list[t].IsComplete then begin
-        if gettimesince(list[t].TimeOfCompletion) > CommandHoldTime then begin
+{$IFDEF USE_HOLDER}
+      obj := list[t].o;
+{$ELSE}
+      obj := list[t];
+{$ENDIF}
+      if list[t].o.IsComplete then begin
+        if gettimesince(obj.TimeOfCompletion) > CommandHoldTime then begin
+{$IFnDEF USE_HOLDER}
           if list[t].RefCount <=0 then begin
-            list[t].Free;
+            obj.ReleaseRef;
             list.Delete(t);
           end;
+{$ELSE}
+        list.delete(t);
+{$ENDIF}
         end;
+
       end;
     end;
   finally
@@ -86,7 +104,7 @@ begin
   try
     i := IndexOf(sKey);
     if i>=0 then
-      result := list[i];
+      result := list[i].o;
 
   finally
     Unlock;
@@ -101,7 +119,7 @@ begin
   Lock;
   try
     for t:= 0 to list.Count-1 do begin
-      if list[t].Name = sKey then begin
+      if list[t].o.Name = sKey then begin
         result := t;
         break;
       end;
@@ -114,24 +132,28 @@ end;
 procedure TNamedCommandList.Init;
 begin
   inherited;
-  list := TList<TCommand>.create;
+  list := TList<IHolder<TCommand>>.create;
 
 end;
 
 
-function TNamedCommandList.NeedCommand<T>(sKey: string): T;
+function TNamedCommandList.NeedCommand<T>(sKey: string): IHolder<TCommand>;
 var
   i: nativeint;
 begin
   Lock;
   try
     i := IndexOf(sKey);
-    if i < 0 then
-      result := T.create
-    else begin
-      result := T(list[i]);
+    if i < 0 then begin
+      result := THolder<TCommand>.create;
+      result.o := T.create;
+    end else begin
+      result := IHolder<TCommand>(list[i]);
+{$IFnDEF USE_HOLDER}
       result.addRef;
+{$ENDIF}
     end;
+
 
 
     CombStaleCommands;
@@ -160,11 +182,10 @@ begin
   end;
 end;
 
-procedure TNamedCommandList.ProvideCommand(c: TCommand);
+procedure TNamedCommandList.ProvideCommand(c: IHolder<TCommand>);
 begin
   Lock;
   try
-    c.AddRef;
     list.Add(c);
     CombStaleCommands;
   finally
@@ -187,7 +208,7 @@ begin
 end;
 
 initialization
-  init.RegisterProcs('NamedCommandList', oinit, ofinal);
+  init.RegisterProcs('NamedCommandList', oinit, ofinal, 'CommandProcessor,ManagedThread');
 
 finalization
 

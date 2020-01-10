@@ -1,6 +1,7 @@
 unit iSCSI;
 {$DEFINE SHIFTOPT}
 {x$DEFINE INDY}
+{$DEFINE NEWCMDSN}
 {x$INLINE AUTO}
 //Next Steps:
 //[x] 1. Read up on what an iSCSI Command Response looks like
@@ -32,9 +33,11 @@ unit iSCSI;
   {$DEFINE OLD_STATSN}
 {$ENDIF}
 {x$INLINE AUTO}
-{x$DEFINE LOCAL_DEBUG}
+{$DEFINE LOCAL_DEBUG}
 {x$DEFINE ENABLE_LOCAL_DEBUG}
-{x$DEFINE FLUSH_IO_HANDLER}
+{$IFDEF INDY}
+{x$DEFINE FLUSH_IOHANDLER}
+{$ENDIF}
 
 
 
@@ -116,13 +119,14 @@ uses
   better_indy,
   idglobal, idcontext,
 {$IFDEF INDY}
-
+  helpers.sockets,
 {$ELSE}
   better_sockets2, winsock,
 {$ENDIF}
   debug;
 
 const
+  DEFAULT_MAX_CMD_AHEAD = $40;
   OPCODE_MASK: byte = $3f;
   FLAG_LOGIN_TRANSIT_NEXT = 1 shl 7;
   FLAG_TEXT_IS_COMPLETE = 1 shl 6;
@@ -131,7 +135,8 @@ const
   STATUS_CLASS_SUCCESS = 0;
 //  STATIC_DISK_SIZE = 2000000;
 //  STATIC_BLOCK_SIZE = 512;
-
+var
+  MAX_CMD_AHEAD : nativeint = DEFAULT_MAX_CMD_AHEAD;
 
 type
   TiSCSI_Connection = class;//forward
@@ -466,7 +471,7 @@ type
   private
     procedure AllocateCombinedAndSend(const context: TiSCSIContext; var common: TISCSI_CommonHeader;
       di: TISCSI_CommonHeader; r: TSCSI_CommandResponse);
-    procedure SendNOPIn(context: TiSCSIContext; var ref: TISCSI_CommonHeader);
+    procedure SendNOPIn(context: TiSCSIContext; var ref: TISCSI_CommonHeader; request_pong: boolean);
 
   protected
     tcps: TLocalTCPServer;
@@ -483,6 +488,8 @@ type
     procedure Stop;
     procedure OntcpsExecute(AContext: TiSCSIContext);
     function Dispatch(const context: TiSCSIContext; var common: TISCSI_CommonHeader): boolean;
+    //---------------------------------------
+    function Dispatch_NOP(const context: TiSCSIContext; var common: TISCSI_CommonHeader): boolean;
     //---------------------------------------
     function Dispatch_Login(const context: TiSCSIContext; var common: TISCSI_CommonHeader): boolean;
     function Dispatch_Logout(const context: TiSCSIContext; var common: TISCSI_CommonHeader): boolean;
@@ -658,7 +665,9 @@ type
     DataSN: cardinal;
 //    ioprefetcher: TExternalEventThread;
     connection: TLocalContextConnection;
+{$IFNDEF INDY}
     fifo_incoming: TSocketRingBuffer;
+{$ENDIF}
     function Target: TVirtualDisk;
     constructor Create;override;
     destructor Destroy;override;
@@ -690,8 +699,8 @@ type
 
 
 
-procedure ctx_guarantee_write(context: TiSCSIContext; const p: pbyte; const iLength: nativeint);inline;
-procedure ctx_guarantee_read(context: TiSCSIContext; const p: pbyte; const iLength: nativeint);inline;
+procedure ctx_guarantee_write(context: TiSCSIContext; const p: pbyte; const iLength: nativeint);{$IFNDEF INDY}inline;{$ENdIF}
+procedure ctx_guarantee_read(context: TiSCSIContext; const p: pbyte; const iLength: nativeint);{$IFNDEF INDY}inline;{$ENdIF}
 
 
 function getIOH(conn: TiSCSI_Connection): TLocalIOHandler;overload;inline;
@@ -714,6 +723,7 @@ var
   scsi_session_manager: TiSCSISessionManager;
 //  scsi_session: TiSCSI_Session;
   longfound: boolean;
+  iscsidebug: boolean = false;
 
 
 implementation
@@ -759,7 +769,8 @@ procedure StatDebug(const s: string);inline;
 var
   sas: ansistring;
 begin
-{$IFDEF ENABLE_LOCAL_DEBUG}
+{$IFDEF LOCAL_DEBUG}
+  if not iscsidebug then exit;
   Debug.log(inttostr(GetCurrentThreadID)+':'+s);
   if assigned(debugpinger) then begin
     sas := ansistring(s);
@@ -774,6 +785,7 @@ begin
   LogToThreadStatus(s);
   Debug.Log(s);
 //{$IFDEF ENABLE_LOCAL_DEBUG}
+//  if not iscsidebug then exit;
 //  Debug.log(inttostr(GetCurrentThreadID)+':'+s);
 //  if assigned(debugpinger) then begin
 //    sas := ansistring(s);
@@ -862,7 +874,7 @@ begin
 {$IFDEF ALWAYS_PROCESS_CMDSN}
    if not common.Flag_Immediate then begin
       if common.cmdsn <> cdata.ExpCmdSN then begin
-//        LocalDebug('NOT EXPECTED COMMAND SN! '+common.cmdsn.tostring + ' <> ' + cdata.ExpCMDSN.ToString);
+//        if iscsidebug then LocalDebug('NOT EXPECTED COMMAND SN! '+common.cmdsn.tostring + ' <> ' + cdata.ExpCMDSN.ToString);
       end else begin
         cdata.ExpCmdSN := int64(common.CmdSN)+int64(1);
       end;
@@ -875,10 +887,15 @@ begin
     end;
 
     try
-      {$IFDEF LOCAL_DEBUG}LocalDebug('OpCode: 0x'+inttohex(common.OpCode,2)+' '+iSCSIOpCodeToString(common.OpCode));{$ENDIF}
+      {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('OpCode: 0x'+inttohex(common.OpCode,2)+' '+iSCSIOpCodeToString(common.OpCode));{$ENDIF}
 
 
       case common.OpCode of
+        $00: //noop
+        begin
+          Dispatch_NOP(context,common);
+          result := true;
+        end;
         $01: //SCSI Command
         begin
           Dispatch_SCSI(context, common);
@@ -903,7 +920,7 @@ begin
         $05: //Data-Out
         begin
 //          if longfound then
-//            {$IFDEF LOCAL_DEBUG}LocalDebug('Dataout after longfound***********************************');{$ENDIF}
+//            {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Dataout after longfound***********************************');{$ENDIF}
           Dispatch_DataOut(context, common);
           result := true;
         end;
@@ -916,7 +933,7 @@ begin
 
 
       else begin
-        {$IFDEF LOCAL_DEBUG}LocalDebug('**********DON''T UNDERSTAND OPCODE:0x'+inttohex(common.OpCode,2)+' (unmasked: 0x'+inttohex(common.OpCode_UnMasked,2)+')');{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('**********DON''T UNDERSTAND OPCODE:0x'+inttohex(common.OpCode,2)+' (unmasked: 0x'+inttohex(common.OpCode_UnMasked,2)+')');{$ENDIF}
         AlertAdmin('BAD OPCODE:0x'+inttohex(common.OpCode,2)+' (unmasked: 0x'+inttohex(common.OpCode_UnMasked,2)+')');
         result := false;
         end;
@@ -962,7 +979,7 @@ begin
       dat := GEtMemory(dsl);
       try
         ctx_guarantee_read(context, dat, dsl);
-        {$IFDEF LOCAL_DEBUG}lOCALDebug('WRite task LBA :'+inttostr(task.scsirec.LBA)+' off:'+inttostr(bo)+' '+inttostr(dsl)+' bytes.');{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then lOCALDebug('WRite task LBA :'+inttostr(task.scsirec.LBA)+' off:'+inttostr(bo)+' '+inttostr(dsl)+' bytes.');{$ENDIF}
         vd := cd.Target;
         cd.session.rsDisk.BeginTime;
         vd.WriteData((task.scsirec.LBA*BlockSize)+bo, dsl, dat);
@@ -972,17 +989,17 @@ begin
 
         iTotalToWrite := task.scsirec.TransferLengthInBlocks * BlockSize;
         iTotalWritten := bo+dsl;
-        {$IFDEF LOCAL_DEBUG}LocalDebug('iTotalToWrite='+inttostr(iTotalToWrite));{$ENDIF}
-        {$IFDEF LOCAL_DEBUG}LocalDebug('iTotalWritten='+inttostr(iTotalWritten));{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('iTotalToWrite='+inttostr(iTotalToWrite));{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('iTotalWritten='+inttostr(iTotalWritten));{$ENDIF}
 {$IFNDEF NOEXP}
         di.InitResponse(common, cd, false);
 
 //        di.Flag_ResidualUnderFlow := iTotalWritten < iTotalToWrite;
 
         di.ResidualCount := lesserof(iTotalToWrite - iTotalWritten, MaxDataSize(context));
-        {$IFDEF LOCAL_DEBUG}LocalDebug('DesiredTransferLength='+inttostr(di.ResidualCount));{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('DesiredTransferLength='+inttostr(di.ResidualCount));{$ENDIF}
         di.OpCode_UnMasked := $21;
-        {$IFDEF LOCAL_DEBUG}LocalDebug('Writing SCSI Response. Haven''t decided if R2t yet');{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Writing SCSI Response. Haven''t decided if R2t yet');{$ENDIF}
         di.BufferOffset := iTotalWritten;
         di.Flag_ResponseContainsSCSIStatus := di.ResidualCount = 0;
         di.LUN := common.LUN;
@@ -990,21 +1007,27 @@ begin
 
         if di.ResidualCount > 0 then begin
           di.OpCode_UnMasked := $31;
-          {$IFDEF LOCAL_DEBUG}LocalDebug('Writing SCSI Response. Responding with R2T, I think.');{$ENDIF}
+          di.ExpCmdSN := int64(common.CmdSN)+int64(1);
+          di.MaxCmdSN := int64(contextData(context).ExpCmdSN)+int64(MAX_CMD_AHEAD);
+
+          {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Writing SCSI Response. Responding with R2T, I think.');{$ENDIF}
         end else begin
           di.OpCode_UnMasked := $21;
-          {$IFDEF LOCAL_DEBUG}LocalDebug('Writing SCSI Response. Responding with ScsiResponse, I think.');{$ENDIF}
+          di.ExpCmdSN := int64(common.CmdSN)+int64(1);
+          di.MaxCmdSN := int64(contextData(context).ExpCmdSN)+int64(MAX_CMD_AHEAD);
+
+          {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Writing SCSI Response. Responding with ScsiResponse, I think.');{$ENDIF}
         end;
         di.Flag_Final := true;//di.ResidualCount = 0;
 
         //di.cmdsn := common.cmdsn;
 
 
-        {$IFDEF LOCAL_DEBUG}LocalDebug('About to write (LUN, ITT, DSN, CMDSN): 0x'+inttohex(di.LUN,16)+' 0x'+inttohex(di.InitiatorTaskTAg,8)+' 0x'+inttohex(di.DataSN,8)+' 0x'+inttohex(di.CmdSN,8));{$ENDIF}
-        {$IFDEF LOCAL_DEBUG}LocalDebug('In Response to (LUN, ITT, DSN, CMDSN): 0x'+inttohex(common.LUN,16)+' 0x'+inttohex(common.InitiatorTaskTAg,8)+' 0x'+inttohex(common.DataSN,8)+' 0x'+inttohex(common.CmdSN,8));{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('About to write (LUN, ITT, DSN, CMDSN): 0x'+inttohex(di.LUN,16)+' 0x'+inttohex(di.InitiatorTaskTAg,8)+' 0x'+inttohex(di.DataSN,8)+' 0x'+inttohex(di.CmdSN,8));{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('In Response to (LUN, ITT, DSN, CMDSN): 0x'+inttohex(common.LUN,16)+' 0x'+inttohex(common.InitiatorTaskTAg,8)+' 0x'+inttohex(common.DataSN,8)+' 0x'+inttohex(common.CmdSN,8));{$ENDIF}
         di.PrepareToSend(common, cd);
         ctx_guarantee_write(context, Pbyte(@di), sizeof(di));
-        {$IFDEF LOCAL_DEBUG}LocalDebug('Wrote DI');{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Wrote DI');{$ENDIF}
         {$IFDEF FLUSH_IOHANDLER}context.Connection.IOHandler.WriteBufferFlush;{$ENDIF}
 
         //result.ResponseType := srtResponse_none;
@@ -1027,7 +1050,7 @@ begin
       dat := GEtMemory(dsl);
       try
         ctx_guarantee_read(context, dat, dsl);
-        {$IFDEF LOCAL_DEBUG}lOCALDebug('WRite non-task LBA :'+inttostr(task.scsirec.LBA)+'off:'+inttostr(bo)+' '+inttostr(dsl)+' bytes.');{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then lOCALDebug('WRite non-task LBA :'+inttostr(task.scsirec.LBA)+'off:'+inttostr(bo)+' '+inttostr(dsl)+' bytes.');{$ENDIF}
         cd.session.rsDisk.BeginTime;
         vd.WriteData((task.scsirec.LBA*BlockSize)+bo, dsl, dat);
         cd.session.rsDisk.EndTime;
@@ -1040,12 +1063,12 @@ begin
   end;
 
 
-//  LocalDebug('Writing DatOut/R2T Response.');
+//  if iscsidebug then LocalDebug('Writing DatOut/R2T Response.');
 //  IOHandler_GuaranteeWrite(context.Connection.IOHandler, @res, sizeof(res));
 
 
   if (common.Flag_Final) and (di.Flag_Final) and (di.residualcount = 0) then begin
-    {$IFDEF LOCAL_DEBUG}LocalDebug('Final PDU, clearing task:'+inttohex(common.InitiatorTaskTag,8));{$ENDIF}
+    {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Final PDU, clearing task:'+inttohex(common.InitiatorTaskTag,8));{$ENDIF}
     if not di.Flag_ResponseContainsSCSIStatus then
       raise exception.Create('can''t clear a task when the PDU does not contain status.');
     cd.session.ClearTask(common.InitiatorTaskTAg);
@@ -1070,7 +1093,7 @@ const
   MAX_PDU_LENGTH =MAX_IMMEDIATE_DATA_SIZE+120;
 
 begin
-  {$IFDEF LOCAL_DEBUG}LocalDebug('Dispatch_Login');{$ENDIF}
+  {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Dispatch_Login');{$ENDIF}
 
   //Get string data segment
   p := GetMemory(common.DataSegmentLength);
@@ -1081,7 +1104,7 @@ begin
     s := StringsFromMemory(pb, common.DataSegmentLength);
 
     //put the content into the context pairs
-    {$IFDEF LOCAL_DEBUG}LocalDebug(s);{$ENDIF}
+    {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug(s);{$ENDIF}
     ContextData(context).login_pairs.loadFromString(s, true);
 
 //    if ContextData(context).loginstage < 2 then begin
@@ -1091,7 +1114,11 @@ begin
 
     case ContextData(context).loginstage of
       1: begin
-        if common.Flag_Login_NSG = 3 then begin
+      LocalDebug('Login Stage 1');
+        if common.Flag_Login_NSG <> 3 then begin
+          LocalDebug('common.Flag_Login_NSG= ????? '+common.Flag_Login_NSG.tostring);
+        end else begin
+          LocalDebug('common.Flag_Login_NSG=3');
           sResp :=  '';
           sResp := ContextData(context).login_pairs.ToString;
           sResp := StringReplace(sResp, #13, '', [rfReplaceAll]);
@@ -1128,6 +1155,7 @@ begin
         end;
       end;
       0: begin
+        LocalDebug('Login STAGE 0');
         ContextData(context).EstablishSession(common.CID.tostring);
         ContextData(context).session.bTSG1Done := false;
         sResp := 'TargetPortalGroupTag=1'#0'AuthMethod=None'#0;
@@ -1157,6 +1185,7 @@ begin
 
       end;
       else begin
+        LocalDebug('unknown login stage!!!!!!!!!!!!!!!!!!');
         sResp := '';
         resp.Flag_Login_NSG := 3;
         resp.Flag_Login_CSG := 1;
@@ -1170,8 +1199,9 @@ begin
 
 
     resp.ExpCmdSN := int64(common.CmdSN)+int64(1);
-    resp.MaxCmdSN := int64(contextData(context).ExpCmdSN)+int64($40);
+    resp.MaxCmdSN := int64(contextData(context).ExpCmdSN)+int64(MAX_CMD_AHEAD);
     resp.StatusClass := 0;
+    contextData(context).SetNextStatSN(common.ExpStatSN);
 {$IFDEF OLD_STATSN}
     resp.StatSN := common.ExpStatSN;
 {$ENDIF}
@@ -1188,7 +1218,8 @@ begin
         movemem32(@pb2[sz1], @sREsp[STRZ()], sz2);
         fillmem(@pb2[szPad], fsz-szPad, 0);
       end;
-      ctx_guarantee_write(context, pb2, fsz);
+      LocalDebug('writing LOGIN response');
+     ctx_guarantee_write(context, pb2, fsz);
     finally
       FreeMemory(pb2);
     end;
@@ -1213,12 +1244,12 @@ var
   resp: TISCSI_CommonHeader;
   fsz, sz1, sz2, szpad: nativeint;
 begin
-  {$IFDEF LOCAL_DEBUG}LocalDebug('Dispatch_Logout');{$ENDIF}
+  {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Dispatch_Logout');{$ENDIF}
   resp.InitResponse(common, ContextData(context),true);
   resp.DataSegmentLength := 0;
 
   resp.ExpCmdSN := int64(common.cmdsn)+int64(1);
-  resp.MaxCmdSN := int64(resp.ExpCmdSN)+int64($40);
+  resp.MaxCmdSN := int64(resp.ExpCmdSN)+int64(MAX_CMD_AHEAD);
   resp.LoginStatusClass := 0;
 {$IFDEF OLD_STATSN}
   resp.StatSN := common.ExpStatSN;
@@ -1233,12 +1264,20 @@ begin
   result := true;
 end;
 
+function TiSCSITargetPortal.Dispatch_NOP(const context: TiSCSIContext;
+  var common: TISCSI_CommonHeader): boolean;
+begin
+  if common.InitiatorTaskTAg <> $FFFFFFFF then
+    SendNOPIn(context, common, false);
+  result := true;
+end;
+
 function TiSCSITargetPortal.Dispatch_SCSI_ModeSense10(var opcode: TSCSILeadingBytes;
   const context: TiSCSIContext; var common: TISCSI_CommonHeader): TSCSI_CommandResponse;
 var
   ms10: TSCSI_ModeSense10;
 begin
-  {$IFDEF LOCAL_DEBUG}LocalDebug('Dispatch_SCSI_ModeSense10');{$ENDIF}
+  {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Dispatch_SCSI_ModeSense10');{$ENDIF}
   ms10.a.AddrForRead(opcode);
   result := Dispatch_SCSI_ModeSense10(context, ms10, common);
 end;
@@ -1248,7 +1287,7 @@ function TiSCSITargetPortal.Dispatch_SCSI_Inquery(var opcode: TSCSILeadingBytes;
 var
   l12: TSCSI_Inquery;
 begin
-  {$IFDEF LOCAL_DEBUG}LocalDebug('Dispatch_SCSI_Inquery (outer)');{$ENDIF}
+  {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Dispatch_SCSI_Inquery (outer)');{$ENDIF}
   l12.a.AddrForRead(opcode);
   result := Dispatch_SCSI_Inquery(context, common, l12);
 end;
@@ -1366,7 +1405,7 @@ var
   deschead: TSCSIIdentificationDescriptorHeader;
 
 begin
-  {$IFDEF LOCAL_DEBUG}LocalDebug('Dispatch_SCSI_Inquery');{$ENDIF}
+  {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Dispatch_SCSI_Inquery');{$ENDIF}
   result := TSCSI_CommandResponse.Create;
   iToWrite := 0;
   if not scsirec.EVPD then begin
@@ -1551,7 +1590,8 @@ begin
     try
 
 
-      {$IFDEF LOCAL_DEBUG}LocalDebug('Writing SCSI Response.');{$ENDIF}
+      {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Writing SCSI Response.');{$ENDIF}
+
         Socket_GuaranteeWrite(context.connection, resmem, sizeof(common)+r.PaddedLength);
 //      ctx_guarantee_write(context, resmem, sizeof(common)+result.PaddedLength);
       {$IFDEF FLUSH_IOHANDLER}context.Connection.IOHandler.WriteBufferFlush;{$ENDIF}
@@ -1591,8 +1631,10 @@ var
   nopCommon: TISCSI_CommonHeader;
   o: TVDReadCommand;
 begin
+//  Debug.Log('READ32 ITT: 0x'+inttohex(common.InitiatorTaskTag,8));
+
   nopCommon := common;
-//  LocalDebug('Read: CmdSN='+common.CmdSN.ToString);
+//  if iscsidebug then LocalDebug('Read: CmdSN='+common.CmdSN.ToString);
   useless := 0;
   ContextData(context).DataSN := 0;
   //this is where we do stuff
@@ -1620,16 +1662,20 @@ begin
 
     iThisRead := iToRead;
     iThisAddr :=(scsirec.LBA*BlockSize)+iSent;
-    {$IFDEF LOCAL_DEBUG}lOCALDebug('Read LBA:'+inttostr(scsirec.lba)+' '+inttostr(scsirec.TransferLengthInBlocks)+' blocks. PDU# '+inttostr(iPDUCount)+' This Addr:'+inttostr(iThisAddr)+' This Read: '+inttostr(iToRead));{$ENDIF}
+    {$IFDEF LOCAL_DEBUG}if iscsidebug then lOCALDebug('Read LBA:'+inttostr(scsirec.lba)+' '+inttostr(scsirec.TransferLengthInBlocks)+' blocks. PDU# '+inttostr(iPDUCount)+' This Addr:'+inttostr(iThisAddr)+' This Read: '+inttostr(iToRead));{$ENDIF}
 
     cd.session.rsDisk.BeginTime;
     vd.ACtiveUseTime := GetTicker;
     o := vd.ReadData_Begin(iThisAddr, iThisRead, result.data);
     while not o.WAitFor(4000) do begin
       Debug.Log(self, 'NOP in Read');
-      SendNOPIn(context, common);
+      SendNOPIn(context, common, false);
     end;
     vd.ReadData_End(o);
+//    if (iSent+iThisRead) = iTotalToRead then
+//      vd.ReadData_Begin(iThisAddr+iThisRead, 262144,nil,true);
+
+
 
 
     cd.session.rsDisk.EndTime;
@@ -1677,7 +1723,7 @@ begin
 //    try
 
 
-      {$IFDEF LOCAL_DEBUG}LocalDebug('Writing SCSI Response.');{$ENDIF}
+      {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Writing SCSI Response.');{$ENDIF}
         Socket_GuaranteeWrite(context.connection, resmem, sizeof(common)+result.PaddedLength);
 //      ctx_guarantee_write(context, resmem, sizeof(common)+result.PaddedLength);
       {$IFDEF FLUSH_IOHANDLER}context.Connection.IOHandler.WriteBufferFlush;{$ENDIF}
@@ -1697,12 +1743,14 @@ begin
   end;
 
   result.ResponseType := srtResponse_None;
-//  LocalDebug('Read: CmdSN='+common.CmdSN.ToString+' Done');
+//  if iscsidebug then LocalDebug('Read: CmdSN='+common.CmdSN.ToString+' Done');
+//  Debug.Log('FINISH ITT: 0x'+inttohex(common.InitiatorTaskTag,8));
+
 
 end;
 
 procedure TiSCSITargetPortal.SendNOPIn(context: TiSCSIContext;
-  var ref: TISCSI_CommonHeader);
+  var ref: TISCSI_CommonHeader; request_pong: boolean);
 var
   cd: TiSCSI_Connection;
   iToRead: nativeint;
@@ -1718,7 +1766,7 @@ var
   common: TiSCSI_CommonHeader;
 begin
   common := ref;
-//  LocalDebug('Read: CmdSN='+common.CmdSN.ToString);
+//  if iscsidebug then LocalDebug('Read: CmdSN='+common.CmdSN.ToString);
   useless := 0;
   ContextData(context).DataSN := 0;
   //this is where we do stuff
@@ -1731,8 +1779,13 @@ begin
   common.opcode := $20;//NOP
   //common.Flag_ResponseContainsSCSIStatus := true;
   di.PrepareToSend(common, cd);
-  di.InitiatorTaskTAg := $FFFFFFFF;
-  di.TargetTransferTag := $FFFFFFFF;
+  if request_pong then begin
+    di.InitiatorTaskTAg := $12345678;
+    di.TargetTransferTag := $12345678;
+  end else begin
+    di.InitiatorTaskTAg := $FFFFFFFF;
+    di.TargetTransferTag := $FFFFFFFF;
+  end;
 
   Socket_GuaranteeWrite(context.connection, @common, sizeof(common));
 
@@ -1985,13 +2038,13 @@ begin
 
   if scsirec.TransferLengthInBlocks > 0 then begin
     if common.DataSegmentLength = 0 then begin
-      {$IFDEF LOCAL_DEBUG}LocalDebug('0 DataSegmentLEngth ***********************************');{$ENDIF}
-      {$IFDEF LOCAL_DEBUG}LocalDebug(contextdata(context).login_pairs.ToString);{$ENDIF}
-      {$IFDEF LOCAL_DEBUG}LocalDebug('*******************************************************');{$ENDIF}
+      {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('0 DataSegmentLEngth ***********************************');{$ENDIF}
+      {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug(contextdata(context).login_pairs.ToString);{$ENDIF}
+      {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('*******************************************************');{$ENDIF}
     end;
 {$IFNDEF CONFUSED}
     if scsirec.TransferLengthinBlocks > 128 then begin
-      {$IFDEF LOCAL_DEBUG}LocalDebug('LONG WRITE *********************************************************************************************************');{$ENDIF}
+      {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('LONG WRITE *********************************************************************************************************');{$ENDIF}
       longfound := true;
     end;
     if common.DataSEgmentLength > 0 then begin
@@ -2001,7 +2054,7 @@ begin
         cd.session.rsIOHandlerRead.BeginTime;
         ctx_guarantee_read(context, dat, common.DataSegmentLength);
         cd.session.rsIOHandlerRead.EndTime;
-        {$IFDEF LOCAL_DEBUG}lOCALDebug('Write immediate LBA :'+inttostr(scsirec.lba)+' '+inttostr(scsirec.TransferLengthinBlocks)+'blocks '+inttostr(common.datasegmentlength)+' bytes of immediate data.');{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then lOCALDebug('Write immediate LBA :'+inttostr(scsirec.lba)+' '+inttostr(scsirec.TransferLengthinBlocks)+'blocks '+inttostr(common.datasegmentlength)+' bytes of immediate data.');{$ENDIF}
         vd := cd.Target;
         iTotalToWrite := scsirec.TransferLengthInBlocks*BLOCKSIZE;
 //        if not vd.WaitForQueueSpace(4000) then begin
@@ -2015,11 +2068,11 @@ begin
           vd.ACtiveUseTime := GetTicker;
           vd.WriteData(scsirec.LBA*BLOCKSIZE, common.DataSEgmentLength, dat);
           cd.session.rsDisk.EndTime;
-          {$IFDEF LOCAL_DEBUG}lOCALDebug('Written :'+inttostr(scsirec.lba)+' '+inttostr(common.datasegmentlength)+' bytes.');{$ENDIF}
+          {$IFDEF LOCAL_DEBUG}if iscsidebug then lOCALDebug('Written :'+inttostr(scsirec.lba)+' '+inttostr(common.datasegmentlength)+' bytes.');{$ENDIF}
           result.BytesProcessed := common.DataSegmentLength;
           iTotalWritten := common.DataSEgmentLength;
-          {$IFDEF LOCAL_DEBUG}LocalDebug('iTotalToWrite='+inttostr(iTotalToWrite));{$ENDIF}
-          {$IFDEF LOCAL_DEBUG}LocalDebug('iTotalWritten='+inttostr(iTotalWritten));{$ENDIF}
+          {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('iTotalToWrite='+inttostr(iTotalToWrite));{$ENDIF}
+          {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('iTotalWritten='+inttostr(iTotalWritten));{$ENDIF}
 //        end;
 
 
@@ -2039,19 +2092,19 @@ begin
           di.Flag_Final := true;
           tsk := TiSCSI_Task_Write(cd.session.AddTask(TiSCSI_Task_Write, common));
           tsk.scsirec := scsirec;
-          {$IFDEF LOCAL_DEBUG}LocalDebug('Making task because this shit is gonna take a while.'+inttostr(tsk.header.InitiatorTaskTAg));{$ENDIF}
+          {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Making task because this shit is gonna take a while.'+inttostr(tsk.header.InitiatorTaskTAg));{$ENDIF}
         end;
 
         di.PrepareToSend(common, cd);
         resmem := AllocateCombined(di, result);
         try
-          {$IFDEF LOCAL_DEBUG}LocalDebug('Writing SCSI Response to initial Write request.');{$ENDIF}
-          {$IFDEF LOCAL_DEBUG}LocalDebug('About to write (LUN, ITT, DSN, CMDSN): 0x'+inttohex(di.LUN,16)+' 0x'+inttohex(di.InitiatorTaskTAg,8)+' 0x'+inttohex(di.DataSN,8)+' 0x'+inttohex(di.CmdSN,8));{$ENDIF}
-          {$IFDEF LOCAL_DEBUG}LocalDebug('In Response to (LUN, ITT, DSN, CMDSN): 0x'+inttohex(common.LUN,16)+' 0x'+inttohex(common.InitiatorTaskTAg,8)+' 0x'+inttohex(common.DataSN,8)+' 0x'+inttohex(common.CmdSN,8));{$ENDIF}
+          {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Writing SCSI Response to initial Write request.');{$ENDIF}
+          {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('About to write (LUN, ITT, DSN, CMDSN): 0x'+inttohex(di.LUN,16)+' 0x'+inttohex(di.InitiatorTaskTAg,8)+' 0x'+inttohex(di.DataSN,8)+' 0x'+inttohex(di.CmdSN,8));{$ENDIF}
+          {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('In Response to (LUN, ITT, DSN, CMDSN): 0x'+inttohex(common.LUN,16)+' 0x'+inttohex(common.InitiatorTaskTAg,8)+' 0x'+inttohex(common.DataSN,8)+' 0x'+inttohex(common.CmdSN,8));{$ENDIF}
 
 
           ctx_guarantee_write(context, resmem, sizeof(di)+result.PaddedLength);
-          {$IFDEF LOCAL_DEBUG}LocalDebug('Wrote DI');{$ENDIF}
+          {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Wrote DI');{$ENDIF}
           {$IFDEF FLUSH_IOHANDLER}context.Connection.IOHandler.WriteBufferFlush;{$ENDIF}
         finally
           freememory(resmem);
@@ -2069,7 +2122,7 @@ begin
     end;
 
     if (not common.Flag_Final) and (tsk = nil) then begin
-      {$IFDEF LOCAL_DEBUG}LocalDebug('Not final PDU, creating WRITE Task');{$ENDIF}
+      {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Not final PDU, creating WRITE Task');{$ENDIF}
       tsk := TiSCSI_Task_Write(cd.session.AddTask(TiSCSI_Task_Write, common));
 //       tsk.header := common;
       tsk.scsirec := scsirec;
@@ -2082,7 +2135,7 @@ begin
     try
       cd.ioh_guarantee_read(dat, common.DataSegmentLength);
       fillmem(@dat[common.DataSEgmentLength], (scsirec.TransferLengthInBlocks*cd.session.BLOCKSIZE)-common.DataSEgmentLength, 0);
-      {$IFDEF LOCAL_DEBUG}lOCALDebug('WRite LBA:'+inttostr(scsirec.lba));{$ENDIF}
+      {$IFDEF LOCAL_DEBUG}if iscsidebug then lOCALDebug('WRite LBA:'+inttostr(scsirec.lba));{$ENDIF}
       cd.session.vd.WriteBlock(scsirec.LBA, dat);
       result.BytesProcessed := common.DataSEgmentLength;
       result.ResponseType := srtResponse_0x21;
@@ -2137,13 +2190,13 @@ begin
       cmd := b[0] and $ff;
     end;
 
-    {$IFDEF LOCAL_DEBUG}LocalDebug('Scsi cmd: 0x'+inttohex(cmd,2)+' '+SCSICommandToString(cmd));{$ENDIF}
+    {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Scsi cmd: 0x'+inttohex(cmd,2)+' '+SCSICommandToString(cmd));{$ENDIF}
 
 {$IFNDEF ALWAYS_PROCESS_CMDSN}
    if not common.Flag_Immediate then begin
       cdata := contextdata(context);
       if common.cmdsn <> cdata.ExpCmdSN then begin
-        LocalDebug('NOT EXPECTED COMMAND SN! '+common.cmdsn.tostring);
+        if iscsidebug then LocalDebug('NOT EXPECTED COMMAND SN! '+common.cmdsn.tostring);
       end;
       cdata.ExpCmdSN := int64(common.CmdSN)+int64(1);
     end;
@@ -2251,7 +2304,7 @@ begin
       resres.PrepareToSend(common, ContextData(context));
       resmem := AllocateCombined(resres, res);
       try
-        {$IFDEF LOCAL_DEBUG}LocalDebug('Writing SCSI Response.');{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Writing SCSI Response.');{$ENDIF}
         ctx_guarantee_write(context, resmem, sizeof(common)+res.PaddedLength);
       finally
         freememory(resmem);
@@ -2379,7 +2432,7 @@ begin
     s := StringsFromMemory(pb, common.DataSegmentLength);
     slRequestSTrings.text := s;
 
-    {$IFDEF LOCAL_DEBUG}LocalDebug('Text Request: '+s);{$ENDIF}
+    {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Text Request: '+s);{$ENDIF}
 
     slRequestStrings.text := s;
 
@@ -2410,7 +2463,7 @@ begin
     resp.DataSegmentLength := length(sResp);
 
     resp.ExpCmdSN := contextData(context).ExpCmdSN;
-    resp.MaxCmdSN := int64(contextData(context).ExpCmdSN)+int64($40);
+    resp.MaxCmdSN := int64(contextData(context).ExpCmdSN)+int64(MAX_CMD_AHEAD);
     resp.StatusClass := 0;
 {$IFDEF OLD_STATSN}
     resp.StatSN := common.ExpStatSN;
@@ -2458,7 +2511,7 @@ begin
 
   while acontext.Connection.Connected do begin
     rsTCP3.EndTime;
-    {$IFDEF LOCAL_DEBUG}LocalDebug('Start of Processing');{$ENDIF}
+    {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Start of Processing');{$ENDIF}
 
     if Acontext.Data = nil then begin
       Acontext.Data := TiSCSI_Connection.create;
@@ -2498,22 +2551,24 @@ begin
   ap := NeedAppParams;
   try
     tcps := TlocalTCPServer.Create(nil);
-    tcps.BlockMode := bmThreadBlocking;
+
 {$IFDEF INDY}
 
     sh := tcps.Bindings.Add;
     sh.IP := '0.0.0.0';
     sh.Port := ap.GetItemEx('Port', 3260);
     tcps.OnExecute := self.OntcpsExecute;
-
+    herro.RegisterLocalSkill('iSCSI', 0, tcps.DefaultPort.tostring, 'iSCSI');
     tcps.Active := true;
-    skill.RegisterLocalSkill('iSCSI', 0, sh.localport, 'iSCSI');
 {$ELSE}
+    tcps.BlockMode := bmThreadBlocking;
     tcps.LocalPort := ap.GetItemEx('Port', '3260');
     tcps.OnAccept := self.TcpServerAccept;
     tcps.Active := true;
     herro.RegisterLocalSkill('iSCSI', 0, tcps.localport, 'iSCSI');
 {$ENDIF}
+
+
 
   finally
     NoNeedAppParams(ap);
@@ -2792,7 +2847,12 @@ begin
   self.OpCode := req.OpCode + $20;//default response is generally request + $20... not always
   movemem32(AddrOf(8), req.AddrOf(8), 8);  //Copy IANA stuff from source
   self.InitiatorTaskTag := req.InitiatorTaskTag;
-  MaxCmdSN := req.ExpCmdSN+$40;
+{$IFDEF NEWCMDSN}
+//  ExpCmdSN := int64(ctx.ExpCmdSN);
+  MaxCmdSN := int64(req.CmdSN)+int64(MAX_CMD_AHEAD);
+{$ELSE}
+  MaxCmdSN := req.ExpCmdSN+int64(MAX_CMD_AHEAD);
+{$ENDIF}
   if not bForLogin then begin
 {$IFDEF OLD_STATSN}
     self.StatSN := req.ExpStatSN;
@@ -3149,9 +3209,11 @@ begin
 //  ioprefetcher.Loop := true;
 //  ioprefetcher.onExecute := self.ioh_prefetcher_execute;
 //  ioprefetcher.start;
+{$IFNDEF INDY}
   fifo_incoming := TSocketRingBuffer.create;
   fifo_incoming.Size := 1*MEGA;
   fifo_incoming.Socket := self.connection;
+{$ENDIF}
   ExpCmdSn := 1;
 
 
@@ -3167,8 +3229,10 @@ begin
   localpairs := nil;
   login_pairs.Free;
   login_pairs := nil;
+{$IFNDEF INDY}
   fifo_incoming.free;
   fifo_incoming := nil;
+{$ENDIF}
   inherited;
 end;
 
@@ -3480,12 +3544,12 @@ begin
     result := nil;
     for t:= 0 to FTasks.Count-1 do begin
       if (FTasks[t].header.InitiatorTaskTAg = id) then begin
-        {$IFDEF LOCAL_DEBUG}LocalDebug('Found task:'+inttohex(id,8));{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Found task:'+inttohex(id,8));{$ENDIF}
         result := FTasks[t];
         exit;
       end;
     end;
-     {$IFDEF LOCAL_DEBUG}LocalDebug('Did not find task:'+inttohex(id,8));{$ENDIF}
+     {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Did not find task:'+inttohex(id,8));{$ENDIF}
   finally
     Unlock;
   end;
@@ -3512,11 +3576,11 @@ begin
     for t:= 0 to FTasks.Count-1 do begin
       if (FTasks[t].header.InitiatorTaskTAg = id) then begin
         result := t;
-        {$IFDEF LOCAL_DEBUG}LocalDebug('Index of task:'+inttostr(id)+' is '+inttostr(result));{$ENDIF}
+        {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Index of task:'+inttostr(id)+' is '+inttostr(result));{$ENDIF}
         exit;
       end;
     end;
-     {$IFDEF LOCAL_DEBUG}LocalDebug('Did not find index of task:'+inttostr(id));{$ENDIF}
+     {$IFDEF LOCAL_DEBUG}if iscsidebug then LocalDebug('Did not find index of task:'+inttostr(id));{$ENDIF}
   finally
     Unlock;
   end;
@@ -3791,7 +3855,7 @@ begin
 {$ENDIF}
 end;
 
-procedure ctx_guarantee_write(context: TiSCSIContext; const p: pbyte; const iLength: nativeint);inline;
+procedure ctx_guarantee_write(context: TiSCSIContext; const p: pbyte; const iLength: nativeint);{$IFNDEF INDY}inline;{$ENdIF}
 var
   dw:dword;
 begin

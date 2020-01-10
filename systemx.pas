@@ -85,6 +85,7 @@ function AnsiPointerToString(a: Pbyte): string;
 function GetWriteablePath: string;
 function FindDeployedFile(sName: string): string;
 
+function UpTime: TdateTime;
 procedure FreeListContents(list: TList);
 function GetCurrentThreadID: cardinal;
 function DLLName: string;
@@ -145,6 +146,9 @@ function GetCPUCount: integer;
 function GetCPUThreadCount: integer;
 function GetEnabledCPUCount: int64;
 function CountSetBits(bitMask : int64) : ni;
+function waitForwritable(filename: string; timeout: integer = -1): boolean;
+function waitForReadable(filename: string; timeout: integer = -1): boolean;
+
 function xGetProcessorCount: integer;deprecated;
 procedure CopyFile(sSource: string; sTarget: string; bFailIfExists: boolean = false);
 procedure BitSet(byt: pbyte; bit: nativeint; bState: boolean);inline;
@@ -161,7 +165,7 @@ function HighOrderBit(const Value:TGiantInt):int64;overload;
 function NearPower2(value:int64): int64;
 function RAndomOrder(iItems: ni): TDynInt64Array;
 
-
+function IsDLL: boolean;
 
 function LowOrderBit(Value:NativeInt):NativeInt;
 function HextoMemory(s: string): TDynByteArray;
@@ -221,6 +225,7 @@ function GMTtoLocalTime(dt: TDateTime): TDatetime;
 function GetLogicalProcessorInfo: TLogicalProcessorInformation;
 {$ENDIF}
 
+procedure AssertGUIThread;
 
 function FileSeek64(Handle: THandle; offset: int64; origin: ni): int64;
 
@@ -265,10 +270,15 @@ function PlatformToBetterPriority(ordval: ni): TBetterPriority;
 function BetterPriorityToPlatform(bp: TBetterPriority): integer;
 
 
-{$IFNDEF MSWINDOWS}
 var
+  guithreadid: nativeint;
+{$IFNDEF MSWINDOWS}
+
   ios_lock: TCLXCriticalSection;
 {$ENDIF}
+
+var
+  AppStartTime: TDateTime;
 
 procedure Sleep(ms: integer);
 
@@ -362,6 +372,13 @@ begin
 
 end;
 
+procedure AssertGUIThread;
+begin
+{$IFDEF MSWINDOWS}
+  if Int64(GetCurrentThreadID) <> Int64(guithreadid) then
+    raise Ecritical.create('this function can only be called from the GUI thread.');
+{$ENDIF}
+end;
 function FileSeek64(Handle: THandle; offset: int64; origin: ni): int64;
 var
   high_order_stuff: dword;
@@ -2113,7 +2130,7 @@ end;
 
 function ResolveFileName(sFile: string): string;
 begin
-  if (pos(':', sFile) >=0) or (pos('\\',sFile) = 1) then
+  if (zpos(':', sFile) >=0) or (zpos('\\',sFile) = 0) then
     result := sFile
   else
     result := dllpath+sFile;
@@ -3326,13 +3343,58 @@ begin
   result := 2000000000;
 {$ELSE}
   if not WinGetPhysicallyInstalledSystemMemory(result) then
-    exit(0);
+    result := 0;
+  result := result * 1000;
 {$ENDIF}
 {$ELSE}
   result := 2000000000;//todo 2: other platforms arbitrarily use 2GB for reported memory size
                        //this does not create actual memory limits, but should be fixed
 {$ENDIF}
+  //note that this only returns PHYSICAL memory... not
+  //memory assigned to VMs.  VMs will return 0.
+//  if result = 0 then begin
+//    result := 16*BILLION;
+//  end;
 
+end;
+
+function waitForwritable(filename: string; timeout: integer = -1): boolean;
+var
+  tmStart: ticker;
+begin
+  tmStart := Getticker; result := false;
+  repeat
+    var fs: TFileStream := nil;
+    try
+      fs := TfileStream.create(filename, fmOpenReadWrite+fmShareDenyNone);
+      fs.free;
+      exit(true);
+    except
+      fs.free;
+      sleep(1000);
+    end;
+
+  until (timeout >=0) and (GettimeSince(tmStart) > timeout);
+end;
+
+function waitForReadable(filename: string; timeout: integer = -1): boolean;
+var
+  tmStart: ticker;
+begin
+  tmStart := Getticker; result := false;
+  repeat
+    var fs: TFileStream := nil;
+    try
+      fs := TfileStream.create(filename, fmOpenRead+fmShareDenyNone);
+      fs.free;
+      exit(true);
+
+    except
+      fs.free;
+      sleep(1000);
+    end;
+
+  until (timeout >=0) and (GettimeSince(tmStart) > timeout);
 end;
 
 
@@ -3373,10 +3435,26 @@ begin
 end;
 
 
+function IsDLL: boolean;
+begin
+  result := comparetext(extractfileext(dllname),'.dll')=0;
+end;
+
+
+
+function UpTime: TdateTime;
+begin
+  result := now()- AppStartTime;
+end;
+
+
+
 
 initialization
 
+ guithreadid := GetCurrentThreadID;
  init.RegisterProcs('systemx', oinit, ofinal);
+  AppStartTime := now();
 
 finalization
 

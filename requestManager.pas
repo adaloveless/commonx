@@ -1,7 +1,7 @@
 unit RequestManager;
-
+{x$DEFINE ENABLE}
 interface
-
+{$IFDEF ENABLE}
 uses classes, windows, requestInfo, exceptions, sysutils, betterobject, sharedobject, stringx, beeper,orderlyinit;
 type
   TUserAgents = class;
@@ -77,9 +77,10 @@ type
 var
   rqMan: TRequestManager;
 
+{$ENDIF}
 implementation
 
-
+{$IFDEF ENABLE}
 
 { TRequestManager }
 
@@ -446,10 +447,11 @@ begin
 
 end;
 
+
 initialization
   init.RegisterProcs('RequestManager', oinit, ofinal);
 
 
 finalization
-
+{$ENDIF}
 end.

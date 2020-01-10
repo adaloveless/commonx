@@ -3,7 +3,7 @@ unit RingFile;
 interface
 
 uses
-  typex, systemx, sharedobject, QueueStream, helpers.stream, numbers, sysutils, signals, stringx, tickcount, betterobject;
+  typex, systemx, sharedobject, QueueStream, helpers_stream, numbers, sysutils, signals, stringx, tickcount, betterobject;
 
 type
   TRingFile = class(TSharedObject)

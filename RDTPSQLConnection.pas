@@ -65,11 +65,12 @@ type
     function GetNextID_Response():int64;
     procedure SetNextID(key:string; id:int64);overload;virtual;
     procedure SetNextID_Async(key:string; id:int64);overload;virtual;
-    function GetNextIDEx(key:string; table:string; field:string):int64;overload;virtual;
-    procedure GetNextIDEx_Async(key:string; table:string; field:string);overload;virtual;
+    function GetNextIDEx(key:string; table:string; field:string; count:int64):int64;overload;virtual;
+    procedure GetNextIDEx_Async(key:string; table:string; field:string; count:int64);overload;virtual;
     function GetNextIDEx_Response():int64;
-    function DispatchCallback: boolean;override;
 
+
+    function DispatchCallback: boolean;override;
 
   end;
 
@@ -1076,10 +1077,8 @@ begin
     end;
   end;
 end;
-
-
 //------------------------------------------------------------------------------
-function TRDTPSQLConnectionClient.GetNextIDEx(key:string; table:string; field:string):int64;
+function TRDTPSQLConnectionClient.GetNextIDEx(key:string; table:string; field:string; count:int64):int64;
 var
   packet: TRDTPPacket;
 begin
@@ -1094,6 +1093,7 @@ begin
     WritestringToPacket(packet, key);
     WritestringToPacket(packet, table);
     WritestringToPacket(packet, field);
+    Writeint64ToPacket(packet, count);
     if not Transact(packet) then raise ECritical.create('transaction failure');
     if not packet.result then raise ECritical.create('server error: '+packet.message);
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
@@ -1109,7 +1109,7 @@ begin
   end;
 end;
 //------------------------------------------------------------------------------
-procedure TRDTPSQLConnectionClient.GetNextIDEx_Async(key:string; table:string; field:string);
+procedure TRDTPSQLConnectionClient.GetNextIDEx_Async(key:string; table:string; field:string; count:int64);
 var
   packet,outpacket: TRDTPPacket;
 begin
@@ -1123,6 +1123,7 @@ begin
     WritestringToPacket(packet, key);
     WritestringToPacket(packet, table);
     WritestringToPacket(packet, field);
+    Writeint64ToPacket(packet, count);
     BeginTransact2(packet, outpacket,nil, false);
   except
     on E:Exception do begin

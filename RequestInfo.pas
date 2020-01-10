@@ -554,9 +554,6 @@ begin
       RequestInfo.SessionHash := value;
     end;
     //user agent registration hook
-    if (sName = 'user-agent') then begin
-      RqMan.UserAgents.Tally(value);
-    end;
   end;
 
 end;
@@ -639,7 +636,6 @@ begin
   FRequest.Default('Host', '');
   Fcopied:=false;
   FDTID := 0;
-  rqMan.RegisterRequest(self);
   DoTransactions := true;
   //StrAlloc(1000000);
                                        //inc(GelementCount);
@@ -657,7 +653,6 @@ end;
 destructor TRequestInfo.destroy;
 begin
 //  debug.log('Request Info Destroyed','leak');
-  rqMan.DeRegisterRequest(self);
   FRequest.free;
   FResponse.free;
 
@@ -1517,7 +1512,6 @@ procedure TRequestInfo.SetDTID(const Value: integer);
 begin
   FDTID := Value;
 
-  rqMan.UpdateDTID(self, value);
 
 end;
 

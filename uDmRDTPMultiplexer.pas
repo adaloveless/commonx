@@ -16,6 +16,7 @@ type
     tcp: TTCPServer;
     procedure DataModuleCreate(Sender: TObject);
     procedure tcpAccept(Sender: TObject; ClientSocket: TIPClientLocal);
+    procedure DataModuleDestroy(Sender: TObject);
   private
     FOnIdle: TRDTPIdleEvent;
     procedure udpAccept(endpoint: TReliableUDPEndpoint);
@@ -70,6 +71,12 @@ begin
   finally
     NoNeedAppParams(ap);
   end;
+end;
+
+procedure TdmRDTPMultiServer.DataModuleDestroy(Sender: TObject);
+begin
+  //
+  tcp.Active := false;
 end;
 
 procedure TdmRDTPMultiServer.tcpAccept(Sender: TObject;

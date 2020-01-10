@@ -14,6 +14,7 @@ function Scriptfloatprecision(sTagbody, sCommand: string; var sev: TScriptEngine
 function DecodeTimeonTask(iSeconds: integer; bDiscardSeconds: boolean): string;
 function LoadStringFromFile(sFile: string): string;
 function CountObjects(doMaster: TDataObject; sSubFieldName, sSubFieldValue: string): integer;
+function ScriptSetCookie(sTagbody, sCommand: string; var sev: TScriptEngineVars; params: TScriptParamList; out vt: TScriptParameterType): variant;
 
 const
 
@@ -113,11 +114,51 @@ begin
 
 end;
 
+function ScriptQuoteSingle(sTagBody, sCommand: string; var sev: TScriptEngineVars; params: TScriptParamList; out vt: TScriptParameterType): variant;
+begin
+  vt := sptString;
+  result := stringreplace(params[0], '''', '\''', [rfReplaceAll]);
+  result := quote(result, '''');
+end;
+
+function ScriptQuoteDouble(sTagBody, sCommand: string; var sev: TScriptEngineVars; params: TScriptParamList; out vt: TScriptParameterType): variant;
+begin
+  vt := sptString;
+  result := stringreplace(params[0], '"', '\"', [rfReplaceAll]);
+  result := quote(result, '"');
+end;
+
+
+function scriptFriendlySizeName(sTagBody, sCommand: string; var sev: TScriptEngineVars; params: TScriptParamList; out vt: TScriptParameterType): variant;
+begin
+  vt := sptString;
+  result := friendlysizename(params[0]);
+end;
+
+function scriptIsPieceOfShit(sTagBody, sCommand: string; var sev: TScriptEngineVars; params: TScriptParamList; out vt: TScriptParameterType): variant;
+begin
+  vt := sptBoolean;
+  result := not (zpos('chrome', lowercase(sev.rqINfo.request['user-agent']))>=0);
+  if result then
+    result := (zpos('ipad', lowercase(sev.rqINfo.request['user-agent']))>=0)
+        or  (zpos('iphone', lowercase(sev.rqINfo.request['user-agent']))>=0)
+        or  (zpos('appletv', lowercase(sev.rqINfo.request['user-agent']))>=0)
+        or  (zpos('explorer', lowercase(sev.rqINfo.request['user-agent']))>=0)
+        or  (zpos('edge', lowercase(sev.rqINfo.request['user-agent']))>=0)
+        or  (zpos('msie', lowercase(sev.rqINfo.request['user-agent']))>=0)
+        or  (zpos('opera', lowercase(sev.rqINfo.request['user-agent']))>=0)
+        or  (zpos('safari', lowercase(sev.rqINfo.request['user-agent']))>=0)
+        or  (zpos('firefox', lowercase(sev.rqINfo.request['user-agent']))>=0);
+
+end;
+
+
+
 function ScriptLoadXML(sTagBody, sCommand: string; var sev: TScriptEngineVars; params: TScriptParamList; out vt: TScriptParameterType): variant;
 var
   sTemp: string;
 begin
-  LoadWebResource(sev.rqInfo, sTemp, params[1]); 
+  LoadWebResource(sev.rqInfo, sTemp, params[1]);
   sev.rqInfo.response.XMLPool[params[0]] := sTemp;
 
 end;
@@ -921,7 +962,7 @@ begin
   if NOT sev.rqInfo.response.HasVar(params[0]) then begin
     result := '';
     //Find the end of the conditional area [[[:end/fieldname]]]
-    FindEnd(sev.rqInfo.response.content, '[[[:end('''+vartostr(params[0])+''')]]]', sev.iStartRow, iEndCol, iEndRow);
+    FindEnd(sev.rqInfo.response.content, '[[[:end('''+vartostr(params[1])+''')]]]', sev.iStartRow, iEndCol, iEndRow);
     //Erase the conditional area
     DeleteStringListArea(sev.rqInfo.response.content, sev.iStartCol, sev.iStartRow, iEndCol, iEndRow);
     sev.bHandled := true;
@@ -2541,7 +2582,12 @@ begin
 
 
 end;
-
+function SCriptSetCookie(sTagbody, sCommand: string; var sev: TScriptEngineVars; params: TScriptParamList; out vt: TScriptParameterType): variant;
+begin
+  sev.rqINfo.Response.AddCookie(params[0], params[1]);
+  vt := sptString;
+  result := '';
+end;
 function ScriptJstr(sTagBody, sCommand: string; var sev: TscriptEngineVars; params: TscriptParamList; out vt: TScriptParameterType): variant;
 begin
   vt := sptString;
@@ -2746,5 +2792,11 @@ scriptfunctions.sf.registerfunction(':nonbreaking', scriptNonBreaking);
 scriptfunctions.sf.registerfunction(':loadxml',scriptLoadXML);
 scriptfunctions.sf.registerfunction(':includebody',scriptincludebody);
 scriptfunctions.sf.registerfunction(':jstr',scriptjstr);
+scriptfunctions.sf.registerfunction(':setcookie',scriptsetcookie);
+scriptfunctions.sf.registerfunction(':quotesingle',scriptquotesingle);
+scriptfunctions.sf.registerfunction(':quotedouble',scriptquotedouble);
+scriptfunctions.sf.registerfunction(':friendlysizename',scriptfriendlysizename);
+scriptfunctions.sf.registerfunction(':ispieceofshit',scriptIsPieceOfShit);
+
 
 end.

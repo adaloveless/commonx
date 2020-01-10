@@ -1,4 +1,5 @@
 unit compiler_feeder;
+
 interface
 {$INLINE AUTO}
 uses

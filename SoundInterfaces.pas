@@ -16,7 +16,7 @@ uses
 {$IFDEF MSWINDOWS}
   fftw_interface,
 {$ENDIF}
-  debug, helpers.stream, numbers, systemx, soundsample;
+  debug, helpers_stream, numbers, systemx, soundsample;
 
 const
   INVALID_RESTING_POINT: single = -9999.0;

@@ -5,17 +5,18 @@ interface
 {$DEFINE ALLOW_OPENCL}
 
 uses
-{$DEFINE MT_FBM}
+{$DEFINE MT_FBM}//THIS MAKES TFastBitMapThreadSafe!
+
 {$IFNDEF WINDOWS}
   {$DEFINE SLOW_CANVAS_CALLS}
 {$ELSE}
   Winapi.windows,
 {$ENDIF}
 {$IFNDEF FMX}
-  vcl.graphics,helpers.stream,
+  vcl.graphics,helpers_stream,
   //pngimage_fixed,
 {$ELSE}
-  helpers.stream,
+  helpers_stream,
   uitypes,
 {$ENDIF}
 {$IFDEF ALLOW_OPENCL}
@@ -2130,7 +2131,7 @@ begin
   if assigned(OnTileStateChange) then
     TThread.Synchronize(self.Thread.realthread, SyncNotify);
 
-  proc(src, dest, region, @self.progress);
+  proc(src, dest, region, @self.volatile_progress);
 
   state := tsFinished;
   if assigned(OnTileStateChange) then

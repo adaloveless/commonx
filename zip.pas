@@ -8,7 +8,7 @@ uses
   activex,
   comobj,
 {$ENDIF}
-  commandprocessor, stringx, sysutils,zlib, classes, memoryfilestream, helpers.stream, systemx;
+  commandprocessor, stringx, sysutils,zlib, classes, memoryfilestream, helpers_stream, systemx;
 
 const
   SHCONTCH_NOPROGRESSBOX = 4;
@@ -238,7 +238,7 @@ end;
 procedure Tcmd_ZipRam.DoExecute;
 begin
   inherited;
-  resultlen := zipram(psource, pdest, sourcelen, destlen, @self.progress);
+  resultlen := zipram(psource, pdest, sourcelen, destlen, @self.volatile_progress);
 end;
 
 class function Tcmd_ZipRam.EndZipRam(c: Tcmd_ZipRam): nativeint;

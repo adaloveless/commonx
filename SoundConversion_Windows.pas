@@ -4,7 +4,7 @@ interface
 {$IFDEF MSWINDOWS}
 uses
   systemx, memoryfilestream, soundinterfaces, windows, sysutils, typex,
-  helpers.stream, classes, maths, geometry, soundsample,
+  helpers_stream, classes, maths, geometry, soundsample,
   debug, dir,dirfile, commandprocessor, generics.collections, mmsystem;
 type
   TLocalMFS = TMemoryFileStream;

@@ -32,14 +32,19 @@ function TStoJS(sTSFile: string): string;
 var
   c: Tcmd_RunExe;
 begin
-  c := Tcmd_RunExe.create;
-  c.Prog := TSCEXE;
-  c.Params := sTSFile;
-  c.CaptureConsoleoutput := true;
-  c.start;
-  c.WaitFor;
-  result := c.ConsoleOutput;
+  c := nil;
+  try
+    c := Tcmd_RunExe.create;
 
+    c.Prog := TSCEXE;
+    c.Params := sTSFile;
+    c.CaptureConsoleoutput := true;
+    c.start;
+    c.WaitFor;
+    result := c.ConsoleOutput;
+  finally
+    c.free;
+  end;
 
 end;
 

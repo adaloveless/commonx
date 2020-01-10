@@ -60,7 +60,7 @@ uses
   AudioSessionTypes,
 {$ENDIF}
   tools, tickcount, sysutils, commandicons, geometry, managedthread, threadmanager, commandprocessor, exe, multibuffermemoryfilestream,
-  sharedobject, stringx, debug, math, idudpserver, idglobal, idsockethandle, helpers.stream, systemx, numbers;
+  sharedobject, stringx, debug, math, idudpserver, idglobal, idsockethandle, helpers_stream, systemx, numbers;
 
 { x$define SOUND_STREAM_THREAD_DEBUG_ENABLE }
 

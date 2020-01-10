@@ -201,8 +201,8 @@ begin
         if IsCancelled then exit;
 
         if bIsRoot then begin
-          self.Progress.stepcount := dir1.Filecount * dir1.foldercount;
-          self.Progress.step := t;
+          self.volatile_progress.stepcount := dir1.Filecount * dir1.foldercount;
+          self.volatile_progress.step := t;
         end;
         sNewStatus := inttostr(Round((t/dir1.FileCount*100)/2)+0)+'%';
         if sNewStatus <> sLastStatus then begin
@@ -307,8 +307,8 @@ begin
           continue;
         if IsCancelled then exit;
         if bIsRoot then begin
-          self.Progress.Stepcount := dir1.Filecount * dir1.foldercount;
-          self.Progress.Step := (t+1) * dir1.Filecount;
+          self.volatile_progress.Stepcount := dir1.Filecount * dir1.foldercount;
+          self.volatile_progress.Step := (t+1) * dir1.Filecount;
         end;
         Replicate(sSourceBaseDir, sTargetBaseDir, slash(sDir1)+dir1.folders[t].Name, slash(slash(sTargetBaseDir)+copy(sDir1, length(sSourceBaseDir)+1, length(sDir1)))+dir1.folders[t].Name, sTrashdir);
       end;
@@ -334,8 +334,8 @@ begin
 
       while not CP.IsComplete do begin
         self.Status := 'Waiting for final copies...'+inttostr(round(CP.PercentComplete*100))+'%';
-        self.Progress.stepcount := 100;
-        self.Progress.step := round(CP.PercentComplete*100);
+        self.volatile_progress.stepcount := 100;
+        self.volatile_progress.step := round(CP.PercentComplete*100);
         sleep(cp.RecommendedSleepTime);
 
         cp.RollupCompletedCommands;
@@ -675,7 +675,7 @@ begin
   FTrashDir := '';
   FTarget := '';
   FSource := '';
-  Progress.StepCount := 100;
+  volatile_progress.StepCount := 100;
   FStatus := '';
   Multithread  := true;
   FOnProgress := nil;
@@ -734,7 +734,7 @@ begin
   end;
 
   //done
-  self.Progress.Step := self.Progress.Stepcount;
+  self.volatile_progress.Step := self.volatile_progress.Stepcount;
   self.Status := 'done';
   State := frDone;
 
@@ -1023,8 +1023,8 @@ begin
         for t:= 0 to dir1.Filecount-1 do begin
           if IsCancelled then exit;
           if bIsRoot then begin
-            self.Progress.StepCount := dir1.Filecount * dir1.foldercount;
-            self.Progress.Step := t;
+            self.volatile_progress.StepCount := dir1.Filecount * dir1.foldercount;
+            self.volatile_progress.Step := t;
           end;
           sNewStatus := inttostr(Round((t/dir1.FileCount*100)/2)+0)+'%';
           if sNewStatus <> sLastStatus then begin
@@ -1165,8 +1165,8 @@ begin
             continue;
           if IsCancelled then exit;
           if bIsRoot then begin
-            self.Progress.StepCount := dir2.Filecount * dir2.foldercount;
-            self.Progress.Step := ((t+1) * dir2.Filecount div 2);
+            self.volatile_progress.StepCount := dir2.Filecount * dir2.foldercount;
+            self.volatile_progress.Step := ((t+1) * dir2.Filecount div 2);
           end;
           if not dir1.HasFolder(dir2.Folders[t].Name) then begin
             if AI then begin
@@ -1190,8 +1190,8 @@ begin
             continue;
           if IsCancelled then exit;
           if bIsRoot then begin
-            self.Progress.StepCount := dir1.Filecount * dir1.foldercount;
-            self.Progress.Step := ((t+1) * dir1.Filecount div 2)+(self.Progress.StepCount div 2);
+            self.volatile_progress.StepCount := dir1.Filecount * dir1.foldercount;
+            self.volatile_progress.Step := ((t+1) * dir1.Filecount div 2)+(self.volatile_progress.StepCount div 2);
           end;
           if AI then begin
 //            if copy(dir1.folders[t].name,1, 1) = '.' then continue;
@@ -1213,8 +1213,8 @@ begin
       if (sSourceBaseDir = sdir1) and (sTargetBaseDir = sDir2) then begin
         while not CP.IsComplete do begin
           self.Status := 'Waiting for final copies...'+inttostr(round(CP.PercentComplete*100))+'% still:'+cp.Commands[0].classname;
-          self.Progress.StepCount := 100;
-          self.Progress.Step := round(CP.PercentComplete*100);
+          self.volatile_progress.StepCount := 100;
+          self.volatile_progress.Step := round(CP.PercentComplete*100);
           sleep(cp.RecommendedSleepTime);
           CP.RollupCompletedcommands;
         end;

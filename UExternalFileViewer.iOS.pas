@@ -132,7 +132,7 @@ procedure TUIDocumentInteractionControllerDelegate.documentInteractionController
   controller: UIDocumentInteractionController);
 begin
 
-  raise ECritical.create('unimplemented');
+//  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 
@@ -140,7 +140,7 @@ procedure TUIDocumentInteractionControllerDelegate.documentInteractionController
   controller: UIDocumentInteractionController);
 begin
 
-  raise ECritical.create('unimplemented');
+//  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 
@@ -148,7 +148,7 @@ procedure TUIDocumentInteractionControllerDelegate.documentInteractionController
   controller: UIDocumentInteractionController);
 begin
 
-  raise ECritical.create('unimplemented');
+//  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 
@@ -157,7 +157,7 @@ procedure TUIDocumentInteractionControllerDelegate.documentInteractionController
   didEndSendingToApplication: NSString);
 begin
 
-  raise ECritical.create('unimplemented');
+//  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 
@@ -171,7 +171,7 @@ function TUIDocumentInteractionControllerDelegate.documentInteractionControllerR
   controller: UIDocumentInteractionController): CGRect;
 begin
 
-  raise ECritical.create('unimplemented');
+//  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 
@@ -193,7 +193,7 @@ function TUIDocumentInteractionControllerDelegate.documentInteractionControllerV
   controller: UIDocumentInteractionController): UIView;
 begin
 
-  raise ECritical.create('unimplemented');
+//  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 
@@ -201,7 +201,7 @@ procedure TUIDocumentInteractionControllerDelegate.documentInteractionController
   controller: UIDocumentInteractionController);
 begin
 
-  raise ECritical.create('unimplemented');
+//  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 
@@ -210,7 +210,7 @@ procedure TUIDocumentInteractionControllerDelegate.documentInteractionController
   willBeginSendingToApplication: NSString);
 begin
 
-  raise ECritical.create('unimplemented');
+//  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 
@@ -218,7 +218,7 @@ procedure TUIDocumentInteractionControllerDelegate.documentInteractionController
   controller: UIDocumentInteractionController);
 begin
 
-  raise ECritical.create('unimplemented');
+//  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 
@@ -226,7 +226,7 @@ procedure TUIDocumentInteractionControllerDelegate.documentInteractionController
   controller: UIDocumentInteractionController);
 begin
 
-  raise ECritical.create('unimplemented');
+//  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 

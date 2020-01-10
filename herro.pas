@@ -343,10 +343,12 @@ end;
 
 procedure oprefinal;
 begin
+
   PEA.Remove(periodicGreeting);
   periodicGreeting.free;
   periodicGreeting := nil;
   greeter.Active := false;
+
 
 end;
 

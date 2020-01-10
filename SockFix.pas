@@ -627,8 +627,8 @@ begin
   Result := False;
   // Select also returns True when connection is broken.
   if Select(@ReadReady, nil, @ExceptFlag, TimeOut) then
-    Result := ReadReady and not ExceptFlag and
-      (PeekBuf(DataByte, sizeof(DataByte)) = 1);
+    Result := ReadReady (*and not ExceptFlag and
+      (PeekBuf(DataByte, sizeof(DataByte)) = 1)*);
 end;
 
 procedure TBaseSocket.DoHandleError;

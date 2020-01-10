@@ -72,7 +72,7 @@ var
 
 implementation
 
-uses systemx, helpers.stream;
+uses systemx, helpers_stream;
 
 
 

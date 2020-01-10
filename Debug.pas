@@ -38,11 +38,11 @@ uses
   {$ENDIF}
 {$ENDIF}
 {$IFDEF LOG_TO_CTO}
-xxxx
+xxx
 //  edi_log_jan,
 //  edi_global,
 {$ENDIF}
-  typex, systemx, sharedobject, sysutils, classes, ringbuffer, stringx, numbers, signals;
+  typex, systemx, sharedobject, sysutils, classes, ringbuffer, stringx, numbers, signals, commandline;
 
 type
   TLogTarget = (ltDisk, ltConsole, ltThread, ltEDI);
@@ -119,7 +119,10 @@ var
 
 implementation
 
-uses OrderlyInit, helpers.stream, tickcount,
+uses OrderlyInit, helpers_stream, tickcount,
+{$IFDEF LOG_TO_TOOLBELT}
+  ToolBelt_Log,
+{$ENDIF}
   managedthread;
 
 
@@ -460,6 +463,12 @@ begin
     end;
 {$ENDIF}
 
+{$IFDEF LOG_TO_TOOLBELT}
+    if ltEDI in targets then begin
+      ToolBelt_Log.WriteLog(sLog);
+    end;
+{$ENDIF}
+
 
 {$IFDEF LOG_TO_MEMORY}
     ss := ansistring(s)+ansistring(NEWLINE);
@@ -483,7 +492,9 @@ function TDebugLog.LogFileName(bDated: boolean = true): string;
 var
   sPath: string;
   sDateCode: string;
+  cl: TCommandLine;
 begin
+  cl.ParseCommandLine();
 {$IFDEF LOG_TO_TEMP_FOLDER}
   forcedirectories(GEtTempPath);
   result := GEtTempPath+extractfilename(DLLNAme)+'.'+inttostr(GetCurrentTHreadID)+'.txt';
@@ -491,10 +502,12 @@ begin
   sPath := DLLPath;
   forcedirectories(sPath);
   sDateCode := FormatDateTime('YYYYMMDD', now);
+  var logfileprefix := cl.GetNamedParameterEx('-lfp', '--log-file-prefix', '');
   if bDated then
-    result := sPath+(changefileext(extractfilename(DLLNAme),'.'+sDateCode+'.log'))
+    result := sPath+(changefileext(logfileprefix+extractfilename(DLLNAme),'.'+sDateCode+'.log'))
   else
-    result := sPath+(changefileext(extractfilename(DLLNAme),'.log'));
+    result := sPath+(changefileext(logfileprefix+extractfilename(DLLNAme),'.log'));
+
 
 {$ENDIF}
 

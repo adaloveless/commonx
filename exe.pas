@@ -1,5 +1,10 @@
 ﻿unit exe;
+// (WINDOWS ONLY)
 // This unit contains EXE spawning and management functions.
+// - Launch EXES
+// - Wait for EXEs
+// - check for running tasks
+// - kill tasks
 
 //NOTES ABOUt CONSOLE REDIRECTION
 //I thought I was insane, but some apps write to stdout some write to
@@ -8,7 +13,6 @@
 //maybe it detects the scenario and opens its own console window...
 //that's the only way I can explain it.
 //tested with BATCH files... works fine with echos to stdout and stderr.
-
 
 
 {$DEFINE ALLOW_CONSOLE_REDIRECT}
@@ -20,9 +24,10 @@
 interface
 
 {$IFDEF MSWINDOWS}
-uses debug, sysutils, typex, numbers,
+uses
+  debug, sysutils, typex, numbers, winapi.TlHelp32, WinSvc,
   winapi.windows, betterobject,
-  managedthread, classes, rtti_helpers,
+  managedthread, classes, rtti_helpers, ShellAPI,
   commandprocessor, backgroundthreads, commandicons, tickcount,orderlyinit;
 
 const
@@ -58,8 +63,9 @@ function RunProgram(var hands: TConsoleHandles;
 procedure WaitForEXE(var hProcessInfo: TBetterProcessInformation; bCloseHandle: boolean = true);
 function TryWaitForEXE(var hProcessInfo: TBetterProcessInformation): boolean;
 procedure ForgetExe(var hProcessInformation: TBetterProcessInformation);
-procedure RunAndCapture(DosApp: string; cc: TConsoleCaptureHook; Timeout: ticker);
+procedure RunAndCapture(DosApp: string; wkdir: string; cc: TConsoleCaptureHook; Timeout: ticker);
 function RunExeAndCapture(app: string; params: string = ''; wkdir: string = ''): string;
+function ServiceGetStatus(sMachine, sService: PChar): DWORD;
 
 type
   TWAitForExeThread = class(TProcessorThread)
@@ -102,6 +108,8 @@ type
     FConsoleTemp: string;
     FConsoleOutputPointer: Pbyte;
     FIsWindowed: boolean;
+    FConsoleDrain: string;
+    FGPUParams: string;
     function GetConsoleOutput: string;
     procedure SetIswindowed(const Value: boolean);
     procedure SetProg(const Value: string);
@@ -119,9 +127,11 @@ type
     procedure InitExpense; override;
     procedure Preprocess;override;
     procedure DoExecute; override;
+    function DrainConsole: string;
     property ExeHandle: THandle read FExehandle write FExehandle;
     property Prog: string read FProg write SetProg;
     property Params: string read FParams write FParams;
+    property GPUParams: string read FGPUParams write FGPUParams;
     property WorkingDir: string read FWorkingdir write FWorkingdir;
     property Hide: boolean read FHide write FHide;
     property batchwrap: boolean read FBatchWrap write FBatchWrap;
@@ -145,13 +155,13 @@ function IsTaskRunning(sImageName: string): boolean;
 function NumberOfTasksRunning(sImageName: string): nativeint;
 function KillTaskByName(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false; bForce: boolean = true): boolean;
 procedure KillTaskByID(pid: ni);
-
+function processExists(exeFileName: string): Boolean;
 
 var
   ExeCommands: TCommandProcessor;
 
 
-procedure CreateElevateScripts(sDir: ansistring);
+procedure CreateElevateScripts(sDir: string);
 
 {$ENDIF}
 
@@ -253,7 +263,7 @@ begin
   exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+pid.tostring+'" /T /F', DLLPath, true, false);
 end;
 
-procedure CreateElevateScripts(sDir: ansistring);
+procedure CreateElevateScripts(sDir: string);
 var
   sl: TStringLIst;
 begin
@@ -601,7 +611,7 @@ begin
       Debug.Log('--security attributes: '+sSec);
 {$ENDIF}
       if CreateprocessW(nil, PChar(cl2), @Security, @Security, true,
-        8 or NORMAL_PRIORITY_CLASS, nil, nil, rstartup, rProcess.pi)
+        8 or IDLE_PRIORITY_CLASS, nil, nil, rstartup, rProcess.pi)
         then // PAnsiChar(sWorkingdir)
           result := rProcess;
 
@@ -617,7 +627,7 @@ begin
       Debug.Log('--security attributes: '+sSec);
 {$ENDIF}
       if CreateprocessW(nil, cl2, @Security, @Security, false,
-        NORMAL_PRIORITY_CLASS, nil, nil, rStartup, rProcess.pi)
+        IDLE_PRIORITY_CLASS, nil, nil, rStartup, rProcess.pi)
         then // PAnsiChar(sWorkingdir)
         result := rProcess;
         if integer(result.pi.hProcess) <= 0 then
@@ -795,6 +805,13 @@ begin
     Debug.Log(sData);
   Status := sData;
 
+  Lock;
+  try
+    FConsoleDrain := FConsoledrain+sData;
+  finally
+    Unlock;
+  end;
+
   FConsoleTemp := FConsoleTemp + sData;
 
   if (ccStatus = ccEnd) or (length(FConsoleTemp) > length(FConsoleOutput)) then begin
@@ -802,6 +819,7 @@ begin
     FconsoleTemp := '';
 
   end;
+
 
 
 end;
@@ -1018,6 +1036,17 @@ begin
 
 end;
 
+function Tcmd_RunExe.DrainConsole: string;
+begin
+  Lock;
+  try
+    result := FConsoleDrain;
+    FConsoleDrain := '';
+  finally
+    UNlock;
+  end;
+end;
+
 function Tcmd_RunExe.GetConsoleOutput: string;
 begin
   result := Fconsoleoutput;
@@ -1069,11 +1098,11 @@ end;
 
 procedure Tcmd_RunExe.UseConsoleRedirExecutionPath;
 begin
-  RunAndCapture(self.FProg+' '+self.FParams, cc, Timeout);
+  RunAndCapture(self.FProg+' '+self.FParams, self.WorkingDir, cc, Timeout);
 end;
 
 
-procedure RunAndCapture(DosApp: string; cc: TConsoleCaptureHook; Timeout: ticker);
+procedure RunAndCapture(DosApp: string; wkdir: string; cc: TConsoleCaptureHook; Timeout: ticker);
 // todo merge these capabilities into the other EXE thing
 const
   ReadBufferSize = 1048576; // 1 MB Buffer
@@ -1133,8 +1162,11 @@ begin
     Debug.Log('--startup: '+sStartup);
     Debug.Log('--security attributes: '+sSec);
 {$ENDIF}
+    var pc: PChar := nil;
+    if wkdir <> '' then
+      pc := PChar(wkdir);
     if CreateprocessW(nil, PChar(DosApp), @Security, @Security, true,
-      8 or NORMAL_PRIORITY_CLASS, nil, nil, start, ProcessInfo.pi) then begin
+      8 or IDLE_PRIORITY_CLASS, nil, pc, start, ProcessInfo.pi) then begin
       TotalBytesRead := 0;
       cc(ccStart, '');
       waittime := 1;
@@ -1279,6 +1311,70 @@ begin
     c := nil;
   end;
 
+end;
+
+function processExists(exeFileName: string): Boolean;
+var
+  ContinueLoop: BOOL;
+  FSnapshotHandle: THandle;
+  FProcessEntry32: TProcessEntry32;
+begin
+  FSnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  FProcessEntry32.dwSize := SizeOf(FProcessEntry32);
+  ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
+  Result := False;
+  while Integer(ContinueLoop) <> 0 do
+  begin
+    if ((UpperCase(ExtractFileName(FProcessEntry32.szExeFile)) =
+      UpperCase(ExeFileName)) or (UpperCase(FProcessEntry32.szExeFile) =
+      UpperCase(ExeFileName))) then
+    begin
+      //WriteLog(exeFileName + ' is running');
+      Result := True;
+    end;
+    ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
+  end;
+  CloseHandle(FSnapshotHandle);
+end;
+
+function ServiceGetStatus(sMachine, sService: PChar): DWORD;
+  {******************************************}
+  {*** Parameters: ***}
+  {*** sService: specifies the name of the service to open
+  {*** sMachine: specifies the name of the target computer
+  {*** ***}
+  {*** Return Values: ***}
+  {*** -1 = Error opening service ***}
+  {*** 1 = SERVICE_STOPPED ***}
+  {*** 2 = SERVICE_START_PENDING ***}
+  {*** 3 = SERVICE_STOP_PENDING ***}
+  {*** 4 = SERVICE_RUNNING ***}
+  {*** 5 = SERVICE_CONTINUE_PENDING ***}
+  {*** 6 = SERVICE_PAUSE_PENDING ***}
+  {*** 7 = SERVICE_PAUSED ***}
+  {******************************************}
+var
+  SCManHandle, SvcHandle: SC_Handle;
+  SS: TServiceStatus;
+  dwStat: DWORD;
+begin
+  dwStat := 0;
+  // Open service manager handle.
+  SCManHandle := OpenSCManager(sMachine, nil, SC_MANAGER_CONNECT);
+  if (SCManHandle > 0) then
+  begin
+    SvcHandle := OpenService(SCManHandle, sService, SERVICE_QUERY_STATUS);
+    // if Service installed
+    if (SvcHandle > 0) then
+    begin
+      // SS structure holds the service status (TServiceStatus);
+      if (QueryServiceStatus(SvcHandle, SS)) then
+        dwStat := ss.dwCurrentState;
+      CloseServiceHandle(SvcHandle);
+    end;
+    CloseServiceHandle(SCManHandle);
+  end;
+  Result := dwStat;
 end;
 
 initialization

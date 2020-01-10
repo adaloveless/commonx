@@ -1,4 +1,5 @@
 unit ClientConstants;
+
 //This unit defines constants for all kinds of stuff, from network timeouts, to
 //browser_type IDs, PWLN Execution types, Activity Types, etc.
 //There is only one function defined in this unit.

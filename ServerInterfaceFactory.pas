@@ -1,13 +1,34 @@
 unit ServerInterfaceFactory;
 
-{$DEFINE POOL}
+{$DEFINE POOL}//<--- don't use this because...
+//1. It is not needed because you should hold onto your own instance to preserve
+//   context (e.g. transaction state)
+//2. Pooling someone else's connect is likely to just get you in a bad transaction state
+//   even if you carefully call rollback or commit or whatever... just better practice to NOT pool this stuff.
 
 interface
 
 uses
   debug, typex, ServerInterfaceInterface, sharedobject, betterobject, sysutils,orderlyinit, generics.collections, tickcount;
 
+const
+  KEY_RESERVE_COUNT = 100;
 type
+  TNextIDCacheRec = record
+    keytoken: string;
+    nextvalue: int64;
+    next_unreserved: int64;
+  end;
+  PNextIDCacheRec = ^TNextIDCacheRec;
+  TNextIDCache = class(TSharedObject)
+   private
+    keys: array of TNextIDCacheRec;
+    function GetKeyToken(FHost, FEndPoint, FContext, sKey: string): string;
+    function FindNextIDRec(sKeyToken: string):PNExtIDCacheRec;
+  public
+    function GetNextID(FHost, FEndPoint, FContext, sKey: string): int64;
+  end;
+
   TServerInterfaceFactory = class(TSharedObject)
   private
     FPool: TList<IServerInterface>;
@@ -27,6 +48,7 @@ type
 
 var
   SIF: TServerInterfaceFactory;
+  NextIDCache: TNextIDCache;
 
 
 implementation
@@ -37,15 +59,19 @@ procedure TServerInterfaceFactory.CleanPool;
 {$IFDEF POOL}
 var
   t: ni;
+  o: IServerInterface;
 {$ENDIF}
 begin
 {$IFDEF POOL}
+  o := nil;
   Lock;
   try
     for t:= FPool.count-1 downto 0 do begin
-      if gettimesince(FPool[t].Pooltime) > 300000 then begin
+      if gettimesince(FPool[t].Pooltime) > 15000 then begin
         debug.log('delete from pool '+inttostr(t));
+        o := FPool[t];//o will go out of scope at the end of the function
         FPool.delete(t);
+        break;
       end;
 
     end;
@@ -118,6 +144,7 @@ begin
     exit;
   Lock;
   try
+    CleanPool;
     si.pooltime := GetTicker;
 
 
@@ -130,10 +157,14 @@ begin
     else
       Debug.Log('IServerInterface will not be added to pool because it is in transaction');
 
+    CleanPool;
   finally
     Unlock;
   end;
+{$ELSE}
+//  si._Release;
 {$ENDIF}
+
 end;
 
 function TServerInterfaceFactory.NeedServer(FHost, FEndPoint, FContext: string): IServerInterface;
@@ -143,6 +174,7 @@ begin
   Lock;
   try
 {$IFDEF POOL}
+    CleanPool;
     result := GetFromPool(Fhost+'/'+FEndpoint+'/'+FContext);
     if result <> nil then
       exit;
@@ -181,6 +213,7 @@ end;
 procedure oinit;
 begin
   SIF := TServerInterfaceFactory.create;
+  NextIDCache := TNextIDCache.create;
 
 
 end;
@@ -188,6 +221,55 @@ end;
 procedure ofinal;
 begin
   SIF.free;
+  NextIDCache.free;
+  SIF := nil;
+  NextIDCache := nil;
+
+end;
+
+{ TNextIDCache }
+
+function TNextIDCache.FindNextIDRec(sKeyToken: string): PNExtIDCacheRec;
+begin
+  for var t:= 0 to high(self.keys) do begin
+    if CompareText(keys[t].keytoken, sKeyToken) = 0 then begin
+      exit(@keys[t]);
+    end;
+  end;
+  exit(nil);
+end;
+
+function TNextIDCache.GetKeyToken(FHost, FEndPoint, FContext, sKey: string): string;
+begin
+  result := sKey+','+FHost+','+FEndPoint+','+FContext;
+end;
+
+function TNextIDCache.GetNextID(FHost, FEndPoint, FContext, sKey: string): int64;
+begin
+  var l := self.LockI;
+  var keytok := GetKeyTOken(fhost, fendpoint, fcontext, sKey);
+
+  var p: PNextIDCacheRec := Self.FindNextIDRec(keytok);
+
+  if p = nil then begin
+    setlength(keys, length(keys)+1);
+    keys[high(keys)].keytoken := keytok;
+    keys[high(keys)].next_unreserved := -1;
+    keys[high(keys)].nextvalue := 0;
+    p := @keys[high(keys)];
+  end;
+
+  if p = nil then
+    raise ECritical.create('p should never be nil here');
+
+  if (p.nextvalue >= p.next_unreserved) then begin
+    var si := SIF.NeedServer(fhost, fendpoint, fcontext);
+    p.nextvalue := si.GetNextIDEx(sKey, KEY_RESERVE_COUNT);
+    p.next_unreserved := p.nextvalue+KEY_RESERVE_COUNT;
+  end;
+
+  result := p.nextvalue;
+  inc(p.nextvalue);
 
 
 end;

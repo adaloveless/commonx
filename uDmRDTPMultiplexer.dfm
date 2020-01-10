@@ -1,8 +1,9 @@
 object dmRDTPMultiServer: TdmRDTPMultiServer
   OldCreateOrder = False
   OnCreate = DataModuleCreate
-  Height = 273
-  Width = 348
+  OnDestroy = DataModuleDestroy
+  Height = 1120
+  Width = 1420
   object tcp: TTcpServer
     LocalPort = '876'
     Left = 176

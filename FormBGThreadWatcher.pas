@@ -1,6 +1,8 @@
 unit FormBGThreadWatcher;
+{$R-}  //range checking seems to interfere with command icon drawing
 {$I DelphiDefs.inc}
 interface
+{x$DEFINE USE_ONCOMPLETE}
 
 uses
   tickcount, betterobject,guihelpers,colorconversion, commandprocessor, advancedgraphics, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
@@ -37,11 +39,13 @@ type
     volState: TArray<TProgressEx>;
     db: TFastBitmap;
     Fwidth,Fheight: ni;
+    OnComplete: TNotifyEvent;
     function GetIdealSquareSize(): integer;
     procedure DrawCommandBitmap();
     procedure DoExecute;override;
     property Width: ni read FWidth write SetWidth;
     property height: ni read FHeight write SetHeight;
+
   end;
 
   TfrmBGThreadWatcher = class(TFrame)
@@ -107,6 +111,7 @@ type
     dbr: TFastBackBufferedControl;
     rudp_reads, rudp_writes, rudp_reads_oh, rudp_writes_oh: array[0..59] of int64;
     rudp_chartidx: ni;
+    syncthr: TObject;
     procedure SyncPopup;
     procedure POpupMenuClick(sender: TObject);
     function REfreshHits: boolean;
@@ -116,6 +121,8 @@ type
     procedure DrawDiskUsage(cp: TCommandProcessor);
     procedure RefreshClasses;
     function GetSelectedThread: TManagedThread;
+    procedure ThrDrawOnComplete(sender: TObject);
+    procedure SyncThrDrawOnCOmplete;
   public
     destructor Destroy; override;
 
@@ -233,6 +240,37 @@ begin
 
 end;
 
+procedure TfrmBGThreadWatcher.SyncThrDrawOnCOmplete;
+begin
+  var thr := GetSelectedThread;
+  if thr is TCOmmandProcessorMainThread then begin
+    var sel_thr := thr as TCommandProcessorMainThread;
+    thrDraw.db.AssignToPicture(dbr.picture);
+    if assigned(sel_thr.cp) then begin
+      thrDraw.cprr := sel_thr.CP.volState;
+      thrDraw.height := dbr.height;
+      thrDraw.width := dbr.width;
+      thrDraw.Fire;
+      DrawDiskUsage(sel_thr.CP);
+    end;
+  end;
+end;
+
+procedure TfrmBGThreadWatcher.ThrDrawOnComplete(sender: TObject);
+begin
+
+  thrDraw := sender as TCommandBitmapThread;
+
+  if (thrDraw <> nil) and thrDraw.started and thrDraw.IsIdle then begin
+    var pic := dbr.picture;
+    var thr := GetSelectedThread;
+    if thr is TCommandProcessorMainThread then begin
+      var sel_thr := thr as TCommandProcessorMainThread;
+      TThread.Synchronize(thrDraw.realthread, Self.SyncThrDrawOnCOmplete);
+    end;
+  end;
+end;
+
 procedure TfrmBGThreadWatcher.Timer1Timer(Sender: TObject);
 var
   pic: TPicture;
@@ -242,6 +280,7 @@ var
   t: ni;
   bgt: TManagedThread;
 begin
+  try
 {$IFDEF DO_MEM_CHART}
   brainscanultra.memchart(chart1);
 {$ENDIF}
@@ -249,79 +288,68 @@ begin
   s := Debug.DebugLog.DrainLog;
   memLog.Lines.BeginUpdate;
   try
-    if s <> '' then begin
-      slTemp := StringtoStringList(s);
-      try
-        if slTemp.Count > 80 then begin
-          memLog.Lines.Clear;
-          for t := slTemp.Count-80 to slTemp.Count-1 do
-            memLog.lines.add(slTemp[t]);
-
-        end else
-          memLog.lines.add(s);
-
-      finally
-        slTemp.Free;
-      end;
-
-      while memLog.lines.count > 80 do begin
-        for t := 0 to 79 do
-          memlog.Lines[t] := memLog.Lines[(memlog.Lines.Count-1)-t];
-
-        while memLog.Lines.Count>80 do
-          memLog.lines.delete(memLog.Lines.Count-1);
-      end;
-    end;
-
-  thr := nil;
-    if refreshhits then begin
-      //brainscanwindowsgui.MemList(lvMemory, lvBackground);
-
-      if BackGroundthreadMan.TryLockread then
-      try
-        tm1 := GetTicker;
-        if lvBackGround.itemIndex > -1 then begin
-          if backgroundthreadman.count > lvBackGround.itemindex then begin
-            bgt := backgroundthreadman[lvBackGround.itemindex];
-            if bgt is TCommandProcessorMainThread then begin
-              thr := bgt as TCommandProcessorMainthread;
-              if thr.tryLock then
-              try
-                if thrDraw = nil then begin
-                  thrDraw := TPM.Needthread<TCommandBitMapThread>(nil);
-                  thrDraw.HasWork := false;
-                  thrDraw.Start;
-                end;
-
-                if (thrDraw <> nil) and thrDraw.started and thrDraw.IsIdle then begin
-                  pic := dbr.picture;
-                  thrDraw.db.AssignToPicture(pic);
-                  if assigned(thr.cp) then begin
-                    thrDraw.cprr := thr.CP.volState;
-                    thrDraw.height := dbr.height;
-                    thrDraw.width := dbr.width;
-                    thrDraw.Fire;
-                    DrawDiskUsage(thr.CP);
-                  end;
-                end;
-              finally
-                thr.Unlock;
-              end;
-
-            end;
-          end;
-        end;
-
-        tm2 := GetTicker;
-        if rgUpdateSpeed.ItemIndex = 0 then begin
-          timer1.Interval := lesserof(greaterof(gettimesince(tm2,tm1)*8, 75),4000);
-        end;
-      finally
-        BackGroundThreadMan.unlockread;
-      end;
-    end;
+    if s <> '' then
+      AppendMemo(memLog, s);
   finally
     memLog.Lines.EndUpdate;
+  end;
+
+  thr := nil;
+  if refreshhits then begin
+    //brainscanwindowsgui.MemList(lvMemory, lvBackground);
+
+    if BackGroundthreadMan.TryLockread then
+    try
+      tm1 := GetTicker;
+      if lvBackGround.itemIndex > -1 then begin
+        if backgroundthreadman.count > lvBackGround.itemindex then begin
+          bgt := backgroundthreadman[lvBackGround.itemindex];
+          if bgt is TCommandProcessorMainThread then begin
+            thr := bgt as TCommandProcessorMainthread;
+            if thr.tryLock then
+            try
+              if thrDraw = nil then begin
+                thrDraw := TPM.Needthread<TCommandBitMapThread>(nil);
+                thrDraw.HasWork := false;
+{$IFDEF USE_ONCOMPLETE}
+                thrDraw.OnComplete := self.ThrDrawOnComplete;
+{$ENDIF}
+                thrDraw.Start;
+              end;
+
+{$IFNDEF USE_ONCOMPLETE}
+              if (thrDraw <> nil) and thrDraw.started and thrDraw.IsIdle then begin
+                pic := dbr.picture;
+                thrDraw.db.AssignToPicture(pic);
+                if assigned(thr.cp) then begin
+                  thrDraw.cprr := thr.CP.volState;
+                  thrDraw.height := dbr.height;
+                  thrDraw.width := dbr.width;
+                  thrDraw.Fire;
+                  DrawDiskUsage(thr.CP);
+                end;
+              end;
+{$ENDIF}
+            finally
+              thr.Unlock;
+            end;
+
+          end;
+        end;
+      end;
+
+      tm2 := GetTicker;
+      if rgUpdateSpeed.ItemIndex = 0 then begin
+        timer1.Interval := lesserof(greaterof(gettimesince(tm2,tm1)*8, 75),4000);
+      end;
+    finally
+      BackGroundThreadMan.unlockread;
+    end;
+  end;
+  except
+    on E: exception do begin
+      caption := 'Timer1 Exception: '+e.message;
+    end;
   end;
 
 end;
@@ -765,7 +793,7 @@ begin
       exit;
     end;
 
-    if ((cpCount div d) + 1) < (db.height div h) then
+    if ((cpCount div d) + 1) <= (db.height div h) then
       break;
 
     h := h -1;
@@ -819,9 +847,9 @@ end;
 procedure TfrmBGThreadWatcher.lvBackgroundAdvancedCustomDrawSubItem(
   Sender: TCustomListView; Item: TListItem; SubItem: Integer;
   State: TCustomDrawState; Stage: TCustomDrawStage; var DefaultDraw: Boolean);
-var
-  idx: ni;
 begin
+  exit;
+  var idx:ni;
   idx := sender.items.indexof(item);
   sender.Canvas.Brush.Color := clWhite;
   if idx >=0 then begin
@@ -900,10 +928,12 @@ begin
   resizedb;
   DrawCommandBitmap();
   Status := 'Done';
+  if assigned(OnComplete) then
+    OnComplete(self);
 
 end;
 
-procedure TCommandBitmapThread.DrawCommandBitmap();
+procedure TCommandBitmapThread.DrawCommandBitmap;
 var
   t: integer;
   c: TProgressEx;
@@ -995,25 +1025,30 @@ begin
             rPBFade := 0;
 
           if (1-(uu / h)) < p then
+//          if (h-uu) < (p*h) then
             cccc := ColorBlend(cccc,clWhite, rPBFAde);
 
 
+          //bigger icons
           if h > c.Icon.Width then begin
-            if (tt < c.Icon.Width div 1) and (uu < c.Icon.Width div 1) then begin
+            if (tt < c.Icon.Width) and (uu < c.Icon.Width) then begin
               cIcon := c.Icon.data[(uu)+0][(tt)+0];
-              if (c.IsExecutingNow) then begin
+//              if (c.IsExecutingNow) then begin
                 cccc := colorblend_ForegroundSourceAlpha(cccc,cIcon,1);
-              end else begin
-                cccc := colorblend_ForegroundSourceAlpha(cccc,cIcon,0.8);
-              end;
+//              end else begin
+//                cccc := colorblend_ForegroundSourceAlpha(cccc,cIcon,0.8);
+//              end;
             end;
           end else
-          if h > c.Icon.Width div 2 then begin
-            if (tt < c.Icon.Width div 2) and (uu < c.Icon.Height div 2) then begin
+          //smaller icons
+          if h > (c.Icon.Width shr 1) then begin
+            if (tt < (c.Icon.Width shr 1)) and (uu < (c.Icon.Height shr 1)) then begin
+              //blend 4 pixels together
               cIcon := c.Icon.data[(uu*2)+0][(tt*2)+0];
               cIcon := colorblendRGBA(cIcon, c.Icon.data[(uu*2)+1][(tt*2)+0], 0.5);
               cIcon := colorblendRGBA(cIcon, c.Icon.data[(uu*2)+0][(tt*2)+1], 0.333);
               cIcon := colorblendRGBA(cIcon, c.Icon.data[(uu*2)+1][(tt*2)+1], 0.25);
+
               cccc := cccc + (255 shl 24);
               if (c.IsExecutingNow) then begin
                 cccc := colorblend_ForegroundSourceAlpha(cccc,cIcon,1);

@@ -3,8 +3,11 @@ unit GUIHelpers;
 interface
 
 uses
-  system.rtti, debug, typex, classes, dbGrids, stdctrls, extctrls, comctrls, systemx, windows, vcl.forms, controls, numbers, json, jsonhelpers, sysutils, variants, fleximath, stringx, vcl.samples.spin, winapi.shellapi, richedit, applicationparams;
+  betterobject, system.rtti, debug, typex, classes, dbGrids, stdctrls, extctrls, comctrls, systemx, windows, vcl.forms, controls, numbers, json, jsonhelpers, sysutils, variants, fleximath, stringx, vcl.samples.spin, winapi.shellapi, richedit, applicationparams, messages;
 
+
+function GetscrollInfo(control: TWinControl; barflag: integer): TScrollInfo;
+procedure AppendMemo(mem: TMemo; s: string; bScroll: boolean = true; iMaxLines: ni = 3000);
 
 function Treenode_GetChildCount(tv: TTreeView; self: TTreenode): integer;
 function TreeNode_GetChild(tv: TTreeView; self: TTreenode; n: ni): TTreenode;
@@ -36,7 +39,10 @@ function GetPrimaryMonitor: Vcl.forms.TMonitor;
 
 procedure SaveListViewAsTSV(lv: TListView; sFileName: string);
 
+
 function IsValidScreenCoordinate(x,y: ni): boolean;
+function ScreenFromCoordinate(x,y: ni): ni;
+
 function FormFromControl(c: TControl): TForm;
 procedure JSONToControl(json: TJSON; c: TControl);
 procedure ControlToJSON(json: TJSON; c: TControl);
@@ -933,6 +939,69 @@ procedure LoadState(c: TEdit; sDefault: string);
 begin
   c.Text := apget(c.Owner.Name+'.'+c.Name, sDefault)
 end;
+
+
+procedure AppendMemo(mem: TMemo; s: string; bScroll: boolean = true; iMaxLines: ni = 3000);
+begin
+  if s = '' then
+    exit;
+  if mem.Lines.Count>iMaxLines then begin
+    var TempList:=TStringList.Create;
+    try
+      try
+        for var i:= mem.Lines.Count-200 to mem.Lines.Count-1 do begin
+          TempList.Add(mem.Lines[i]);
+        end;
+        mem.Text:=TempList.Text;
+      except
+      end;
+    finally
+      TempList.Free;
+    end;
+  end;
+  var nu: IHolder<TStringList> := StringtoStringListH(s);
+  if nu.o.Count > 400 then begin
+    var TempList := tStringlist.create;
+    try
+      for var i := nu.o.count-400 to nu.o.count-1 do begin
+        templist.Add(nu.o[i]);
+      end;
+      mem.Text := templist.Text;
+    finally
+      tempList.free;
+    end;
+  end else begin
+    mem.SelStart:=mem.GetTextLen;
+    mem.SelText:=trim(s)+NL;
+  end;
+  if bSCroll then
+    SendMessage(mem.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+end;
+
+
+function GetscrollInfo(control: TWinControl; barflag: integer): TScrollInfo;
+begin
+  with result do
+  begin
+    cbSize:=SizeOf(result);
+    fMask:=SIF_POS or SIF_RANGE;
+  end;
+  windows.GetScrollInfo(control.Handle, barflag, result);
+
+end;
+
+function ScreenFromCoordinate(x,y: ni): ni;
+begin
+  result := -1;
+  for var t := 0 to screen.MonitorCount-1 do begin
+    if IsValidOnScreen(x,y,t) then
+      exit(t);
+
+  end;
+end;
+
+
+
 
 
 

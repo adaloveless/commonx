@@ -645,7 +645,8 @@ begin
   //find and call function
   try
 
-{$IFDEF RDTP_LOGGING}    Debug.Log(self,'Dispatching request:'+inttohex(iRequest,4),'RDTPPLUMBING');{$ENDIF}
+
+  {$IFDEF RDTP_LOGGING}    Debug.Log(self,'Dispatching request:'+inttohex(iRequest,4),'RDTPPLUMBING');{$ENDIF}
     MasterDispatch;
 
 {$IFDEF RDTP_LOGGING}    Debug.Log(self,'Request dispatched:'+inttohex(iRequest,4),'RDTPPLUMBING');{$ENDIF}

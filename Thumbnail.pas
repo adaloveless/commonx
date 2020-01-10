@@ -560,11 +560,11 @@ begin
       sImgURL := 'resize_image?width='+rqInfo.request['width']+'&height=0&lockaspect=true&filename='+encodewebstring(dir.files[t].fullname);
       sThumb := Getthumbnailfilename(rqInfo, dir.files[t].fullname, rqInfo.request['width'], '0');
       if (squick = '') and not fileexists(sThumb) then
-        if not requestmanager.rqman.hasrequest('/'+sImgURL) then
+//        if not requestmanager.rqman.hasrequest('/'+sImgURL) then
           simpleasync.Asyncdispatch('/'+sImgURL)
       else
       if FileAge(sThumb) < FileAge(dir.Files[t].FullName) then begin
-        if not rqman.hasrequest('/'+sImgURL) then
+//        if not rqman.hasrequest('/'+sImgURL) then
           simpleasync.Asyncdispatch('/'+sImgURL);
       end;
 

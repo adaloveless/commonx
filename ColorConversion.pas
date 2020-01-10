@@ -1,5 +1,6 @@
 unit ColorConversion;
 {$IFDEF DELPHI2005}{$INLINE AUTO}{$ENDIF}
+
 interface
 
 uses
@@ -8,7 +9,7 @@ uses
   types,
   uitypes,
 {$ELSE}
-  Graphics,
+  vcl.Graphics,
 {$ENDIF}
 typex, validation, sysutils, numbers, debug;
 

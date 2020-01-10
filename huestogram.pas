@@ -3,7 +3,7 @@ unit huestogram;
 interface
 
 uses
-  typex, easyimage, graphics, betterobject, fastbitmap, classes, sysutils, colorconversion, colorblending, helpers.stream;
+  typex, easyimage, graphics, betterobject, fastbitmap, classes, sysutils, colorconversion, colorblending, helpers_stream;
 
 type
 

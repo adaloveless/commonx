@@ -27,7 +27,7 @@ unit Archiver;
 interface
 
 uses
-  betterobject, stringx, namevaluepair, search, debug,applicationparams, helpers.stream, numbers, generics.defaults, sharedobject, systemx, typex, classes, generics.collections, sysutils, virtualdiskconstants, queuestream, compression, zip, windows{beep}, MultiBufferMemoryFileStream, memoryfilestream, better_collections, tickcount, consolelock;
+  betterobject, stringx, namevaluepair, search, debug,applicationparams, helpers_stream, numbers, generics.defaults, sharedobject, systemx, typex, classes, generics.collections, sysutils, virtualdiskconstants, queuestream, compression, zip, windows{beep}, MultiBufferMemoryFileStream, memoryfilestream, better_collections, tickcount, consolelock;
 
 
 const

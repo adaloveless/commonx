@@ -2,7 +2,7 @@ unit ZoneLog;
 {x$DEFINE ZONE_LOG}
 interface
 uses
-  typex, systemx, stringx, sysutils, classes, sharedobject, orderlyinit, helpers.stream, debug, queuestream, betterobject;
+  typex, systemx, stringx, sysutils, classes, sharedobject, orderlyinit, helpers_stream, debug, queuestream, betterobject;
 
 type
   TZoneLogStream = TUnbufferedFileStream;

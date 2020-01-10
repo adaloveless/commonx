@@ -14,10 +14,12 @@ type
     version: cardinal;
     protocol: string;
     endpoint: string;
-    host: string;
+    greeterhost: string;
     hostid: string;
     greeterport: cardinal;
     local: boolean;
+    function Host: string;
+
     procedure Init;
     procedure FromString(s: string);
     function ToString: string;
@@ -47,8 +49,10 @@ type
     function Has(sk: TSkillInfo; byIP: boolean): boolean;overload;
     function Has(sk: ansistring; byIP: boolean): boolean;overload;
     function HasLocal(sk: ansistring; byIP: boolean): boolean;overload;
+    function GetSkillsOfType(sType: string; protocol: string = 'RDTP/TCP'): TSkillArray;
 
     function Find(sName: string): TSkillDef;
+
     procedure ScrubSkills;
     procedure Remove(sk: ansistring; byIP: boolean);
     procedure MarkValid(sk: ansistring; peerip: string; peerport: ni; byIP: boolean);
@@ -123,7 +127,7 @@ begin
   version := strtoint(h.o[1]);
   protocol := h.o[2];
   endpoint := h.o[3];
-  host := h.o[4];
+  greeterhost := h.o[4];
   hostid := h.o[5];
   if h.o.count > 6 then
     greeterport := strtoint(h.o[6])
@@ -138,9 +142,17 @@ begin
 
 end;
 
+function TSkillInfo.Host: string;
+var
+  l,r: string;
+begin
+  SplitString(HostId, '@', l,r);
+  SplitString(r,'/', result, r);
+end;
+
 procedure TSkillInfo.Init;
 begin
-  host := 'localhost';
+  greeterhost := 'localhost';
 end;
 
 { TSkills }
@@ -235,6 +247,20 @@ begin
 
 end;
 
+function TSkills.GetSkillsOfType(sType: string; protocol: string = 'RDTP/TCP'): TSkillArray;
+begin
+  setlength(result, 0);
+  var l:= LockI;
+  for var t:= 0 to FList.count-1 do begin
+    if (comparetext(FList[t].info.name,sType)=0)
+    and ((protocol='') or ((comparetext(Flist[t].info.protocol,protocol)=0)))
+    then begin
+      setlength(result,length(result)+1);
+      result[high(result)] := Flist[t].info;
+    end;
+  end;
+end;
+
 function TSkills.GetValidSkillList: IHolder<TStringList>;
 var
   t: ni;
@@ -320,7 +346,9 @@ begin
   try
     for t:= 0 to fList.count-1 do begin
       sk := Flist[t].info;
-      if zpos(skcheck.host+'/', sk.hostid) >=0 then begin
+      if (zpos(lowercase(skcheck.host+'/'), lowercase(sk.hostid)) >=0)
+      and (zpos(lowercase(skcheck.protocol), lowercase(sk.protocol)) >=0) then begin
+
         if skcheck.name = sk.name then
           exit(t);
       end;
@@ -408,7 +436,7 @@ begin
   sk := TSkillDef.create;
   sk.info.FromString(sCommaSeparatedData);
   sk.info.local := false;
-  sk.info.host := peerip;
+  sk.info.greeterhost := peerip;
   lock;
   try
     if not has(sk,false) then begin

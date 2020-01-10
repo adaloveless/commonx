@@ -3,7 +3,7 @@ unit dirfilecomparer;
 interface
 {x$DEFINE USE_MFS}
 uses
-  typex, systemx, MemoryFileStream, sysutils, helpers.stream, numbers, stringx, commandprocessor, tickcount, classes;
+  typex, systemx, MemoryFileStream, sysutils, helpers_stream, numbers, stringx, commandprocessor, tickcount, classes;
 
 type
   TCopyRecommendation = (crNoCopy, crCopyToLeft, crCopyToRight, crNoCopyRightIsNewer, crCopyDisabled);

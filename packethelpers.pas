@@ -7,7 +7,7 @@ interface
 {$DEFINE SAVE_MEMORY}
 
 uses
-  consolelock, helpers.stream, debug, system.ioutils, numbers, systemx, typex, packet, sysutils, SqlExpr, DB, StorageEngineTypes, variants, Databasedictionary, dir, dirfile, classes, zip, rdtp_file, betterobject;
+  consolelock, helpers_stream, debug, system.ioutils, numbers, systemx, typex, packet, sysutils, SqlExpr, DB, StorageEngineTypes, variants, Databasedictionary, dir, dirfile, classes, zip, rdtp_file, betterobject;
 
 type
   TStringArray = array of ansistring;
@@ -48,6 +48,9 @@ procedure WriteNativeFloatToPacket(packet: TRDTPPacket; r: NativeFloat);
 
 procedure WriteDoubleToPacket(packet: TRDTPPacket; f: double);
 procedure GetDoubleFromPacket(packet: TRDTPPacket; out res: double);
+
+procedure WriteSingleToPacket(packet: TRDTPPacket; f: single);
+procedure GetSingleFromPacket(packet: TRDTPPacket; out res: single);
 
 procedure WriteBoolToPacket(packet: TRDTPPacket;  b: boolean);
 procedure WriteBooleanToPacket(packet: TRDTPPacket;  b: boolean);
@@ -334,6 +337,15 @@ procedure WriteDoubleToPacket(packet: TRDTPPacket; f: double);
 begin
   packet.adddouble(f);
 end;
+procedure WriteSingleToPacket(packet: TRDTPPacket; f: single);
+begin
+  packet.AddDouble(f);
+end;
+procedure GetSingleFromPacket(packet: TRDTPPacket; out res: single);
+begin
+  res := packet.SeqRead;
+end;
+
 
 
 procedure WriteStringToPacket(packet: TRDTPPacket; s: string);

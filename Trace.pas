@@ -74,7 +74,7 @@ var
 
 implementation
 
-uses OrderlyInit, helpers.stream, tickcount, managedthread;
+uses OrderlyInit, helpers_stream, tickcount, managedthread;
 
 type
   TThreadLog = record

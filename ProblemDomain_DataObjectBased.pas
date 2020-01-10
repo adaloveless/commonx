@@ -13,13 +13,16 @@ type
     constructor Create(owner: TComponent);override;
     destructor Destroy;override;
 
+
     function Fetch<T: TDataObject>(keys: variant): T;
     function Ghost<T: TDataObject>(keys: variant): T;
+    function Query(s: string): TDataObject;
+    function FunctionQuery(s: string; sDefault: string): string;
     procedure Save(o: TDataObject);
     procedure Delete(o: TDataObject; bPending: boolean = true);
     function New<T: TDataobject>(keys: variant): T;
     procedure ProcessPendingDeletes;
-    procedure ClearCache;
+    procedure ClearCache;virtual;
 
 
   end;
@@ -62,6 +65,11 @@ begin
   result := EDB.Fetch<T>(keys, globalcache);
 end;
 
+function TProblemDomain.FunctionQuery(s, sDefault: string): string;
+begin
+  result := EDB.FunctionQuery(s, globalcache, sDefault);
+end;
+
 function TProblemDomain.Ghost<T>(keys: variant): T;
 begin
   result := EDB.Ghost<T>(keys, globalcache);
@@ -75,6 +83,11 @@ end;
 procedure TProblemDomain.ProcessPendingDeletes;
 begin
   EDB.ProcessPendingDeletes(globalcache);
+end;
+
+function TProblemDomain.Query(s: string): TDataObject;
+begin
+  result := EDB.Query(s, globalcache);
 end;
 
 procedure TProblemDomain.Save(o: TDataObject);

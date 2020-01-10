@@ -4,7 +4,7 @@ unit SoundTools_EasyWindows;
 interface
 
 uses
-  debug, exe, numbers, winapi.mmsystem, managedthread, classes, typex, systemx, soundinterfaces, commandprocessor, soundtools, sysutils, helpers.stream, backgroundthreads, geometry, stringx, commandicons, soundsample;
+  debug, exe, numbers, winapi.mmsystem, managedthread, classes, typex, systemx, soundinterfaces, commandprocessor, soundtools, sysutils, helpers_stream, backgroundthreads, geometry, stringx, commandicons, soundsample;
 
 type
   TSoundPlayerThread = class(TProcessorThread)
@@ -1024,12 +1024,12 @@ begin
     c.AttackTime := attack;
     c.Duration := Duration;
     c.Chorus := Chorus;
-    c.fireForget := true;
+    c.fireForget := false;//you can't wait for a fire-forget command
     c.Start();
 
     c.WaitFor();
   finally
-// c.free;
+    c.free;
   end;
 
 end;

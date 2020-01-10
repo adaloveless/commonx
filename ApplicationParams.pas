@@ -30,11 +30,12 @@ function NeedUserParams: TAppParams;
 procedure NoNeedUserParams(nvpl: TAppParams);
 
 function GetApplicationParamsfileName: string;
-function GetUserPAramsFileName: string;
+function GetUserParamsFileName: string;
 
 function APGet(const key: string; defaultvalue: string; bMore: boolean = false): string;overload;
 function APGet(const key: string; defaultvalue: boolean; bMore: boolean = false): boolean;overload;
 function APGet(const key: string; defaultvalue: real; bMore: boolean = false): real;overload;
+function APGet(const key: string; defaultvalue: int64; bMore: boolean = false): int64;overload;
 function APGetIntegerArray(const key: string; bMore: boolean = false): TArray<int64>;overload;
 
 procedure APPut(const key: string; value: string; bMore: boolean = false);
@@ -49,6 +50,7 @@ function UPGet(const key: string; defaultvalue: double; bMore: boolean = false):
 procedure UPPut(const key: string; value: string; bMore: boolean = false);overload;
 procedure UPPut(const key: string; value: int64; bMore: boolean = false);overload;
 procedure UPPut(const key: string; value: boolean; bMore: boolean = false);overload;
+procedure UPPut(const key: string; value: double; bMore: boolean = false);overload;
 
 procedure APBegin;
 procedure APEnd;
@@ -116,6 +118,16 @@ begin
 end;
 
 function APGet(const key: string; defaultvalue: real; bMore: boolean = false): real;overload;
+begin
+  apbegin;
+  try
+    result := gap.GEtItemEx(key, defaultvalue);
+  finally
+    apend;
+  end;
+end;
+
+function APGet(const key: string; defaultvalue: int64; bMore: boolean = false): int64;overload;
 begin
   apbegin;
   try
@@ -218,6 +230,8 @@ function GetApplicationParamsfileName: string;
 begin
 {$IFDEF WINDOWS}
   result := changefileext(DLLName,'.params');
+  if not fileexists(result) then
+    result := changefileext(DLLName,'.ini');
   {$IFDEF USE_PARAMS_FROM_WORKING_DIRECTORY}
     result := ExtractFileName(result);
   {$ENDIF}
@@ -336,6 +350,11 @@ end;
 procedure UPPut(const key: string; value: boolean; bMore: boolean = false);overload;
 begin
   UPPut(key, booltostr(value), bMore);
+end;
+
+procedure UPPut(const key: string; value: double; bMore: boolean = false);overload;
+begin
+  UPPut(key, floattostr(value), bMore);
 end;
 
 

@@ -3,7 +3,7 @@ unit fileservice_ut;
 interface
 
 uses
-  typex, systemx, commandprocessor, fileserviceclientex, classes, helpers.stream, debug, sysutils, beeper;
+  typex, systemx, commandprocessor, fileserviceclientex, classes, helpers_stream, debug, sysutils, beeper;
 
 type
   Tcmd_UTFileServiceClient = class(TCommand)

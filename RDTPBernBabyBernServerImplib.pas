@@ -5,7 +5,7 @@ unit RDTPBernBabyBernServerImplib;
 {END}
 interface
 uses
-  fastbitmap, helpers.stream, stringx, typex, systemx, imagemagick, rdtpprocessor, orderlyinit, rdtpserverlist, RDTPBernBabyBernServer, packethelpers, dir, dirfile, classes, sysutils, svnclient, consolelock, types, regionlock;
+  fastbitmap, helpers_stream, stringx, typex, systemx, imagemagick, rdtpprocessor, orderlyinit, rdtpserverlist, RDTPBernBabyBernServer, packethelpers, dir, dirfile, classes, sysutils, svnclient, consolelock, types, regionlock;
 type
   TRDTPBernBabyBernServer = class(TRDTPBernBabyBernServerBase)
   private

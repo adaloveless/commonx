@@ -19,7 +19,9 @@ type
     FOnTouchTwoFinger: TTouchEvent;
     FontouchOnefingerRelease: TTouchFingerEvent;
     FontouchOnefingerPress: TTouchFingerEvent;
-    procedure touch(var msg: TMessage);
+    procedure touchmsg(var msg: TMessage);
+    function GetTouchLongPressContextMenu: boolean;
+    procedure SetTouchLongPressContextMenu(const Value: boolean);
   protected
     procedure SetParent(AParent: TWinControl); override;
   public
@@ -37,6 +39,7 @@ type
     property OnTouchOneFingerPress: TTouchFingerEvent read FontouchOnefingerPress write FonTouchOneFingerPress;
     property OnTouchOneFingerRelease: TTouchFingerEvent read FontouchOnefingerRelease write FonTouchOneFingerRelease;
     property OnTouchTwoFinger: TTouchEvent read FOnTouchTwoFinger write FonTouchTwoFinger;
+    property TouchLongPressContextMenu: boolean read GetTouchLongPressContextMenu write SetTouchLongPressContextMenu;
 
 
   end;
@@ -48,6 +51,12 @@ implementation
 constructor TTouchButton.Create(aowner: TComponent);
 begin
   inherited;
+  self.Touch.TabletOptions := [];
+end;
+
+function TTouchButton.GetTouchLongPressContextMenu: boolean;
+begin
+  result :=   toPressandHold in Touch.TabletOptions;
 end;
 
 procedure TTouchButton.SetParent(AParent: TWinControl);
@@ -58,7 +67,16 @@ begin
 
 end;
 
-procedure TTouchButton.touch(var msg: TMessage);
+procedure TTouchButton.SetTouchLongPressContextMenu(const Value: boolean);
+begin
+  if value then
+    self.Touch.TabletOptions := self.Touch.TabletOptions + [toPressAndHold]
+  else
+    self.Touch.tabletoptions := touch.tabletoptions - [toPressAndHold];
+
+end;
+
+procedure TTouchButton.touchmsg(var msg: TMessage);
 begin
 
 //  raise ECritical.create('unimplemented');
@@ -86,7 +104,7 @@ end;
 procedure TTouchButton.TouchFinger(var handled: boolean; touch: TOUCHINPUT);
 begin
 
-  raise ECritical.create('unimplemented');
+//  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 

@@ -839,7 +839,7 @@ begin
     Read(c, 1);
     res[t] := c;
   end;
-  result := UTF8Decode(res);
+  result := UTF8Decode(ansistring(res));
 
   r := result;
   r := StringReplace(r, #13, '', [rfReplaceall]);

@@ -2,7 +2,7 @@ unit HexConvert;
 
 interface
 
-uses classes, stringx, typex, numbers, debug, helpers.stream, MultiBufferMemoryFileStream;
+uses classes, stringx, typex, numbers, debug, helpers_stream, MultiBufferMemoryFileStream;
 
 
 //Some Example Intel Hex LInes

@@ -3,7 +3,7 @@ unit osm_xml_parser;
 interface
 
 uses
-  typex, xmltools, systemx, classes, stringx, commands_system, sysutils, memoryfilestream, helpers.stream, abstractdb;
+  typex, xmltools, systemx, classes, stringx, commands_system, sysutils, memoryfilestream, helpers_stream, abstractdb;
 
 type
   TnodeData = record

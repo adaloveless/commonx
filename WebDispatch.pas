@@ -26,7 +26,6 @@ procedure WRQ_ServerStatus(rqInfo: TRequestInfo);
 procedure WRQ_XMLServerStatus(rqInfo: TRequestInfo);
 procedure WRQ_EchoHeader(rqInfo: TrequestInfo);
 procedure WRQ_GetHitCount(rqInfo: TRequestInfo);
-procedure WRQ_GetUserAgents(rqInfo: TRequestInfo);
 
 
 
@@ -121,12 +120,6 @@ begin
         rqInfo.SetupDefaultVarPool;
 
         //leave if shutting down
-        if rqMan.IsShuttingDown then begin
-          rqInfo.response.ResultCode := 500;
-          rqInfo.response.content.clear;
-          rqInfo.response.content.Add('The Web Server is shutting down.  Please try again shortly.');
-          exit;
-        end;
 
 
         //--------------------------------------PROXY DISPATCH
@@ -212,10 +205,6 @@ begin
           end else
           if sDoc = '/hit_count.ms' then begin
             WRQ_GetHitCount(rqInfo);
-            result := true;
-          end else
-          if sDoc = '/user_agents.ms' then begin
-            WRQ_GetuserAgents(rqInfo);
             result := true;
           end else
           if sDoc = '/file_test.ms' then begin
@@ -871,22 +860,6 @@ begin
 
 //    windows.beep(100,100);
 
-    if rqMan.TryLockRead(LOCK_TIME) then try
-      add('<font size="1" face="helvetica, arial">');
-      if rqInfo.request.hasParam('extrainfo') then begin
-        for t:= 0 to rqMan.count-1 do begin
-          sTemp := rqMan.requests[t];
-          SplitString(sTemp, '?', sLeft, sright);
-          SplitString(sLeft, '&', sLeft, sRight);
-          add(sLeft+' Age: '+floattostr(rqMAn.ages[t]/1000)+' DT:'+inttostr(rqMan.DTs[t])+'<BR>');
-        end;
-      end;
-      add('active requests:'+ inttostr(rqMan.Count)+'<BR>');
-    finally
-      rqMan.UnlockRead;
-      add('</font>');
-    end
-    else add('LockFailure: rqMan<BR>');
 
     if rqInfo.request.hasparam('newvals') then begin
       add('hits:'+ inttostr(WebServer.HitCount)+'<BR>');
@@ -985,20 +958,6 @@ begin
   rqInfo.response.content.text := inttostr(webserver.hitcount);
 end;
 
-procedure WRQ_GetUserAgents(rqInfo: TRequestInfo);
-//w: /user_agents.ms
-//Returns all user agents that have hit the system and the number of hits by each user agent in a plain-text document.
-var
-  t: integer;
-begin
-  rqInfo.response.contenttype := 'text/plain';
-
-  for t := 0 to rqMan.UserAgents.count-1 do begin
-    rqInfo.response.content.add(rQMan.UserAgents.Agents[t]);
-    rqInfo.response.content.add(inttostr(rQMan.UserAgents.AgentStats[t]));
-  end;
-
-end;
 
 procedure WRQ_MaxConnections(rqInfo: TRequestInfo);
 begin
@@ -1046,23 +1005,6 @@ begin
         end;
 {$ENDIF}
         {$ENDIF}
-        xmlb.OpenElement('ActiveRequests', VarArrayOf(['Count', rqMan.count]), false);
-        rqMan.LockRead;
-        try
-          for t:=0 to rqMan.count-1 do begin
-            sTemp := rqMan.requests[t];
-            sTemp := stringReplace(sTemp, '"', EncodeWebSTring('"'), [rfReplaceALL]);
-
-            SplitString(sTemp, '?', sLeft, sright);
-            SplitString(sLeft, '&', sLeft, sRight);
-            sTemp := sLeft;
-
-            xmlb.OpenElement('page', VarArrayOf(['Name', sTemp, 'Age', rqMan.ages[t], 'DT', rqMan.DTs[t]]),true);
-          end;
-        finally
-          rqMan.UnlockREad;
-        end;
-        xmlb.Close('ActiveRequests');
 
         xmlb.OpenElement('Hits', VarArrayOf(['Value', inttostr(WebServer.HitCount)]),true);
         doob.LockRead;

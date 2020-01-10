@@ -3,7 +3,7 @@ unit IPClientWrapper;
 //TODO 1: If wrapper is created then immediately freed -- AV occurs.
 
 interface
-uses helpers.sockets, helpers.stream, systemx, typex, betterobject, SharedObject, better_sockets, sysutils, managedthread, classes, winsock, windows, beeper, tickcount;
+uses helpers.sockets, helpers_stream, systemx, typex, betterobject, SharedObject, better_sockets, sysutils, managedthread, classes, winsock, windows, beeper, tickcount;
 
 type
   TMyIPClient = class;
@@ -385,7 +385,7 @@ begin
   iSent := 0;
   while iSent < iBytes do begin
     iToRead := lesserof(512, iBytes-iSent);
-    helpers.stream.Stream_GuaranteeRead(s, @a[0], iToRead);
+    helpers_stream.Stream_GuaranteeRead(s, @a[0], iToRead);
 
 //    Socket_GuaranteeWrite(self, @a[0], iToRead);
     inc(iSent, iToRead);

@@ -3,7 +3,7 @@ unit Node;
 interface
 
 uses
-  sharedobject, commandprocessor, exe, dir, dirfile, namedcommandlist, stringx, systemx, debug, tickcount;
+  betterobject, sharedobject, commandprocessor, exe, dir, dirfile, namedcommandlist, stringx, systemx, debug, tickcount;
 
 type
   Tcmd_NodeBuild = class(TCommand)
@@ -14,6 +14,9 @@ type
     procedure DoBuild;
   public
     WorkingDir: string;
+
+    constructor Create;override;
+    destructor Destroy;override;
     procedure InitExpense; override;
   end;
 
@@ -34,6 +37,7 @@ implementation
 procedure CheckNodeBuild;
 var
   c: Tcmd_Nodebuild;
+  h : IHolder<TCommand>;
   key: string;
 begin
   if gettimesince(lastchecked) < 120000 then
@@ -43,8 +47,9 @@ begin
   GNC.CommandHoldTime := 8000;
   GNC.CombStaleCommands;
   key := 'node '+nodeprojectroot;
-  c := GNC.NeedCommand<Tcmd_NodeBuild>(key);
-  if not c.IsComplete then begin
+  h := GNC.NeedCommand<Tcmd_NodeBuild>(key);
+  c := h.o as Tcmd_NodeBuild;
+    if not c.IsComplete then begin
     c.WorkingDir := nodeprojectroot;
     c.Start;
     c.waitfor;
@@ -57,6 +62,18 @@ begin
 end;
 
 { Tcmd_NodeBuild }
+
+constructor Tcmd_NodeBuild.Create;
+begin
+  inherited;
+  Debug.Log(self.classname+' created');
+end;
+
+destructor Tcmd_NodeBuild.Destroy;
+begin
+  Debug.Log(self.classname+' destroyed');
+  inherited;
+end;
 
 procedure Tcmd_NodeBuild.DoBuild;
 var

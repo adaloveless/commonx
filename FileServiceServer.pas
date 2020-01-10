@@ -38,6 +38,18 @@ type
     procedure RQ_HANDLE_GetFileSize_string(proc: TRDTPProcessor);
     procedure RQ_HANDLE_ExecuteAndCapture_string_string_string(proc: TRDTPProcessor);
     procedure RQ_HANDLE_GetFileList_string_string_integer_integer(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_StartExeCommand_string_string_string_single_single(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_GetCommandStatus_int64_string_int64_int64_boolean(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_EndCommand_int64(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_GetCPUCount(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_GetCommandResourceConsumption_single_single_single_single(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_EndExeCommand_int64(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_GetEXECommandStatus_int64_string_boolean_string(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_StartExeCommandEx_string_string_string_single_single_string(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_GetCommandResourceConsumptionEx_single_single_single_single_single_single_string(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_GetGPUList(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_GetGPUCount(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_StartExeCommandExFFMPEG_string_string_string_string_single_single_single(proc: TRDTPProcessor);
 
   protected
     
@@ -67,6 +79,18 @@ type
     function RQ_GetFileSize(filename:string):int64;overload;virtual;abstract;
     function RQ_ExecuteAndCapture(sPath:string; sProgram:string; sParams:string):string;overload;virtual;abstract;
     function RQ_GetFileList(sRemotePath:string; sFileSpec:string; attrmask:integer; attrresult:integer):TRemoteFileArray;overload;virtual;abstract;
+    function RQ_StartExeCommand(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single):int64;overload;virtual;abstract;
+    function RQ_GetCommandStatus(handle:int64; out status:string; out step:int64; out stepcount:int64; out finished:boolean):boolean;overload;virtual;abstract;
+    function RQ_EndCommand(handle:int64):boolean;overload;virtual;abstract;
+    function RQ_GetCPUCount():int64;overload;virtual;abstract;
+    function RQ_GetCommandResourceConsumption(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single):boolean;overload;virtual;abstract;
+    function RQ_EndExeCommand(handle:int64):string;overload;virtual;abstract;
+    function RQ_GetEXECommandStatus(handle:int64; out status:string; out finished:boolean; out consoleCapture:string):boolean;overload;virtual;abstract;
+    function RQ_StartExeCommandEx(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single; ext_resources:string):int64;overload;virtual;abstract;
+    function RQ_GetCommandResourceConsumptionEx(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single; out gpusUsed:single; out gpuMax:single; out ext_resources:string):boolean;overload;virtual;abstract;
+    function RQ_GetGPUList():string;overload;virtual;abstract;
+    function RQ_GetGPUCount():integer;overload;virtual;abstract;
+    function RQ_StartExeCommandExFFMPEG(sPath:string; sProgram:string; sParams:string; sGPUParams:string; cpus:single; memgb:single; gpu:single):int64;overload;virtual;abstract;
 
 
     function Dispatch: boolean;override;
@@ -289,6 +313,182 @@ begin
   GetintegerFromPacket(proc.request, attrresult);
   res := RQ_GetFileList(sRemotePath, sFileSpec, attrmask, attrresult);
   WriteTRemoteFileArrayToPacket(proc.response, res);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_StartExeCommand_string_string_string_single_single(proc: TRDTPProcessor);
+var
+  res: int64;
+  sPath:string;
+  sProgram:string;
+  sParams:string;
+  cpus:single;
+  memgb:single;
+begin
+  GetstringFromPacket(proc.request, sPath);
+  GetstringFromPacket(proc.request, sProgram);
+  GetstringFromPacket(proc.request, sParams);
+  GetsingleFromPacket(proc.request, cpus);
+  GetsingleFromPacket(proc.request, memgb);
+  res := RQ_StartExeCommand(sPath, sProgram, sParams, cpus, memgb);
+  Writeint64ToPacket(proc.response, res);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_GetCommandStatus_int64_string_int64_int64_boolean(proc: TRDTPProcessor);
+var
+  res: boolean;
+  handle:int64;
+  status:string;
+  step:int64;
+  stepcount:int64;
+  finished:boolean;
+begin
+  Getint64FromPacket(proc.request, handle);
+  res := RQ_GetCommandStatus(handle, status, step, stepcount, finished);
+  WritebooleanToPacket(proc.response, res);
+  WritestringToPacket(proc.response, status);
+  Writeint64ToPacket(proc.response, step);
+  Writeint64ToPacket(proc.response, stepcount);
+  WritebooleanToPacket(proc.response, finished);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_EndCommand_int64(proc: TRDTPProcessor);
+var
+  res: boolean;
+  handle:int64;
+begin
+  Getint64FromPacket(proc.request, handle);
+  res := RQ_EndCommand(handle);
+  WritebooleanToPacket(proc.response, res);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_GetCPUCount(proc: TRDTPProcessor);
+var
+  res: int64;
+begin
+  res := RQ_GetCPUCount();
+  Writeint64ToPacket(proc.response, res);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_GetCommandResourceConsumption_single_single_single_single(proc: TRDTPProcessor);
+var
+  res: boolean;
+  cpusUsed:single;
+  cpuMax:single;
+  memGBUsed:single;
+  memGBMax:single;
+begin
+  res := RQ_GetCommandResourceConsumption(cpusUsed, cpuMax, memGBUsed, memGBMax);
+  WritebooleanToPacket(proc.response, res);
+  WritesingleToPacket(proc.response, cpusUsed);
+  WritesingleToPacket(proc.response, cpuMax);
+  WritesingleToPacket(proc.response, memGBUsed);
+  WritesingleToPacket(proc.response, memGBMax);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_EndExeCommand_int64(proc: TRDTPProcessor);
+var
+  res: string;
+  handle:int64;
+begin
+  Getint64FromPacket(proc.request, handle);
+  res := RQ_EndExeCommand(handle);
+  WritestringToPacket(proc.response, res);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_GetEXECommandStatus_int64_string_boolean_string(proc: TRDTPProcessor);
+var
+  res: boolean;
+  handle:int64;
+  status:string;
+  finished:boolean;
+  consoleCapture:string;
+begin
+  Getint64FromPacket(proc.request, handle);
+  res := RQ_GetEXECommandStatus(handle, status, finished, consoleCapture);
+  WritebooleanToPacket(proc.response, res);
+  WritestringToPacket(proc.response, status);
+  WritebooleanToPacket(proc.response, finished);
+  WritestringToPacket(proc.response, consoleCapture);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_StartExeCommandEx_string_string_string_single_single_string(proc: TRDTPProcessor);
+var
+  res: int64;
+  sPath:string;
+  sProgram:string;
+  sParams:string;
+  cpus:single;
+  memgb:single;
+  ext_resources:string;
+begin
+  GetstringFromPacket(proc.request, sPath);
+  GetstringFromPacket(proc.request, sProgram);
+  GetstringFromPacket(proc.request, sParams);
+  GetsingleFromPacket(proc.request, cpus);
+  GetsingleFromPacket(proc.request, memgb);
+  GetstringFromPacket(proc.request, ext_resources);
+  res := RQ_StartExeCommandEx(sPath, sProgram, sParams, cpus, memgb, ext_resources);
+  Writeint64ToPacket(proc.response, res);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_GetCommandResourceConsumptionEx_single_single_single_single_single_single_string(proc: TRDTPProcessor);
+var
+  res: boolean;
+  cpusUsed:single;
+  cpuMax:single;
+  memGBUsed:single;
+  memGBMax:single;
+  gpusUsed:single;
+  gpuMax:single;
+  ext_resources:string;
+begin
+  res := RQ_GetCommandResourceConsumptionEx(cpusUsed, cpuMax, memGBUsed, memGBMax, gpusUsed, gpuMax, ext_resources);
+  WritebooleanToPacket(proc.response, res);
+  WritesingleToPacket(proc.response, cpusUsed);
+  WritesingleToPacket(proc.response, cpuMax);
+  WritesingleToPacket(proc.response, memGBUsed);
+  WritesingleToPacket(proc.response, memGBMax);
+  WritesingleToPacket(proc.response, gpusUsed);
+  WritesingleToPacket(proc.response, gpuMax);
+  WritestringToPacket(proc.response, ext_resources);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_GetGPUList(proc: TRDTPProcessor);
+var
+  res: string;
+begin
+  res := RQ_GetGPUList();
+  WritestringToPacket(proc.response, res);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_GetGPUCount(proc: TRDTPProcessor);
+var
+  res: integer;
+begin
+  res := RQ_GetGPUCount();
+  WriteintegerToPacket(proc.response, res);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_StartExeCommandExFFMPEG_string_string_string_string_single_single_single(proc: TRDTPProcessor);
+var
+  res: int64;
+  sPath:string;
+  sProgram:string;
+  sParams:string;
+  sGPUParams:string;
+  cpus:single;
+  memgb:single;
+  gpu:single;
+begin
+  GetstringFromPacket(proc.request, sPath);
+  GetstringFromPacket(proc.request, sProgram);
+  GetstringFromPacket(proc.request, sParams);
+  GetstringFromPacket(proc.request, sGPUParams);
+  GetsingleFromPacket(proc.request, cpus);
+  GetsingleFromPacket(proc.request, memgb);
+  GetsingleFromPacket(proc.request, gpu);
+  res := RQ_StartExeCommandExFFMPEG(sPath, sProgram, sParams, sGPUParams, cpus, memgb, gpu);
+  Writeint64ToPacket(proc.response, res);
 end;
 
 
@@ -559,6 +759,162 @@ begin
         RQ_HANDLE_GetFileList_string_string_integer_integer(self);
 {$IFDEF RDTP_LOGGING}
         LocalDebug('End Server Handling of GetFileList','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //StartExeCommand
+    $6018:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of StartExeCommand','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_StartExeCommand_string_string_string_single_single(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of StartExeCommand','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //GetCommandStatus
+    $6019:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of GetCommandStatus','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_GetCommandStatus_int64_string_int64_int64_boolean(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of GetCommandStatus','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //EndCommand
+    $6020:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of EndCommand','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_EndCommand_int64(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of EndCommand','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //GetCPUCount
+    $6021:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of GetCPUCount','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_GetCPUCount(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of GetCPUCount','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //GetCommandResourceConsumption
+    $6022:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of GetCommandResourceConsumption','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_GetCommandResourceConsumption_single_single_single_single(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of GetCommandResourceConsumption','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //EndExeCommand
+    $6023:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of EndExeCommand','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_EndExeCommand_int64(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of EndExeCommand','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //GetEXECommandStatus
+    $6024:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of GetEXECommandStatus','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_GetEXECommandStatus_int64_string_boolean_string(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of GetEXECommandStatus','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //StartExeCommandEx
+    $6025:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of StartExeCommandEx','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_StartExeCommandEx_string_string_string_single_single_string(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of StartExeCommandEx','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //GetCommandResourceConsumptionEx
+    $6026:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of GetCommandResourceConsumptionEx','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_GetCommandResourceConsumptionEx_single_single_single_single_single_single_string(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of GetCommandResourceConsumptionEx','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //GetGPUList
+    $6027:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of GetGPUList','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_GetGPUList(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of GetGPUList','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //GetGPUCount
+    $6028:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of GetGPUCount','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_GetGPUCount(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of GetGPUCount','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //StartExeCommandExFFMPEG
+    $6029:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of StartExeCommandExFFMPEG','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_StartExeCommandExFFMPEG_string_string_string_string_single_single_single(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of StartExeCommandExFFMPEG','RDTPCALLS');
 {$ENDIF}
       end;
 

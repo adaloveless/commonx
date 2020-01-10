@@ -37,6 +37,7 @@ type
   TFileInfoRec = record
     name: string;
     date: TDateTime;
+    size: int64;
     function DebugString: string;
   end;
 
@@ -225,10 +226,13 @@ procedure EmptyPath(sPath: string);
 function FindFileRecursive(sBaseDir: string; var sFile: string): boolean;
 function IsAllHex(l: TBetterList<TFileInformation>): boolean;
 function GetNewestFile(sdir: string; bRecurse: boolean = true): TFileInfoRec;
+function GetLargestFile(sdir: string; bRecurse: boolean = true): TFileInfoRec;
+
 function GetFileList(dir: string; filespec: string; attrres, attrmask: ni; bRecurse: boolean): TStringlist;
 function GetFileListH(dir: string; filespec: string; attrres, attrmask: ni; bRecurse: boolean): IHolder<TStringlist>;
 function GetLastSequentialFileName(sdir: string; sExt: string): string;
 function GetNextSequentialFileName(sdir: string; sExt: string): string;
+procedure IterateTree(sDir: string; sFileSpec: string; proc: TProc<TFileInformation>);
 
 var
   DirCommands: TCommandProcessor;
@@ -241,6 +245,21 @@ implementation
 
 uses
   commands_file;
+
+procedure IterateTree(sDir: string; sFileSpec: string; proc: TProc<TFileInformation>);
+var
+  fil: TfileInformation;
+begin
+  var d := TDirectory.create(sDir, sFileSpec, 0,0, false, false, false);
+  while d.getnextfile(fil) do begin
+    proc(fil);
+  end;
+
+  while d.getnextfolder(fil) do begin
+    IterateTree(fil.fullname, sFileSpec, proc);
+  end;
+
+end;
 
 function GetFileListH(dir: string; filespec: string; attrres, attrmask: ni; bRecurse: boolean): IHolder<TStringlist>;
 begin
@@ -1445,6 +1464,34 @@ end;
 
 { TFileNameComparer }
 
+function GetLargestFile(sdir: string; bRecurse: boolean = true): TFileInfoRec;
+var
+  d: TDirectory;
+  fil:  TFileinformation;
+  fr: TfileInfoRec;
+begin
+  result.Size := 0;
+  result.Name := '';
+  d := TDirectory.create(sDir, '*.*', 0, 0, false, false, false);
+  try
+    while d.GetNextFile(fil) do begin
+      if fil.Size > result.size then begin
+        result.size := fil.size;
+        result.name := fil.FullName;
+      end;
+    end;
+
+    while d.GetNextFolder(fil) do begin
+      fr := GetLargestFile(fil.fullname);
+      if fr.size > Result.size then begin
+        result := fr;
+      end;
+    end;
+  finally
+    d.free;
+  end;
+end;
+
 function GetNewestFile(sdir: string; bRecurse: boolean = true): TFileInfoRec;
 var
   d: TDirectory;
@@ -1454,19 +1501,23 @@ begin
   result.Date := 0.0;
   result.Name := '';
   d := TDirectory.create(sDir, '*.*', 0, 0, false, false, false);
-  while d.GetNextFile(fil) do begin
-    if fil.date > result.date then begin
-      result.Date := fil.date;
-      result.name := fil.FullName;
-    end;
-  end;
-
-  while d.GetNextFolder(fil) do begin
-    fr := GetNewestFile(fil.fullname);
-    if fr.date > Result.date then begin
-      result := fr;
+  try
+    while d.GetNextFile(fil) do begin
+      if fil.date > result.date then begin
+        result.Date := fil.date;
+        result.name := fil.FullName;
+      end;
     end;
 
+    while d.GetNextFolder(fil) do begin
+      fr := GetNewestFile(fil.fullname);
+      if fr.date > Result.date then begin
+        result := fr;
+      end;
+
+    end;
+  finally
+    d.free;
   end;
 end;
 

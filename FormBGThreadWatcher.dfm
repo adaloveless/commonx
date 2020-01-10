@@ -1,105 +1,143 @@
 object frmBGThreadWatcher: TfrmBGThreadWatcher
   Left = 0
   Top = 0
-  Width = 451
-  Height = 305
+  Width = 435
+  Height = 332
+  Margins.Left = 6
+  Margins.Top = 6
+  Margins.Right = 6
+  Margins.Bottom = 6
   Align = alClient
   TabOrder = 0
   OnResize = FrameResize
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 451
-    Height = 305
+    Width = 435
+    Height = 332
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
     object TabSheet1: TTabSheet
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Caption = 'Threads and Commands'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Splitter1: TSplitter
         Left = 0
-        Top = 214
-        Width = 443
-        Height = 10
+        Top = 246
+        Width = 427
+        Height = 20
         Cursor = crVSplit
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Align = alBottom
-        ExplicitLeft = 1
-        ExplicitTop = 125
+        ExplicitTop = 428
+        ExplicitWidth = 886
       end
       object lvBackground: TListView
         Left = 0
-        Top = 65
-        Width = 443
-        Height = 149
+        Top = 57
+        Width = 427
+        Height = 189
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Align = alClient
         Columns = <
           item
             Caption = 'ID'
-            Width = 80
+            Width = 65
           end
           item
             Caption = 'CPU'
-            Width = 65
-          end
-          item
-            Caption = 'Active%'
-            Width = 65
-          end
-          item
-            Caption = 'Thread'
-            Width = 275
-          end
-          item
-            Caption = 'Status'
-            Width = 200
-          end
-          item
-            Caption = 'Load'
-          end
-          item
-            Caption = 'Work'
-          end
-          item
-            Caption = 'Cycles'
-            Width = 75
-          end
-          item
-            Caption = 'ColdIntv'
             Width = 60
           end
           item
+            Caption = 'Active%'
+            Width = 60
+          end
+          item
+            Caption = 'Thread'
+            Width = 250
+          end
+          item
+            Caption = 'Status'
+            Width = 250
+          end
+          item
+            Caption = 'Load'
+            Width = 125
+          end
+          item
+            Caption = 'Work'
+            Width = 125
+          end
+          item
+            Caption = 'Cycles'
+            Width = 125
+          end
+          item
+            Caption = 'ColdIntv'
+            Width = 120
+          end
+          item
             Caption = 'Avg Time (200 avg)'
+            Width = 100
           end
           item
             Caption = 'Last Tick'
-            Width = 90
+            Width = 180
           end
           item
             Caption = 'Age'
+            Width = 100
           end
           item
             Caption = 'User%'
+            Width = 100
           end
           item
             Caption = 'Kernel%'
+            Width = 100
           end
           item
             Caption = 'UserTick'
+            Width = 100
           end
           item
             Caption = 'KernelTick'
+            Width = 100
           end
           item
             Caption = 'ActiveTick'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'NanoTick'
-            Width = 75
+            Width = 150
           end>
         DoubleBuffered = True
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = []
         RowSelect = True
         ParentDoubleBuffered = False
+        ParentFont = False
         PopupMenu = popThread
         SmallImages = ImageList2
         TabOrder = 0
@@ -110,9 +148,13 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       end
       object pnlBitmap: TPanel
         Left = 0
-        Top = 224
-        Width = 443
-        Height = 53
+        Top = 266
+        Width = 427
+        Height = 38
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Align = alBottom
         Color = clBackground
         ParentBackground = False
@@ -121,15 +163,23 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       object Panel1: TPanel
         Left = 0
         Top = 0
-        Width = 443
-        Height = 65
+        Width = 427
+        Height = 57
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Align = alTop
         TabOrder = 2
         object rgUpdateSpeed: TRadioGroup
           Left = 1
           Top = 18
-          Width = 441
-          Height = 46
+          Width = 425
+          Height = 38
+          Margins.Left = 6
+          Margins.Top = 6
+          Margins.Right = 6
+          Margins.Bottom = 6
           Align = alClient
           Caption = 'Update Speed'
           Columns = 5
@@ -146,8 +196,12 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
         object StaticText1: TStaticText
           Left = 1
           Top = 1
-          Width = 441
+          Width = 502
           Height = 17
+          Margins.Left = 6
+          Margins.Top = 6
+          Margins.Right = 6
+          Margins.Bottom = 6
           Align = alTop
           Caption = 
             '[hwsrxfpl] = H=Run Hot, W=Has Work, S=Start, R=Started, X=Stop, ' +
@@ -157,13 +211,25 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       end
     end
     object TabSheet8: TTabSheet
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Caption = 'Log'
       ImageIndex = 7
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object memLog: TMemo
         Left = 0
         Top = 0
-        Width = 443
-        Height = 277
+        Width = 427
+        Height = 304
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Align = alClient
         DoubleBuffered = True
         ParentDoubleBuffered = False
@@ -173,22 +239,38 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       end
     end
     object TabSheet7: TTabSheet
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Caption = 'RUDP'
       ImageIndex = 6
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Splitter2: TSplitter
         Left = 0
-        Top = 59
-        Width = 443
-        Height = 37
+        Top = 107
+        Width = 427
+        Height = 32
         Cursor = crVSplit
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Align = alBottom
-        ExplicitTop = 203
+        ExplicitTop = 185
       end
       object lvRUDP: TListView
         Left = 0
         Top = 0
-        Width = 443
-        Height = 59
+        Width = 427
+        Height = 107
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Align = alClient
         Columns = <
           item
@@ -201,7 +283,7 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
           end
           item
             Caption = 'TXRate'
-            Width = 100
+            Width = 200
           end
           item
             Caption = 'RXRate'
@@ -209,69 +291,79 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
           end
           item
             Caption = 'TXTotal'
-            Width = 100
+            Width = 200
           end
           item
             Caption = 'RXTotal'
-            Width = 100
+            Width = 200
           end
           item
             Caption = 'FlexMTU'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'WriteAhead'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'AckTime'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'FlexRetTm'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'Ping'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'ReTX'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'OutOfOrd'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'TXClearRate'
+            Width = 100
           end
           item
             Caption = 'TX'
+            Width = 100
           end
           item
             Caption = 'Interval'
+            Width = 100
           end
           item
             Caption = 'txLog'
+            Width = 100
           end
           item
             Caption = 'rxLog'
+            Width = 100
           end
           item
             Caption = 'rxQueue'
+            Width = 100
           end
           item
             Caption = 'rxData'
+            Width = 100
           end
           item
             Caption = 'Tick'
+            Width = 100
           end
           item
             Caption = 'RXOverhead'
+            Width = 100
           end
           item
             Caption = 'RXTotOverHead'
+            Width = 100
           end>
         ReadOnly = True
         RowSelect = True
@@ -280,9 +372,13 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       end
       object cRUDP: TChart
         Left = 0
-        Top = 96
-        Width = 443
-        Height = 181
+        Top = 139
+        Width = 427
+        Height = 165
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Title.Text.Strings = (
           'UDP Throughput')
         View3D = False
@@ -354,13 +450,25 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       end
     end
     object TabSheet6: TTabSheet
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Caption = 'Ring Stats'
       ImageIndex = 5
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object memRingStats: TMemo
         Left = 0
         Top = 0
-        Width = 443
-        Height = 277
+        Width = 427
+        Height = 304
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Align = alClient
         Lines.Strings = (
           'memRingStats')
@@ -368,13 +476,25 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       end
     end
     object TabSheet2: TTabSheet
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Caption = 'Better Objects'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object lvClasses: TListView
         Left = 0
         Top = 0
-        Width = 443
-        Height = 277
+        Width = 427
+        Height = 304
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Align = alClient
         Columns = <
           item
@@ -383,6 +503,7 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
           end
           item
             Caption = 'Count'
+            Width = 100
           end
           item
             AutoSize = True
@@ -395,13 +516,25 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       end
     end
     object TabSheet3: TTabSheet
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Caption = 'Disk Usage'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object memDisk: TMemo
         Left = 0
         Top = 0
-        Width = 443
-        Height = 277
+        Width = 427
+        Height = 304
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Align = alClient
         Lines.Strings = (
           'memDisk')
@@ -409,48 +542,62 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       end
     end
     object TabSheet4: TTabSheet
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Caption = 'Memory'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object lvMemory: TListView
         Left = 0
         Top = 0
-        Width = 443
-        Height = 277
+        Width = 427
+        Height = 304
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Align = alClient
         Columns = <
           item
             Caption = 'ID'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'Used'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'Free'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'Alloc'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'Waste'
-            Width = 75
+            Width = 150
           end
           item
             Caption = 'Blocks'
+            Width = 100
           end
           item
             Caption = 'Avg Block Size'
+            Width = 100
           end
           item
             Caption = 'Name i f Known'
-            Width = 200
+            Width = 400
           end
           item
             Caption = 'Status if Known'
-            Width = 200
+            Width = 400
           end>
         DoubleBuffered = True
         RowSelect = True
@@ -461,13 +608,25 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       end
     end
     object TabSheet5: TTabSheet
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Caption = 'TabSheet5'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Chart1: TChart
         Left = 0
         Top = 0
-        Width = 443
-        Height = 277
+        Width = 427
+        Height = 304
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
         Title.Text.Strings = (
           'TChart')
         View3DOptions.Elevation = 315

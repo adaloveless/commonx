@@ -6,7 +6,7 @@ unit RDTPBeeperImpLib;
 
 interface
 uses
-  beeper,windows, rdtpProcessor, RDTPBeeperServer, sysutils, debug;
+  beeper,windows, rdtpProcessor, RDTPBeeperServer, sysutils, debug, orderlyinit;
 
 type
   TRDTPBeeperServer = class(TRDTPBeeperServerBase)
@@ -73,10 +73,15 @@ begin
 end;
 
 
+procedure oinit;
+begin
+  RDTPServers.RegisterRDTPProcessor('beeper', TRDTPBeeperServer);
+end;
 
 initialization
 
+init.registerprocs('beeper', oinit, nil, 'RDTPServerList');
 //need uses rdtpserverlist;
-RDTPServers.RegisterRDTPProcessor('beeper', TRDTPBeeperServer);
+
 
 end.

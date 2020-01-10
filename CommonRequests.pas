@@ -1,5 +1,6 @@
 unit CommonRequests;
 
+
 interface
 
 uses numbers, RequestInfo, WebResource, WebString, HTTPClient, ErrorResource, systemx, xmltools, graphics, extctrls, jpeg, variants, sysutils, exceptions;

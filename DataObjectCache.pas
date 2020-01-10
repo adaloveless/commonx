@@ -3,7 +3,7 @@ interface
 //{$Message Warning 'This code using OLD, primitive threading techniques'}
 
 uses
-  DataObjectXref, classes, sysutils, Dataobject, generics.collections,
+  debug, DataObjectXref, classes, sysutils, Dataobject, generics.collections,
   PersistentInterfacedObject, betterobject, sharedobject, stringx;
 
 const
@@ -208,7 +208,10 @@ procedure TDataObjectCache.RegisterDataObject(doTemp: TDataObject);
 begin
 //  LockWrite;
 //  try
-    Add(doTemp);
+    if slobjects.indexof(doTemp.name) >=0 then
+      raise Exception.Create('duplicate object in cache!');
+//    debug.log('register '+doTemp.name);
+     Add(doTemp);
 //  finally
 //    UnLockWrite;
 //  end;

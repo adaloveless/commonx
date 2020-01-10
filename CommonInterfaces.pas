@@ -1,4 +1,5 @@
 unit CommonInterfaces;
+
 //This unit contains interfaces for general-purpose use.
 interface
 const

@@ -99,22 +99,22 @@ end;
 
 procedure LockReplay;
 begin
-  EnterCriticalSection(sect_replay);
+  ecs(sect_replay);
 end;
 
 procedure UnlockReplay;
 begin
-  LeaveCriticalSection(sect_replay);
+  lcs(sect_replay);
 end;
 
 procedure InitReplay;
 begin
-  InitializeCriticalSection(sect_replay);
+  ics(sect_replay);
 end;
 
 procedure FreeReplay;
 begin
-  DeleteCriticalSection(sect_replay);
+  dcs(sect_replay);
 end;
 
 procedure oinit;

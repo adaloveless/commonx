@@ -6,7 +6,7 @@ uses
   debug, exe, numbers, winapi.mmsystem,
   managedthread, classes, typex, systemx,
   soundinterfaces, commandprocessor, soundtools,
-  sysutils, helpers.stream, backgroundthreads,
+  sysutils, helpers_stream, backgroundthreads,
   geometry, stringx, commandicons,
   soundtools_easywindows;
 

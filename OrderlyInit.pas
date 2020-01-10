@@ -45,6 +45,7 @@ type
     function GEtProc(idx: nativeint): PPair;
     procedure SetInitialized(const Value: boolean);
   protected
+    didAfterInit: boolean;
     Finitialized: boolean;
     FProcs: array of TPair;
     FRequiredUnits, FmetRequirements: TStringlist;
@@ -70,6 +71,7 @@ type
     function GetUninitializedUnits: string;
     function GetUnmetRequirements: string;
     procedure DoAfterInit;
+    procedure DLLInit;
 
   end;
 
@@ -78,6 +80,7 @@ type
 
 procedure ConsoleDebug(s: string);
 function init: TOrderlyInitializer;
+procedure InitShutdown;
 
 implementation
 
@@ -123,16 +126,17 @@ function TOrderlyInitializer.CheckAllMet: boolean;
 var
   t: fi;
 begin
+  DoAfterInit;
   result := true;
   for t:= 0 to Self.Count-1 do begin
     if not procs[t].initialized then begin
-      Debug.ConsoleLog('Checking Dependencies for '+procs[t].name);
+{$IFDEF DEBUG_INIT}      Debug.ConsoleLog('Checking Dependencies for '+procs[t].name);{$ENDIF}
       if Procs[t].AllDependenciesAvailable then begin
         if procs[t].DependenciesMet then
           procs[t].doinit;
       end;
       if not procs[t].initialized then begin
-        ConsoleDebug('**'+procs[t].name+' is still not initialized');
+{$IFDEF DEBUG_INIT}              ConsoleDebug('**'+procs[t].name+' is still not initialized');{$ENDIF}
         result := false;
       end;
     end;
@@ -175,8 +179,19 @@ begin
   inherited;
 end;
 
+procedure TOrderlyInitializer.DLLInit;
+begin
+  checkAllMet;
+  checkAllMetFatal;
+
+end;
+
 procedure TOrderlyInitializer.DoAfterInit;
 begin
+  if didafterinit then
+    exit;
+  didafterinit := true;
+
   AfterinitProcs;
 end;
 
@@ -319,6 +334,18 @@ var
   s1,s2: string;
   bAllStarted: boolean;
 begin
+  if @afterinit <> nil then begin
+    Debug.Log('*********** NOTE NOTE NOTE NOTE NOTE*****');
+    Debug.Log('*********** NOTE NOTE NOTE NOTE NOTE*****');
+    Debug.Log('*********** NOTE NOTE NOTE NOTE NOTE*****');
+    Debug.Log('*********** NOTE NOTE NOTE NOTE NOTE*****');
+    Debug.Log('Use of AfterInit is not recommended because the only way to know when all Inits are complete is to manually call init.DoAfterInit (which is also called by CheckAllMet().  It cannot be guaranteed that every app will remember to do that.');
+    Debug.Log('*********** NOTE NOTE NOTE NOTE NOTE*****');
+    Debug.Log('*********** NOTE NOTE NOTE NOTE NOTE*****');
+    Debug.Log('*********** NOTE NOTE NOTE NOTE NOTE*****');
+    Debug.Log('*********** NOTE NOTE NOTE NOTE NOTE*****');
+
+  end;
   Initialized := false;//<<----- since we're adding new units, we are no longer initialized
   //add an entry to the list
   setlength(FProcs, length(FProcs)+1);
@@ -332,7 +359,9 @@ begin
   result.finalize := finalize;
   result.prefinalize := prefinalize;
   result.late_finalize := late_finalize;
+{$IFDEF DEBUG_INIT}
   Debug.Log(extractfilename(DLLName)+': Registering '+result.name);
+{$ENDIF}
 
 
   //record the dependencies for the unit and also check to see if each dependency
@@ -348,6 +377,7 @@ begin
   result.cs_dependencies := '';
   s1 := '';
   s2 := sDependenciesSeparatedByCommas;
+  s2 := StringReplace(s2, ' ', '', [rfReplaceAll]);
   while SplitString(s2, ',', s1,s2) do begin
     if lowercase(s1) <> lowercase(result.name) then begin
       result.dependencies := result.dependencies + '['+lowercase(s1)+']';
@@ -390,7 +420,8 @@ begin
 
   //if all dependencies have been started then we can just go ahead and init now
   if bAllStarted then begin
-    result.DoInit;
+    if not IsDLL then
+      result.DoInit;
     self.FmetRequirements.Add(lowercase(result.name));
   end else begin
     RememberRequiredUnits(result.dependencies);
@@ -399,8 +430,8 @@ begin
   end;
 
   //if this unit was depended on by any other units then, initialize those units.
-
-  CheckAllMet;
+  if not IsDLL then
+    CheckAllMet;
 
 end;
 
@@ -438,6 +469,7 @@ begin
 
 
 end;
+
 
 function init: TOrderlyInitializer;
 begin
@@ -586,12 +618,18 @@ begin
   Debug.Log(nil, s);
   Debug.ConsoleLog(s);
 end;
+
+procedure InitShutdown;
+begin
+  ginit.free;
+  ginit := nil;
+end;
 initialization
 //  ginit := nil;
 
 finalization
 //  ConsoleDebug(system.InitContext.pvUnitTable);
-  ginit.free;
+  InitShutdown;
 
 {$MESSAGE '*******************DONE COMPILING OrderlyInit.pas'}
 end.

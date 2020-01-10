@@ -256,7 +256,8 @@ begin
   queue.beginstart;
   queueout := TPM.Needthread<TSimpleQueue>(nil);
   queueout.beginstart;
-
+  queue.maxitemsinqueue := 512;
+  queueout.maxitemsinqueue := 512;
 
   inherited Create;
 

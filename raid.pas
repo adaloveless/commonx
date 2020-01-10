@@ -1,8 +1,10 @@
 unit raid;
 {$DEFINE RELEASE}
-{x$DEFINE USE_LINKED_RAID}
+{$DEFINE USE_LINKED_RAID}
 {$DEFINE SHIFTOPT}
 {$DEFINE RAB_PACKED_DIRTY}
+{x$DEFINE SLOW_DIRTY_CHECKS}
+{$DEFINE DIRTY_SHORTCUT}
 interface
 
 uses linked_list_btree_compatible, sysutils, btree, typex, debug, orderlyinit, virtualdiskconstants, betterobject, systemx, tickcount, linked_list, generics.collections.fixed, better_collections, stringx;
@@ -92,10 +94,12 @@ type
     treeItemBlock: TRaidTreeItem_ByBlock;
     treeItemDirtyTime: TRaidTreeItem_ByDirtyTime;
     treeItemLastUsed: TRaidTreeItem_ByLastUsedTime;
-    legit: boolean; //was this buffer legitimately used, or just prefetched?
+    treeItemLastUsedClean: TRaidTreeItem_ByLastUsedTime;
+    legit: boolean; //was this buffer legitimately used, or just prefetched, used by prioitization statistics
     procedure CopyFrom(rab: TRaidAssembledBuffer);
     procedure init;override;
     function GetSizeInBytes: ni;inline;
+    procedure AssertDirtyCount;
 
     procedure SEtSizeInBytes(const Value: ni);inline;
     property PayloadSizeInBytes: ni read GetSizeInBytes write SEtSizeInBytes;
@@ -103,6 +107,7 @@ type
     procedure SetDirtyByte(idx: ni; Value: boolean);inline;
 
     function GetDirty(idx: ni): boolean;inline;
+    function SlowDirtyCount: ni;
     function SlowAnyDirty: boolean;inline;
 
     procedure SetDirtyRange(const idx, cnt: ni; const value: boolean);inline;
@@ -115,7 +120,7 @@ type
     function AllDirty: boolean;inline;
     function FirstDirty(iAfter: ni): ni;inline;
     function FirstClean(iAfter: ni): ni;inline;
-    procedure cleardirty;inline;
+    procedure cleardirty;
     function byteptr(addr: int64): pbyte;inline;
     function CoversBlock(lba: int64): boolean;inline;
     property StartingBlock: int64 read FStartingBlock write SetStartingBlock;
@@ -266,7 +271,7 @@ type
   end;
 
 {$IFDEF USE_LINKED_RAID}
-  TRaidList = class(TDirectlyLinkedList)
+  TRaidList = class(TDirectlyLinkedList<TRaidAssembledBuffer>)
 {$ELSE}
   TRaidList = class(TBetterList<TRaidAssembledBuffer>)
 {$ENDIF}
@@ -298,6 +303,20 @@ begin
   end;
 
 end;
+function TRaidAssembledBuffer.SlowDirtyCount: ni;
+var
+  t: ni;
+begin
+  result := 0;
+  for t := 0 to RAID_STRIPE_SIZE_IN_BLOCKS-1 do begin
+{$IFDEF RAB_PACKED_DIRTY}
+    if __dirty[t] then inc(result);
+{$ELSE}
+    result := _dirty[t];
+{$ENDIF}
+  end;
+
+end;
 function TRaidAssembledBuffer.VatIndex: int64;
 begin
   result := FStartingBlock shr BIG_BLOCk_BLOCK_SHIFT;
@@ -308,7 +327,9 @@ var
   t: ni;
 begin
 {$IFDEF RAB_PACKED_DIRTY}
+{$IFDEF DIRTY_SHORTCUT}
   exit(DirtyCount = RAID_STRIPE_SIZE_IN_BLOCKS);
+{$ENDIF}
 {$ENDIF}
   result := true;
   for t := low(_dirty) to high(_dirty) do begin
@@ -335,6 +356,13 @@ end;
 function TRaidAssembledBuffer.AnyDirty: boolean;
 begin
   exit(DirtyCount > 0);
+end;
+
+procedure TRaidAssembledBuffer.AssertDirtyCount;
+begin
+  var sc := SlowDirtyCount;
+  if sc <> DirtyCount then
+    Debug.Log('!!');
 end;
 
 function TRaidAssembledBuffer.byteptr(addr: int64): pbyte;
@@ -472,7 +500,7 @@ function TRaidAssembledBuffer.FirstClean(iAfter: ni): ni;
 begin
   inc(iAFter);
   result := iAfter;
-  while (__dirty[result]) and (result < +RAID_STRIPE_SIZE_IN_BLOCKS) do
+  while (result < +RAID_STRIPE_SIZE_IN_BLOCKS) and (__dirty[result]) do
     inc(result);
 
 end;
@@ -481,7 +509,7 @@ function TRaidAssembledBuffer.FirstDirty(iAfter: ni): ni;
 begin
   inc(iAfter);
   result := iAfter;
-  while (not __dirty[result]) and (result < +RAID_STRIPE_SIZE_IN_BLOCKS) do
+  while (result < +RAID_STRIPE_SIZE_IN_BLOCKS) and (not __dirty[result]) do
     inc(result);
 
 end;
@@ -496,9 +524,11 @@ end;
 
 function TRaidAssembledBuffer.GetDirty(idx: ni): boolean;
 begin
+  if (idx<0) or (idx>=RAID_STRIPE_SIZE_IN_BYTES) then
+    raise ECritical.create('cannot getdirty of idx '+idx.tostring);
   if DirtyCount = RAID_STRIPE_SIZE_IN_BYTES then exit(true);
 {$IFDEF RAB_PACKED_DIRTY}
-  result := ((_Dirty[idx shr 3] shr (idx and 3)) and 1) = 1
+  result := ((_Dirty[idx shr 3] shr (idx and 7)) and 1) = 1;
 {$ELSE}
   result := _Dirty[idx];
 {$ENDIF}
@@ -549,7 +579,8 @@ end;
 procedure TRaidAssembledBuffer.CopyFrom(rab: TRaidAssembledBuffer);
 begin
   single_size := rab.single_size;
-  movemem32(@single[0], @rab.single[0], sizeof(self.single));
+  single := rab.single;
+//  movemem32(@single[0], @rab.single[0], sizeof(self.single));
   _dirty := rab._dirty;
 {$IFDEF RAB_PACKED_DIRTY}
   DirtyCount := rab.Dirtycount;
@@ -560,6 +591,8 @@ begin
   startingblock := rab.startingblock;
   lastused := rab.lastused;
   readfromdisk := rab.readfromdisk;
+  legit := rab.legit;
+
 //  Self.treeItemBlock := rab.treeItemBlock;
 //  self.treeItemDirtyTime := rab.treeItemDirtyTime;
 //  self.treeItemLastUsed := rab.treeItemLastUsed;
@@ -577,7 +610,7 @@ begin
   readfromdisk := false;
   legit := false;
   Archive := false;
-
+  ClearDirty;
 end;
 
 procedure TRaidAssembledBuffer.cleardirty;
@@ -868,8 +901,12 @@ end;
 procedure TRaidAssembledBuffer.SetDirty(idx: ni; cnt: ni; const Value: boolean);
 var
   tr: TLocalList<TRaidTreeItem_ByDirtyTime>;
+  cx: ni;
+  sc: ni;
 begin
+  cx := cnt;
 {$IFDEF RAB_PACKED_DIRTY}
+{$IFDEF DIRTY_SHORTCUT}
   //!!! IMPORTANT SHORT CUT vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   // this is the quickest way to mark everything dirty
   // if the dirty count matches the buffer size, then
@@ -884,36 +921,56 @@ begin
   if (value = false) and (DirtyCount=RAID_STRIPE_SIZE_IN_BYTES) then
     raise Ecritical.create('cannnot set byte clean after all-dirty without calling cleardirty');
   //--------------------------------
-
-
-  if GetDirty(idx) = value then
-    exit;
-
-  if value then begin
-    _Dirty[idx shr 3] := _Dirty[idx shr 3] or (1 shl (idx and 3));
-  end else begin
-    _Dirty[idx shr 3] := _Dirty[idx shr 3] and (not (1 shl (idx and 3)));
-  end;
-  if value then
-    inc(DirtyCount)
-  else
-    dec(DirtyCount);
-{$ELSE}
-  _Dirty[idx] := value;
 {$ENDIF}
-  if not anydirty then begin
-    tr := nil;
-    if (treeItemDirtyTime <> nil) and (treeItemDirtyTime.tree <> nil) then begin
-      tr := treeItemDirtyTime.tree as TLocalList<TRaidTreeItem_ByDirtyTime>;
-      tr.Remove(treeItemDirtyTime,true);
-      FAnyDirty := true;
-      Fdirtytime := GEtTicker;
-      tr.Add(treeItemDirtyTime);
 
-    end else begin
-      FAnyDirty := Value;
-      Fdirtytime := GEtTicker;
+  while cx > 0 do begin
+    if (GetDirty(idx) <> value) then begin
+{$IFDEF SLOW_DIRTY_CHECKS}
+        sc := SlowDirtyCount;
+        if sc  <> DirtyCount then
+          Debug.Log('!!!');
+{$ENDIF}
+
+      if value then begin
+        _Dirty[idx shr 3] := _Dirty[idx shr 3] or (1 shl (idx and 7));
+      end else begin
+        _Dirty[idx shr 3] := _Dirty[idx shr 3] and (not (1 shl (idx and 7)));
+      end;
+      if value then begin
+        inc(DirtyCount);
+{$IFDEF SLOW_DIRTY_CHECKS}
+        sc := SlowDirtyCount;
+        if sc  <> DirtyCount then
+          Debug.Log('!!!');
+{$ENDIF}
+      end else begin
+        dec(DirtyCount);
+{$IFDEF SLOW_DIRTY_CHECKS}
+        sc := SlowDirtyCount;
+        if sc  <> DirtyCount then
+          Debug.Log('!!!');
+{$ENDIF}
+      end;
+    {$ELSE}
+      _Dirty[idx] := value;
+    {$ENDIF}
+      if not anydirty then begin
+        tr := nil;
+        if (treeItemDirtyTime <> nil) and (treeItemDirtyTime.tree <> nil) then begin
+          tr := treeItemDirtyTime.tree as TLocalList<TRaidTreeItem_ByDirtyTime>;
+          tr.Remove(treeItemDirtyTime,true);
+          FAnyDirty := true;
+          Fdirtytime := GEtTicker;
+          tr.Add(treeItemDirtyTime);
+
+        end else begin
+          FAnyDirty := Value;
+          Fdirtytime := GEtTicker;
+        end;
+      end;
     end;
+    dec(cx);
+    inc(idx);
   end;
 end;
 

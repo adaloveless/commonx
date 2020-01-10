@@ -264,6 +264,7 @@ procedure NotImplemented;
 function Null20(v: variant): variant;
 function EscSeq(s: string): string;
 function objaddr(o: TObject): string;
+function DayToMs(d: double): int64;
 
 
 
@@ -511,7 +512,10 @@ begin
 end;
 
 
-
+function DayToMs(d: double): int64;
+begin
+  result := round(d*(24*60*60*1000));
+end;
 
 
 

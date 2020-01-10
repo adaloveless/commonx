@@ -684,7 +684,7 @@ implementation
 
 uses
   gamecomponentsaudio,
-  helpers.stream;
+  helpers_stream;
 
 { TGameObject }
 

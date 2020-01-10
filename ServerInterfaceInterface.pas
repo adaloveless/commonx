@@ -36,6 +36,7 @@ type
     function FireForgetQuery(cache: TDataObjectCache; sQuery: string; iSessionID: integer; bSerialize: boolean= false): boolean;
     function RecordQuery(cache: TDataObjectCache; out obj: TDataObject; sQuery: string; iSessionID: integer; bExpectMany: boolean; iTimeoutMS: integer = STANDARD_TIMEOUT): boolean;
     function GetNextID(sType: string): int64;
+    function GetNextIDEx(sType: string; iReserveCount: int64): int64;
     function SetNextID(sType: string; iID: int64): boolean;
 
 

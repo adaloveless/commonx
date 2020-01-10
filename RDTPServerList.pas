@@ -40,8 +40,9 @@ type
   TRegisterModulesProc = function (mainmod: TRDTPServerList): boolean;
 
 function RegisterModules(mainmod: TRDTPServerList): boolean;export;
+function DLLShutdown(mainmod: TRDTPServerList): boolean;export;
 
-exports RegisterModules;
+exports RegisterModules, DLLShutDown;
 
 
 var
@@ -162,6 +163,8 @@ function RegisterModules(mainmod: TRDTPServerList): boolean;export;
 var
   t: nativeint;
 begin
+  init.DLLInit;
+
   result := false;
   try
     MainMod.LockWrite;
@@ -205,6 +208,12 @@ begin
 if not external_rdtp_server then
   RDTPServers.free;
 
+end;
+
+function DLLShutdown(mainmod: TRDTPServerList): boolean;export;
+begin
+  orderlyinit.initshutdown;
+  result := true;
 end;
 
 initialization

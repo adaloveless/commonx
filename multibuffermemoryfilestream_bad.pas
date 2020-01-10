@@ -9,7 +9,7 @@ interface
 {x$DEFINE DEBUG_MEMORY_FILE_STREAM}
 
 
-uses typex, helpers.stream, numbers, systemx, sysutils, classes, commandprocessor, winapi.windows, debug,  commandicons, tickcount, stringx;
+uses typex, helpers_stream, numbers, systemx, sysutils, classes, commandprocessor, winapi.windows, debug,  commandicons, tickcount, stringx;
 
 const
   MINIMUM_READ_GUARANTEE = 0;

@@ -3,7 +3,7 @@ unit https;
 interface
 {$I DelphiDefs.inc}
 {$IFDEF MSWINDOWS}
-uses MSXML2_TLB, sysutils, variants, typex, commandprocessor, classes, debug, IdSSLOpenSSL, systemx, IdSSLOpenSSLHeaders, betterobject, helpers.stream;
+uses MSXML2_TLB, sysutils, variants, typex, commandprocessor, classes, debug, IdSSLOpenSSL, systemx, IdSSLOpenSSLHeaders, betterobject, helpers_stream;
 
 
 const
@@ -25,6 +25,7 @@ type
     url: string;
     PostData: string;
     Referer: string;
+    Cookie: string;
     ContentType: string;
     PostBody: string;
   end;
@@ -36,7 +37,9 @@ type
     contentType: string;
     contentRange: string;
     error: string;
+    cookie_headers: array of string;
     bodystream: IHolder<TStream>;
+    procedure AddCookieHeader(s: string);
   end;
 
 
@@ -172,7 +175,7 @@ begin
     htp.setRequestHeader('Content-Type', ContentType);
     htp.setRequestHeader('Content-Length', inttostr(length(PostData)));
     htp.send(PostData);
-    result := htp.responsetext;
+    result := ansistring(htp.responsetext);
   finally
 //    htp.free;
   end;
@@ -260,10 +263,10 @@ begin
         https_setheaderifset(htp, 'Accept-Ranges', request.acceptranges);
         https_setheaderifset(htp, 'Range', request.range);
         https_setheaderifset(htp, 'Referer', request.referer);
+        https_setheaderifset(htp, 'Cookie', request.Cookie);
+        https_setheaderifset(htp, 'CookieEx', request.Cookie);
+        https_setheaderifset(htp, request.addHead, request.addHeadValue);
 
-
-        if request.addHead <> '' then
-          htp.setRequestHeader(self.request.addHead, self.request.addHeadValue);
         if self.request.method = mGet then
           htp.send('')
         else
@@ -272,6 +275,10 @@ begin
         results.ResultCode := htp.status;
         results.contentRange := htp.getResponseHeader('Content-Range');
         results.contentType := htp.getResponseHeader('Content-Type');
+        var s := htp.getResponseHeader('Set-Cookie');
+        if s <> '' then  begin
+          results.AddCookieHeader(s);
+        end;
         results.bodystream := THolder<TStream>.create;
         self.Results.bodystream.o := olevarianttomemoryStream(htp.responsebody);
 
@@ -316,6 +323,14 @@ class function TExtraHeader.make(n, v: string): TExtraHeader;
 begin
   result.name := n;
   result.value := v;
+end;
+
+{ THTTPResults }
+
+procedure THTTPResults.AddCookieHeader(s: string);
+begin
+  setlength(self.cookie_headers, length(self.cookie_headers)+1);
+  cookie_headers[high(cookie_headers)] := s;
 end;
 
 initialization

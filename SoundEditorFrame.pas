@@ -9,7 +9,7 @@ interface
 uses
   soundinterfaces, typex, colorconversion, Geometry, Forms, Classes, StdCtrls, ExtCtrls, Controls, graphics, soundtools, math,
   debug, windows, sysutils, betterobject, Generics.Collections.fixed, systemx, numbers, stringx,managedthread, soundsample,
-  memoryfilestream, Menus, GlassControls, advancedgraphics, framebase, dialogs, fileex, helpers.stream, colorblending,
+  memoryfilestream, Menus, GlassControls, advancedgraphics, framebase, dialogs, fileex, helpers_stream, colorblending,
   Vcl.CheckLst, Vcl.ComCtrls, graphicwincontrol, SoundDevice_PortAudio, SoundConversion, soundtools_easywindows;
 
 const

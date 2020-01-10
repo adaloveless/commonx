@@ -185,7 +185,8 @@ begin
           //showmessage('symbol ' +sym.name+' has no parent unit');
           continue;
         end;
-        sl.add('<a href="'+sym.Parent.Name+'.html#'+sym.Name+'">'+sym.Name+'</a> in Unit <a href="'+sym.Parent.Name+'.html">'+sym.Parent.Name+'</a><BR>');
+        var fullname := sym.FullyQualifiedName;
+        sl.add('<a href="GetClass.ms?symbol='+sym.Parent.Name+'">'+sym.Name+'</a> in Unit/Scope <a href="GetUnit.ms?symbol='+fullname+'">'+sym.Parent.Name+'</a><BR>');
         sl.add(sym.Documentation.text+'<BR>');
       end;
     end;

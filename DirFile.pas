@@ -4,7 +4,7 @@ unit DirFile;
 //reusable in other situations.
 
 interface
-uses sysutils, classes, filefind, helpers.stream, numbers,
+uses sysutils, classes, filefind, helpers_stream, numbers,
 {$IFDEF WINDOWS}
     winapi.windows,
 {$ENDIF}

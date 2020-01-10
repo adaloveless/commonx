@@ -150,7 +150,7 @@ begin
 //    ioh.CheckForDataOnSource(0);
   until iWritten >= iCount;
 
-
+  ioh.WriteBufferFlush;
 //  ioh.WriteBufferFlush;
 //  ioh.WriteBufferClose;
 //  Debug('Wrote '+inttostr(iCount)+' bytes to iohandler.');

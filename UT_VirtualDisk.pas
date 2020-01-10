@@ -3,7 +3,7 @@ unit UT_VirtualDisk;
 interface
 
 uses
-  unittest, globaltrap, typex, virtualdisk, virtualdisk_advanced, systemx, sysutils, classes, debug, helpers.stream, dirfile, memoryfilestream, raid, virtualdiskconstants;
+  unittest, globaltrap, typex, virtualdisk, virtualdisk_advanced, systemx, sysutils, classes, debug, helpers_stream, dirfile, memoryfilestream, raid, virtualdiskconstants;
 
 
 const
@@ -650,9 +650,10 @@ begin
     f2 := GEtTempPath+'vda.vda';
     setlength(Fpayloads, 5);
     FPayloads[0] := GEtTempPath+'vda.vdpayload';
-    for t := 1 to to TOTAL_PAYLOADS-1 do begin
+    for t := 1 to TOTAL_PAYLOADS-1 do begin
       Fpayloads[t] := GEtTempPath+'vda'+t.tostring+'.vdpayload';
-      if fileexists(FPayloads[t])
+      if fileexists(FPayloads[t]) then
+        deletefile(FPayloads[t]);
     end;
 
 

@@ -5,7 +5,7 @@ unit FileCache;
 
 interface
 uses
-  RequestInfo, classes, windows, dialogs, sysutils,orderlyinit;
+  typex, systemx, RequestInfo, classes, windows, dialogs, sysutils,orderlyinit;
 
 const
   MAX_FILE_COUNT = 5000;
@@ -35,12 +35,12 @@ type
 
 var
   slFileIndex: TStringList;
-  sectFileCache: _RTL_CRITICAL_SECTION;
+  sectFileCache: TCLXCriticalSection;
 
 
 implementation
 
-uses WebFunctions, WebConfig, systemx, WebResource, EasyImage;
+uses WebFunctions, WebConfig, WebResource, EasyImage;
 
 //------------------------------------------------------------------------------
 function Streamfile(rqInfo: TRequestInfo): boolean;
@@ -198,13 +198,13 @@ end;
 procedure LockFileCache;
 //Locks the file cache so that other threads cannot write to it.  Uses a critical section to lock.
 begin
-  EnterCriticalSection(sectFileCache);
+  ecs(sectFileCache);
 end;
 
 procedure UnlockFileCache;
 //Unlocks the cache so other threads have access. Uses a critical section to lock.
 begin
-  LeaveCriticalSection(sectFileCache);
+  lcs(sectFileCache);
 end;
 
 
@@ -366,7 +366,7 @@ end;
 
 procedure oinit;
 begin
-  InitializeCriticalSection(sectFileCache);
+  ics(sectFileCache);
   slFileIndex := TStringList.create;
   slFileIndex.Sorted := true;
 
@@ -375,7 +375,7 @@ end;
 procedure ofinal;
 begin
 
-  DeleteCriticalSection(sectFileCache);
+  dcs(sectFileCache);
   slFileIndex.free;
   slFileIndex := nil;
 

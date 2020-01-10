@@ -26,7 +26,6 @@ type
 
   Tmm = class(TfrmFMXBase)
     q: TPanel;
-    gm: TGestureManager;
     TempMessageTimer: TTimer;
     BusyTimer: TTimer;
     procedure btnGestureTestGesture(Sender: TObject;
@@ -36,7 +35,6 @@ type
     procedure BusyTimerTimer(Sender: TObject);
   private
     function GetShowingForm: TfrmFMXBase;
-
   protected
     lastbusytimertime: ticker;
     FTemporaryMessageQueue: IHolder<TStringList>;
@@ -74,9 +72,6 @@ type
     procedure HideFancy;
     procedure Fancyupdate(intv: ni);
     procedure FancyMessage(s: string);
-
-
-
   end;
 
 type
@@ -111,10 +106,8 @@ begin
     f := T.create(application);
     Debug.Log(CLR_UI+'***Created form: '+ f.classname);
   end;
-
   Debug.Log(CLR_UI+'***Showing form: '+ f.classname);
   MM_ShowForm(f);
-
 end;
 
 procedure Tmm.ShowFormClassAndSetup<T>(var f: T; p: TProc);
@@ -319,10 +312,10 @@ begin
       var c := cfrm.Children[t];
       if c.owner = owner then begin
         if c.parent <> cto then begin
-          Debug.Log('taking control: '+c.name+' from '+cfrm.name+' to '+cto.name);
+//          Debug.Log('taking control: '+c.name+' from '+cfrm.name+' to '+cto.name);
           hitend := false;
           c.Parent := cto;
-          Debug.Log('control now belongs to '+c.parent.name);
+//          Debug.Log('control now belongs to '+c.parent.name);
           break;
         end;
       end;
@@ -412,7 +405,7 @@ begin
     repeat
       cc := proc(alignset, cfrm);
       if assigned(cc) then begin
-        Debug.Log('taking control: '+cc.name);
+//        Debug.Log('taking control: '+cc.name);
         cc.parent := cto;
         if cc is TScaledLayoutProportional then
           TScaledLayoutProportional(cc).ForceRealign;
@@ -481,6 +474,8 @@ end;
 procedure Tmm.TempMessageEngine;
 begin
   var mq : PMQinfo := @FTempMsginfo;
+  if (not mq.enabled) and (FTemporaryMessageQueue=nil) then
+    exit;
   if (not mq.enabled) and (FTemporaryMessageQueue.o.count = 0) then
     exit;
 

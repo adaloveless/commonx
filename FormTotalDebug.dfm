@@ -12,8 +12,6 @@ object frmTotalDebug: TfrmTotalDebug
   Font.Style = []
   OldCreateOrder = False
   OnCreate = frmBaseCreate
-  Right = 542
-  Bottom = 455
   PixelsPerInch = 96
   TextHeight = 13
 end

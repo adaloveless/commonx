@@ -3,8 +3,9 @@ unit helpers.sockets;
 interface
 
 uses
-  typex,systemx, sockfix, better_sockets, classes, numbers, debug, sysutils;
+  typex,systemx, sockfix, better_sockets, classes, numbers, debug, sysutils,idtcpconnection,idglobal, better_indy;
 
+procedure Socket_GuaranteeWrite(s: TidTCPConnection; p: Pbyte; iLength: ni);overload;
 procedure Socket_GuaranteeRead(s: TCustomIPClient; p: pbyte; iLength: ni);overload;
 procedure Socket_GuaranteeWrite(s: TCustomIPClient; p: pbyte; iLength: ni);overload;
 procedure Socket_GuaranteeWriteStreamPart(str: TStream; rangestart, rangeend_notincluding: int64; s: TCustomIPClient);overload;
@@ -18,7 +19,7 @@ function Socket_Read(s: TCustomIPClient; p: pbyte; iLength: ni): ni;overload;
 implementation
 
 uses
-  helpers.stream;
+  helpers_stream;
 
 
 procedure Socket_GuaranteeWriteStreamPart(str: TStream; rangestart, rangeend_notincluding: int64; s: TCustomIPClient);overload;
@@ -67,11 +68,17 @@ var
 begin
   iRead := 0;
   while iRead < iLength do begin
+
     if s.WaitForData(1000) then begin
       iJustRead := s.ReceiveBuf(p[iRead], iLength-iRead);
       if ijustRead = 0 then
         raise ENetworkError.create('connection dropped');
-    end;
+      if iJustRead < 0 then  begin
+        Debug.Log('socket returned error');
+        sleep(200);
+      end;
+    end else
+      iJustRead := 0;
     inc(iRead, iJustRead);
   end;
 
@@ -86,10 +93,18 @@ begin
   while iWrote < iLength do begin
     iJustWrote := s.SendBuf(p[iWrote], iLength-iWrote);
     if iJustWrote < 0 then begin
-      raise ESocketError.create('Unable to guarantee socket write');
+      Debug.Log('Unable to guarantee socket write');
+      raise ECritical.create('unable to guarantee socket write');
+//      sleep(100);
     end;
     inc(iWrote, iJustWrote);
   end;
+end;
+
+
+procedure Socket_GuaranteeWrite(s: TidTCPConnection; p: Pbyte; iLength: ni);overload;
+begin
+  IOHandler_GuaranteeWrite(s.IOHandler, p, ilength);
 end;
 
 

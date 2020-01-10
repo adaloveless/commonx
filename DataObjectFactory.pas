@@ -213,14 +213,37 @@ function TDataObjectFactory.LowLowLevelDOCreate(out obj: TDataObject; cache: TDa
 //creates the appropriate Data object class, given a class name
 var
   ext: TExtendedDoVars;
+  xr: PClassXref;
 begin
   ext.DataCenter := Datacenter;
   ext.DataTier := DataTier;
   ext.SessionID := sessionid;
 
-  obj := cType.create(self, params, cache, ext);
-  result := true;
+  var tok := TDataObjectToken.Create;
+  try
+    xr := self.XRefPool.FindXRefByClass(cType);
+    if xr = nil then
+      raise Exception.Create('xr=nil');
+    tok.TypeName :=xr.sString;
+    tok.VariantParams :=params;
+    tok.DataCenter := datacenter;
+    tok.datatier := datatier;
 
+    var ex := cache.GetExistingObject(tok.name);
+    if ex <> nil then
+      obj := ex
+    else begin
+      obj := cType.create(self, params, cache, ext);
+      if ex <> nil then begin
+        obj.free;
+        obj := ex;
+      end;
+    end;
+
+    result := true;
+  finally
+    tok.free;
+  end;
 end;
 //------------------------------------------------------------------------------
 procedure TDataObjectFactory.RegisterDataObjectClass(

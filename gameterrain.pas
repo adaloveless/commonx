@@ -6,7 +6,7 @@ dont use me
 interface
 
 uses
-  graphics, tickcount, debug, math, numbers, stringx, sysutils, typex,systemx, classes, terraindata, osm, hgt_sampler, sharedobject, commandprocessor, virtualdisk, easyimage, types,  colorconversion, multibuffermemoryfilestream, helpers.stream, advancedgraphics, maptilesampler, osm_renderer,
+  graphics, tickcount, debug, math, numbers, stringx, sysutils, typex,systemx, classes, terraindata, osm, hgt_sampler, sharedobject, commandprocessor, virtualdisk, easyimage, types,  colorconversion, multibuffermemoryfilestream, helpers_stream, advancedgraphics, maptilesampler, osm_renderer,
   bboxlock, osm_xml_parser, rdtpdb, osmdb, fastbitmap, colorblending;
 const
   SHADOW_METER_MAX = 100;

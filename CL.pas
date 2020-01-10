@@ -51,7 +51,7 @@
 // CL_DEVICE_DOUBLE_FP_CONFIG      CL_DEVICE_DOUBLE_FP_CONFIG_INFO
 
 unit CL;
-
+{$R-}
 interface
 
 {$INCLUDE 'CL.inc'}

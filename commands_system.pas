@@ -1,5 +1,6 @@
 unit commands_system;
 
+
 interface
 
 uses
@@ -8,6 +9,12 @@ uses
 type
 
 
+  Tcmd_Free = class(TCOmmand)
+  protected
+    procedure DoExecute; override;
+  public
+    o: TObject;
+  end;
   TSleepCommand = class(TCommand)
   private
     FLength: cardinal;
@@ -47,6 +54,8 @@ type
 procedure AddSleepCommand(cp: TCommandProcessor; duration: cardinal);
 procedure GarbageCollect(o: TObject; by: TCommandProcessor= nil);
 procedure SelfDestruct(o: TObject; time: Ticker; by: TCommandProcessor = nil);
+function BeginFree(o: TObject; by: TCommandProcessor = nil): Tcmd_Free;
+procedure EndFree(c: Tcmd_Free);
 function FloatCompare(f1,f2: double): integer;
 
 var
@@ -179,6 +188,20 @@ BEGIN
 
 
 END;
+
+function BeginFree(o: TObject; by: TCommandProcessor = nil): Tcmd_Free;
+begin
+  result := Tcmd_Free.create;
+  result.o := o;
+  result.start;
+end;
+
+procedure EndFree(c: Tcmd_Free);
+begin
+  c.WaitFor;
+  c.free;
+end;
+
 procedure GarbageCollect(o: TObject; by: TCommandProcessor= nil);
 var
   c: Tcmd_garbage;
@@ -260,6 +283,14 @@ begin
   Ftime := Value;
 {$R-}
   FutureExecutionTime := value+tmCReate;
+end;
+
+{ Tcmd_Free }
+
+procedure Tcmd_Free.DoExecute;
+begin
+  inherited;
+  o.free;
 end;
 
 initialization

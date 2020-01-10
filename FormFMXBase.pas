@@ -1,17 +1,20 @@
 unit FormFMXBase;
 {$DEFINE FADE_OPEN}
+{$DEFINE BLUR}
 interface
 
 uses
 {$IFDEF MSWINDOWS}
   windows, Winapi.Messages, Winapi.IpTypes, fmx.platform.win, fmx.platform,
 {$ENDIF}
-  guihelpers_fmx, SCALEDlayoutproportional, commandprocessor, systemx, typex, tickcount,
+  guihelpers_fmx, SCALEDlayoutproportional, commandprocessor, systemx, typex, tickcount,numbers,
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, fmx_messages,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, system.messaging,
-  FMX.Objects, anoncommand;
+  FMX.Objects, anoncommand, fmx_glass;
 
 const
+  MAX_BLUR = 4;
+  BLUR_TIME = 250;
   CURTAIN_MIN_SPEED_CLOSE = 2.0;
   CURTAIN_IIR_CURRENT_CLOSE = 0.96;
   CURTAIN_IIR_NEW_CLOSE = 0.04;
@@ -51,7 +54,7 @@ type
     watch_last_active: boolean;
     default_curtains: array[0..CURTAIN_COUNT-1] of TCurtainPoint;
     curtainsdata : TCurtains;
-
+    glass: TGlass;
     ActiveCommands: TCommandList<TCommand>;
     {$IFDEF MSWINDOWS}
     FMsgSys: TMessagingSystem;
@@ -64,6 +67,7 @@ type
   public
     mock: TForm;
     WorkingHard: boolean;
+
     function WatchCommands: boolean;virtual;
     { Public declarations }
 
@@ -90,11 +94,16 @@ type
     procedure Curtains_Frame_Fixed(interval: nativeint);virtual;
     procedure Curtains_Open_SetStartingState_Slide;
     procedure Curtains_Open_SetStartingState_Fade;
+    procedure Curtains_Open_SetStartingState_Blur;
     procedure Curtains_Open_SetStartingState;virtual;
-    procedure Curtains_Close_SetStartingState;virtual;
+    procedure Curtains_Close_SetStartingState_Slide;virtual;
+    procedure Curtains_Close_SetStartingState_Blur;virtual;
+    function Curtains_Close_Slide(intv: nativeint): boolean;virtual;//return TRUE when finished
     function Curtains_Close(intv: nativeint): boolean;virtual;//return TRUE when finished
     function Curtains_Open_Slide(intv: nativeint): boolean;
     function Curtains_Open_Fade(intv: nativeint): boolean;
+    function Curtains_Open_Blur(intv: nativeint): boolean;
+    function Curtains_Close_Blur(intv: nativeint): boolean;
     function Curtains_Open(intv: nativeint): boolean;virtual;//return TRUE when finished
     function InitCurtains: boolean;virtual;
     procedure WorkError(sMessage: string);virtual;
@@ -188,7 +197,11 @@ begin
   end;
 
   InitCurtains;
-  Curtains_Close_SetStartingState;
+{$IFDEF BLUR}
+  Curtains_Close_SetStartingState_Blur;
+{$ELSE}
+  Curtains_Close_SetStartingState_Slide;
+{$ENDIF}
 
   //set curtain start state
   curtainsdata.state := csClosing;
@@ -199,7 +212,7 @@ begin
 end;
 
 
-function TfrmFMXBase.Curtains_Close(intv: nativeint): boolean;
+function TfrmFMXBase.Curtains_Close_Slide(intv: nativeint): boolean;
 var
   pnew, pcurrent, ptarget, pdif: TPointF;
   iGoodCount: ni;
@@ -225,6 +238,23 @@ begin
 
   result := iGoodCount = length(default_curtains);
 
+end;
+
+function TfrmFMXBase.Curtains_Open_Blur(intv: nativeint): boolean;
+begin
+  if glass= nil then
+    exit(true);
+  var r := glass.Softness;
+  r := r - ((intv/BLUR_TIME)*MAX_BLUR);
+  glass.softness := greaterof(0.0, r);
+  result := r<=0;
+  if result then begin
+{$IFNDEF MSWINDOWS}
+    self.RemoveComponent(glass);
+{$ENDIF}
+    glass.DisposeOf;
+    glass := nil;
+  end;
 end;
 
 function TfrmFMXBase.Curtains_Open_Fade(intv: nativeint): boolean;
@@ -259,11 +289,31 @@ end;
 
 procedure TfrmFMXBase.Curtains_Open_SetStartingState;
 begin
-{$IFDEF FADE_OPEN}
-  Curtains_Open_SetStartingState_Fade;
+{$IFDEF BLUR}
+  Curtains_Open_SetStartingState_Blur;
 {$ELSE}
-  Curtains_Open_SetStartingState_Slide;
+  {$IFDEF FADE_OPEN}
+    Curtains_Open_SetStartingState_Fade;
+  {$ELSE}
+    Curtains_Open_SetStartingState_Slide;
+  {$ENDIF}
 {$ENDIF}
+end;
+
+procedure TfrmFMXBase.Curtains_Open_SetStartingState_Blur;
+begin
+  if glass = nil then begin
+    glass := TGlass.create(self);
+    glass.Parent := Self;
+    glass.position.x := 0;
+    glass.position.y := 0;
+    glass.width := self.clientwidth;
+    glass.height := self.clientheight;
+  end;
+  glass.BringToFront;
+  glass.Softness := MAX_BLUR;
+
+
 end;
 
 procedure TfrmFMXBase.Curtains_Open_SetStartingState_Fade;
@@ -368,14 +418,52 @@ end;
 
 function TfrmFMXBase.Curtains_Open(intv: nativeint): boolean;
 begin
-{$IFDEF FADE_OPEN}
-  exit(Curtains_Open_Fade(intv));
+{$IFDEF BLUR}
+  result := Curtains_Open_Blur(intv);
 {$ELSE}
-  exit(Curtains_Open_Slide(intv));
+  {$IFDEF FADE_OPEN}
+    exit(Curtains_Open_Fade(intv));
+  {$ELSE}
+    exit(Curtains_Open_Slide(intv));
+  {$ENDIF}
 {$ENDIF}
 end;
 
-procedure TfrmFMXBase.Curtains_Close_SetStartingState;
+function TfrmFMXBase.Curtains_Close(intv: nativeint): boolean;
+begin
+  {$IFDEF BLUR}
+    result := Curtains_Close_Blur(intv);
+  {$ELSE}
+    result := Curtains_Close_Slide(intv);
+  {$ENDIF}
+end;
+
+function TfrmFMXBase.Curtains_Close_Blur(intv: nativeint): boolean;
+begin
+  if glass= nil then
+    exit(true);
+  var r := glass.Softness;
+  r := r + ((intv/BLUR_TIME)*MAX_BLUR);
+  glass.softness := lesserof(r, MAX_BLUR);
+  result := r >= MAX_BLUR;
+
+end;
+
+procedure TfrmFMXBase.Curtains_Close_SetStartingState_Blur;
+begin
+  if glass = nil then begin
+    glass := TGlass.create(self);
+    glass.Parent := Self;
+    glass.position.x := 0;
+    glass.position.y := 0;
+    glass.width := self.clientwidth;
+    glass.height := self.clientheight;
+  end;
+  glass.BringToFront;
+  glass.Softness := 0.0;
+end;
+
+procedure TfrmFMXBase.Curtains_Close_SetStartingState_Slide;
   function IsOutside(p: TPointF; o: TControl): boolean;
   begin
     if (p.x<0-width) then exit(true);

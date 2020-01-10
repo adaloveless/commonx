@@ -78,6 +78,42 @@ type
     function GetFileList(sRemotePath:string; sFileSpec:string; attrmask:integer; attrresult:integer):TRemoteFileArray;overload;virtual;
     procedure GetFileList_Async(sRemotePath:string; sFileSpec:string; attrmask:integer; attrresult:integer);overload;virtual;
     function GetFileList_Response():TRemoteFileArray;
+    function StartExeCommand(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single):int64;overload;virtual;
+    procedure StartExeCommand_Async(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single);overload;virtual;
+    function StartExeCommand_Response():int64;
+    function GetCommandStatus(handle:int64; out status:string; out step:int64; out stepcount:int64; out finished:boolean):boolean;overload;virtual;
+    procedure GetCommandStatus_Async(handle:int64);overload;virtual;
+    function GetCommandStatus_Response(out status:string; out step:int64; out stepcount:int64; out finished:boolean):boolean;
+    function EndCommand(handle:int64):boolean;overload;virtual;
+    procedure EndCommand_Async(handle:int64);overload;virtual;
+    function EndCommand_Response():boolean;
+    function GetCPUCount():int64;overload;virtual;
+    procedure GetCPUCount_Async();overload;virtual;
+    function GetCPUCount_Response():int64;
+    function GetCommandResourceConsumption(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single):boolean;overload;virtual;
+    procedure GetCommandResourceConsumption_Async();overload;virtual;
+    function GetCommandResourceConsumption_Response(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single):boolean;
+    function EndExeCommand(handle:int64):string;overload;virtual;
+    procedure EndExeCommand_Async(handle:int64);overload;virtual;
+    function EndExeCommand_Response():string;
+    function GetEXECommandStatus(handle:int64; out status:string; out finished:boolean; out consoleCapture:string):boolean;overload;virtual;
+    procedure GetEXECommandStatus_Async(handle:int64);overload;virtual;
+    function GetEXECommandStatus_Response(out status:string; out finished:boolean; out consoleCapture:string):boolean;
+    function StartExeCommandEx(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single; ext_resources:string):int64;overload;virtual;
+    procedure StartExeCommandEx_Async(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single; ext_resources:string);overload;virtual;
+    function StartExeCommandEx_Response():int64;
+    function GetCommandResourceConsumptionEx(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single; out gpusUsed:single; out gpuMax:single; out ext_resources:string):boolean;overload;virtual;
+    procedure GetCommandResourceConsumptionEx_Async();overload;virtual;
+    function GetCommandResourceConsumptionEx_Response(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single; out gpusUsed:single; out gpuMax:single; out ext_resources:string):boolean;
+    function GetGPUList():string;overload;virtual;
+    procedure GetGPUList_Async();overload;virtual;
+    function GetGPUList_Response():string;
+    function GetGPUCount():integer;overload;virtual;
+    procedure GetGPUCount_Async();overload;virtual;
+    function GetGPUCount_Response():integer;
+    function StartExeCommandExFFMPEG(sPath:string; sProgram:string; sParams:string; sGPUParams:string; cpus:single; memgb:single; gpu:single):int64;overload;virtual;
+    procedure StartExeCommandExFFMPEG_Async(sPath:string; sProgram:string; sParams:string; sGPUParams:string; cpus:single; memgb:single; gpu:single);overload;virtual;
+    function StartExeCommandExFFMPEG_Response():int64;
 
 
     function DispatchCallback: boolean;override;
@@ -1309,6 +1345,842 @@ begin
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
     //packet.SeqRead;//read off the service name and forget it (it is already known)
     GetTRemoteFileArrayFromPacket(packet, result);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.StartExeCommand(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single):int64;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6018);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6018:TFileServiceClient.StartExeCommand');{$ENDIF}
+    WritestringToPacket(packet, sPath);
+    WritestringToPacket(packet, sProgram);
+    WritestringToPacket(packet, sParams);
+    WritesingleToPacket(packet, cpus);
+    WritesingleToPacket(packet, memgb);
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    Getint64FromPacket(packet, result);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.StartExeCommand_Async(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single);
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6018);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    WritestringToPacket(packet, sPath);
+    WritestringToPacket(packet, sProgram);
+    WritestringToPacket(packet, sParams);
+    WritesingleToPacket(packet, cpus);
+    WritesingleToPacket(packet, memgb);
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.StartExeCommand_Response():int64;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    Getint64FromPacket(packet, result);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetCommandStatus(handle:int64; out status:string; out step:int64; out stepcount:int64; out finished:boolean):boolean;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6019);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6019:TFileServiceClient.GetCommandStatus');{$ENDIF}
+    Writeint64ToPacket(packet, handle);
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    GetbooleanFromPacket(packet, result);
+    GetstringFromPacket(packet, status);
+    Getint64FromPacket(packet, step);
+    Getint64FromPacket(packet, stepcount);
+    GetbooleanFromPacket(packet, finished);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.GetCommandStatus_Async(handle:int64);
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6019);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    Writeint64ToPacket(packet, handle);
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetCommandStatus_Response(out status:string; out step:int64; out stepcount:int64; out finished:boolean):boolean;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    GetbooleanFromPacket(packet, result);
+    GetstringFromPacket(packet, status);
+    Getint64FromPacket(packet, step);
+    Getint64FromPacket(packet, stepcount);
+    GetbooleanFromPacket(packet, finished);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.EndCommand(handle:int64):boolean;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6020);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6020:TFileServiceClient.EndCommand');{$ENDIF}
+    Writeint64ToPacket(packet, handle);
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    GetbooleanFromPacket(packet, result);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.EndCommand_Async(handle:int64);
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6020);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    Writeint64ToPacket(packet, handle);
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.EndCommand_Response():boolean;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    GetbooleanFromPacket(packet, result);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetCPUCount():int64;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6021);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6021:TFileServiceClient.GetCPUCount');{$ENDIF}
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    Getint64FromPacket(packet, result);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.GetCPUCount_Async();
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6021);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetCPUCount_Response():int64;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    Getint64FromPacket(packet, result);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetCommandResourceConsumption(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single):boolean;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6022);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6022:TFileServiceClient.GetCommandResourceConsumption');{$ENDIF}
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    GetbooleanFromPacket(packet, result);
+    GetsingleFromPacket(packet, cpusUsed);
+    GetsingleFromPacket(packet, cpuMax);
+    GetsingleFromPacket(packet, memGBUsed);
+    GetsingleFromPacket(packet, memGBMax);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.GetCommandResourceConsumption_Async();
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6022);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetCommandResourceConsumption_Response(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single):boolean;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    GetbooleanFromPacket(packet, result);
+    GetsingleFromPacket(packet, cpusUsed);
+    GetsingleFromPacket(packet, cpuMax);
+    GetsingleFromPacket(packet, memGBUsed);
+    GetsingleFromPacket(packet, memGBMax);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.EndExeCommand(handle:int64):string;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6023);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6023:TFileServiceClient.EndExeCommand');{$ENDIF}
+    Writeint64ToPacket(packet, handle);
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    GetstringFromPacket(packet, result);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.EndExeCommand_Async(handle:int64);
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6023);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    Writeint64ToPacket(packet, handle);
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.EndExeCommand_Response():string;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    GetstringFromPacket(packet, result);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetEXECommandStatus(handle:int64; out status:string; out finished:boolean; out consoleCapture:string):boolean;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6024);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6024:TFileServiceClient.GetEXECommandStatus');{$ENDIF}
+    Writeint64ToPacket(packet, handle);
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    GetbooleanFromPacket(packet, result);
+    GetstringFromPacket(packet, status);
+    GetbooleanFromPacket(packet, finished);
+    GetstringFromPacket(packet, consoleCapture);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.GetEXECommandStatus_Async(handle:int64);
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6024);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    Writeint64ToPacket(packet, handle);
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetEXECommandStatus_Response(out status:string; out finished:boolean; out consoleCapture:string):boolean;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    GetbooleanFromPacket(packet, result);
+    GetstringFromPacket(packet, status);
+    GetbooleanFromPacket(packet, finished);
+    GetstringFromPacket(packet, consoleCapture);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.StartExeCommandEx(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single; ext_resources:string):int64;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6025);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6025:TFileServiceClient.StartExeCommandEx');{$ENDIF}
+    WritestringToPacket(packet, sPath);
+    WritestringToPacket(packet, sProgram);
+    WritestringToPacket(packet, sParams);
+    WritesingleToPacket(packet, cpus);
+    WritesingleToPacket(packet, memgb);
+    WritestringToPacket(packet, ext_resources);
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    Getint64FromPacket(packet, result);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.StartExeCommandEx_Async(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single; ext_resources:string);
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6025);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    WritestringToPacket(packet, sPath);
+    WritestringToPacket(packet, sProgram);
+    WritestringToPacket(packet, sParams);
+    WritesingleToPacket(packet, cpus);
+    WritesingleToPacket(packet, memgb);
+    WritestringToPacket(packet, ext_resources);
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.StartExeCommandEx_Response():int64;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    Getint64FromPacket(packet, result);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetCommandResourceConsumptionEx(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single; out gpusUsed:single; out gpuMax:single; out ext_resources:string):boolean;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6026);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6026:TFileServiceClient.GetCommandResourceConsumptionEx');{$ENDIF}
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    GetbooleanFromPacket(packet, result);
+    GetsingleFromPacket(packet, cpusUsed);
+    GetsingleFromPacket(packet, cpuMax);
+    GetsingleFromPacket(packet, memGBUsed);
+    GetsingleFromPacket(packet, memGBMax);
+    GetsingleFromPacket(packet, gpusUsed);
+    GetsingleFromPacket(packet, gpuMax);
+    GetstringFromPacket(packet, ext_resources);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.GetCommandResourceConsumptionEx_Async();
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6026);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetCommandResourceConsumptionEx_Response(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single; out gpusUsed:single; out gpuMax:single; out ext_resources:string):boolean;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    GetbooleanFromPacket(packet, result);
+    GetsingleFromPacket(packet, cpusUsed);
+    GetsingleFromPacket(packet, cpuMax);
+    GetsingleFromPacket(packet, memGBUsed);
+    GetsingleFromPacket(packet, memGBMax);
+    GetsingleFromPacket(packet, gpusUsed);
+    GetsingleFromPacket(packet, gpuMax);
+    GetstringFromPacket(packet, ext_resources);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetGPUList():string;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6027);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6027:TFileServiceClient.GetGPUList');{$ENDIF}
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    GetstringFromPacket(packet, result);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.GetGPUList_Async();
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6027);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetGPUList_Response():string;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    GetstringFromPacket(packet, result);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetGPUCount():integer;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6028);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6028:TFileServiceClient.GetGPUCount');{$ENDIF}
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    GetintegerFromPacket(packet, result);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.GetGPUCount_Async();
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6028);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.GetGPUCount_Response():integer;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    GetintegerFromPacket(packet, result);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.StartExeCommandExFFMPEG(sPath:string; sProgram:string; sParams:string; sGPUParams:string; cpus:single; memgb:single; gpu:single):int64;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6029);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6029:TFileServiceClient.StartExeCommandExFFMPEG');{$ENDIF}
+    WritestringToPacket(packet, sPath);
+    WritestringToPacket(packet, sProgram);
+    WritestringToPacket(packet, sParams);
+    WritestringToPacket(packet, sGPUParams);
+    WritesingleToPacket(packet, cpus);
+    WritesingleToPacket(packet, memgb);
+    WritesingleToPacket(packet, gpu);
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    Getint64FromPacket(packet, result);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.StartExeCommandExFFMPEG_Async(sPath:string; sProgram:string; sParams:string; sGPUParams:string; cpus:single; memgb:single; gpu:single);
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6029);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    WritestringToPacket(packet, sPath);
+    WritestringToPacket(packet, sProgram);
+    WritestringToPacket(packet, sParams);
+    WritestringToPacket(packet, sGPUParams);
+    WritesingleToPacket(packet, cpus);
+    WritesingleToPacket(packet, memgb);
+    WritesingleToPacket(packet, gpu);
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.StartExeCommandExFFMPEG_Response():int64;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    Getint64FromPacket(packet, result);
   finally
     packet.free;
   end;

@@ -38,7 +38,7 @@ type
     procedure RQ_HANDLE_WriteBehindOn_integer_string(proc: TRDTPProcessorForMYSQL);
     procedure RQ_HANDLE_GetNextID_string(proc: TRDTPProcessorForMYSQL);
     procedure RQ_HANDLE_SetNextID_string_int64(proc: TRDTPProcessorForMYSQL);
-    procedure RQ_HANDLE_GetNextIDEx_string_string_string(proc: TRDTPProcessorForMYSQL);
+    procedure RQ_HANDLE_GetNextIDEx_string_string_string_int64(proc: TRDTPProcessorForMYSQL);
 
   protected
     
@@ -67,7 +67,7 @@ type
     procedure RQ_WriteBehindOn(channel_const:integer; query:string);overload;virtual;abstract;
     function RQ_GetNextID(key:string):int64;overload;virtual;abstract;
     procedure RQ_SetNextID(key:string; id:int64);overload;virtual;abstract;
-    function RQ_GetNextIDEx(key:string; table:string; field:string):int64;overload;virtual;abstract;
+    function RQ_GetNextIDEx(key:string; table:string; field:string; count:int64):int64;overload;virtual;abstract;
 
 
     function Dispatch: boolean;override;
@@ -247,17 +247,19 @@ begin
   proc.ForgetResult := true
 end;
 //-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
-procedure TRDTPSQLConnectionServerBase.RQ_HANDLE_GetNextIDEx_string_string_string(proc: TRDTPProcessorForMYSQL);
+procedure TRDTPSQLConnectionServerBase.RQ_HANDLE_GetNextIDEx_string_string_string_int64(proc: TRDTPProcessorForMYSQL);
 var
   res: int64;
   key:string;
   table:string;
   field:string;
+  count:int64;
 begin
   GetstringFromPacket(proc.request, key);
   GetstringFromPacket(proc.request, table);
   GetstringFromPacket(proc.request, field);
-  res := RQ_GetNextIDEx(key, table, field);
+  Getint64FromPacket(proc.request, count);
+  res := RQ_GetNextIDEx(key, table, field, count);
   Writeint64ToPacket(proc.response, res);
 end;
 
@@ -526,7 +528,7 @@ begin
         LocalDebug('Begin Server Handling of GetNextIDEx','RDTPCALLS');
 {$ENDIF}
         result := true;//set to true BEFORE calling in case of exception
-        RQ_HANDLE_GetNextIDEx_string_string_string(self);
+        RQ_HANDLE_GetNextIDEx_string_string_string_int64(self);
 {$IFDEF RDTP_LOGGING}
         LocalDebug('End Server Handling of GetNextIDEx','RDTPCALLS');
 {$ENDIF}

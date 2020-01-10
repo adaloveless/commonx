@@ -933,18 +933,18 @@ end;
 
 class procedure TInsertSelectThread.UnlockAll;
 begin
-  leavecriticalsection(sectinsertselect);
+  lcs(sectinsertselect);
 end;
 
 procedure oinit;
 begin
-  initializecriticalsection(sectinsertselect);
+  ics(sectinsertselect);
 
 end;
 
 procedure ofinal;
 begin
-  deletecriticalsection(sectInsertSelect);
+  dcs(sectInsertSelect);
 
 
 end;

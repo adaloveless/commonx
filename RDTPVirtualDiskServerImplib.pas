@@ -273,6 +273,8 @@ var
 var
   il: ILock;
 begin
+  if vdh = nil then
+    raise ECritical.create('disk hub disappeared unexpectedly!');
   il := vdh.Locki;
   try
     setlength(result, vdh.vdlist.count);
@@ -768,7 +770,7 @@ end;
 
 initialization
 
-orderlyinit.init.RegisterProcs('RDTPVirtualDiskServerImplib', oinit, ofinal, 'rdtpserverlist');
+orderlyinit.init.RegisterProcs('RDTPVirtualDiskServerImplib', oinit, ofinal, 'rdtpserverlist,virtualdisk_advanced');
 
 
 end.

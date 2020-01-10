@@ -101,6 +101,7 @@ type
 
   public
     errors: nativeint;
+    RecoverLostConnections: boolean;
     property UseTCP: boolean read FUseTCP write FUseTCP;
     property UseTor: boolean read FUseTor write FUseTor;
 
@@ -357,6 +358,7 @@ begin
   FTIMEOUT := 300000*20;
   FCallback := TRDTPCAllback.create;
   FCallback.client := self;
+  RecoverLostConnections := true;
 {$IFNDEF ALLOW_UDP}
   UseTCP := true;
 {$ELSE}
@@ -764,8 +766,14 @@ var
   bWasBusy: boolean;
 begin
 
+
   lock;
   try
+    if recoverlostconnections then begin
+      if not Connected then
+        Connect;
+    end;
+
     self.IncTotalTransactions;
 
     bWasbusy := false;
@@ -843,7 +851,7 @@ begin
       if not bForget then begin
         if (not assigned(packet)) then begin
           Disconnect;
-          raise ETransportError.create('Server did not respond, packet is nil');
+          raise ETransportError.create('connection broken');
         end;
 
         if slDebug <> nil then

@@ -3,7 +3,7 @@ unit FileEx;
 interface
 
 uses
-  MultiBufferMemoryFileStream, memoryfilestream, classes, sysutils, System.IOUtils, debug, stringx, systemx, helpers.stream, typex;
+  MultiBufferMemoryFileStream, memoryfilestream, classes, sysutils, System.IOUtils, debug, stringx, systemx, helpers_stream, typex;
 
 
 function CompareFiles(sFile1, sFile2: string): boolean;

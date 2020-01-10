@@ -14,7 +14,7 @@ interface
 {$DEFINE USE_QUICK_BUFFER}
 
 
-uses typex, helpers.stream, betterfilestream, numbers, systemx, sysutils, classes, queuestream, sharedobject,
+uses typex, helpers_stream, betterfilestream, numbers, systemx, sysutils, classes, queuestream, sharedobject,
 {$IFDEF USE_COMMANDS}
   commandprocessor,
 {$ELSE}

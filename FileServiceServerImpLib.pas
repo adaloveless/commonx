@@ -8,10 +8,10 @@ unit FileServiceServerImpLib;
 
 interface
 uses
-  windows, memoryfilestream, FileTransfer, FileServiceServer,
+  windows, memoryfilestream, FileTransfer, FileServiceServer, nvidiatools,
     sysutils, rdtpprocessor, dir, dirfile, classes, systemx,
     betterobject, spam, stringx, exe, rdtpserverlist,orderlyinit,
-    helpers.stream, consolelock, commandprocessor, rdtp_file,
+    helpers_stream, consolelock, commandprocessor, rdtp_file,
     SoundConversion_Windows, SoundConversions_CommandLine, numbers;
 
   type
@@ -38,11 +38,27 @@ uses
     function RQ_GetFileSize(filename:string):int64;overload;override;
     function RQ_ExecuteAndCapture(sPath:string; sProgram:string; sParams:string):string;overload;override;
     function RQ_GetFileList(sRemotePath:string; sFileSpec:string; attrmask:integer; attrresult:integer):TRemoteFileArray;overload;override;
+    function RQ_StartExeCommand(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single):int64;overload;override;
+    function RQ_GetCommandStatus(handle:int64; out status:string; out step:int64; out stepcount:int64; out finished:boolean):boolean;overload;override;
+    function RQ_EndCommand(handle:int64):boolean;overload;override;
+    function RQ_GetCPUCount():int64;overload;override;
+    function RQ_GetCommandResourceConsumption(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single):boolean;overload;override;
+    function RQ_EndExeCommand(handle:int64):string;overload;override;
+    function RQ_GetEXECommandStatus(handle:int64; out status:string; out finished:boolean; out consoleCapture:string):boolean;overload;override;
+    function RQ_StartExeCommandEx(sPath:string; sProgram:string; sParams:string; cpus:single; memgb:single; ext_resources:string):int64;overload;override;
+    function RQ_GetCommandResourceConsumptionEx(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single; out gpusUsed:single; out gpuMax:single; out ext_resources:string):boolean;overload;override;
+    function RQ_GetGPUList():string;overload;override;
+    function RQ_GetGPUCount():integer;overload;override;
+    function RQ_StartExeCommandExFFMPEG(sPath:string; sProgram:string; sParams:string; sGPUParams:string; cpus:single; memgb:single; gpu:single):int64;overload;override;
 
 {INTERFACE_END}
   end;
 
+function GetBestGPU: integer;
+function FindSharedExeCommandResource(handle:int64): Tcmd_RunExe;
 function FindFileResource(proc: TRDTPProcessor; iHandle: THandle): TMemoryFileStream;
+function FindCommandResource(proc: TRDTPProcessor; handle: int64): TCommand;
+function FindExeCommandResource(proc: TRDTPProcessor; handle: int64): Tcmd_RunExe;
 
 var
   CPWerk: TcommandProcessor;
@@ -51,6 +67,39 @@ implementation
 
 uses
   soundtools, servervideoparser;
+function GetGPUnUsage(gpu: integer): single;
+begin
+  result := 0.0;
+  var l := BGCmd.Locki;
+  for var t:= 0 to BGCmd.commandcount-1 do begin
+    var c := BGCmd.Commands[t];
+    if not c.iscomplete then begin
+      result := result + c.Resources.GetResourceUsage('GPU'+gpu.ToString);
+    end;
+  end;
+end;
+
+function GetBestGPU: integer;
+var
+  t: integer;
+  o: TObject;
+  gpusUsed: single;
+begin
+  var l := BGCmd.Locki;
+  var bestuse: single := 999999;
+  var bestT: integer := -1;
+  for t:= 0 to 15 do begin
+    var thisuse := GetGPUnUsage(t);
+    if thisuse < bestuse then  begin
+      bestuse := thisuse;
+      bestT := t;
+      if bestuse = 0.0 then
+        exit(t);//might as well exit because nothing will be less than 0.0
+    end;
+  end;
+  result := bestT;
+end;
+
 
 function FindFileResource(proc: TRDTPProcessor; iHandle: THandle): TMemoryFileStream;
 var
@@ -69,6 +118,54 @@ begin
   end;
 
 end;
+
+function FindCommandResource(proc: TRDTPProcessor; handle: int64): TCommand;
+var
+  t: integer;
+  o: TObject;
+begin
+  result := nil;
+  for t:= 0 to proc.Resources.count-1 do begin
+    o := proc.resources[t];
+    if o is Tcommand then with o as Tcommand do begin
+      if handle = int64(pointer(o)) then begin
+        result := o as Tcommand;
+        break;
+      end;
+    end;
+  end;
+end;
+
+function FindExeCommandResource(proc: TRDTPProcessor; handle: int64): Tcmd_RunExe;
+var
+  t: integer;
+  o: TObject;
+begin
+  result := nil;
+  for t:= 0 to proc.Resources.count-1 do begin
+    o := proc.resources[t];
+    if o is Tcommand then with o as Tcmd_RunExe do begin
+      if handle = int64(pointer(o)) then begin
+        result := o as Tcmd_RunExe;
+        break;
+      end;
+    end;
+  end;
+end;
+
+function FindSharedExeCommandResource(handle:int64): Tcmd_RunExe;
+begin
+  result := nil;
+  var l := BGCmd.LockI;
+  for var t:= 0 to BGCmd.CommandCount-1 do begin
+    var c := BGCmd.Commands[t];
+    if int64(pointer(c))=handle then begin
+      if c is Tcmd_RunExe then
+        exit(Tcmd_RunExe(c));
+    end;
+  end;
+end;
+
 
 function TFileServiceServer.RQ_putFile(ofile: TFileTransferReference): boolean;
 var
@@ -104,6 +201,7 @@ begin
     finally
   //    fs.free;
       FreeMem(oFile.o.Buffer);
+      oFile.o.Buffer := nil;
     end;
   finally
 //    FreeMem(aa);
@@ -112,6 +210,156 @@ begin
 
 end;
 
+
+
+function TFileServiceServer.RQ_GetCommandResourceConsumption(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single):boolean;
+begin
+  var ext_resources: string := '';
+  var gpu: single;
+  var gpumax: single;
+  result := RQ_GetCommandResourceConsumptionEx(cpusUsed, cpuMax,memGBUsed, memGBMax, gpu,gpumax, ext_resources);
+
+end;
+
+function TFileServiceServer.RQ_GetCommandResourceConsumptionEx(out cpusUsed:single; out cpuMax:single; out memGBUsed:single; out memGBMax:single; out gpusUsed:single; out gpuMax:single; out ext_resources:string):boolean;
+var
+  t: integer;
+  o: TObject;
+begin
+  //note note note.... this will bite me in the ass later!
+  //this returns SCHEDULED resource consumption, not ACTIVE consumption
+  //and is used for the purpose of balancing scheduling over multiple
+  //computers, inactive commands will be considered as consuming resources
+  //however completed commands will not
+  cpusUsed := 0;
+  memgbUsed := 0;
+  result := true;
+  var l := BGCmd.Locki;
+  for t:= 0 to BGCmd.commandcount-1 do begin
+    var c := BGCmd.Commands[t];
+    if not c.iscomplete then begin
+      cpusUsed := cpusUsed + c.CPUExpense;
+      memgbused := memgbUsed + c.MemoryExpenseGB;
+      GPUsUsed := GPUsUsed + c.Resources.GetResourceUsage('GPUExpense');
+    end;
+  end;
+
+  var slh := StringToStringlisth('');
+  slh.o.add('GPUExpense='+floatprecision(GPUsUsed,4));
+  ext_resources := slh.o.text;
+
+
+  cpuMax := GetEnabledCPUCount;
+  memGBMax := GetPhysicalMemory / (1000000000.0);
+  gpumax := BGCMd.GetResourceLimit('GPUExpense');
+
+
+end;
+
+function TFileServiceServer.RQ_GetCommandStatus(handle: int64;
+  out status: string; out step, stepcount: int64; out finished: boolean): boolean;
+begin
+  var c := FindCommandResource(self, handle);
+  result := c <> nil;
+  if result then begin
+    status := c.status;
+    step := c.step;
+    stepcount := c.stepcount;
+    finished := c.iscomplete;
+  end;
+end;
+
+function TFileServiceServer.RQ_GetCPUCount: int64;
+begin
+  result := systemx.GetEnabledCPUCount;
+end;
+
+function TFileServiceServer.RQ_GetEXECommandStatus(handle: int64;
+  out status: string; out finished: boolean;
+  out consoleCapture: string): boolean;
+begin
+  var c := FindSharedExeCommandResource(handle);
+  result := c <> nil;
+  if result then begin
+    status := c.status;
+    finished := c.iscomplete;
+    consoleCapture := c.DrainConsole;
+  end;
+
+end;
+
+function TFileServiceServer.RQ_StartExeCommand(sPath, sProgram, sParams: string;
+  cpus, memgb: single): int64;
+begin
+  result := RQ_StartExeCommandEx(sPath, sProgram, sParams, cpus, memgb, '');
+
+end;
+
+function TFileServiceServer.RQ_StartExeCommandEx(sPath, sProgram,
+  sParams: string; cpus, memgb: single; ext_resources: string): int64;
+var
+  c: Tcmd_RunExe;
+begin
+  c := Tcmd_Runexe.create;
+  c.Prog := slash(sPath)+sProgram;
+  c.prog := stringreplace(c.prog, '%dllpath%', dllpath, [rfReplaceAll, rfIgnoreCase]);
+  c.Params := sParams;
+  c.WorkingDir := extractfilepath(c.Prog);
+  c.Hide := true;
+  c.CPUExpense := cpus;
+  c.MemoryExpenseGB := memgb;
+  c.CaptureConsoleoutput := true;
+  var slh := stringToStringListH(ext_resources);
+  for var t:= 0 to slh.o.count-1 do begin
+    c.Resources.SetResourceUsage(slh.o.KeyNames[t], strtofloat(slh.o.ValueFromIndex[t]));
+  end;
+  var gu :=c.Resources.GetResourceUsage('GPUExpense');
+  if gu > 0.0 then begin
+    var g := GetBestGPU;
+    c.resources.setresourceUsage('GPU'+g.tostring,gu);
+  end;
+  c.Start;
+//  self.Resources.Add(c);
+  result := int64(pointer(c));
+
+end;
+
+function TFileServiceServer.RQ_StartExeCommandExFFMPEG(sPath, sProgram,
+  sParams: string; sGPUParams:string; cpus, memgb: single; gpu: single): int64;
+var
+  c: Tcmd_RunExe;
+begin
+  c := Tcmd_Runexe.create;
+  c.Prog := slash(sPath)+sProgram;
+  c.prog := stringreplace(c.prog, '%dllpath%', dllpath, [rfReplaceAll, rfIgnoreCase]);
+  c.Params := sParams;
+  c.WorkingDir := extractfilepath(c.Prog);
+  c.Hide := true;
+  c.CPUExpense := cpus;
+  c.MemoryExpenseGB := memgb;
+  c.CaptureConsoleoutput := true;
+//  var slh := stringToStringListH(ext_resources);
+//  for var t:= 0 to slh.o.count-1 do begin
+//    c.Resources.SetResourceUsage(slh.o.KeyNames[t], strtofloat(slh.o.ValueFromIndex[t]));
+//  end;
+  if sGPUParams <> '' then begin
+    var gu :=gpu;
+    if gu > 0.0 then begin
+      var g := GetBestGPU;
+      if g >=0 then begin
+        c.Resources.SetResourceUsage('GPUExpense', gpu);
+        c.resources.setresourceUsage('GPU'+g.tostring,gu);
+        c.Params := stringreplace(sGPUParams,'##gpu##', g.tostring, [rfReplaceAll,rfIgnoreCase]);
+  //      c.Params := '-hwaccel_device '+g.ToString+' '+c.Params;
+        c.CPUExpense := 1;
+      end;
+    end;
+  end;
+  c.Start;
+//  self.Resources.Add(c);
+  result := int64(pointer(c));
+
+end;
 
 function TFileServiceServer.RQ_GetFile(var oFile:TFileTransferReference):boolean;
 var
@@ -159,6 +407,9 @@ function TFileServiceServer.RQ_OpenFile(sFile:string; out oFile:TFileTransferREf
 var
   r: TMemoryFileStream;
 begin
+  if iMode = fmCreate then
+    ForceDirectories(dllpath+extractfilepath(sFile));
+
   r := TMemoryFileStream.create(sFile, iMode);
 
   oFile := THolder<TFileTransferREferenceObj>.create;
@@ -333,6 +584,25 @@ begin
   result.CopyFrom(strin, strin.Size);
 end;
 
+function TFileServiceServer.RQ_EndCommand(handle: int64): boolean;
+begin
+  var c := FindCommandResource(self, handle);
+  Resources.Remove(c);
+  c.RaiseExceptions := false;
+  c.WaitFor;
+  c.Free;
+end;
+
+function TFileServiceServer.RQ_EndExeCommand(handle: int64): string;
+begin
+  var c:= FindSharedExeCommandResource(handle);
+  result := c.consoleoutput;
+  self.Resources.Remove(c);
+  c.waitfor;
+  c.free;
+
+end;
+
 function TFileServiceServer.RQ_Execute(sPath, sProgram,
   sParams: string): boolean;
 var
@@ -442,10 +712,21 @@ begin
 end;
 
 
+function TFileServiceServer.RQ_GetGPUCount: integer;
+begin
+    result := nvidiatools.GetGPUCount;
+end;
+
+function TFileServiceServer.RQ_GetGPUList: string;
+begin
+  result := nvidiatools.GetGPUList.o.Text;
+
+end;
+
 procedure oinit;
 begin
   CPWerk := TCommandProcessor.create(nil, 'CPWerk');
-
+  RDTPServers.RegisterRDTPProcessor('FileService', TFileServiceServer);
 end;
 
 procedure ofinal;
@@ -456,9 +737,9 @@ begin
 end;
 initialization
 
-orderlyinit.init.RegisterProcs('FileServiceServerImplib', oinit, ofinal, 'CommandProcessor');
+orderlyinit.init.RegisterProcs('FileServiceServerImplib', oinit, ofinal, 'CommandProcessor,RDTPServerList');
 
-RDTPServers.RegisterRDTPProcessor('FileService', TFileServiceServer);
+
 
 
 end.

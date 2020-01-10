@@ -21,7 +21,10 @@ uses
 {$IFDEF MSWINDOWS}
   winapi.windows,
   winapi.activex,//<--no coinitialize
+{$ELSE}
+  android.better_pthread,
 {$ENDIF}
+
   ThreadManager, typex, systemx, sysutils, sharedobject, Generics.collections.fixed, orderlyinit;
 const
 {$IFDEF POOL_STRESS_TEST}
@@ -29,6 +32,7 @@ const
 {$ELSE}
   DEFAULT_THREAD_POOL_TIME = 60000;
 {$ENDIF}
+  MT_MENU_INDEX = 1;//first index of inherited menu item
 type
   EThreadViolation = class(Exception);
 //  TManagedThreadState = (mtsInit, mtsNotStarted, mtsStartRequested, mtsRunning, mtsFinished, mtsTerminated);
@@ -76,6 +80,7 @@ type
     mt: TManagedThread;
     procedure Execute; override;
   public
+    function WaitForEx(timeout: int64): boolean;
   end;
 
   TThreadInfo = record
@@ -241,7 +246,7 @@ type
     procedure Terminate;
     procedure WaitForFinish;virtual;
     procedure WaitFor;reintroduce;virtual;
-    procedure WaitForLowLevel;
+    function WaitForLowLevel: boolean;
     function Stop(bySelf: boolean=false): boolean;virtual;
     function BeginStop(bySelf: boolean=false): boolean;
     procedure EndStop(bySelf: boolean=false);
@@ -831,7 +836,7 @@ begin
   Manager := nil;
 
   if realthread.Suspended and not realthread.Terminated then begin
-    realthread.resume;
+    realthread.start;
     realthread.terminate;
   end;
   if not realthread.terminated then begin
@@ -1625,7 +1630,7 @@ end;
 
 procedure TManagedThread.SafeREsume;
 begin
-  if realthread.suspended then realthread.resume;
+  if realthread.suspended then realthread.start;
   Start;
 
 end;
@@ -1929,7 +1934,7 @@ begin
     end;
   //  Signal(evStarted,false);
     Signal(evStop, false);
-    if realthread.suspended then realthread.resume;
+    if realthread.suspended then realthread.start;
   //  Signal(evPoolPause, false);
     Signal(evStarted,false);
     Signal(evFinished,false);
@@ -2104,8 +2109,8 @@ end;
 procedure TManagedThread.Start;
 begin
 {$IFNDEF NO_INIT_THREAD_CHECKS}
-  if not orderlyinit.init.Initialized then
-    raise ECritical.create('don''t call TManagedThread.Start during initialization (it won''t work for DLLs). Call beginStart instead and check EndStart later.');
+//  if not orderlyinit.init.Initialized then
+//    raise ECritical.create('don''t call TManagedThread.Start during initialization (it won''t work for DLLs). Call beginStart instead and check EndStart later.');
 {$ENDIF}
 
   BeginStart;
@@ -2178,9 +2183,16 @@ begin
   //evIdle.waitfor;
 end;
 
-procedure TManagedThread.WaitForLowLevel;
+function TManagedThread.WaitForLowLevel: boolean;
 begin
-  realthread.waitFor;
+  result := true;
+  if not realthread.waitforEx(16000) then begin
+    result := false;
+    Debug.Log(self.classname+' failed to reach low-level conclusion in a timely manner');
+    realthread.suspend;
+    Debug.Log('will just leak '+self.classname+' in suspended state to prevent deadlock');
+
+  end;
 end;
 
 procedure TProcessorThread.Start;
@@ -2384,10 +2396,12 @@ begin
         if sLastTerm = thr.NameEx then
           Debug.Log('SAME!?!?!?!?');
         sLastTerm := thr.NameEx;
-        thr.WaitFor;
-        thr.WaitForConclusion;
-        thr.WaitForLowLevel;
-        thr.free;
+        if not thr.IsCriticalSystemThread then begin
+          thr.WaitFor;
+          thr.WaitForConclusion;
+          if thr.WaitForLowLevel then
+            thr.free;
+        end;
 
         if t >= termlist.count then
           Debug.Log('termlist decremented unexpectedly!')
@@ -2452,7 +2466,7 @@ begin
         thr.SignalAllForTerminate;
         while thr.realthread.suspended do begin
           thr.terminate;
-          thr.realthread.resume;
+          thr.realthread.start;
         end;
       end;
     end;
@@ -2491,6 +2505,8 @@ begin
   FPools := TBetterList<TThreadPoolBase>.create;
   termlist:= TSharedList<TMAnagedThread>.create;
   Debug.Log(self, 'Master Thread Pool Created');
+
+  StartCleaner;
 
 end;
 
@@ -2701,7 +2717,6 @@ var
   tm: ticker;
 begin
 
-
   sender.Name := 'Thread Pool Cleaner';
 
 
@@ -2746,13 +2761,14 @@ begin
       ul;
     end;
     if assigned(thr) then begin
+//      var bTerm := thr.
       thr.Terminate;
       thr.stop;
 
       thr.waitfor;
       thr.WaitforConclusion;
-      thr.WaitForLowLevel;
-      thr.free;
+      thr.WaitForLowLevel;//TODO 1: Cleaner seems to be destroyed here automatically, but I'm not sure that that is the intended functionality
+      //thr.free;
     end;
 
   end;
@@ -2982,7 +2998,7 @@ begin
         break;
         //setup
         //result.Parent := parent;
-        //result.Resume;
+        //result.start;
       end;
     end;
   finally
@@ -3625,7 +3641,7 @@ begin
     if WAIT then begin
       if assigned(thr) then begin
         if thr.realthread.suspended then
-          thr.realthread.resume;
+          thr.realthread.start;
           try
             thr.realthread.waitfor;
           finally
@@ -3685,6 +3701,57 @@ begin
   TThread.Synchronize(aThread, athreadproc);
 end;
 
+function TRealManagedThread.WaitForEx(timeout: int64): boolean;
+{$IF Defined(MSWINDOWS)}
+var
+  H: array[0..1] of THandle;
+  WaitResult: Cardinal;
+{$IF not Declared(System.Embedded)}
+  Msg: TMsg;
+{$ENDIF}
+begin
+//  if FExternalThread then
+//    raise EThread.CreateRes(@SThreadExternalWait);
+  H[0] := Handle;
+  var tmStart := GetTicker;
+  if CurrentThread.ThreadID = MainThreadID then
+  begin
+{$IF not Declared(System.Embedded)}
+    WaitResult := 0;
+{$ENDIF}
+    H[1] := SyncEvent;
+    repeat
+{$IF Defined(NEXTGEN) and Declared(System.Embedded)}
+      WaitResult := WaitForMultipleObjects(2, @H, False, 1000);
+{$ELSE}
+      { This prevents a potential deadlock if the background thread
+        does a SendMessage to the foreground thread }
+      if WaitResult = WAIT_OBJECT_0 + 2 then
+        PeekMessage(Msg, 0, 0, 0, PM_NOREMOVE);
+      WaitResult := MsgWaitForMultipleObjects(2, H, False, 1000, QS_SENDMESSAGE);
+{$ENDIF}
+      CheckThreadError(WaitResult <> WAIT_FAILED);
+      if WaitResult = WAIT_OBJECT_0 + 1 then
+        CheckSynchronize;
+      if WaitResult <> WAIT_OBJECT_0 then begin
+        if (timeout > 0) and (getTimeSince(tmStart) > timeout) then begin
+          exit(false);
+        end;
+      end;
+
+    until WaitResult = WAIT_OBJECT_0;
+  end else WaitForSingleObject(H[0], timeout);
+  CheckThreadError(GetExitCodeThread(H[0], WaitResult));
+  result := WaitResult = WAIT_OBJECT_0;
+end;
+{$ELSEIF Defined(POSIX)}
+begin
+  Debug.Log('Warning, WaitForEx() behaves like WaitFor() on on POSIX');
+  WaitFor;
+  exit(true);
+end;
+{$ENDIF POSIX}
+
 { TFireWaitThread }
 
 procedure TFireWaitThread.DoExecute;
@@ -3739,6 +3806,7 @@ initialization
   dntdebug_t := -1;
   gwatchthread := 0;
   ix := 0;
+
 
 finalization
 

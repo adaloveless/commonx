@@ -89,7 +89,7 @@ function QuickNVPSearch(sFile: string; sfield, sValue: string): boolean;
 implementation
 
 uses
-  helpers.stream;
+  helpers_stream;
 
 { TNameValuePairList }
 

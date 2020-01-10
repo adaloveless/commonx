@@ -2,7 +2,7 @@ unit TelnetProcessor;
 
 interface
 uses
-  sysutils, better_sockets, sharedobject,  ipclientwrapper, classes, stringx, stringx.ansi;
+  sysutils, better_sockets, sharedobject,  ipclientwrapper, classes, stringx, stringx.ansi, betterobject;
 
 type
   TTElnetSession = class;

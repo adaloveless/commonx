@@ -132,8 +132,15 @@ begin
 end;
 
 procedure TRDTPModule.Unload;
+var
+  shut: TRegisterModulesProc;
 begin
   try
+    shut := GetProcAddress(FHandle, pchar('DLLShutdown'));
+    if @shut <> nil then begin
+      shut(RDTPServers);
+    end;
+
     FreeLibrary(FHandle);
   except
   end;
@@ -397,19 +404,17 @@ procedure oinit;
 begin
   rdtp_Modlist := TRDTPModuleList.Create;
   RDTP_MODLIST.FindAndAggregateModules();
-
 end;
 
-procedure ofinal;
+procedure oprefinal;
 begin
   rdtp_Modlist.Free;
   rdtp_Modlist := nil;
-
-
 end;
 
 initialization
-  init.RegisterProcs('RDTP_FindModules', oinit, ofinal, 'dir,managedthread');
+//  init.RegisterProcs('RDTP_FindModules', oinit, ofinal, 'dir,managedthread');
+  init.RegisterProcs('RDTP_FindModules', oinit, NIL, oprefinal, NIL, nil, 'dir,managedthread');
 
 finalization
 

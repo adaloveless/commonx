@@ -32,7 +32,7 @@ type
     procedure RQ_WriteBehindOn(channel_const:integer; query:string);overload;override;
     function RQ_GetNextID(key:string):int64;overload;override;
     procedure RQ_SetNextID(key:string; id:int64);overload;override;
-    function RQ_GetNextIDEx(key:string; table:string; field:string):int64;overload;override;
+    function RQ_GetNextIDEx(key:string; table:string; field:string; count:int64):int64;overload;override;
 
 {INTERFACE_END}
   end;
@@ -112,9 +112,9 @@ begin
 end;
 
 function TRDTPSQLConnectionServer.RQ_GetNextIDEx(key, table,
-  field: string): int64;
+  field: string; count: int64): int64;
 begin
-  result := data.GetNextIDEx(key, table, field);
+  result := data.GetNextIDEx(key, table, field, count);
 end;
 
 function TRDTPSQLConnectionServer.RQ_ReadOn(channel_const: integer;

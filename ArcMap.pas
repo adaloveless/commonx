@@ -3,7 +3,7 @@ unit ArcMap;
 interface
 
 uses
-  typex, sharedobject, queuestream, helpers.stream, sysutils, classes, debug, virtualdiskconstants, betterobject;
+  typex, sharedobject, queuestream, helpers_stream, sysutils, classes, debug, virtualdiskconstants, betterobject;
 
 type
   TArcMapEntry = packed record

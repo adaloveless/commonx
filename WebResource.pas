@@ -145,12 +145,14 @@ var
   sSkinFile: string;
   sURLPath: string;
 begin
-  if zcopy(sResource,0,1) <> '/' then
-    sURLPath := extractfilepath(stringReplace(rqInfo.request.document,'/','\', [rfReplaceAll]))
-  else
+//  if zcopy(sResource,0,1) <> '/' then
+//    sURLPath := extractfilepath(stringReplace(rqInfo.request.document,'/','\', [rfReplaceAll]))
+//  else
     sURLPath := '';
+  sResource := ExtractFileName(sResource);
   sResource := stringReplace(sResource,'/','\', [rfReplaceAll]);
   result := WebServerConfig.ExternalResourcePath+sURLPath+sResource;
+  result := stringreplace(result, '\\','\',[rfReplaceAll]);
 
   //defines for palms
 (*  if pos('PPC',rqInfo.request['User-Agent']) > 0 then begin

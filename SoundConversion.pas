@@ -12,7 +12,7 @@ uses
 {$IFDEF MSWINDOWS}
   msacm, mmsystem,
 {$ENDIF}
-  soundinterfaces, multibuffermemoryfilestream, typex, sounddevice_mm, sysutils, helpers.stream ;
+  soundinterfaces, multibuffermemoryfilestream, typex, sounddevice_mm, sysutils, helpers_stream ;
 
 
 function MP3ToRawMemoryStream(sMP3File: string; out info: TMp3info): TMemoryStream;

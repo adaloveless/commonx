@@ -77,7 +77,7 @@ type
     FCreationTime: cardinal;
     procedure SetConfigFromLocalFile(const Value: boolean);
   protected
-      FChannelStats: array[0..2] of TSQLChannelStats;
+    FChannelStats: array[0..2] of TSQLChannelStats;
     cmd: TCommand;
     Fet: TRDTpExecutionThread;
     FProg: TRDTPProgressEvent;
@@ -106,7 +106,7 @@ type
     function ReadOn(ch: TSQLChannel; sQuery: string): TSERowSEt;virtual;abstract;
 
     function GetNextID(sKey: string): int64;virtual;abstract;
-    function GetNextIDEx(sKey: string; sTable, sField: string): int64;virtual;abstract;
+    function GetNextIDEx(sKey: string; sTable, sField: string; count: int64): int64;virtual;abstract;
     function SetNextID(sKey: string; iValue: int64): int64;virtual;abstract;
 
     //RETURNS IHolder<TSERowSet>
@@ -201,18 +201,19 @@ end;
 
 procedure TAbstractRDTPDataModule.ConnectRead;
 begin
-
+//  FChannelStats[SQL_CHANNEL_READ].Init;
 //TODO -cunimplemented: unimplemented block
 end;
 
 procedure TAbstractRDTPDataModule.ConnectSystem;
 begin
-
+//  FChannelStats[SQL_CHANNEL_SYSTEM].Init;
 //TODO -cunimplemented: unimplemented block
 end;
 
 procedure TAbstractRDTPDataModule.ConnectWrite;
 begin
+//  FChannelStats[SQL_CHANNEL_WRITE].Init;
 
 //TODO -cunimplemented: unimplemented block
 end;
@@ -562,6 +563,7 @@ procedure TDataPool.NoNeedData(dm: TAbstractRDTPDataModule);
 begin
   if dm= nil then
     exit;
+{$IFDEF POOL_DMS}
   Lock;
   try
     dm.LastUsed := GetTicker;
@@ -570,6 +572,9 @@ begin
   finally
     Unlock;
   end;
+{$ELSE}
+    dm.free;
+{$ENDIF}
 
 end;
 

@@ -7,12 +7,13 @@ unit RDTPVirtualDiskServer;
 {TEMPLATE RDTP_gen_server_template.pas}
 {RQFILE RDTPVirtualDiskRQs.txt}
 {USES PacketHelpers_VirtualDisk}
+{USES_BACKEND PacketHelpers_VirtualDisk}
 {END}
 interface
 
 
 uses
-  VirtualDisk_Advanced, VirtualDisk_Status, Classes, VirtualDiskParams, typex, packet, systemx, betterobject, genericRDTPClient, sysutils, windows, variants, rdtpprocessor, packethelpers, debug, RDTPServerList;
+  PacketHelpers_VirtualDisk, VirtualDisk_Advanced, VirtualDisk_Status, Classes, VirtualDiskParams, typex, packet, systemx, betterobject, genericRDTPClient, sysutils, windows, variants, rdtpprocessor, packethelpers, debug, RDTPServerList;
 
 
 

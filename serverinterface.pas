@@ -132,6 +132,7 @@ type
       procedure Delete(cache: TdataObjectCache; obj: TDataObject);overload;
 
       function GetNextID(sType: string): int64;
+      function GetNextIDEx(sType: string; iReserveCount: int64): int64;
       function SetNextID(sType: string; iID: int64): boolean;
       procedure Time;
       function Ghost(cache: TDataObjectCache; out obj: TDataObject; sType: string; params: variant; iSessionID: integer): boolean; overload;
@@ -421,6 +422,7 @@ end;
 
 procedure TServerInterface.BeginTransaction;
 begin
+  CheckConnectedOrConnect;
   cli.BeginTransaction;
 end;
 
@@ -458,7 +460,7 @@ function TServerInterface.UpdateQuery(cache: TDataObjectCache; sQuery: string;
 begin
 //  WriteQuery(sQuery);
   CheckConnectedOrConnect;
-  cli.WriteQuery(sQuery);
+  result := cli.WriteQuery(sQuery);
 end;
 
 //------------------------------------------------------------------------------
@@ -494,6 +496,13 @@ function TServerInterface.GetNextID(sType: string): int64;
 begin
   CheckConnectedOrConnect;
   result := cli.GetNextID(sType)
+end;
+
+function TServerInterface.GetNextIDEx(sType: string;
+  iReserveCount: int64): int64;
+begin
+  CheckConnectedOrConnect;
+  result := cli.GetNextIDEx(sType,'','', iReserveCount);
 end;
 
 function TServerInterface.GetPoolTime: ticker;
@@ -848,20 +857,24 @@ begin
 
   ReadQuery_Begin(sQuery);
   rs := ReadQuery_End();
-  DOCF.LowLevelDOCreate(obj, cache, 'TdoQuery', sQuery, 0,0,0);
-  for t:= 0 to rs.RowCount-1 do begin
-    DOCF.LowLevelDOCreate(osub, cache, 'TdoQuery', VarArrayOf([sQuery, t]), 0,0,0);
-    obj.AddObject(osub);
-    for fd := 0 to rs.FieldCount-1 do begin
+  try
+    DOCF.LowLevelDOCreate(obj, cache, 'TdoQuery', sQuery, 0,0,0);
+    for t:= 0 to rs.RowCount-1 do begin
+      DOCF.LowLevelDOCreate(osub, cache, 'TdoQuery', VarArrayOf([sQuery, t]), 0,0,0);
+      obj.AddObject(osub);
+      for fd := 0 to rs.FieldCount-1 do begin
 
-      f := rs.FieldDefs[fd];
-      osub.AddFieldDef(f.sName, RSTypeToDOType(f.vType), '');
+        f := rs.FieldDefs[fd];
+        osub.AddFieldDef(f.sName, RSTypeToDOType(f.vType), '');
 
-      osub.FieldByIndex[fd].AsVariant := rs.Values[fd, t];
+        osub.FieldByIndex[fd].AsVariant := rs.Values[fd, t];
+      end;
     end;
-  end;
 
-  result := true;
+    result := true;
+  finally
+    rs.free;
+  end;
 
 end;
 
@@ -1074,6 +1087,7 @@ var
   c, cSub: TDataObjectClass;
   s: string;
 begin
+  obj := nil;
 
   //build keys
   if (vartype(vBaseKeys) and varArray) > 0 then begin
@@ -1092,20 +1106,27 @@ begin
   //-------------------------
   rs := ReadQuery(sQuery);
   //-------------------------
+  try
+    if (rs.rowcount=0) and (sSubType='') then
+      exit(false);
 
-  //if single record
-  if sSubType = '' then begin
-    //Single Object
-    obj := UnwrapObjectfromRow(cache, rs, 0, c);
-    result := obj <> nil;
-  end else begin
-    DOCF.LowLevelDOCreate(obj, cache, c, vBaseKeys, 0,0,0);
-    for t:= 0 to rs.RowCount-1 do begin
-      objSub := UnwrapObjectfromROW(cache, rs, t, csub);
-      obj.AddObject(objSub);
+    //if single record
+    if sSubType = '' then begin
+      //Single Object
+      obj := UnwrapObjectfromRow(cache, rs, 0, c);
+      result := obj <> nil;
+    end else begin
+      DOCF.LowLevelDOCreate(obj, cache, c, vBaseKeys, 0,0,0);
+      for t:= 0 to rs.RowCount-1 do begin
+        rs.cursor := t;
+        objSub := UnwrapObjectfromROW(cache, rs, t, csub);
+        obj.AddObject(objSub);
+      end;
+
+      result := obj <> nil;
     end;
-
-    result := obj <> nil;
+  finally
+    rs.free;
   end;
 
 

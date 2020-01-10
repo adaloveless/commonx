@@ -159,7 +159,7 @@ type
 {$IFDEF TRACK_COMPLETED}
     property CompletedItems: TDirectlyLinkedList_Shared<TQueueItem> read FCompletedItems;
 {$ENDIF}
-    function EstimatedSize: ni;
+    function EstimatedSize: ni;inline;
     property AutoMaintainIdleInterval: boolean read FAutoMaintainIdleInterval write FAutoMaintainIdleInterval;
     procedure SelfAdd(qi: TQueueItem);
     property OnEmpty: TNotifyEvent read FOnEmpty write FOnEmpty;
@@ -240,6 +240,7 @@ begin
     raise Ecritical.create('trying to add a dead '+itm.classname);
 {$ENDIF}
 
+  WaitForSignal(evNotCongested,1000);
 
   //Debug.Log(self, 'Add item to '+self.NameEx);
   if shutdown then
@@ -272,7 +273,7 @@ begin
             itm.Queue := self;
             tm := GetHighResTicker;
 {$IFDEF QUEUE_DEBUG}            Debug.Log('Synchronous Execute of '+itm.GetObjectDebug);{$ENDIF}
-            itm.Execute;
+            itm.Execute;//<----------------------------
             tm2 := GetHighResTicker;
             last_process_time := gettimesince(tm2,tm);
             if keepstats then begin
@@ -335,6 +336,8 @@ begin
   end;
 {$IFDEF EXECUTE_ON_ADD}
   ProcessItem;
+  if estimated_queue_size > 0 then
+    dec(estimated_queue_size);
 {$ENDIF}
   HasWork := true;
 
@@ -349,13 +352,14 @@ begin
         FIncomingItems.Unlock;
       end;
       if bWait then begin
-        if sleeptime > 0 then
-          sleep(sleeptime);
-
-        WAitForSignal(evNotCongested);
-        if sleeptime < 500 then
+        if sleeptime > 0 then begin
+          sleep(sleeptime);//THE REASON WE ALLOW SLEEP HERE
+                           //IS TO BACK OFF when the Queue is full.  This allows the
+                           //time-critical thread a chance to drain the incoming items
+        end;
+        WaitForSignal(evNotCongested);
+        if sleeptime < 50 then
           inc(sleeptime);
-
 
 //        exit;
       end;
@@ -495,6 +499,8 @@ begin
   rsIdle.AddStat(GettimeSince(idleTick));
   ProcessItem;
   tm2 := GetHighResTicker;
+  if estimated_queue_size > 0 then
+    dec(estimated_queue_size);
 
   last_process_time := GetTImeSince(tm2,tm1);
   if keepstats then

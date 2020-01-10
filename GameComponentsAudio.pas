@@ -3,7 +3,7 @@ unit GameComponentsAudio;
 interface
 
 uses
-  gameobject, typex, soundinterfaces, soundtools, classes, helpers.stream;
+  gameobject, typex, soundinterfaces, soundtools, classes, helpers_stream;
 
 
 type

@@ -3,7 +3,7 @@ unit MothershipWebserver;
 
 interface
 uses
-  WebConfig, WebStats, DataObjectServices, sysutils, windows, REquestManager, classes, betterobject, sharedobject, webdispatch, RequestInfo, backgroundthreads, versioninfo, systemx, simplewinsock, stringx, stringx.ansi, helplookup, dir, dirfile;
+  orderlyinit, WebConfig, WebStats, DataObjectServices, sysutils, windows, REquestManager, classes, betterobject, sharedobject, webdispatch, RequestInfo, backgroundthreads, versioninfo, systemx, simplewinsock, stringx, stringx.ansi, helplookup, dir, dirfile;
 
 type
   Tmothershipwebserver = class;//forward
@@ -22,7 +22,7 @@ type
 
   TMothershipWebServerOptions = set of (pwsNoDOS, pwsNoHelp, pwsNoINI, pwsNoPlugins);
   TMothershipWebServer = class (TSharedObject)
-    //TMothershipWebServer represents the abstracted web server in PWLN.  It is essentially
+    //TMothershipWebServer represents the abstracted web server.  It is essentially
     //the ENGINE, encapsulating all the parts required to dispatch and produce web pages.
     //It is important to note that it DOES NOT:
     //<li>Establish a listening socket</li>
@@ -31,14 +31,14 @@ type
     //<li>Build HTTP Response Headers (directly)</li>
     //The key word here is "ABSTRACTED".  Requests come to TMothershipWebServer after
     //the outer abstraction layer converts them to an abstract format that TMothershipWebServer can work with.
-    //<H2>PWLN Functional Layering</H2>
+    //<H2>Mothership Functional Layering</H2>
     //<TABLE border="1">
     //<TR><TD colspan="1">Web Server (IIS)</TD><TD colspan="1">Web Server (native listener/other)</TD><TR>
     //<TR><TD colspan="1">Web Server Access Later (IIS)</TD><TD colspan="1">Web Server Access Layer(other)</TD><TR>
-    //<TR><TD colspan="1">Web Server Adapter [TPWLN]</TD><TD colspan="1">WebS erver Adapter [TWebThread]</TD><TR>
+    //<TR><TD colspan="1">Web Server Adapter</TD><TD colspan="1">WebS erver Adapter [TWebThread]</TD><TR>
     //<TR><TD colspan="2">Web Server Dispatcher</TD><TR>
     //<TR><TD colspan="2">Web Request (Individual dispatched page)</TD><TR>
-    //<TR><TD colspan="2">Middle Tier to Data-Tier Interface [MTDTInterface]</TD><TR>
+    //<TR><TD colspan="2">Web Tier to Data-Tier Interface [MTDTInterface]</TD><TR>
     //<TR><TD colspan="2">Data Object Services/Caching</TD><TR>
     //<TR><TD colspan="2">Server Interface Layer</TD><TR>
     //<TR><TD colspan="2">Network Language Layer [TPacket]</TD><TR>
@@ -210,7 +210,6 @@ begin
   WebServerStats.free;
   WebServerConfig.free;
 
-  rqMan.Shutdown;
   {$IFDEF BEEP}
 //  beeper.beep(100,100);
   {$ENDIF}
@@ -408,7 +407,6 @@ begin
     //set state
     state := wssRunning;
 
-    rqMan.Start;
 
 
     try
@@ -462,10 +460,10 @@ begin
   if Assigned(FStopListening) then
     FStopListening(self);
 
-  backgroundthreads.BackgroundThreadMan.TerminateAllThreads;
-  backgroundthreads.BackgroundThreadMan.WaitForThreads;
+  //backgroundthreads.BackgroundThreadMan.TerminateAllThreads;
+  //backgroundthreads.BackgroundThreadMan.WaitForThreads;
 
-  rqMan.shutdown;
+
 
   
 
@@ -476,7 +474,26 @@ begin
 //  AuditLog('Stopped successfully.');
 end;
 
-initialization
+procedure oinit;
+begin
   webserver := TMothershipWebServer.create;
+end;
+
+procedure ofinal;
+begin
+  //THIS will not work until dependencies are cleared up
+  //this is whack.  There's a DM somewhere it talks to
+  //a webprocessor which talked to this class.
+  //this class is really just a dispatcher and stupidly named
+  //DM->WebProcessor->MothershipWebServer
+
+//  webserver.free;
+//  webserver := nil;
+end;
+
+initialization
+
+init.RegisterProcs('MothershipWebServer', oinit, ofinal, 'NamedCommandList,CommandProcessor,ManagedThread');
+
 
 end.

@@ -1,9 +1,9 @@
 unit RegisteredMemory;
-
+{$DEFINE NULL_REGISTRY}
 interface
 
 uses
-  betterobjectregistry, typex, systemx, betterobject, sharedobject, generics.collections, debug, sysutils;
+  betterobjectregistry, typex, systemx, betterobject, sharedobject, generics.collections, debug, sysutils, numbers;
 
 type
   TRegisteredMemory = class
@@ -28,6 +28,9 @@ type
     procedure Detach;override;
     procedure FreeByPointer(p: pointer);
     function Allocate(sz: TSize; sTag: string): pointer;
+    procedure AssertRegistered(p: pointer);
+    function IsRegistered(p: pointer; sz: ni = 1): boolean;
+
   end;
 
 function GetRegisteredMemory(sz: TSize; sTag: string): pointer;inline;
@@ -106,6 +109,13 @@ begin
 
 end;
 
+procedure TMemoryRegistry.AssertRegistered(p: pointer);
+begin
+
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
+end;
+
 procedure TMemoryRegistry.Detach;
 var
   t: ni;
@@ -176,6 +186,23 @@ begin
   FList := TList<TRegisteredMemory>.create;
 end;
 
+
+function TMemoryRegistry.IsRegistered(p: pointer; sz: ni): boolean;
+begin
+  Lock;
+  try
+    for var t:= 0 to FList.count-1 do begin
+      var rm := Flist[t];
+
+      if InRange(nativeint(p), nativeint(rm.p), nativeint(rm.p)+rm.size-1) then
+        exit(true);
+    end;
+  finally
+    Unlock;
+  end;
+  exit(false);
+
+end;
 
 initialization
   memReg := TMEmoryREgistry.create;

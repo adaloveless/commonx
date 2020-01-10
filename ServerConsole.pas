@@ -9,7 +9,7 @@ uses
   VCLTee.TeEngine, VCLTee.TeeProcs, VCLTee.Chart, systemx, backgroundThreads, managedthread,
   requestManager, better_Sockets, webprocessor,
   newserversocketthread, advancedgraphics, easyimage, pngimage, formbase,
-  consolelock, System.ImageList, colorblending;
+  consolelock, System.ImageList, colorblending, FrameHostPanel, FormBGThreadWatcher;
 
 const
   poop = CM_CURSORCHANGED;
@@ -30,18 +30,32 @@ type
     lblDOs2: TLabel;
     lblRQs: TLabel;
     lblDOs: TLabel;
+    cbNoDetails: TCheckBox;
+    lblLWP: TLabel;
+    Timer2: TTimer;
+    Timer3: TTimer;
+    lblThreadpool: TLabel;
+    ActionList1: TActionList;
+    CheckBox1: TCheckBox;
+    Panel2: TPanel;
+    Edit1: TEdit;
+    Button5: TButton;
+    Label2: TLabel;
+    btnResetHits: TButton;
+    lblAccepts: TLabel;
+    Label4: TLabel;
+    Panel3: TPanel;
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
+    lvObjects: TListView;
     TabSheet2: TTabSheet;
     Chart1: TChart;
     Series1: TPieSeries;
-    lvObjects: TListView;
     TabSheet3: TTabSheet;
     Splitter3: TSplitter;
     Chart2: TChart;
     PieSeries1: TPieSeries;
     lvAgents: TListView;
-    cbNoDetails: TCheckBox;
     TabSheet4: TTabSheet;
     lbRQs: TListBox;
     Button3: TButton;
@@ -50,35 +64,13 @@ type
     Button4: TButton;
     TabSheet6: TTabSheet;
     memMem: TMemo;
-    lblLWP: TLabel;
     TabSheet8: TTabSheet;
-    lvBackground: TListView;
-    Timer2: TTimer;
-    Timer3: TTimer;
-    lblThreadpool: TLabel;
-    ActionList1: TActionList;
-    CheckBox1: TCheckBox;
-    cMemory: TChart;
-    PieSeries2: TPieSeries;
+    FrameHostBackground: TFrameHostPanel;
+    Splitter1: TSplitter;
+    Panel5: TPanel;
+    lvStatus: TListView;
     cObjects: TChart;
     Series2: TBarSeries;
-    Panel2: TPanel;
-    Panel3: TPanel;
-    lvStatus: TListView;
-    memGLOG: TMemo;
-    Splitter1: TSplitter;
-    Edit1: TEdit;
-    Button5: TButton;
-    Panel4: TPanel;
-    imgRcv: TImage;
-    imghttp: TImage;
-    imgTrans: TImage;
-    lblHTTP: TLabel;
-    Label2: TLabel;
-    popThreads: TPopupMenu;
-    btnResetHits: TButton;
-    lblAccepts: TLabel;
-    Label4: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
@@ -86,7 +78,6 @@ type
     procedure RefreshHitsMessage(var Msg: TMessage); message WM_USER+1;
     procedure MarshallDebug(var Msg: TMessage); message WM_USER+5;
 
-   procedure RefreshHits; overload;
     procedure Button2Click(Sender: TObject);
     procedure ServerSocket1ThreadEnd(Sender: TObject;
       Thread: TServerClientThread);
@@ -108,7 +99,6 @@ type
     procedure Timer2Timer(Sender: TObject);
     procedure Timer3Timer(Sender: TObject);
     procedure FormPaint(Sender: TObject);
-    procedure popThreadsPopup(Sender: TObject);
     procedure btnResetHitsClick(Sender: TObject);
   private
     { Private declarations }
@@ -128,12 +118,13 @@ type
     { Public declarations }
     FMarshallDebug : TStringlist;
     procedure RefreshHits(sender: TObject);overload;
-    procedure ThreadMenuClick(sender: TObject);
     procedure UnmarshallDebugger(sText: ansistring);
+    procedure FirstActivation; override;
      property LWPConnections: integer read GetLWPConnections write SetLWPConnection;
     procedure IncLWP;
     procedure DecLWP;
     property LastSelectedThread: TManagedThread read FBGThr write FBGThr;
+
   end;
 
   TKillthread = class(TThread)
@@ -192,35 +183,11 @@ begin
 
 end;
 
-//------------------------------------------------------------------------------
-procedure TfrmWebConsole.ThreadMenuClick(sender: TObject);
-var
-  idx: integer;
-begin
-  idx := popThreads.Items.IndexOf(sender as TMenuItem);
-
-  if LastSElectedThread <> nil then begin
-    LastSelectedThread.MenuAction(idx);
-  end;
-
-end;
 
 procedure TfrmWebConsole.Timer1Timer(Sender: TObject);
 var
   s: ansistring;
 begin
-  s := debug.debuglog.DrainLog;
-  if s <> '' then
-    memGLOG.lines.add(s);
-
-//  if memGlog.Lines.count > 0 then begin
-//    if memGlog.lines[memGlog.lines.count-1] = '' then
-//      memGlog.lines.delete(memglog.lines.count-1);
-//  end;
-
-  if memGLOG.lines.count > 25000 then
-    memGLOG.lines.clear;
-
 
 
 
@@ -231,12 +198,6 @@ begin
   if not (WebServer.State = wssRunning) then
     exit;
 
-
-  lblLWP.caption := 'Lightwieght:'+inttostr(LWPConnections);
-
-//  memMem.lines.clear;
-//  memMem.lines.add('Count:'+inttostr(GetManagerCount));
-//  memMem.lines.add('Capacity:'+inttostr(GetManagerCapacity));
   try
     //if not Timer1.enabled then
     //  exit;
@@ -244,16 +205,6 @@ begin
     Timer1.Enabled := false;
     try
       inherited;
-      try
-      RefreshHits;
-    //    PostMessage(self.handle, WM_USER+1, 0,0);
-
-    //    WebThreads.ExpireThreads;
-
-      except
-//        LogWebMessage('Exception at Timer Event');
-//        LogWebMessage('Exception: '+exception(exceptobject).Message);
-      end;
     finally
       Timer1.Enabled := true;
     end;
@@ -269,291 +220,6 @@ procedure TfrmWebConsole.FormClose(Sender: TObject;
 begin
   inherited;
   Timer1.enabled := false;
-end;
-//------------------------------------------------------------------------------
-procedure TfrmWebConsole.RefreshHits;
-var
-  t: integer;
-  thr2: TManagedThread;
-  thr3: TThread;
-  item : TListItem;
-  tmNow: cardinal;
-  sTemp: ansistring;
-  cTemp1, cTemp2: cardinal;
-  iTemp1, iTEmp2: integer;
-  rqTemp: TRequestInfo;
-  v: variant;
-  iRes: integer;
-  fTemp: real;
-  s: ansistring;
-  c,l,i: integer;
-  ACtive, Dead, PendingSuspend: integer;
-begin
-  if not assigned(WebServer) then
-    exit;
-
-  if bRefreshing then
-    exit;
-
-//  Pool := 0;
-//  Dead := 0;
-
-  ACtive := 0;
-  Dead := 0;
-  Pendingsuspend := 0;
-
-//  dmMothership.tcp.ServerSocketThread.GEtSTats(ACtive,Dead,PendingSuspend);
-  lblThreadPool.Caption := inttostr(ACtive)+'/'+inttostr(Dead)+'/'+inttostr(PendingSuspend);
-//  lblThreadPool.Caption := lblThreadPool.caption + '  ' +inttostr(Pool)+'/'+inttostr(Dead);
-
-  sTemp := Doob.LastAudit;
-  if sTemp <> '' then
-    lbRQs.Items.Add(sTemp);
-
-  lbRQs.ItemIndex := lbRQs.Items.count-1;
-
-  bRefreshing := true;
-  try
-//  exit;
-  tmNow := GetTickCount;
-  t:= doob.count div 10;
-  if t<100 then t:= 100;
-  if (tmNow>tmLAstRefresh) and ((tmNow-tmLastRefresh) < t) and (not self.cbNoDetails.checked) then begin
-    application.processmessages;
-    exit;
-  end;
-
-  tmLastRefresh := tmNow;
-
-  try
-    lblHits.Caption := inttostr(webserver.HitCount);
-    lblAccepts.Caption := inttostr(webserver.HitAcceptCount);
-    //lblHits.Caption := inttostr(iHitCount);
-(*    WebThreadMan.LockRead;
-    LockConsole;
-    ForceItemCount(lvStatus, WebThreadMan.ThreadCount);
-    lvStatus.Columns[0].Caption := 'Requests ('+inttostr(webThreadMan.Threadcount)+')';
-    try
-      iTemp1 := WebThreadMan.ThreadCount-1;
-      for t:=  0 to iTEmp1 do begin
-        thr := WebThreadMan.threads[t];
-        item := lvStatus.Items[iTemp1-t];
-        item.ImageIndex := 2;
-        if item.caption <> thr.StateString then
-          item.caption := thr.StateString;
-
-      end;
-    finally
-      WebThreadMan.UnLockRead;
-      UnLockConsole;
-    end;*)
-    RqMan.LockRead;
-    LockConsole;
-    ForceItemCount(lvStatus, RqMan.Count);
-    lvStatus.Columns[0].Caption := 'Requests ('+inttostr(rqMan.count)+')';
-    try
-      iTemp1 := rqMan.Count-1;
-      for t:= 0 to iTemp1 do begin
-        if not socketsallowed then
-          exit;
-        item := lvStatus.Items[t];
-        rqTemp := rqMan.RealRequests[t];
-
-        item.ImageIndex := round(rqTemp.PercentComplete * 32)+8;
-        if (rqTemp.PercentComplete = 1) then begin
-          item.ImageIndex := (GEtTickCount div 100) mod 8;
-        end;
-
-        s := rqMan.Requests[t];
-//        s := rqMan.RealRequests[t].Request.Document;
-        if item.caption <> s then
-          item.caption := inttostr(rqMan.RealRequests[t].ThreadID)+':'+s;
-
-        if item.SubItems.Count < 1 then
-          item.SubItems.Add(floattostrF(rqMan.Ages[t]/1000, ffFixed, 20, 3))
-        else
-          item.SubItems[0] := (floattostrF(rqMan.Ages[t]/1000, ffFixed, 20, 3))
-
-      end;
-    finally
-      RqMan.UnLockRead;
-      UnLockConsole;
-    end;
-
-
-    //ServerSocket1.
-    //background threads
-    BackgroundthreadMan.LockRead;
-    try
-      ForceItemCount(lvBackground, BackgroundthreadMan.count);
-      lblBackgroundthreads.caption := WebServer.StateString;
-
-      for t:= 0 to BackgroundthreadMan.count-1 do begin
-        thr2 := BackgroundthreadMan.threads[t];
-        item := lvBackground.Items[t];
-        ForceSubItems(item, 7);
-        if thr2.Spin then begin
-          if not thr2.AutoSpin then
-            item.ImageIndex := thr2.Step mod 8
-          else
-            item.imageindex := (item.imageindex+1) mod 8;
-        end else begin
-          if thr2.trylock(100) then
-          try
-            c := thr2.Step;
-            l := thr2.StepCount;
-            if l > 0 then
-              i := round((c / l)*32)
-            else
-              i := 0;
-
-            if i> 32 then i:=32;
-            if i <0 then i:= 0;
-            item.ImageIndex := 8+i;
-          finally
-            thr2.Unlock;
-          end;
-
-
-        end;
-        if thr2.trylock(100) then
-        try
-          if (item.caption <> inttostr(thr2.threadid)) then
-            item.caption := inttostr(thr2.threadid);
-
-          if item.subitems[0] <> thr2.Name then
-            item.subitems[0] := thr2.Name;
-
-          //read last tick
-          if item.SubItems[6] <> '' then
-            cTemp1 := cardinal(strtoint(item.Subitems[6]))
-          else
-            cTemp1 := 0;
-
-          //read last work value
-          if item.SubItems[3] <> '' then
-            iTemp1 := strtoint(item.Subitems[4])
-          else
-            iTemp1 := 0;
-
-
-          //get current tick
-          cTemp2 := GetTickCount;
-
-          item.SubItems[6] := inttostr(integer(cTemp2));
-
-          //calc tick difference
-          cTEmp2 := cTemp2-cTemp1;
-
-          //read current work value
-          iTemp2 := thr2.Step;
-
-          //calculate work throughput
-          if cTemp2 >0 then
-            fTemp := (iTemp2-iTemp1)/(cTemp2/1000)
-          else
-            fTemp := 0.0;
-
-          //write out values
-          item.SubItems[1] := thr2.Status;
-          item.SubItems[2] := inttostr(thr2.Step);
-          item.SubItems[3] := inttostr(thr2.StepCount);
-          item.SubItems[4] := inttostr(thr2.Iterations);
-          item.SubItems[5] := floattostrF(fTemp,ffFixed, 18,3);
-
-        finally
-          thr2.unlock;
-        end;
-      end;
-    finally
-      BackgroundthreadMan.UnLockRead;
-    end;
-
-
-    DOOB.LockRead;
-    try
-      lvObjects.Columns[0].Caption := 'Objects ('+inttostr(DOOB.count)+')';
-      if doPeak < DOOB.count then
-        doPeak := DOOB.count;
-
-      cObjects.SeriesList[0].clear;
-      cObjects.SeriesList[0].Add(doob.count, 'cur', clYellow);
-      cObjects.SeriesList[0].Add(doPeak, 'peak', clRed);
-
-
-
-      if not cbNoDetails.checked then begin
-        ForceItemCount(lvObjects, DOOB.count);
-
-        for t:= 0 to DOOB.count-1 do begin
-          item := lvObjects.Items[t];
-
-          item.Caption := doob.Objects[t];
-          item.ImageIndex := 2;
-        end;
-      end;
-
-      try
-        //Chart1.SeriesList.Series[0].XValue[0] := 50;
-        //Chart1.SeriesList.Series[0].XValue[1] := 50;
-          lblRQs.Caption := inttostr(DOOB.TotalRequests);
-          lblDOs.Caption := inttostr(DOOB.TotalObjects);      except
-      On E: Exception do
-        showmessage(e.message);
-      end;
-
-    finally
-      DOOB.UnLockRead;
-    end;
-
-
-
-    chart1.SeriesList[0].Clear;
-    //Chart1.SeriesList.Series[0].Add(doob.totalobjects, 'DOs', clRed);
-    chart1.SeriesList[0].Add(WebServer.HitCount, 'Hits', clBlue);
-    chart1.SeriesList[0].Add(doob.totalrequests, 'RQs', clSilver);
-
-              
-    self.refresh;
-
-    RqMan.UserAgents.lock;
-    try
-      ForceItemCount(lvAgents, RqMan.UserAgents.count);
-
-      chart2.SeriesList[0].Clear;
-      for t:= 0 to RqMan.UserAgents.count -1 do begin
-        lvAgents.Items[t].Caption := RqMan.UserAgents.Agents[t];
-        if lvAgents.Items[t].SubItems.count < 1 then
-          lvAgents.items[t].SubItems.add('__');;
-
-        lvAgents.Items[t].SubItems[0] := inttostr(RqMan.UserAgents.AgentStats[t]);
-
-      chart2.SeriesList[0].Add(RqMan.UserAgents.AgentStats[t], RqMan.UserAgents.Agents[t]);
-
-
-
-      end;
-    finally
-      RqMan.UserAgents.Unlock;
-    end;
-
-    httpStatus.lock;
-    try
-      imgHTTP.Visible := httpstatus.InTransaction > 0;
-      imgTrans.Visible := httpstatus.InTransmit > 0;
-      imgRcv.Visible := httpstatus.InReceive > 0;
-      lblHTTP.caption := 'D:'+inttostr(httpstatus.InReceive)+' T:'+inttostr(httpstatus.InTransaction)+' U:'+inttostr(httpstatus.InTransmit);
-    finally
-      httpStatus.unlock;
-    end;
-
-  except
-    on E: Exception do
-      lblBackGroundThreads.caption := E.message;
-  end;
-  finally
-    bRefreshing := false;
-  end;
 end;
 //------------------------------------------------------------------------------
 procedure TfrmWebConsole.Button2Click(Sender: TObject);
@@ -582,6 +248,15 @@ begin
   lbRQs.items.clear;
 end;
 //------------------------------------------------------------------------------
+procedure TfrmWebConsole.FirstActivation;
+begin
+  inherited;
+  var debugframe := TfrmBGThreadWatcher.Create(self);
+  debugframe.parent := FrameHostBackground;
+  debugframe.align := alClient;
+
+end;
+
 procedure TfrmWebConsole.ForceItemCount(lv: TlistView; iQuantity: integer);
 var
   temp: TListItem;
@@ -606,11 +281,8 @@ end;
 procedure TfrmWebConsole.FormDestroy(Sender: TObject);
 begin
   if WebServer<> nil then begin
-    WebServer.Stop;
     FMarshallDebug.free;
-    WebServer.free;
   end;
-  WebServer := nil;
   inherited;
 
 end;
@@ -642,11 +314,7 @@ end;
 //------------------------------------------------------------------------------
 procedure TfrmWebConsole.RefreshHitsMessage(var Msg: TMessage);
 begin
-
-  if bRefreshing then
-    exit;
-
-  RefreshHits;
+  //
 end;
 //------------------------------------------------------------------------------
 procedure TfrmWebConsole.Listen(Sender: TObject);
@@ -677,7 +345,6 @@ begin
   for t:= 0 to 25 do begin
     //application.processmessages;
     sleep(100);
-    refreshHits;
   end;
 
 
@@ -765,7 +432,7 @@ begin
   LockConsole;
   try
 
-    FMarshallDebug.add(MakeThreadSafe(sText));
+    FMarshallDebug.add(MakeThreadSafe(string(sText)));
     //postmessage(self.handle, WM_USER+5, 0,0);
     //memMarsh.lines.add(sText);
 
@@ -795,46 +462,6 @@ begin
 
 end;
 
-procedure TfrmWebConsole.popThreadsPopup(Sender: TObject);
-var
-  man: TThreadManager;
-  t: integer;
-  thr: TManagedThread;
-  itm: TMenuItem;
-begin
-  man := backgroundthreadman;
-  man.Lock;
-  try
-    popThreads.Items.Clear;
-    LAstSElectedThread := nil;
-    t := lvBackGround.ItemIndex;
-    if t < 0 then exit;
-    if t >= man.count then exit;
-
-    thr := man.Threads[t];
-    LastSelectedThread := thr;
-    if thr.trylock(0) then
-    try
-      for t:= 0 to thr.MenuCount-1 do begin
-        itm := TMenuItem.create(self);
-        itm.Caption := thr.menu[t];
-        popThreads.Items.Add(itm);
-        itm.OnClick := self.ThreadMenuClick;
-      end;
-    finally
-      thr.unlock;
-    end;
-
-
-
-
-
-
-  finally
-    man.unlock;
-  end;
-
-end;
 
 procedure TfrmWebConsole.Button5Click(Sender: TObject);
 var
@@ -846,21 +473,14 @@ end;
 procedure TfrmWebConsole.tcpAccept(Sender: TObject;
   ClientSocket: TBetterCustomIpClient);
 var
-  proc: TWebProcessor;
+  proc: Tcmd_ProcessWebRequests;
 begin
-  proc := TWebProcessor.create;
+  proc := Tcmd_ProcessWebRequests.create;
   try
-    proc.ClientSocketProxy := clientsocket;
-//    proc.rqInfo := TRequestInfo.create;
-    try
-      proc.Process;
-    except
-    end;
-
+    proc.Start;
+    proc.waitfor;
   finally
-    proc.rqInfo.Free;
     proc.free;
-    ClientSocket.Close;
   end;
 
 end;
@@ -927,16 +547,6 @@ begin
   if not (WebServer.State = wssRunning) then
     exit;
 
-  rqMan.lockwrite;
-  try
-    for t:= 0 to rqMan.Count-1 do begin
-      rqMan.sync(t);
-
-
-    end;
-  finally
-    rqMan.UnlockWrite;
-  end;
 end;
 
 

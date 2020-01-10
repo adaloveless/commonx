@@ -1,6 +1,11 @@
 unit rdtpdb;
 {$I DelphiDefs.inc}
 {$DEFINE DO_WRITE_BEHIND}
+{$DEFINE QUERY_LOGGIng}
+{$IFDEF NO_QUERY_LOGGING}
+{$UNDEF QUERY_LOGGING}
+{$ENDIF}
+
 
 interface
 
@@ -331,7 +336,7 @@ var
 begin
   result := nil;
   tm := GetTicker;
-  Debug.Log('Read Query: '+sQuery);
+{$IFDEF QUERY_LOGGING}  Debug.Log('Read Query: '+sQuery);{$ENDIF}
   result := cli.ReadQuery(sQuery);
 //  Debug.Log('Query Took: '+commaize(gettimesince(tm))+'ms.');
 end;
@@ -416,15 +421,15 @@ end;
 
 procedure Trdtpdb.ReadQuery_Begin(sQuery: string);
 begin
-  Debug.Log('BEGIN Read Query: '+sQuery);
+{$IFDEF QUERY_LOGGING}  Debug.Log('BEGIN Read Query: '+sQuery);{$ENDIF}
   cli.ReadQuery_Async(sQuery);
 end;
 
 function Trdtpdb.ReadQuery_End: TSERowSet;
-var
-  tm: ticker;
+//var
+//  tm: ticker;
 begin
-  tm := GetTicker;
+//  tm := GetTicker;
   result := cli.ReadQuery_Response;
 //  Debug.Log('END Read Query took '+commaize(gettimesince(tm))+'ms.');
 end;
@@ -446,7 +451,7 @@ procedure Trdtpdb.Writebehind(sQuery: string; bDontLog: boolean = false);
 begin
   inherited;
   if not bDontLog then
-    Debug.Log('WriteBehind: '+sQuery);
+{$IFDEF QUERY_LOGGING}    Debug.Log('WriteBehind: '+sQuery);{$ENDIF}
 {$IFDEF DO_WRITE_BEHIND}
   if gettimesince(tmLastReadyCheck) > 30000 then begin
     cli.ReadyToWriteBehind;
@@ -461,7 +466,7 @@ end;
 
 procedure Trdtpdb.WriteQuery(sQuery: string);
 begin
-  Debug.Log('Write: '+sQuery);
+{$IFDEF QUERY_LOGGING}  Debug.Log('Write: '+sQuery);{$ENDIF}
   cli.WriteQuery(sQuery);
 end;
 

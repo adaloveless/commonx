@@ -86,7 +86,9 @@ begin
     if v = 1 then begin
       v:=0;
 //      {$IFNDEF NOSTATS}if MainMan.Freebytes > (iTotal shr 2) then begin{$ENDIF}
+      {$IFNDEF PEAK_MEMORY}
         MainMan.Clean;
+      {$ENDIF}
 //      {$IFNDEF NOSTATS}end;{$ENDIF}
     end;
 

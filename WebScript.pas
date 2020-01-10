@@ -186,6 +186,9 @@ begin
   if varType(v) = varString then
     result := sptString
   else
+    if varType(v) = varOleStr then
+    result := sptString
+  else
   if varType(v) = varNull then
     result := sptString
   else
@@ -311,7 +314,7 @@ begin
     end;
     on E: Exception do begin
       Debug.Log('In '+rqInfo.request.document+' Error in:'+sTagBody+ '--'+E.Message);
-      raise Exception.create('In '+rqInfo.request.document+' Error in:'+sTagBody+ '--'+E.Message);
+      raise EScriptError.create('In '+rqInfo.request.document+' Error in:'+sTagBody+ '--'+E.Message);
     end;
   end;
 end;

@@ -78,6 +78,7 @@ type
     FFreeWithReferences: boolean;
     fDetached: boolean;
     detachbegan, detachended: boolean;
+    DestroyDangerousCompleted: boolean;
 {$IFDEF GIVER_IN_TOBJECT}
     FReturnTo: TGiver;
 {$ENDIF}
@@ -85,8 +86,12 @@ type
     function GetIsDead: boolean;
   protected
 {$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
+{$IFNDEF AUTOREFCOUNT}
     FRefSect: TCLXCriticalSection;
 {$ENDIF}
+{$ENDIF}
+    procedure DestroyDangerous;
+    procedure DoDangerousDestruction;virtual;
   public
     Next, Prev: TBetterObject;
 {$IFDEF LINKOWNERS}
@@ -109,6 +114,7 @@ type
     procedure EndDetach;virtual;
     procedure Detach;virtual;
     procedure DetachAndFree;
+    procedure PreFree;
     procedure DnF;inline;
     property Detached: boolean read FDetached write Fdetached;
 
@@ -129,7 +135,6 @@ type
     property ReturnTo: TGiver read FReturnTo;//if taken from a giver, this property will be set.
     procedure Return;//INSTEAD OF calling FREE, try giving it to the giver instead (pooling)
 {$ENDIF}
-
 
   end;
 
@@ -437,12 +442,33 @@ type
   public
   end;
 
+  IAutoScope = interface
+    procedure Track(o: TObject);
+  end;
+
+  TAutoScope = class(TSharedObject, IAutoScope)
+  protected
+    tracking: array of TObject;
+    procedure DoDangerousDestruction; override;
+  public
+
+    procedure Track(o: TObject);
+    procedure DestroyObjectsInScope;
+
+  end;
+
+
+
 var
+  gNamedLocks: TNamedLocks;
   nodebug: boolean;
 
 const
   WRITE_LOCK = 2;
   READ_LOCK = 1;
+
+
+function AutoScope: IAutoScope;
 
 
 
@@ -451,6 +477,18 @@ implementation
 { TBetterObject }
 
 uses BetterObjectRegistry, orderlyinit, debug;
+
+function AutoScope: IAutoScope;
+var
+  tas: TAutoScope;
+begin
+  tas := TAutoScope.create;
+  result := tas;
+{$IFNDEF AUTOREFCOUNT}
+  tas._Release;
+{$ENDIF}
+
+end;
 
 procedure TBetterObject.AfterConstruction;
 begin
@@ -488,7 +526,9 @@ end;
 constructor TBetterObject.create;
 begin
 {$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
+{$IFNDEF AUTOREFCOUNT}
   ics(FRefSect);
+{$ENDIF}
 {$ENDIF}
 {$IFDEF REGISTER_OBJECTS}
   if TBetterObject.EnableRegistry then
@@ -508,9 +548,7 @@ end;
 
 destructor TBetterObject.Destroy;
 begin
-{$IFDEF UNDEAD_PROTECTION}
-  DeadCheck;
-{$ENDIF}
+  DestroyDangerous;
   if not FDetached then
     Detach;
   inherited;
@@ -519,7 +557,9 @@ begin
     bor.ObjectDestroyed(TBetterClass(self.ClassType), '');
 {$ENDIF}
 {$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
+{$IFNDEF AUTOREFCOUNT}
   dcs(FRefSect);
+{$ENDIF}
 {$ENDIF}
 {$IFDEF UNDEAD_PROTECTION}
   FDead := $DEAD;
@@ -528,6 +568,28 @@ begin
 
 end;
 
+
+procedure TBetterObject.DestroyDangerous;
+begin
+  if DestroyDangerousCompleted then
+    exit;
+
+  try
+    try
+      DoDangerousDestruction;
+    except
+      on E: Exception do begin
+        Debug.Log('Exception in '+self.classname+'.DestroyDangerous was SUPPRESSED because raising Exceptions during Destruction is a very bad thing.  This object will potentially be leaked.');
+        Debug.Log('The Exception was: '+e.message);
+        Debug.Log('Since there might be other functionality dependent on this failed ');
+        Debug.Log('destruction, the proper resolution for this issue is considered "undefined" by rule. ');
+        Debug.Log('Recommended action is to do dangerous destruction via public methods before actual calls to Destroy() or Free()');
+      end;
+    end;
+  finally
+    DestroyDangerousCompleted := true;//flag "do not call again"... even if we leaked stuff
+  end;
+end;
 
 procedure TBetterObject.Detach;
 begin
@@ -554,6 +616,13 @@ end;
 procedure TBetterObject.DnF;
 begin
   DetachAndFree;
+end;
+
+procedure TBetterObject.DoDangerousDestruction;
+begin
+  {$IFDEF UNDEAD_PROTECTION}
+    DeadCheck;
+  {$ENDIF}
 end;
 
 procedure TBetterObject.EndDetach;
@@ -602,6 +671,26 @@ begin
   result := self.QueryInterface(guid,cout)= 0;
 end;
 
+
+procedure TBetterObject.PreFree;
+//This function calls Detach() and DestroyDangerous() ... essentially doing
+//essentially doing the heavy lifting before the actual destruction.
+//you should call this if there are concerns about exceptions being raise during
+//the destructor of an object.  It is a good idea to PreFree stuff if there is
+//the potential for issues during destruction... e.g. a Stream might hit an
+//error during a required flush() operation during destruction... or
+//Generally speaking... anything that does I/O of any kind, network, disk, usb...
+//is potentially dangerous.. and should be in DestroyDangerous() and
+//PreFree should be called before the object goes out of scope
+//if you don't call PreFree, PreFree will be automatically called during the
+//destructor... but again... not the best idea in some cases.
+//*NOTE*NOTE*NOTE* that calling PreFree() does not suppress Exceptions
+//instead opting for you to implement your own exception handling in the calling
+//function.
+begin
+  Detach();
+  DoDangerousDestruction;
+end;
 
 function TBetterObject.QueryInterface(const IID: TGUID; out Obj): HResult;
 begin
@@ -677,7 +766,8 @@ function TBetterObject._Release: Integer;
 begin
   if FDead = $DEAD then
     raise ECritical.create('trying to release a dead object');
-{$IFDEF AUTOREFCOUNT}
+
+{$IFNDEF AUTOREFCOUNT}
   ecs(FRefSect);
 {$ENDIF}
   DeadCheck;
@@ -709,12 +799,15 @@ end;
 
 procedure oinit;
 begin
+  gNamedLocks := TNamedLocks.create;
 //  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
 
 procedure ofinal;
 begin
+  gNamedLocks.free;
+  gNamedLocks := nil;
 //  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
@@ -780,6 +873,15 @@ begin
   FO := value;
   if Fo is TBetterObject then
     TBetterObject(Fo).FreeWithReferences := true;
+
+//  if Fo is TSharedObject then begin
+//    {$IFNDEF NO_SHARED_OBJECT_HOLDER_REMINDER}
+//      Debug.Log('Note that wrapping a '+Fo.classname+' descended from TSharedObject has the effect of releasing the global singleton reference and should not be used for singleton objects.');
+//    {$ENDIF}
+//    Fo._Release();
+//  end;
+
+
 
 
 
@@ -877,6 +979,7 @@ end;
 function TGiver.GivenIsGivable(obj: Tobject): boolean;
 begin
   //
+  result := true;
 end;
 
 {$ENDIF}
@@ -1997,6 +2100,38 @@ begin
     Unlock;
   end;
 
+end;
+
+{ TAutoScope }
+
+procedure TAutoScope.DestroyObjectsInScope;
+var
+  sFreeing: string;
+begin
+  inherited;
+  for var t:= high(tracking) downto 0 do begin
+    try
+      sFreeing := tracking[t].classname;
+      tracking[t].Free;
+    except
+      on E:Exception do begin
+        Debug.Log('Unable to free '+sFreeing+' from TAutoScope.  Exceptions raised during destruction may yield unexpected behavior by rule.  '+'Destruction of other objects in the the scope WILL continue, however the object in question may have leaked.  Try ensuring no exceptions are raised during destruction.');
+      end;
+    end;
+  end;
+
+  setlength(tracking,0);
+end;
+
+procedure TAutoScope.DoDangerousDestruction;
+begin
+  DestroyObjectsInScope;
+end;
+
+procedure TAutoScope.Track(o: TObject);
+begin
+  setlength(tracking, length(tracking)+1);
+  tracking[high(tracking)] := o;
 end;
 
 initialization

@@ -3,7 +3,7 @@ unit ProjectManager;
 interface
 
 uses
-  typex, systemx, threadmanager, managedthread,commandprocessor, webconfig, debug, diagram, sysutils, SharedObject, PascalCompiler,  BackgroundThreads, classes, docgen, mothershipwebserver, generics.collections, orderlyinit;
+  typex, systemx, threadmanager, managedthread,commandprocessor, webconfig, debug, diagram, sysutils, SharedObject, PascalCompiler,  BackgroundThreads, classes, docgen, mothershipwebserver, generics.collections, orderlyinit, betterobject;
 
 type
   TProjectManager = class(TLockQueuedObject)
@@ -238,10 +238,12 @@ begin
 //  GLOG.Filter := '';
 //  p.AddSourceDir('G:\focus\komodo\drivers\decoders\micronas', '*.h', true);
 //  p.AddSourceFile('g:\focus\komodo\drivers\decoders\micronas\include\_aaa.h');
-//  p.AddSourceDir(dllpath+'..\commonx', '*.pas', false);
-  p.AddSourceDir(dllpath+'..\parsetest', '*.pas', false);
+  p.AddSourceDir(dllpath+'..\commonx', '*.pas', false);
+//  p.AddSourceDir(dllpath+'..\parsetest', '*.pas', false);
 //  p.AddSourceFile(dllpath+'..\commonx\systemx.pas');
   QueueCommands;
+
+
 
 
 
@@ -264,7 +266,7 @@ procedure TProjectManagerThread.MenuAction(idx: nativeint);
 begin
   inherited;
   case idx of
-    0: Redo := true; 
+    MT_MENU_INDEX+0: Redo := true;
   end;
 end;
 
@@ -281,10 +283,9 @@ begin
 
     cc := TCompileCommand.create;
     cc.Project := FPM.Projects[0];
+    cc.FireForget := false;
     cc.start;
-
-
-
+    cc.waitfor;
   finally
     FPM.UnlockWrite;
   end;

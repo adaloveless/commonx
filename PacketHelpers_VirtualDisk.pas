@@ -162,7 +162,7 @@ begin
   params.MaxRaidSpan := packet.seqread;
   params.LazySourceFetch := packet.seqread;
   params.LocalRedundancy := packet.seqread;
-  params.DiskSize := packet.seqread;
+  params.XXDiskSize := packet.seqread;
 end;
 
 

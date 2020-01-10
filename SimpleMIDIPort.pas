@@ -3,7 +3,7 @@ unit SimpleMIDIPort;
 interface
 
 uses
-  numbers, helpers.stream, systemx, debug, tickcount, Midi, ringbuffer, SimpleAbstractConnection, classes, windows, stringx, sysutils, consolelock, typex, simplebufferedconnection, signals, SimpleMIDIBase;
+  numbers, helpers_stream, systemx, debug, tickcount, Midi, ringbuffer, SimpleAbstractConnection, classes, windows, stringx, sysutils, consolelock, typex, simplebufferedconnection, signals, SimpleMIDIBase;
 
 
 type

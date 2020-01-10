@@ -280,7 +280,7 @@ type
 implementation
 
 uses
-  dirfile,helpers.stream;
+  dirfile,helpers_stream;
 
 { TMultiBufferStream }
 

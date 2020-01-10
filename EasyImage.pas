@@ -10,7 +10,7 @@ interface
 
 uses system.uitypes, system.types, system.rtlconsts, gdipapi, betterobject, ColorConversion, beeper, generics.collections.fixed,tickcount,
     vcl.graphics, typex, sysutils, classes, GDIPOBJ, winapi.windows, math, orderlyinit, numbers, colorblending, vcl.imaging.pngimage, controls, extctrls,
-    Vcl.Imaging.GIFImg, sharedobject, debug, geometry, commandprocessor, dir, dirfile, systemx, helpers.stream, fastbitmap, vcl.imaging.jpeg, graphicsx;
+    Vcl.Imaging.GIFImg, sharedobject, debug, geometry, commandprocessor, dir, dirfile, systemx, helpers_stream, fastbitmap, vcl.imaging.jpeg, graphicsx;
 
 
 const primary_hues: array[0..8] of TColor = ($FF, $7fFF, $FFFF, $FF00, $FFFF00, $FF0000, $FF009F, $FF00FF,$FFFFFF);

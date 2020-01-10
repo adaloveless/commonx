@@ -25,13 +25,6 @@ interface
 //     bottle-neck is saturated.  So a goal should be to saturate the
 //     bottle-neck with useful operations
 
-
-
-
-
-
-
-
 //Structure of the TUnbufferedFileStream:
 //locks of interest
 //  lckState: usage lock (maintained by external users)
@@ -100,18 +93,13 @@ uses
 {$ENDIF}
   betterobject, multibufferstream, SimpleQueue, sharedobject, typex, classes, sysutils, managedthread, numbers,debug, betterfilestream, collision, systemx, periodicevents, commandprocessor, commands_system, linked_list;
 
-
-
-
 const
-  ALLOCATION_UNIT_SIZE = 4096;
-  QUEUE_DEPTH = 514;
+  //ALLOCATION_UNIT_SIZE = 4096;
 //  L0_CACHE_SIZE:int64 = int64(262144);
 //  L0_CACHES:int64 = 256;
   STREAM_SPIN = 0;
   L1_CACHE_SEGMENTS = 2048;
   L1_TOTAL_CACHE:int64 = int64(262144*L1_CACHE_SEGMENTS);
-
 
   MAX_QUEUE_COMBINE_SIZE = 262144*4;
 
@@ -130,7 +118,6 @@ const
 //    UNBUFFERMASK: Uint64 = UNBUFFERSIZE-1;
 //    UNBUFFERED_BUFFERED_PARTS = 32;
   {$ENDIF}
-
 {$ELSE}
   {$IFDEF HUGE}
 //  UNBUFFERSIZE = int64(262144*2*2);
@@ -426,6 +413,7 @@ type
     lck: TCLXCriticalSection;
     DirtyCount: ni;
     ubs: TUnbufferedFileStream;
+    ContainsSomeZeroes: boolean;
     procedure FirstInit;
     procedure Init;
     procedure Finalize;
@@ -616,14 +604,14 @@ type
     function Write(const Buffer; Count: Longint): Longint; override;//
     function Seek(const offset: int64; Origin: TSeekOrigin): int64; override;//
 
-    procedure GuaranteeSyncWrite(pb: Pbyte; count: ni);//
+    procedure GuaranteeSyncWrite(pb: Pbyte; count: ni; bZeroFlag: boolean = false);//
     procedure GuaranteeSyncread(pb: Pbyte; count: ni);//
 
     procedure SyncWriteZeros(sz: ni);//
     function SyncRead(var Buffer; Count: Longint): Longint;inline;//
     procedure EnterIdleState;
     procedure EnterActiveState;
-    function SyncWrite(const Buffer; Count: Longint): Longint;inline;//
+    function SyncWrite(const Buffer; Count: Longint; bZeroFlag: boolean = false): Longint;inline;//
     function SyncSeek(const offset: int64; Origin: TSeekOrigin): int64;inline;//
     function FrontSeek(const offset: int64; Origin: TSeekOrigin): int64;inline;//
 
@@ -665,8 +653,10 @@ type
 //var
 //  g_alarm: boolean;
 var
-  g_FORCE_UB_PREFETCH : ni = 64;
-  FLUSH_TIME_LIMIT : nativeint;
+  G_ub_QUEUE_DEPTH :ni = 3000;
+  g_FORCE_UB_PREFETCH : ni = 3;
+  g_USE_OPTIMAL_FLUSH: boolean = false;
+  FLUSH_TIME_LIMIT : nativeint = 23;
   balancer: TCLXCriticalSection;
 
 
@@ -683,7 +673,7 @@ uses
 {$IFDEF BAD_USES}
   virtualdisk_advanced,
 {$ENDIF}
-  multibufferqueuestream, helpers.stream, stringx, multibuffermemoryfilestream;
+  multibufferqueuestream, helpers_stream, stringx, multibuffermemoryfilestream;
 
 { TQueueStream }
 
@@ -739,6 +729,7 @@ procedure TQueueStream.BeginWrite(const addr: int64; const pointer: pbyte;
 var
   wq: TWriteCommand;
 begin
+  queue.maxitemsinqueue := G_UB_queUE_DEPTH;
 //  if addr > FtrackedSize then
 //    raise ECritical.create('cannot write to point beyond end of file without expanding');
 //  if not EnableQueue then begin
@@ -866,7 +857,7 @@ procedure TQueueStream.Init;
 begin
   inherited;
   FQueue := TPM.NeedThread<TStreamQueue>(self);
-  FQueue.MaxItemsInQueue := QUEUE_DEPTH;
+  FQueue.MaxItemsInQueue := G_UB_QUEUE_DEPTH;
   FQueue.Name := FQueue.classname +' for '+classname;
   Fqueue.loop := true;
   FQueue.Start;
@@ -1320,7 +1311,7 @@ begin
 
   ubs:=Tunbufferedfilestream.Create(sfile, mode, 0,0);
   aqs := TAdaptiveQueuedStream.create(ubs, true);
-  aqs.Queue.MaxItemsInQueue := QUEUE_DEPTH;
+  aqs.Queue.MaxItemsInQueue := G_UB_QUEUE_LENGTH;
   mbs := TmultibufferQueueStream.create(aqs,true);
 //  mbs.AllowReadPastEOF := true;
   mbs.BufferSEgments := L1_CACHE_SEGMENTS;
@@ -1864,10 +1855,10 @@ var
   buf: PUnbuffer;
   tm: ticker;
   bRepeat: boolean;
-  pct: single;
+//  pct: single;
   workingMaxdirtyTime: ni;
 begin
-  if GEtTimeSince(lastuse) < 8000 then
+  if GEtTimeSince(lastuse) < FLUSH_TIME_LIMIT then
     exit;
   bRepeat := true;
   tm := 0;
@@ -1876,15 +1867,16 @@ begin
     bRepeat := false;
     if TECS(self.lckBuffers) then
     try
-      pct := PercentBuffersFlushed;
-      pct := 1.0-greaterof((pct * 2) -1, 0.0);
-      workingMaxDirtyTime := greaterof(100,round(10000 * pct));
+//      pct := PercentBuffersFlushed;
+//      pct := 1.0-greaterof((pct * 2) -1, 0.0);
+//      workingMaxDirtyTime := greaterof(100,round(10000 * pct));
       for t:= 0 to high(Fbuffers) do begin
         buf := @FBuffers[t];//todo 1: use Fbufferorders
         if TECS(buf.lck) then
         try
-          if (buf.AnyDirty and (gettimesince(buf.Dirtytime) > workingMaxDirtyTime)) or buf.AllDirty then begin
-            FlushPage(buf);
+          if (buf.AnyDirty and (gettimesince(buf.Dirtytime) > 100)) or buf.AllDirty then begin
+            if not buf.ContainsSomeZeroes then
+              FlushPage(buf);
             if GetTimeSince(tm)>FLUSH_TIME_LIMIT then begin
               break;
             end;
@@ -2088,7 +2080,7 @@ begin
   //create a periodic event for checking the flush state
   periodic := Tevent_UBFSCheckFLush.create;
   periodic.owner := self;
-  periodic.Frequency := 250;
+  periodic.Frequency := FLUSH_TIME_LIMIT;
   periodic.enabled := true;
   //add it to the global periodic event aggregator
   PEA.Add(periodic);
@@ -2463,7 +2455,7 @@ begin
     min := nil;
     for t:= 1 to high(FBuffers) do begin
       cur := @FBuffers[t];
-      if cur.AnyDirty and (cur.wasfetched or cur.AllDirty) then begin
+      if ((not cur.ContainsSomeZeroes) and cur.AnyDirty and cur.wasfetched) or cur.AllDirty then begin
         if (min = nil) or (cur.pagenumber < min.pagenumber) then
           min := cur;
       end;
@@ -2989,7 +2981,7 @@ begin
   end;
 end;
 
-procedure TUnbufferedFileStream.GuaranteeSyncWrite(pb: Pbyte; count: ni);
+procedure TUnbufferedFileStream.GuaranteeSyncWrite(pb: Pbyte; count: ni; bZeroFlag: boolean = false);
 var
   ijustwrote: integer;
   cx: int64;
@@ -3006,14 +2998,14 @@ begin
   tm1 := GetTicker;
   while cx > 0 do begin
     iToWrite := cx;
-    ijustwrote := SyncWrite(wptr^, iToWrite);
+    ijustwrote := SyncWrite(wptr^, iToWrite, bZeroFlag);
     inc(wptr, iJustWrote);
     dec(cx, ijustwrote);
   end;
   tm2 := GetTicker;
   tmDif := GetTimeSince(tm2,tm1);
 //  Debug.Log('Write '+self.FileName+' sz='+count.tostring+' in '+tmDif.tostring);
-  if GetTimeSince(tm2,tm1) > 12000 then begin
+  if GetTimeSince(tm2,tm1) > 60000 then begin
     inc(warnings);
   end;
   finally
@@ -3074,7 +3066,7 @@ begin
   try
     for t:= 1 to high(FBuffers) do begin
       cur := @FBuffers[t];
-      if (cur.pagenumber = iPAgeNumber) and cur.anydirty and (cur.wasfetched or cur.AllDirty) then begin
+      if (not cur.ContainsSomeZeroes) and (cur.pagenumber = iPAgeNumber) and ((cur.anydirty and cur.wasfetched) or cur.AllDirty) then begin
         exit(cur);
       end;
     end;
@@ -3178,6 +3170,9 @@ begin
 {$IFNDEF USE_OPTIMAL_FLUSH}
   exit;
 {$ENDIF}
+  IF not g_USE_OPTIMAL_FLUSH then
+    exit;
+
   writebuilder.New;
   buf := FindLowestWriteThrough;
   if buf = nil then exit;
@@ -3508,7 +3503,7 @@ begin
   //if the last explicit op was a read
   //then fetch
   //if not lastopwaswrite then begin
-    if (allowed_prefetches > 0) and ((upstreamhints = nil) or (UpStreamHints.pendingOps = 0)) then begin
+    if (allowed_prefetches > 0) (*and ((upstreamhints = nil) or (UpStreamHints.pendingOps = 0))*) then begin
           while allowed_prefetches > 0 do begin
             sfthread.step := allowed_prefetches;
 //            if EXTQueue.estimated_queue_size > 1 then
@@ -3660,7 +3655,7 @@ begin
   prefetchposition := value shr UNBUFFERSHIFT;
 end;
 
-function TUnbufferedFileStream.SyncWrite(const Buffer; Count: Integer): Longint;
+function TUnbufferedFileStream.SyncWrite(const Buffer; Count: Integer; bZeroFlag: boolean = false): Longint;
 var
   iPossible: int64;
   iOffSet: int64;
@@ -3721,7 +3716,7 @@ begin
 //      rsWrite1.EndTime;
 
 
-
+      buf.ContainsSomeZeroes := bZeroFlag;
 
 
 
@@ -3787,7 +3782,7 @@ begin
     iTotalWritten := 0;
     while iTotalWritten < sz do begin
       iJustWritten := lesserof(262144, sz-iTotalWritten);
-      GuaranteeSyncWrite(p, iJustWritten);
+      GuaranteeSyncWrite(p, iJustWritten, true);
       iTotalWritten := iTotalWritten + iJustWritten;
     end;
   finally
@@ -4075,6 +4070,7 @@ end;
 function TAdaptiveQueuedStream.BeginAdaptiveRead(p: pbyte;
   iSize: int64; bForget: boolean): TReadCommand;
 begin
+
   iSize := lesserof(iSize, size-Position);
   result := BeginRead(position, p, iSize, false, bForget);
   Position := Position + iSize;
@@ -4140,6 +4136,7 @@ end;
 
 procedure TAdaptiveQueuedStream.queue_onidle(sender: TObject);
 begin
+  queue.maxitemsinqueue := G_UB_queUE_DEPTH;
 //  if FQueue.TryLock then
 //  try
 //    if understream is TUnbufferedFileStream then begin
@@ -4449,7 +4446,6 @@ end;
 
 initialization
 {$IFDEF MSWINDOWS}
-  FLUSH_TIME_LIMIT := 50;
   ics(balancer);
   balancer.throttle := 0;
 //  g_alarm := false;

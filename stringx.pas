@@ -14,6 +14,11 @@ uses
 
 const
   CRLF = #13#10;
+{$IFDEF MSWINDOWS}
+  NL = CRLF;
+{$ELSE}
+  NL = #10;
+{$ENDIF}
 type
   TSplitSet = array of string;
 
@@ -102,6 +107,8 @@ function AmpEncode(s: string): string;
 function AnsiStringToBytes(s: ansistring): TArray<byte>;
 function AnsiStringToTBytes(ss: ansistring): Tbytes;
 function BytesToAnsiString(b: TArray<byte>): ansistring;
+function InterpretInterval(sTimeRepresentation: string): double;overload;
+function InterpretInterval(sTimeRepresentation: string; defaultIfblank: double): double;overload;
 
 
 function Unquote(s: string): string;
@@ -165,7 +172,7 @@ function stringToDumbRAM(s: string): pointer;
 function  DumbRamToString(p: pointer): string;
 procedure FreeDumbRamString(var p: PDumbRamString);
 function BoolString(bCondition: boolean; sTrue: string=''; sFalse: string = ''): string;
-function VarToMYSQLStorage(v: variant): string;
+{function VarToMYSQLStorage(v: variant): string;}
 function VArtoJSONStorage(v: variant): string;
 function SQLEscape(s: string): string;
 procedure SaveStringAsFile(sFile: string; data: string);
@@ -250,7 +257,7 @@ function ordEX(c: widechar): nativeint;overload;
 {##############################################################################}
 implementation
 uses
-  helpers.stream, unittest;
+  helpers_stream, unittest;
 
 type
   TUT_StringX = class(TUnitTest)
@@ -2155,7 +2162,7 @@ begin
   end;
 end;
 
-function VarToMYSQLStorage(v: variant): string;
+{function VarToMYSQLStorage(v: variant): string;
 var
   vt: cardinal;
 begin
@@ -2180,7 +2187,7 @@ begin
   else begin
     result := vartoSTr(v);
   end;
-end;
+end;}
 
 function SplitStringNoCaseExKeepSplit(sRealSource, sSplitter: string; var sLeft, sRight: string; notinLeft, notInRight: string; bStartAtRight: boolean = false; bPutDelimiterInRight: boolean = true): boolean; overload;
 begin
@@ -4560,6 +4567,86 @@ begin
   system.setlength(result, length(b));
 {$ENDIF}
   movemem32(result.addrof[STRZ], @b[0], length(b));
+end;
+
+function InterpretInterval(sTimeRepresentation: string; defaultIfblank: double): double;
+begin
+  if trim(sTimeRepresentation)= '' then
+    exit(defaultIfBlank)
+  else
+    exit(InterpretInterval(sTimeRepresentation));
+end;
+function InterpretInterval(sTimeRepresentation: string): double;
+var
+  l,r: string;
+begin
+  result := 1.0;
+  try
+    sTimeRepresentation := trim(sTimeRepresentation);
+    var s := lowercase(sTimeRepresentation);
+    var hasDecimal := zpos('.',sTimeRepresentation) >=0;
+    var hasMS := false;//(length(s)>2) and pos('ms', lowercase(sTimeRepresentation))=(high(sTimeRepresentation)-1);
+    var hasS := (not hasMS) and (zpos('s',lowercase(sTimeRepresentation))=high(sTimeRepresentation));
+    var hasM := (pos('m',lowercase(sTimeRepresentation))=high(sTimeRepresentation));
+    var hasH := (pos('h',lowercase(sTimeRepresentation))=high(sTimeRepresentation));
+    var hasD := (pos('d',lowercase(sTimeRepresentation))=high(sTimeRepresentation));
+
+
+    //if the time ends with 'ms' then we assume seconds
+    if hasMS then begin
+      SplitString(s, 'ms', l,r);
+      var d: double := strtofloat(l);
+      d := d;
+      d := (d/(24*60*60*1000));
+      exit(d);
+    end else
+    //if the time ends with 's' then we assume seconds
+    if hasS then begin
+      SplitString(s, 's', l,r);
+      var d: double := strtofloat(l);
+      d := (d/(24*60*60));
+      exit(d);
+    end else
+    //if the time ends with 'm' then we assume minutes
+    if hasM then begin
+      SplitString(s, 'm', l,r);
+      var d: double := strtofloat(l);
+      d := (d/(24*60));
+      exit(d);
+    end else
+    //if the time ends with 'h' then we assume hours
+    if hasH then begin
+      SplitString(s, 'h', l,r);
+      var d: double := strtofloat(l);
+      d := (d/(24));
+      exit(d);
+    end else
+    //if the time ends with 'd' then we assume days
+    if hasD then begin
+      SplitString(s, 'd', l,r);
+      var d: double := strtofloat(l);
+      exit(d);
+    end else
+    //if time is represented as a decimal, then we assume that this is a fraction of a day
+    if hasDecimal then begin
+      var d: double := strtofloat(s);
+      exit(d);
+    end else
+    //if the time is a whole number, then we assume days
+    begin
+      var d: double := strtofloat(s);
+      d := d;
+      exit(d);
+    end;
+
+  except
+    on E: Exception do begin
+      e.message := 'Illegal time value! Could not decode '+sTimeRepresentation+' '+e.message;
+      raise;
+    end;
+  end;
+
+
 end;
 
 

@@ -6,7 +6,7 @@ interface
 uses
   typex, tickcount, generics.collections.fixed, betterobject, controls, sysutils, geometry, AdvancedGraphics, messages,
   sharedobject, graphics, types, stdctrls, classes, direct3d9_jedi, dx9_tools, easyimage, exe, tools, colorconversion, colorblending, fastbitmap,
-  extctrls, d3dutils, dxut, DXUTMisc, comctrls, systemx, d3dx9, windows, stringx, helpers.stream, stringx.ansi, numbers, orderlyinit, applicationparams, namevaluepair;
+  extctrls, d3dutils, dxut, DXUTMisc, comctrls, systemx, d3dx9, windows, stringx, helpers_stream, stringx.ansi, numbers, orderlyinit, applicationparams, namevaluepair;
 
 
 CONST

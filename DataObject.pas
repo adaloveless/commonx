@@ -6,7 +6,7 @@ interface
 
 uses
 
-	TickCount, Classes, Sysutils, betterobject, sharedobject, webstring, numbers,
+	TickCount, Classes, Sysutils, betterobject, sharedobject, webstring, numbers, mysqlstoragestring,
   InterfaceList, PersistentInterfacedObject, stringx, variants, typex, systemx, better_collections;
 
 var
@@ -47,7 +47,7 @@ type
     cbSmallList,
     cbHuge);
 
-  TDataFieldType = (dftUndefined, dftString, dftShort, dftLong, dftDouble, dftDateTime, dftBoolean, dftVariant);
+  TDataFieldType = (dftUndefined, dftString, dftShort, dftLong, dftBigInt, dftDouble, dftDateTime, dftBoolean, dftVariant);
   TDataObjectOrigin = (dorNew, dorFetch, dorGhost, dorNotValid);
 
   TDataObject = class; //forward declaration
@@ -141,6 +141,7 @@ type
     FListOf: string;
     FIdentityKeyCount: ni;
     FOrderBy: string;
+    FLimit: ni;
     procedure SetOrphaned(const Value: boolean);
     function GetXMLElementName: string;virtual;
     function GetSpecialFieldDefs: TStringList;
@@ -328,6 +329,8 @@ type
     procedure AfterWriteField(field: TDataField);virtual;
 
     function Fetch(sType: string; tokenparams: variant; sessionid: ni): TDataObject;
+    function LazyFetch(sType: string; tokenparams: variant; sessionid: ni; bRaiseExceptions: boolean = true): TDataObject;
+    function GhostObject(sType: string; tokenparams: variant; sessionid: ni): TDataObject;
 
 
   public
@@ -626,6 +629,7 @@ type
     procedure DefineCustomFetchQuery(sQuery_UseNullStringForProcedurallyGenerated: string; keyNames: array of string; iAutoIncrementKeyCount: ni);
     property TableLink: string read FTableLink;
     property Orderby: string read FOrderBy write ForderBy;
+    property Limit: ni read FLimit write FLimit;
     property FetchQuery: string read GetFetchQuery;
     property InsertQuery: string read GetInsertQuery;
     property UpdateQuery: string read GetUpdateQuery;
@@ -2290,7 +2294,17 @@ begin
                     end else
                       RaiseTypeCastException(v);
                 end;
+    dftBigInt: begin
+                  if ((varInteger and VarType(v)) = varInteger)
+                  or ((varShortint and VarType(v)) = varShortInt)
+                  or ((varInt64 and VarType(v)) = varInt64)
+                  or ((varSmallint and VarType(v)) = varSmallInt)
+                  then
+                    owner.FFieldDefs[FMyIndex].Value := v
+                  else
+                    RaiseTypeCastException(v);
 
+    end;
     dftLong:    begin
                   if ((varInteger and VarType(v)) = varInteger)
                   or ((varShortint and VarType(v)) = varShortInt)
@@ -2397,6 +2411,8 @@ begin
   else
   if self.classtype = TBooleanDataField then
     result := dftBoolean;
+  if self.classtype = TBigIntDataField then
+    result := dftBigInt;
 end;
 procedure TDataField.Increment;
 begin
@@ -2694,8 +2710,10 @@ begin
   //(special fields are created dynamically and contain special system values)
   if not assigned(result) then begin
     result := CreateSpecialField(sFieldName);
-//    if assigned(result) then
-//      lstSpecialFields.Add(result);
+    if assigned(result) then begin
+      lstSpecialFields.Add(result);
+      CalculateField(sFieldName, result);
+    end;
 
   end;
 
@@ -3313,6 +3331,21 @@ begin
   IsNew := true;
 
 end;
+function TDataObject.GhostObject(sType: string; tokenparams: variant;
+  sessionid: ni): TDataObject;
+begin
+  try
+    if not IServerInterface(TDataObjectCache(cache).server).Ghost(TDataObjectCache(cache),result, sType, tokenparams, self.SessionID) then begin
+      raise ECritical.create('could not fetch '+sType+' from '+self.classname)
+    end;
+  except
+    on e: exception do begin
+      e.message := 'could not ghost '+sType+' from '+self.classname+': '+e.message;
+      raise;
+    end;
+  end;
+end;
+
 //------------------------------------------------------------------------------
 function TDataObject.GetAssocName(idx: integer): string;
 begin
@@ -3567,8 +3600,11 @@ begin
     //Destroy SPECIAL fields in list;
     if assigned(lstSpecialFields) then
       while lstSpecialFields.Count>0 do begin
-        TDataField(lstSpecialFields[0]).free;
-        lstSpecialFields.Delete(0);
+        var sf := TDataField(lstSpecialFields[0]);
+        lstSpecialFields.Delete(0);//apparently all these objects were freed somewhere else
+        //sf.deadcheck;
+        //sf.free;
+
       end;
 
 //    AuditLog('-Associate detach ' +self.name, 'bg');
@@ -3665,7 +3701,8 @@ var
 begin
   result := sQuery;
   for t:= 0 to token.paramcount-1 do begin
-    result := StringReplace(result, '~~~'+inttostr(t)+'~~~', vartomysqlstorage(token.params[t]), [rfReplaceAll]);
+    result := StringReplace(result, '~~~'+inttostr(t)+'~~~', mysqlstoragestring.gvs(token.params[t]), [rfReplaceAll]);
+    result := StringReplace(result, '$$$'+inttostr(t)+'$$$', vartostrex(token.params[t]), [rfReplaceAll]);
   end;
 
 end;
@@ -4085,6 +4122,7 @@ procedure TDataObject.AddCalculatedField(sName: string;
 begin
   SpecialFieldDefs.addObject(sName, pointer(FieldType));
 
+
 end;
 
 procedure TDataObject.BeforeReadField(sFieldName: string);
@@ -4167,19 +4205,25 @@ var
 begin
   sOrder := OrderBy;
   sFilterPhrase := FilterPhrase;
-  result := FFetchQuery;
-  if result = '' then begin
-    result := GetCustomFetchQuery();
-  end else begin
-    if sFilterPhrase <> '' then
-      result := result + FfilterPhrase;
-
-    if sOrder <> '' then
-      result := result +' ORDER BY '+sOrder;
-
-
+  result := GetCustomFetchQuery();
+  if result <> '' then begin
     result := ReplaceQueryKeys(result);
+    exit;
   end;
+
+  result := FFetchQuery;
+  if sFilterPhrase <> '' then
+    result := result + FfilterPhrase;
+
+  if sOrder <> '' then
+    result := result +' ORDER BY '+sOrder;
+
+
+  if LImit > 0 then
+    result := result + ' LIMIT '+inttostr(limit);
+
+
+  result := ReplaceQueryKeys(result);
 
 end;
 
@@ -4392,6 +4436,24 @@ begin
   FFieldCount := 0;
 end;
 
+function TDataObject.LazyFetch(sType: string; tokenparams: variant;
+  sessionid: ni; bRaiseExceptions: boolean = true): TDataObject;
+begin
+  try
+    if not IServerInterface(TDataObjectCache(cache).server).LazyFetch(TDataObjectCache(cache),result, sType, tokenparams, self.SessionID) then begin
+      if bRaiseExceptions then
+        raise ECritical.create('could not fetch '+sType+' from '+self.classname)
+      else
+        exit(nil);
+    end;
+  except
+    on e: exception do begin
+      e.message := 'could not lazy-fetch '+sType+' from '+self.classname+': '+e.message;
+      raise;
+    end;
+  end;
+end;
+
 procedure TDataObject.Link(sType: string; vParams: variant);
 var
   tok: TDataObjectToken;
@@ -4405,7 +4467,7 @@ end;
 
 function TDataField.GetStorageString: string;
 begin
-  result := vartoMYSQLStorage(AsVariant);
+  result := mysqlstoragestring.gvs(AsVariant);
 end;
 
 { TMYSQLDateTimeDataField }

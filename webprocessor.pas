@@ -4,17 +4,57 @@ unit WebProcessor;
 interface
 
 uses betterobject, SharedObject, requestinfo, tickcount,beeper,
-    better_sockets, helpers.sockets, stringx, sockfix,
-    IPClientWrapper, httpclient, systemx, typex,
+    better_sockets, helpers.sockets, stringx, sockfix, commandicons,
+    IPClientWrapper, httpclient, systemx, typex, commandprocessor,
     MotherShipWebServer, classes, sysutils, exceptions, windows, webstring, stringx.ansi, webfunctions;
 
 const
-  SHORT_SOCKET_TIMEOUT =300000;
+  SHORT_SOCKET_TIMEOUT =15000;
   LONG_SOCKET_TIMEOUT = 300000;
+
+CMD_ICON_WWW: TCommandIcon = (BitDepth: 32; RDepth:8;GDepth:8;BDepth:8;ADepth:8;Height:32;Width:32;
+ data:
+(
+($00000000,$00000000,$02000000,$06000000,$01000000,$00000000,$00000000,$00000000,$04000000,$05000000,$11000000,$59010000,$97010001,$C4020001,$E3020001,$FB020001,$F5020001,$D9020001,$B7020001,$85010001,$44010000,$04000000,$00000000,$00000000,$00000000,$05000000,$04000000,$00000000,$00000000,$00000000,$01000000,$04000000),
+($00000000,$03000000,$0A000000,$02000000,$00000000,$00000000,$00000000,$06000000,$2C000000,$97010001,$F2020001,$FF020001,$FF020001,$FF020001,$F4020001,$E5020001,$E9020001,$FB020001,$FF020001,$FF020001,$FF020001,$DC020001,$71010000,$0C000000,$08000000,$07000000,$00000000,$00000000,$00000000,$02000000,$0A000000,$02000000),
+($02000000,$0A000000,$02000000,$00000000,$00000000,$00000000,$0D000000,$86010001,$F6020001,$FF020001,$F2020001,$A3010001,$61010000,$26000000,$00000000,$00000000,$00000000,$0D000000,$BC020001,$FF020001,$FF020001,$FF020001,$FF020001,$DE020001,$50010000,$00000000,$00000000,$00000000,$02000000,$0A000000,$03000000,$00000000),
+($06000000,$02000000,$00000000,$00000000,$00000000,$20000000,$C6020001,$FF020001,$F3020001,$84010001,$15000000,$0A000000,$05000000,$00000000,$00000000,$00000000,$04000000,$0A000000,$7E010001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FE020001,$86010001,$03000000,$02000000,$0A000000,$03000000,$00000000,$00000000),
+($01000000,$00000000,$00000000,$00000000,$25000000,$DB020001,$FF020001,$DF020001,$28000000,$01000000,$0A000000,$05000000,$00000000,$00000000,$00000000,$04000000,$0A000000,$02000000,$32000000,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$A1010001,$0E000000,$03000000,$00000000,$00000000,$00000000),
+($00000000,$00000000,$00000000,$18000000,$D6020001,$FF020001,$FF020001,$F7020001,$2D000000,$0A000000,$05000000,$00000000,$00000000,$00000000,$04000000,$0A000000,$02000000,$00000000,$00000000,$A3010001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$92010001,$00000000,$00000000,$00000000,$02000000),
+($00000000,$00000000,$07000000,$AF010001,$FF020001,$FF020001,$FF020001,$FF020001,$A9010001,$05000000,$00000000,$00000000,$00000000,$04000000,$0A000000,$01000000,$00000000,$00000000,$00000000,$0B000000,$74010000,$F5020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$59010000,$00000000,$05000000,$07000000),
+($00000000,$06000000,$5F010000,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$E8020001,$00000000,$00000000,$00000000,$04000000,$0A000000,$02000000,$00000000,$00000000,$00000000,$08000000,$07000000,$00000000,$38010000,$E0020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$E9020001,$1B000000,$0A000000,$01000000),
+($04000000,$0F000000,$DB020001,$FF020001,$FF020001,$FF020001,$FF020001,$FE020001,$93010001,$00000000,$00000000,$04000000,$0A000000,$02000000,$00000000,$00000000,$00000000,$08000000,$07000000,$00000000,$00000000,$00000000,$1D000000,$C3020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$91010001,$01000000,$00000000),
+($05000000,$5A010000,$FF020001,$FF020001,$FF020001,$FE020001,$AE010001,$3C010000,$00000000,$00000000,$04000000,$0A000000,$01000000,$00000000,$00000000,$00000000,$08000000,$07000000,$00000000,$00000000,$00000000,$02000000,$0A000000,$07000000,$C4020001,$FF020001,$D0020001,$5A010000,$F5020001,$F0020001,$11000000,$00000000),
+($00000000,$B4010001,$FF020001,$FF020001,$FF020001,$BA020001,$00000000,$00000000,$00000000,$04000000,$0A000000,$02000000,$00000000,$00000000,$00000000,$08000000,$07000000,$00000000,$00000000,$00000000,$02000000,$0A000000,$03000000,$00000000,$59010000,$F8020001,$1A000000,$0A000000,$9D010001,$FF020001,$66010000,$00000000),
+($0F000000,$F8020001,$FF020001,$FF020001,$FF020001,$A5010001,$00000000,$00000000,$04000000,$0A000000,$02000000,$00000000,$00000000,$00000000,$08000000,$07000000,$00000000,$00000000,$00000000,$02000000,$0A000000,$03000000,$00000000,$00000000,$16000000,$F1020001,$0A000000,$01000000,$49010000,$FF020001,$AE010001,$05000000),
+($42010000,$FF020001,$FF020001,$FF020001,$FF020001,$9C010001,$00000000,$04000000,$0A000000,$02000000,$00000000,$00000000,$00000000,$08000000,$07000000,$0F000000,$00000000,$00000000,$02000000,$0A000000,$03000000,$00000000,$00000000,$00000000,$05000000,$E2020001,$2C000000,$00000000,$0D000000,$FA020001,$E5020001,$05000000),
+($68010000,$FF020001,$FF020001,$FF020001,$FF020001,$C4020001,$0B000000,$0A000000,$02000000,$00000000,$00000000,$00000000,$08000000,$07000000,$00000000,$BE020001,$8E010001,$12000000,$0A000000,$03000000,$00000000,$00000000,$00000000,$05000000,$15000000,$EF020001,$8B010001,$00000000,$01000000,$D0020001,$FF020001,$15000000),
+($7F010001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$72010000,$02000000,$00000000,$00000000,$00000000,$08000000,$07000000,$00000000,$00000000,$95010001,$FF020001,$E2020001,$56010000,$00000000,$00000000,$00000000,$05000000,$0A000000,$88010001,$FF020001,$FA020001,$69010000,$09000000,$B9010001,$FF020001,$32000000),
+($84010001,$FF020001,$FF020001,$FF020001,$F8020001,$8C010001,$09000000,$00000000,$00000000,$00000000,$08000000,$07000000,$00000000,$00000000,$00000000,$67010000,$FF020001,$FF020001,$FF020001,$AF010001,$22000000,$05000000,$0A000000,$35000000,$FD020001,$FF020001,$FF020001,$FE020001,$54010000,$B0010001,$FF020001,$37010000),
+($79010001,$FF020001,$FD020001,$B0010001,$34000000,$02000000,$00000000,$00000000,$00000000,$08000000,$07000000,$00000000,$00000000,$00000000,$02000000,$40000000,$FF020001,$FF020001,$FF020001,$FF020001,$F1020001,$78010000,$07000000,$03000000,$6B010000,$EC020001,$FF020001,$FF020001,$D4020001,$BE020001,$FF020001,$2E000000),
+($60010000,$FF020001,$9D010001,$0A000000,$02000000,$00000000,$01000000,$09000000,$08000000,$07000000,$00000000,$00000000,$00000000,$02000000,$0A000000,$10000000,$FB020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$CC020001,$39010000,$01000000,$23000000,$A7010001,$FE020001,$FF020001,$F6020001,$FC020001,$11000000),
+($37000000,$FF020001,$BE020001,$02000000,$00000000,$5C010000,$E9020001,$FD020001,$9B010001,$04000000,$00000000,$00000000,$02000000,$0A000000,$03000000,$00000000,$CC020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FC020001,$95010001,$18000000,$00000000,$49010000,$D9020001,$FF020001,$D7020001,$02000000),
+($0A000000,$EF020001,$F5020001,$0F000000,$24000000,$F5020001,$FF020001,$FF020001,$FF020001,$A0010001,$0B000000,$02000000,$0A000000,$03000000,$00000000,$00000000,$9E010001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$E3020001,$57010000,$00000000,$0E000000,$8B010001,$94010001,$00000000),
+($06000000,$A2010001,$FF020001,$66010000,$9C010001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$DF020001,$8E010001,$35000000,$00000000,$00000000,$00000000,$71010000,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$B4010001,$2D000000,$02000000,$03000000,$00000000),
+($01000000,$42010000,$FF020001,$DC020001,$F8020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$44010000,$00000000,$00000000,$05000000,$4A010000,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$F3020001,$76010001,$07000000,$00000000),
+($00000000,$01000000,$C1020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$92010001,$00000000,$00000000,$05000000,$0A000000,$14000000,$FE020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$CB020001,$27000000),
+($00000000,$00000000,$3D000000,$FB020001,$FF020001,$FF020001,$FF020001,$FF020001,$FE020001,$AC010001,$52010000,$00000000,$00000000,$05000000,$0A000000,$01000000,$00000000,$D7020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FA020001,$D3020001,$A3010001,$73010000,$43010000,$15000000,$06000000),
+($00000000,$08000000,$07000000,$81010001,$FF020001,$FF020001,$FF020001,$FF020001,$DC020001,$00000000,$00000000,$00000000,$05000000,$0A000000,$01000000,$00000000,$00000000,$A7010001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$7A010001,$00000000,$00000000,$00000000,$06000000,$09000000,$00000000),
+($05000000,$07000000,$00000000,$04000000,$AF010001,$FF020001,$FF020001,$FF020001,$FD020001,$24000000,$00000000,$05000000,$0A000000,$01000000,$00000000,$00000000,$01000000,$7C010001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$FF020001,$F3020001,$2B000000,$00000000,$06000000,$09000000,$00000000,$00000000),
+($04000000,$00000000,$00000000,$00000000,$0C000000,$B6010001,$FF020001,$FF020001,$FB020001,$4B010000,$05000000,$0A000000,$01000000,$00000000,$00000000,$01000000,$09000000,$50010000,$FF020001,$FF020001,$FF020001,$E6020001,$A1010001,$FF020001,$FF020001,$FF020001,$C7020001,$0C000000,$09000000,$00000000,$00000000,$00000000),
+($00000000,$00000000,$00000000,$02000000,$0A000000,$09000000,$8F010001,$FD020001,$FF020001,$BF020001,$4F010000,$03000000,$00000000,$00000000,$01000000,$09000000,$06000000,$1C000000,$FF020001,$FF020001,$FF020001,$62010000,$0D000000,$D2020001,$FF020001,$FF020001,$FF020001,$83010001,$00000000,$00000000,$00000000,$00000000),
+($00000000,$00000000,$02000000,$0A000000,$03000000,$00000000,$00000000,$48010000,$D6020001,$FF020001,$FF020001,$DC020001,$91010001,$5D010000,$42010000,$33000000,$15000000,$00000000,$E2020001,$FF020001,$B6010001,$02000000,$00000000,$36000000,$F9020001,$FF020001,$FF020001,$F8020001,$36000000,$00000000,$01000000,$06000000),
+($00000000,$02000000,$0A000000,$03000000,$00000000,$00000000,$00000000,$05000000,$0F000000,$61010000,$C3020001,$FD020001,$FF020001,$FF020001,$FF020001,$FF020001,$8E010001,$00000000,$B0010001,$F1020001,$24000000,$00000000,$01000000,$00000000,$80010001,$FF020001,$FF020001,$FF020001,$C0020001,$01000000,$09000000,$04000000),
+($01000000,$0A000000,$03000000,$00000000,$00000000,$00000000,$05000000,$0A000000,$01000000,$00000000,$00000000,$21000000,$68010000,$90010001,$AB010001,$B8020001,$7F010001,$02000000,$87010001,$74010000,$00000000,$00000000,$00000000,$06000000,$0E000000,$C7020001,$FF020001,$FF020001,$E3020001,$09000000,$05000000,$00000000),
+($04000000,$02000000,$00000000,$00000000,$00000000,$02000000,$07000000,$01000000,$00000000,$00000000,$00000000,$05000000,$05000000,$00000000,$00000000,$00000000,$01000000,$07000000,$30000000,$05000000,$00000000,$00000000,$03000000,$06000000,$00000000,$27000000,$D7020001,$FC020001,$7C010001,$04000000,$00000000,$00000000)
+ ));
 type
   TRequestState = (rqsInit, rqsRegister, rqsExecute, rqsClientExecute, rqsInheritedExecute, rqsReadHeader, rqsReadBody, rqsDispatch, rqsScript, rqsWriteHeader, rqsWriteBody, rqsClosed);
 
-  TWebProcessor = class(TFakeLockQueuedObject)
+
+
+
+  Tcmd_ProcessWebRequests = class(TCommand)
   private
     { Private declarations }
     FRequestState: TRequestState;
@@ -32,8 +72,6 @@ type
     function GetStateString: string;
     procedure SetRequestState(const Value: TRequestState);
     function GetRequestState: TRequestState;
-    procedure ClientExecute;
-    procedure Execute;
     function GetSocketProxy: TCustomIPClient;
     procedure SetSocketProxy(const Value: TCustomIPClient);
 
@@ -46,11 +84,14 @@ type
     procedure WriteContent;//
     procedure WriteChunk;//
     procedure WriteResponseData(s: ansistring; iLength: integer = -1);
+    procedure DoExecute; override;
   public
+    procedure Init;override;
     constructor Create;reintroduce;virtual;
     destructor Destroy; override;
     procedure Process(sPreBuf: string = '');
     procedure Process2(sPreBuf: string = '');
+    procedure InitExpense; override;
     property Sendimmediate: boolean read FSendImmediate write FSendimmediate;
     property RequestState: TRequestState read GetRequestState write SetRequestState;
     property StateString: string read GetStateString;
@@ -62,6 +103,8 @@ type
 
     function ReceiveText: string;
     procedure CheckConnected;
+
+
   end;
 
 
@@ -71,21 +114,16 @@ uses debug;
 
 
 
-{ TWebProcessor }
-procedure TWebProcessor.CheckConnected;
+{ Tcmd_ProcessWebRequests }
+procedure Tcmd_ProcessWebRequests.CheckConnected;
 begin
   IF NOT FCLientSocket.Connected THEN
     raise ESocketError.Create('client dropped');
 //  FClientSocket.checkconnected;
 end;
 
-procedure TWebProcessor.ClientExecute;
-begin
-  inherited;
 
-end;
-
-constructor TWebProcessor.create;
+constructor Tcmd_ProcessWebRequests.create;
 begin
   inherited;
   self.FRequestState := rqsInit;
@@ -98,8 +136,10 @@ begin
 
 end;
 
-destructor TWebProcessor.Destroy;
+destructor Tcmd_ProcessWebRequests.Destroy;
 begin
+  FrqInfo.free;
+  FrqInfo := nil;
   inherited;
 
 
@@ -110,31 +150,44 @@ begin
 
 end;
 
-procedure TWebProcessor.Execute;
+
+procedure Tcmd_ProcessWebRequests.DoExecute;
 begin
   inherited;
-
+  Process;
 end;
 
-function TWebProcessor.GetRequestState: TRequestState;
+function Tcmd_ProcessWebRequests.GetRequestState: TRequestState;
 begin
   result := rqsInit;
 end;
 
 
-function TWebProcessor.GetSocketProxy: TCustomIPClient;
+function Tcmd_ProcessWebRequests.GetSocketProxy: TCustomIPClient;
 begin
   result := self.ClientSocket;
 end;
 
 
-function TWebProcessor.GetStateString: string;
+function Tcmd_ProcessWebRequests.GetStateString: string;
 begin
   result := '';
   uniqueString(result);
 end;
 
-procedure TWebProcessor.Process2(sPreBuf: string = '');
+procedure Tcmd_ProcessWebRequests.Init;
+begin
+  inherited;
+  Icon := @CMD_ICON_WWW;
+end;
+
+procedure Tcmd_ProcessWebRequests.InitExpense;
+begin
+  inherited;
+  cpuexpense := 0;
+end;
+
+procedure Tcmd_ProcessWebRequests.Process2(sPreBuf: string = '');
 //This is the main thread execution code.
 var
   tm1, tm2: cardinal;
@@ -145,7 +198,8 @@ begin
   try
     try
       try
-
+        StepCount := 3;
+        Step := 0;
         //Check to see if the Server is stopped, if so, exit immediately.
         if not (WebServer.State = wssRunning) then
           exit;
@@ -153,23 +207,26 @@ begin
 
 //        self.ClientSocket.TimeOut := SHORT_SOCKET_TIMEOUT;
         //Read the stuff
-        debug.log('About to read request',self.classname);
+//        debug.log('About to read request',self.classname);
         FPreload := sPreBuf;
 //        beeper.beep(1000,50);
         ReadRequest;
 //        beeper.beep(500,50);
-        debug.log('Request read:'+rQInfo.Request.Document,self.classname);
+//        debug.log('Request read:'+rQInfo.Request.Document,self.classname);
 //        self.CLientSocket.TimeOut := LONG_SOCKET_TIMEOUT;
 
         //http crap
         rqInfo.Request.Default('connection', 'close');
         FRqInfo.HTTPClient.keepconnectionalive := lowercase(rqInfo.request['connection']) = 'keep-alive';
 
+
         //Dispatch the request
         RequestState := rqsDispatch;
-        debug.log('Dispatching:'+rQInfo.request.document,self.classname);
+        Step := 1;
+//        debug.log('Dispatching:'+rQInfo.request.document,self.classname);
         WebServer.DispatchWebRequest(rqInfo);
-        debug.log('Dispatched:'+rQInfo.request.document,self.classname);
+        Step := 2;
+//        debug.log('Dispatched:'+rQInfo.request.document,self.classname);
 //        self.ClientSocket.TimeOut := SHORT_SOCKET_TIMEOUT;
       except
         //If expception was not handled by the more-elegant exception handlers
@@ -207,11 +264,11 @@ begin
 
 
       if not rqInfo.response.ignore then begin
-        debug.log('Writing Response:'+rQInfo.request.document,self.classname);
+//        debug.log('Writing Response:'+rQInfo.request.document,self.classname);
         //Write the response down the socket.
         WriteResponse;
 
-        debug.log('Response written:'+rQInfo.request.document,self.classname);
+//        debug.log('Response written:'+rQInfo.request.document,self.classname);
       end;
 
       //Report this thread as closed
@@ -226,6 +283,7 @@ begin
 
       debug.log(rqInfo.Request.Command+' '+rqInfo.Request.Document+' '+inttostr(rqInfo.Response.resultcode)+' '+rqInfo.response.Message,'RQINFO');
 
+      Step := 3;
 
     //Log exceptions if not handled elegantly
     except
@@ -247,20 +305,24 @@ begin
       if (not rqInfo.request.HasParam('connection'))
       or (lowercase(rqINfo.request['connection']) <> 'keep-alive')
       or (rqINfo.Response.Connection = rqcClose)
-      then
-        ClientSocket.close;
+//      or true
+      then begin
+        ClientSocket.Disconnect;
 
-      debug.log('Socket closed:'+rQInfo.request.document,self.classname);
+        debug.log('Socket closed:'+rQInfo.request.document,self.classname);
+      end;
     except
     end;
   end;
 end;
-procedure TWebProcessor.Process(sPreBuf: string);
+procedure Tcmd_ProcessWebRequests.Process(sPreBuf: string);
 var
   bKeepAlive: boolean;
   s: string;
   htpKeep: THTTPClient;
+  requests_this_connection: ni;
 begin
+  requests_this_connection := 0;
   htpKeep := nil;
   try
     //! Lets stick a counter in here and count how many times we actually attempt to process something, should be 25 times
@@ -271,6 +333,7 @@ begin
     debug.log('request init');
     try
       debug.log('About to process2: '+FRqInfo.request.document);
+      inc(requests_this_connection);
       Process2(sPreBuf);
       bKeepAlive := rqInfo.response.connection = rqcKeepAlive;
     finally
@@ -291,9 +354,27 @@ begin
       {$ifdef RETAIN_HTTP_CLIENTS}
       FRqInfo.HTTPClient := htpKeep;
       {$endif}
-      FRqInfo.request.document := 'keep-alive after '+s;
-      debug.log('keeping alive');
+//      s := rqinfo.request.document;
+      status := '#'+requests_this_connection.tostring+' keep-alive after '+s;
+      var tmStart := GetTicker;
+      Step := 1;
+      Stepcount := 1;
+      while not self.clientsocket.waitfordata(1000) do begin
+        if gettimesince(tmstart) > 60000 then break;
+        if IsCancelled then break;
+
+      end;
+      if not self.ClientSocket.WaitForData(1) then begin
+        if rqInfo=nil then
+          Debug.Log('rqinfo is nil!');
+        if rqInfo.request=nil then
+          Debug.Log('rqInfo.request is nil!')   ;
+        bKeepAlive := false;
+        status := 'ka-timeout '+s;
+        break;
+      end;
       TRY
+        inc(requests_this_connection);
         rqInfo.Request.Default('connection', 'close');
         //rqINfo.Request['connection'] := 'nil';
         debug.log('About to process from keep alive: '+FRqInfo.request.document);
@@ -321,7 +402,7 @@ begin
 
 end;
 
-procedure TWebProcessor.ReadAvailable(bHeaderComplete: boolean);
+procedure Tcmd_ProcessWebRequests.ReadAvailable(bHeaderComplete: boolean);
 var
   s: string;
 //Reads bytes available on the socket.
@@ -338,7 +419,7 @@ begin
     rqInfo.Request.Raw := rqInfo.Request.Raw + s;
 end;
 
-procedure TWebProcessor.ReadRequest;
+procedure Tcmd_ProcessWebRequests.ReadRequest;
 var
   tm2, tm1: cardinal;
   iFirstSpace: integer;
@@ -475,10 +556,11 @@ begin
     sTemp := copy(sTemp, 1, iFirstSpace-1);
     iFirstSpace := lastpos(' ', sTemp);
     rqInfo.Request.Document := copy(sTemp, 1, iFirstSpace-1);
+    name := rqInfo.Request.command+' '+rqInfo.Request.Document;
 
     rqInfo.Request.command := uppercase(rqInfo.Request.Command);
     rqInfo.Request.Document := rqInfo.Request.Document;
-
+    name := rqInfo.Request.command+' '+rqInfo.Request.Document;
     //showmessage(rqInfo.Request.text);
 
     //Get HEADER PARAMETERS
@@ -514,9 +596,30 @@ begin
 
 
     //GET COOKIE PARAMETERS
-    if (not rqInfo.request.HasParam('content-type') or (not (rqInfo.request['content-type'] = 'application/x-Digital Tundra'))) then
-    if rqInfo.request.HasParam('cookie')  then begin
-      sInlineParams := rqInfo.Request['cookie'];
+    //if (not rqInfo.request.HasParam('content-type') or (not (rqInfo.request['content-type'] = 'application/x-Digital Tundra'))) then
+    if rqInfo.request.HasParam('Cookie')  then begin
+      sInlineParams := rqInfo.Request['Cookie'];
+      repeat
+        //segregate the first parameter definition from the inline parameters
+        SplitString(sInlineParams, ';', sFirstParam, sInlineParams);
+        //Separate the parameter from the parameter value
+        SplitString(sFirstParam, '=', sLeft, sRight);
+
+        while pos('+', sRight) > 0 do begin
+          SplitString(sRight, '+', sLeft2, sRight2);
+          sRight := sLeft2+' '+sRight2;
+        end;
+
+        if sLeft <> '' then begin
+          //Left side is the name
+          //Right side is param value
+          rqInfo.Request.AddParam(DecodeWebString(Trim(sLeft)), DecodeWebString(Trim(sRight)), pcCookie);
+        end;
+      until (sInlineParams = '');
+    end;
+
+    if rqInfo.request.HasParam('CookieEx')  then begin
+      sInlineParams := rqInfo.Request['CookieEx'];
       repeat
         //segregate the first parameter definition from the inline parameters
         SplitString(sInlineParams, ';', sFirstParam, sInlineParams);
@@ -609,7 +712,7 @@ begin
   end;
 end;
 
-function TWebProcessor.ReceiveText: string;
+function Tcmd_ProcessWebRequests.ReceiveText: string;
 var
   i: integer;
   ansi: ansistring;
@@ -632,6 +735,9 @@ begin
   IF clientsocket.WaitForData(SHORT_SOCKET_TIMEOUT) then begin
     setlength(ansi, 512);
     setlength(ansi, helpers.sockets.Socket_Read(clientsocket, Pbyte(@ansi[STRZ]), 512));
+    if length(ansi) = 0 then begin
+      clientsocket.close;
+    end;
     result := ansi;
   end else
     raise ESocketError.Create('timed out/disconnected waiting for text');
@@ -640,31 +746,31 @@ begin
 
 end;
 
-procedure TWebProcessor.SaveLeftOvers(p: Pbyte; len: integer);
+procedure Tcmd_ProcessWebRequests.SaveLeftOvers(p: Pbyte; len: integer);
 begin
   GetMem(FLeftOvers, len);
   MoveMem32(FLeftOvers, p, len);
 end;
 
-procedure TWebProcessor.SetRequestState(const Value: TRequestState);
+procedure Tcmd_ProcessWebRequests.SetRequestState(const Value: TRequestState);
 begin
 
 //TODO -cunimplemented: unimplemented block
 end;
 
 
-procedure TWebProcessor.SetSocketProxy(const Value: TCustomIPClient);
+procedure Tcmd_ProcessWebRequests.SetSocketProxy(const Value: TCustomIPClient);
 begin
   self.ClientSocket := value;
 end;
 
 
-procedure TWebProcessor.WriteChunk;
+procedure Tcmd_ProcessWebRequests.WriteChunk;
 begin
   self.WriteResponseData(rqInfo.Response.Content.text);
 end;
 
-procedure TWebProcessor.WriteContent;
+procedure Tcmd_ProcessWebRequests.WriteContent;
 var
   stream : TStream;
   junk : ansichar;
@@ -716,7 +822,7 @@ begin
   end;
 end;
 
-procedure TWebProcessor.WriteHeader;
+procedure Tcmd_ProcessWebRequests.WriteHeader;
 var
   s: string;
   t: integer;
@@ -810,7 +916,8 @@ begin
     s := s + 'Accept-Ranges: bytes'+#13#10;
   end;
   if rqInfo.response.rangeEnd >= 0 then begin
-    s := s+'Content-Range: bytes '+inttostr(rqInfo.response.rangeStart)+'-'+inttostr(rqInfo.response.rangeEnd)+'/'+inttostr(rqInfo.response.contentstream.size)+#13#10;
+    if rqInfo.response.contentstream <> nil then
+      s := s+'Content-Range: bytes '+inttostr(rqInfo.response.rangeStart)+'-'+inttostr(rqInfo.response.rangeEnd)+'/'+inttostr(rqInfo.response.contentstream.size)+#13#10;
   end;
 
 
@@ -826,7 +933,7 @@ begin
   rqInfo.request.raw := rqInfo.request.raw;
 
 end;
-procedure TWebProcessor.WriteResponse;
+procedure Tcmd_ProcessWebRequests.WriteResponse;
 begin
 
 
@@ -840,7 +947,7 @@ begin
 
 end;
 
-procedure TWebProcessor.WriteResponseData(s: ansistring; iLength: integer = -1);
+procedure Tcmd_ProcessWebRequests.WriteResponseData(s: ansistring; iLength: integer = -1);
 const
   BUF_SIZE = 2;
 begin

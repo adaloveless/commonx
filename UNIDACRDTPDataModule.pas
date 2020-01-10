@@ -56,7 +56,7 @@ type
     { Public declarations }
 
     function GetNextID(sKey: string): int64;override;
-    function GetNextIDEx(sKey: string; sTable, sField: string): int64;override;
+    function GetNextIDEx(sKey: string; sTable, sField: string; count: int64): int64;override;
     function SetNextID(sKey: string; iValue: int64): int64;override;
 
     procedure IncWrite;
@@ -200,13 +200,26 @@ begin
 
   if conn.connected and (stats.InTransaction) then begin
     if stats.WriteQueries > 0 then begin
-      conn.Commit;
+      Debug.Log('commit');
+      try
+        conn.Commit;
+      except
+        on e: exception do begin
+          Debug.Log(self,'Commit exception: '+e.message);
+        end;
+      end;
       stats.init;
       Debug.Log(self,'Transaction Committed');
     end else begin
-//      conn.Rollback;
-      stats.init;
       Debug.Log(self,'No writes to commit');
+      try
+        conn.Commit;
+      except
+        on e: exception do begin
+          Debug.Log(self,'Commit exception: '+e.message);
+        end;
+      end;
+
     end;
   end;
 
@@ -409,7 +422,10 @@ begin
         rs.free;
       end;
 
-      CommitOn(sqlSYstem);
+      try
+        CommitOn(sqlSYstem);
+      except
+      end;
     except
       RollbackOn(sqlSystem);
     end;
@@ -418,11 +434,75 @@ begin
 
 end;
 
-function TUniDACRDTPDataModule.GetNextIDEx(sKey, sTable, sField: string): int64;
+function TUniDACRDTPDataModule.GetNextIDEx(sKey, sTable, sField: string; count: int64): int64;
+var
+  rs: TSERowSet;
 begin
+  result := -1;
 
-  raise ECritical.create('unimplemented');
-//TODO -cunimplemented: unimplemented block
+    BeginTransactionOn(sqlSYstem);
+    try
+      if IsMySQL then begin
+        self.WriteOn(sqlSystem,
+          '	create table if not exists nextid '+CRLF+
+          '	(keyname char(50) PRIMARY KEY, '+CRLF+
+          '	ID bigint);'
+        );
+      end else begin
+        self.WriteOn(sqlSystem,
+          'if not exists (select * from sysobjects where name=''nextid'' and xtype=''U'') '+CRLF+
+          '	create table nextid '+CRLF+
+          '	(keyname char(50) PRIMARY KEY, '+CRLF+
+          '	ID bigint);'+CRLF
+        );
+      end;
+      if IsMySQL then begin
+        self.WriteOn(sqlSystem,
+          ' insert ignore into nextid values ("'+sKey+'",1)'
+        );
+      end else begin
+        self.WriteOn(sqlSystem,
+          'if not exists (select * from nextid where keyname='''+sKey+''') '+CRLF+
+          'begin '+CRLF+
+          '	insert into nextid values('''+sKey+''', 1); '+CRLF+
+          'end; '
+        );
+      end;
+      if IsMySQL then begin
+        self.WriteOn(sqlSystem,
+          ' update nextid set id = id + '+count.tostring+' where keyname = "'+sKey+'"'
+        );
+      end else begin
+        self.WriteOn(sqlSystem,
+          ' update nextid set id = id + '+count.tostring+' where keyname = '''+sKey+''''
+        );
+      end;
+      rs := nil;
+      try
+        if IsMySQL then begin
+          rs := self.ReadOn(
+            sqlSystem,
+            ' select * from nextid where keyname = "'+sKey+'"'
+          );
+        end else begin
+          rs := self.ReadOn(
+            sqlSystem,
+            ' select * from nextid where keyname = '''+sKey+''''
+          );
+        end;
+
+        result := rs['id'];
+      finally
+        rs.free;
+      end;
+
+      try
+        CommitOn(sqlSYstem);
+      except
+      end;
+    except
+      RollbackOn(sqlSystem);
+    end;
 end;
 
 procedure TUniDACRDTPDataModule.SetContext(const Value: string);
@@ -520,11 +600,28 @@ begin
 
   if conn.connected and (stats.InTransaction) then begin
     if stats.WriteQueries > 0 then begin
-      conn.Rollback;
+      Debug.Log(self,'Transaction Rollback after '+stats.writequeries.tostring+' queries');
+      try
+        conn.Rollback;
+      except
+        on e: exception do begin
+          Debug.Log(self,'Rolback exception: '+e.message);
+        end;
+      end;
       stats.init;
-      Debug.Log(self,'Transaction Rollback');
+
     end else begin
+      Debug.Log(self,'Transaction Rollback after 0 queries');
+      try
+        conn.Rollback;
+      except
+        on e: exception do begin
+          Debug.Log(self,'Rolback exception: '+e.message);
+        end;
+      end;
       stats.init;
+
+
 //      Debug.Log(self,'No writes to rollback');
     end;
   end;

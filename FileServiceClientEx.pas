@@ -4,7 +4,7 @@ unit FileServiceClientEx;
 interface
 
 uses
-  typex, numbers, memoryfilestream, FileServiceClient, dir, dirfile, sysutils, classes, systemx, commandprocessor, helpers.stream;
+  debug, typex, numbers, memoryfilestream, FileServiceClient, dir, dirfile, sysutils, classes, systemx, commandprocessor, helpers_stream;
 
 const
 {$IFDEF CPUx64}
@@ -188,8 +188,10 @@ begin
           GEtMem(b, iToWrite);
           ftr.o.Buffer := b;
           ftr.o.StartBlock := iPos;
-          ftr.o.Length := stream_guaranteeread(fs, ftr.o.Buffer, PUT_CHUNK_SIZE);//fs.Read(b[0], PUT_SIZE);
+          ftr.o.Length := stream_guaranteeread(fs, ftr.o.Buffer, iToWrite);//fs.Read(b[0], PUT_SIZE);
           inc(iPos, ftr.o.Length);
+           if prog<> nil then
+            inc(prog.step, ftr.o.Length);
 
           ftr.o.EOF := fs.Position >= fs.Size;
           ftr.o.FileDate := FileDateToDateTime(FileGetDAte(fs.handle));
@@ -220,7 +222,7 @@ end;
 procedure Tcmd_GetFileEx.DoExecute;
 begin
   inherited;
-  cli.GetFileEx(remotefile, localfile, @self.progress);
+  cli.GetFileEx(remotefile, localfile, @self.volatile_progress);
 end;
 
 { Tcmd_PutFileEx }
@@ -228,7 +230,7 @@ end;
 procedure Tcmd_PutFileEx.DoExecute;
 begin
   inherited;
-  cli.GetFileEx(localfile, remotefile, @self.progress);
+  cli.GetFileEx(localfile, remotefile, @self.volatile_progress);
 end;
 
 end.

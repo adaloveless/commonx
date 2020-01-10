@@ -13,8 +13,10 @@ type
   public
 
     function Fetch<T: TDataObject>(keys: variant; cache: TDataObjectCache): T;
+    function Query(s: string; cache: TDataObjectCache): TDataObject;
+    function FunctionQuery(s: string; cache: TDataObjectCache; sDefault: string) : string;
     function Ghost<T: TDataObject>(keys: variant; cache: TDataObjectCache): T;
-    procedure Save(o: TDataObject;  cache: TDataObjectCache);
+    procedure Save(o: TDataObject; cache: TDataObjectCache);
     function New<T: TDataobject>(keys: variant;  cache: TDataObjectCache): T;
     procedure Delete(o: TDataObject; cache: TDataObjectCache; bPending: boolean = true);
     procedure ProcessPendingDeletes(cache: TDataObjectCache);
@@ -77,6 +79,16 @@ end;
 
 
 
+function TDB.FunctionQuery(s: string; cache: TDataObjectCache;
+  sDefault: string): string;
+begin
+  var obj := Query(s, cache);
+  if obj.ObjectCount = 0 then begin
+    exit(sDefault);
+  end;
+  result := obj.obj[0].FieldByIndex[0].AsString;
+end;
+
 function TDB.Ghost<T>(keys: variant;  cache: TDataObjectCache): T;
 var
   si: IServerInterface;
@@ -113,6 +125,14 @@ begin
     si.Delete(cache, obj);
     cache.pendingdeletes.delete(cache.pendingdeletes.count-1);
   end;
+end;
+
+function TDB.Query(s: string; cache: TDataObjectCache): TDataObject;
+var
+  si: IServerInterface;
+begin
+  si := IServerInterface(cache.server);
+  si.Query(cache, result, s, 0, true);
 end;
 
 procedure TDB.Save(o: TDataObject;  cache: TDataObjectCache);

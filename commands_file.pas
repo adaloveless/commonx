@@ -1,11 +1,12 @@
 unit commands_file;
 
+
 interface
 
 
 uses
 {$IFDEF MSWINDOWS}
-{$DEFINE USE_COPY_FILE_EX}
+    {$DEFINE USE_COPY_FILE_EX}
   windows,
 {$ENDIF}
   dirfile, commandprocessor, typex,classes, systemx, tickcount, commandicons, ioutils, debug, numbers, orderlyinit, stringx;
@@ -387,7 +388,7 @@ begin
 
 //      r := r * 4000;
       if r > 1 then r := 1;
-      if r < (1/2) then r := (1/2);
+      if r < (1) then r := (1);
 //
 //      Debug.Log('Source: '+GetDrive(Source),'filecopy');
 //      Debug.Log('Destination: '+GetDrive(Destination),'filecopy');

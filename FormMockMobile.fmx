@@ -1,15 +1,14 @@
 inherited mm: Tmm
   Caption = 'Application'
   ClientHeight = 555
-  ClientWidth = 447
+  ClientWidth = 451
   Position = Designed
   OnCreate = FormCreate
   DesignerMasterStyle = 0
   object q: TPanel
-    Touch.GestureManager = gm
     Touch.InteractiveGestures = [Pan]
     Align = Client
-    Size.Width = 447.000000000000000000
+    Size.Width = 451.000000000000000000
     Size.Height = 555.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 2
@@ -25,10 +24,5 @@ inherited mm: Tmm
     OnTimer = BusyTimerTimer
     Left = 56
     Top = 240
-  end
-  object gm: TGestureManager
-    Sensitivity = 80.000000000000000000
-    Left = 208
-    Top = 264
   end
 end

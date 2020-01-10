@@ -17,10 +17,14 @@ unit commandprocessor;
 {$DEFINE DONT_USE_DQ}
 {$DEFINE FIRE_FORGET_CONTROLLED_BY_CP}
 {$DEFINE CLEANSTALE}
+{x$DEFINE EXEDEBUG}
+{$DEFINE USE_ALL_SLACK}
+
 interface
 
 uses
-  linked_list, better_collections, typex, tickcount,orderlyinit, numbers, System.Diagnostics,clusteredpointerlist, ringstats, signals, destructionqueue, generics.collections.fixed,
+  linked_list, namevaluepair,
+  better_collections, typex, tickcount,orderlyinit, numbers, System.Diagnostics,clusteredpointerlist, ringstats, signals, destructionqueue, generics.collections.fixed,
 {$IFDEF WINDOWS}
   winapi.windows,
 {$ENDIF}
@@ -63,6 +67,8 @@ type
   TResourceStatRecord = record
     MaxLarge, MaxSmall: double;
   end;
+
+  TLogEvent = procedure (sender: TObject; s: string) of object;
 
   TResourceHealthData = class(TSharedObject)
   public
@@ -116,6 +122,7 @@ type
     procedure SetResourceUsage(s: string; u: single);
     function GetResourceByIndex(i: NativeInt): TCommandResourceRecord;
     function  Count: NativeInt;
+    function ToStringListH: IHolder<TStringList>;
   end;
 
   TWaitableCommandList = class;//forward
@@ -133,7 +140,6 @@ type
     FRaiseExceptions: boolean;
     FNameChanged_Volatile: boolean;
     FStatus: string;
-    progress: TProgress;
     subprogress: TProgress;
 
     Fthread: TCommandProcessorChildThread;
@@ -196,9 +202,10 @@ type
     procedure SetIsExecutingNow(const Value: boolean);
     function GetIsConcluded: boolean;
     function GetCPUExpense: single;
+    procedure SetCPUExpense(Value: single);
     function GetNEtworkExpense: single;
     function GetMEmoryExpense: single;
-    procedure SetCPUExpense(Value: single);
+
     procedure SetMemoryExpense(Value: single);
     procedure SetNetworkExpense(Value: single);
     procedure SetWaitingForResources(Value: boolean);
@@ -216,6 +223,7 @@ type
     FSelfDestructTime: ticker;
     FSelfDestructInitiated: boolean;
     FNoThreadvarWait: boolean;
+    FOnLog: TLogEvent;
     procedure SyncFinishGui;
     function GetAffinity: nativeint;
     procedure SetAffinity(const Value: nativeint);
@@ -240,6 +248,7 @@ type
     onFinish_Anon: TCommandFinishedProc;
     onFinish: TOnCommandFinished;
     onFinishGUI: TCommandFinishedProc;
+    volatile_progress: TProgress;
     DontBlockGUI: boolean;//this is just a flag that the gui can use to decide to put up a spinny or not.
     procedure AddLinkage(link: TLInkage<TCommand>; list: TObject);
     function GetlinkageFor(obj: TObject): TLinkage<TCommand>;
@@ -251,6 +260,7 @@ type
     destructor Destroy; override;
     procedure InitExpense; virtual;
     procedure PreProcess; virtual;
+    procedure OnStart;virtual;
 
     procedure PostProcess; virtual;
     procedure Execute;
@@ -351,6 +361,8 @@ type
     property TimeUntilExecute: ticker read GetTimeuntilExecute;
     function GetProgress: TProgressEx;
     procedure SelfDestruct(iTime: ticker);
+    procedure Log(s: string);
+    property OnLog: TLogEvent read FOnLog write FOnLog;
   end;
 
   TCommandList<T: TCommand> = class(TSharedList<T>)
@@ -556,6 +568,7 @@ type
     sect_incoming: TCLXCriticalSection;
     FActiveThreads: TList<TCommandProcessorChildThread>;//<<---only used to determine how many threads are transitioning to the pool
     disallowSelfDestruct: boolean;
+    FResourceLimits: TNameValuePairList;
     procedure ProcessCompletedCommands;
     procedure StartThread;
     procedure StopThread;
@@ -631,6 +644,9 @@ type
     property MyThreadID: NativeInt read GetMyThreadID;
     property ResourceScanTime: ticker read FResourceScanTime write FResourceScanTime;
     function GetCurrenttotalCustomResourceExpense(s: string): single;
+    function GetResourceLimit(s: string): single;
+    procedure SetResourceLimit(s: string; value: single);
+
     function GetCurrentScheduledCustomResourceExpense(s: string): single;
     property ResourceStats: TResourceHealthStats read FResourceStats;
     function TryLockIncoming: boolean;
@@ -707,6 +723,9 @@ function BGCmd: TCommandProcessor;
 implementation
 
 uses
+{$IFDEF EXEDEBUG}
+  exe,
+{$ENDIF}
   commands_system;
 
 procedure CmdPerfLog(s: string);
@@ -829,7 +848,7 @@ end;
 function TCommand.GetProgress: TProgressEx;
 begin
   result.icon := self.icon;
-  result.progress := self.progress;
+  result.progress := self.volatile_progress;
   result.isComplete := self.IsComplete;
   result.isBlocked := self.Blocked;
   result.isRunning := self.Running;
@@ -852,7 +871,7 @@ function TCommand.GetStep: NativeInt;
 begin
 //  Lock;
 //  try
-    Result := progress.step;
+    Result := volatile_progress.step;
 //  finally
 //    Unlock;
 //  end;
@@ -863,7 +882,7 @@ function TCommand.GetStepCount: NativeInt;
 begin
 //  Lock;
 //  try
-    Result := progress.stepcount;
+    Result := volatile_progress.stepcount;
 //  finally
 //    Unlock;
 //  end;
@@ -936,6 +955,15 @@ begin
 
 end;
 
+procedure TCommand.Log(s: string);
+begin
+  Debug.log(s);
+  if assigned(FOnLog) then begin
+    FOnLog(self, s);
+  end;
+
+end;
+
 procedure TCommand.NotifyProgress;
 begin
   Lock;
@@ -952,6 +980,11 @@ end;
 procedure TCommand.OnCancel;
 begin
   //no imp required
+end;
+
+procedure TCommand.OnStart;
+begin
+  //
 end;
 
 procedure TCommand.Process;
@@ -1880,7 +1913,7 @@ procedure TCommand.SetStep(const Value: NativeInt);
 begin
 //  Lock;
 //  try
-    progress.step := Value;
+    volatile_progress.step := Value;
 //  if assigned(Thread) then
 //    thread.step := value;
 //  finally
@@ -1893,7 +1926,7 @@ procedure TCommand.SetStepCount(const Value: NativeInt);
 begin
 //  Lock;
 //  try
-    progress.StepCount := Value;
+    volatile_progress.StepCount := Value;
 //    if assigned(Thread) then
 //      thread.stepcount := value;
 //  finally
@@ -1926,12 +1959,14 @@ end;
 
 function TCommand.Start(by: TCommandProcessor): TCommand;
 begin
+  OnStart;
   Process(by);
   result := self;
 end;
 
 function TCommand.Start: TCommand;
 begin
+  OnStart;
   Process;
   result := self;
 end;
@@ -2485,7 +2520,7 @@ begin
   inherited Create;
   volState := THolder<TCommandProcessorDebugState>.create;
   volState.o := TCommandProcessorDebugState.create;
-
+  FResourceLimits := TNameValuepairList.create;
 {$IFDEF OVERSPILL}
   Overspill := true;
 {$ENDIF}
@@ -2585,6 +2620,9 @@ begin
   rsGetCommand.free;
   FActiveThreads.free;
   volState := nil;
+  FResourceLimits.free;
+  FResourceLimits := nil;
+
   inherited;
 
 end;
@@ -2609,9 +2647,13 @@ begin
   CancelAll;
   RemoveSelfDestructCommands;
   if CommandCount > 0 then
-    Debug.ConsoleLog('WARNING!!! You singlely shouldn''t kill a command processor with '+commandcount.tostring+' commands in it.');
+    Debug.Log('WARNING!!! You singlely shouldn''t kill a command processor with '+commandcount.tostring+' commands in it.');
   while CommandCount > 0 do begin
     Debug.ConsoleLog('Still has: '+commands[0].classname);
+{$IFDEF EXEDEBUG}
+    if commands[0] is Tcmd_RunExe then
+      Debug.ConsoleLog('still has exe '+Tcmd_RunExe(commands[0]).prog);
+{$ENDIF}
     Commands[0].WaitFor;
 //    commands[0].processor := nil;
     if commands[0].fireforget then
@@ -3387,7 +3429,7 @@ procedure TCommandProcessorChildThread.Updatethreadinfo;
 begin
   inherited;
   if assigned(command) then begin
-    Finfo.progress := Command.progress;
+    Finfo.progress := Command.volatile_progress;
     Finfo.status := command.Status;
   end;
 end;
@@ -3483,9 +3525,9 @@ begin
         if (FCommandIndex >= FIncompleteCommands.count) then
           FCommandIndex := 0;
       end;
-      if ((c.CPUExpense > 0.0) and (rC + c.CPUExpense > GetCPUThreadCount)) or
-        ((c.NetworkExpense > 0.0) and (rN + c.NetworkExpense > 1.0))
-        or ((c.MemoryExpense > 0.0) and (rM + c.MemoryExpense > 1.0)) then begin
+      if ((c.CPUExpense > 0.0) and (rC{$IFNDEF USE_ALL_SLACK} + c.CPUExpense{$ENDIF} > GetCPUThreadCount)) or
+        ((c.NetworkExpense > 0.0) and (rN{$IFNDEF USE_ALL_SLACK} + c.NetworkExpense{$ENDIF} > 1.0))
+        or ((c.MemoryExpense > 0.0) and (rM+ c.MemoryExpense > 1.0)) then begin
         inc(t);
         continue;
       end;
@@ -3544,6 +3586,13 @@ begin
   finally
     Unlock;
   end;
+end;
+
+function TCommandProcessor.GetResourceLimit(s: string): single;
+begin
+  var l := FResourceLimits.LockI;
+  result := FResourceLimits.GetItemEx(s, 1.0);
+
 end;
 
 function TCommandProcessor.GEtPercentComplete: single;
@@ -3905,16 +3954,19 @@ begin
         r2others := self.GetCurrentTotalNetworkExpense;
         r4others := self.GetCurrentTotalMemoryExpense;
         r5others := self.GetCurrentTotalMemoryExpenseGB;
-        r1 := r1others + c.CPUExpense;
-        r2 := r2others + c.NetworkExpense;
+        r1 := r1others{$IFNDEF USE_ALL_SLACK} + c.CPUExpense{$ENDIF};
+        r2 := r2others{$IFNDEF USE_ALL_SLACK} + c.NetworkExpense{$ENDIF};
         r4 := r4others + c.MemoryExpense;
-        r5 := r5others + c.MemoryExpenseGB;
-
+        r5 := r5others+ c.MemoryExpenseGB;
+        var physmem := GetPhysicalMemory;
+        if physmem = 0 then begin
+          physmem := 32*billion;
+        end;
         bOverload := (
              ((r1 > GetEnabledCPUCount) and (r1Others>0.0))
           or ((r2 > 1.0) and (r2others > 0.0))
           or ((r4 > 1.0) and (r4others > 0.0))
-          or ((r5 * 1000000000) > GetPhysicalMemory) and (r5others > 0.0));
+          or ((r5 * BiLLION) > physmem) and (r5others > 0.0));
 
         Result := not bOverload;
 
@@ -3927,7 +3979,8 @@ begin
           for T := 0 to cr.count-1 do begin
             crr := cr.GetresourceByIndex(t);
             cru := GetCurrenttotalCustomResourceExpense(crr.Name);
-            if cru+lesserof(crr.Usage,1.0) > 1.0 then begin
+            var crl := GetResourceLimit(crr.name);
+            if cru+lesserof(crr.Usage,crl) > crl then begin
               result := false;
               exit;
             end;
@@ -4022,6 +4075,13 @@ begin
       Unlock;
     end;
 {$ENDIF}
+end;
+
+procedure TCommandProcessor.SetResourceLimit(s: string; value: single);
+begin
+  var l := FResourceLimits.LockI;
+  FResourceLimits.AutoAdd := true;
+  FResourceLimits[s].AsFloat := value;
 end;
 
 procedure TCommandProcessor.StartThread;
@@ -4580,6 +4640,23 @@ begin
 
   finally
     Unlock;
+  end;
+end;
+
+function TCommandResources.ToStringListH: IHolder<TStringList>;
+var
+  rr: TCommandResourceRecord;
+begin
+  result := THolder<TStringList>.create;
+  result.o := TStringList.create;
+  lock;
+  try
+    for var t := 0 to Count-1 do begin
+      rr := FCommandResources[t];
+      result.o.Add(rr.Name+'='+floatprecision(rr.Usage,8));
+    end;
+  finally
+    unlock;
   end;
 end;
 

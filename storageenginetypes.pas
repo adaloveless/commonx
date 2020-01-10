@@ -7,7 +7,7 @@
 interface
 
 uses
-  debug, betterobject, sqlexpr, sysutils, DB, classes, stringx, systemx, variants, typex, MultiBufferMemoryFileStream, helpers.stream, numbers, btree, JSONHelpers, mysqlstoragestring, mssqlStorageString;
+  debug, betterobject, sqlexpr, sysutils, DB, classes, stringx, systemx, variants, typex, MultiBufferMemoryFileStream, helpers_stream, numbers, btree, JSONHelpers, mysqlstoragestring, mssqlStorageString;
 
 const
   SYSTEM_FIELD_COUNT = 1;
@@ -184,7 +184,7 @@ type
     function GetFieldList: IHolder<TStringlist>;
     function GetValueArray(fields: TDynStringArray): TDynVariantArray;
     function GetValueStringArray(fields: TDynStringArray): TDynStringArray;
-
+    procedure Iterate(p: TProc);
 
   end;
 
@@ -1040,6 +1040,14 @@ begin
   end;
 end;
 
+procedure TSERowSet.Iterate(p: TProc);
+begin
+  for var t := 0 to rowcount-1 do begin
+    cursor := t;
+    p();
+  end;
+end;
+
 procedure TSERowSet.LAst;
 begin
   high(FRowset);
@@ -1704,12 +1712,12 @@ begin
     sRow := '';
     for x:= 0 to ds.FieldCount-1 do begin
       if x > 0 then
-        sRow := sRow+','+vartoMYSQLStorage(ds.Values[x,y])
+        sRow := sRow+','+mysqlstoragestring.gvs(ds.Values[x,y])
       else begin
         if bIncludeSEFields then
-          sRow := '(0,'+vartoMYSQLStorage(ds.Values[x,y])
+          sRow := '(0,'+mysqlstoragestring.gvs(ds.Values[x,y])
         else
-          sRow := '('+vartoMYSQLStorage(ds.Values[x,y])
+          sRow := '('+mysqlstoragestring.gvs(ds.Values[x,y])
       end;
     end;
 
@@ -1739,7 +1747,7 @@ begin
       if x > 0 then
         sRow := sRow+',';
 
-      sRow := sRow+ds.fielddefs[x].sName+'='+vartoMYSQLStorage(ds.Values[x,y]);
+      sRow := sRow+ds.fielddefs[x].sName+'='+mysqlstoragestring.gvs(ds.Values[x,y]);
     end;
   end;
 

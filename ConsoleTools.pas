@@ -33,24 +33,37 @@ var
 
 implementation
 
+function TextBar(pct: single): string;
+begin
+  result := '..........';
+  for var t := 0 to (round((pct*100)/10))-1 do begin
+    result[t+low(result)] := '#';
+  end;
+  result := '['+result+']';
+
+end;
 
 procedure WatchCommandInConsole(c: TCommand);
 var
   s: string;
+  iPrevWriteSize: ni;
 begin
+  iPrevWriteSize := 0;
   while not c.WaitFor(250) do begin
     if assigned(c.Thread) then begin
       c.Lock;
       try
-        s := zcopy(c.Thread.GetSignalDebug+' '+floatprecision(c.PercentComplete*100,0)+'% '+c.Status,0,70)+CR;
+        s := zcopy(c.Thread.GetSignalDebug+' '+floatprecision(c.PercentComplete*100,0)+'% '+TextBar(c.PercentComplete)+c.Status,0,70)+CR;
+        Write(stringx.StringRepeat(' ', iPrevWriteSize)+#13);
         Write(s);
+        iPrevWriteSize := length(s);
       finally
         c.unlock;
       end;
 
     end;
   end;
-
+  Write(stringx.StringRepeat(' ', iPrevWriteSize)+#13);
   s := floatprecision(c.PercentComplete*100,0)+'% '+ zcopy(c.Status,0,70)+CR;
   Write(s);
 
