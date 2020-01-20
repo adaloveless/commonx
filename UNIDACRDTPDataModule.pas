@@ -83,7 +83,7 @@ type
     procedure WriteOn(ch: TSQLChannel; sQuery: string); override;
     function ReadOn(ch: TSQLChannel; sQuery: string): TSERowSet; override;
     function IsMYSQL: boolean;
-
+    procedure ResetForPool;override;
   end;
 
 procedure UniSetToRowSet(var rs: TSERowset; ds: TCustomDADataset; bAppend: boolean = false);
@@ -122,7 +122,7 @@ begin
     rs.SetRowCount(i+1);
     for t:= 0 to ds.FieldCount-1 do begin
       if ds.Fields[t].IsBlob then begin
-        if ds.FieldDefs[t].DataType = ftMemo then begin
+        if ds.FieldDefs[t].DataType in [ftMemo, ftWideMemo] then begin
           rs.Values[t,i] := ds.fields[t].Value;
         end else begin
           SetLength(s, ds.Fields[t].DataSize);
@@ -586,6 +586,15 @@ begin
   finally
     dataset.free;
   end;
+
+end;
+
+procedure TUniDACRDTPDataModule.ResetForPool;
+begin
+  inherited;
+  RollbackOn(TSqlChannel.sqlRead);
+  RollbackOn(TSqlChannel.sqlWrite);
+  RollbackOn(TSqlChannel.sqlSystem);
 
 end;
 

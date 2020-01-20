@@ -67,6 +67,7 @@ type
   public
     mock: TForm;
     WorkingHard: boolean;
+    LastWorkError: string;
 
     function WatchCommands: boolean;virtual;
     { Public declarations }
@@ -108,11 +109,10 @@ type
     function InitCurtains: boolean;virtual;
     procedure WorkError(sMessage: string);virtual;
     procedure HardWork(proc: TProc);overload;
-    procedure HardWork(proc: TProc; guiSuccess: TProc);overload;
+    procedure HardWork(proc: TProc; guiSuccess: TProc; guifail: TProc = nil);overload;
     procedure BusyWork(proc: TProc);overload;
     procedure BusyWork(proc: TProc; guiSuccess: TProc);overload;
     procedure ShowMessage(sMessage: string);virtual;
-
 
 
 
@@ -401,7 +401,7 @@ begin
       end;
     end;
     csClosed: begin
-      curtainsdata.transition_proc();
+      curtainsdata.transition_proc();//<<----- THIS IS WHERE your anonymous proc() is called
       curtainsdata.state := csOpening;
       Curtains_Open_SetStartingState();
       if Curtains_Open(interval) then begin
@@ -559,7 +559,7 @@ begin
   result := TGuiHelper.control_Getcontrol<T>(parent);
 end;
 
-procedure TfrmFMXBase.HardWork(proc, guiSuccess: TProc);
+procedure TfrmFMXBase.HardWork(proc, guiSuccess: TProc; guiFail: TProc = nil);
 var
   cl: TCommandLIst<TCommand>;
 begin
@@ -736,7 +736,7 @@ end;
 procedure TfrmFMXBase.WorkError(sMessage: string);
 begin
   showmessage(sMessage);
-
+  LastWorkError := sMessage;
 end;
 
 end.

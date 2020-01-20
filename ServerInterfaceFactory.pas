@@ -13,6 +13,7 @@ uses
 
 const
   KEY_RESERVE_COUNT = 100;
+  MAX_POOL_TIME = 10000;
 type
   TNextIDCacheRec = record
     keytoken: string;
@@ -67,7 +68,7 @@ begin
   Lock;
   try
     for t:= FPool.count-1 downto 0 do begin
-      if gettimesince(FPool[t].Pooltime) > 15000 then begin
+      if gettimesince(FPool[t].Pooltime) > MAX_POOL_TIME then begin
         debug.log('delete from pool '+inttostr(t));
         o := FPool[t];//o will go out of scope at the end of the function
         FPool.delete(t);
@@ -102,20 +103,27 @@ var
 begin
   Lock;
   try
-    CleanPool;
-//    debug.log('1. there are '+FPool.count.tostring+' in the pool.');
-    for t:= 0 to FPool.count-1 do begin
-//      debug.log('2. there are '+FPool.count.tostring+' in the pool.');
-      si := FPool[t];
+    result := nil;
+//    repeat
+      CleanPool;
+  //    debug.log('1. there are '+FPool.count.tostring+' in the pool.');
+      for t:= 0 to FPool.count-1 do begin
+  //      debug.log('2. there are '+FPool.count.tostring+' in the pool.');
+        si := FPool[t];
 
-      if (si.MWHost+'/'+si.MWEndPoint+'/'+si.Context) = key  then begin
-        result := FPool[t];
-        FPool.delete(t);
-//        debug.log('get from pool '+inttostr(t));
-//        debug.log('3. there are '+FPool.count.tostring+' in the pool.');
-        exit;
+        if (si.MWHost+'/'+si.MWEndPoint+'/'+si.Context) = key  then begin
+          result := FPool[t];
+          if gettimesince(result.Pooltime) > MAX_POOL_TIME then
+            result := nil;
+          FPool.delete(t);
+  //        debug.log('get from pool '+inttostr(t));
+  //        debug.log('3. there are '+FPool.count.tostring+' in the pool.');
+          if result <> nil then
+           break;
+        end;
       end;
-    end;
+
+//    until result <> nil;
   finally
     Unlock;
   end;

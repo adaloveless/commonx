@@ -27,6 +27,7 @@ begin
   result := FunctionQueryOn(0, sQuery, def);
 end;
 
+
 function TRDTPSQLConnectionClientEx.FunctionQuery(sQuery: string;
   def: int64): int64;
 begin

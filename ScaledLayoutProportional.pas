@@ -4,7 +4,7 @@ interface
 
 
 uses
-  Debug, stringx, guihelpers_fmx,
+  Debug, stringx, guihelpers_fmx, typex,
   System.Classes, System.Types, System.UITypes, System.SysUtils, System.Math.Vectors, FMX.Types, FMX.StdCtrls,
   FMX.Platform, FMX.Controls, FMX.InertialMovement, fmx.layouts;
 
@@ -98,6 +98,8 @@ uses
 
 function UpgradeLayoutToProportional(lay: TScaledLayout): TScaledLayoutProportional;
 begin
+  if lay = nil then
+    raise Ecritical.create('no layout supplied (nil)');
   if lay.parent = nil then
     exit;
 

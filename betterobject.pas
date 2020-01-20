@@ -926,7 +926,7 @@ begin
     BeforeReturn(obj, {out}cantake);
     if cantake then begin
       Flist.addObject(sContext, obj);
-      Debug.Log('there are now '+Flist.count.ToString);
+      Debug.Log('there are now '+Flist.count.ToString+' '+obj.Classname+'(s) in '+classname);
       AfterReturn(obj);
     end else
       obj.free;

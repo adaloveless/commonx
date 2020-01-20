@@ -78,7 +78,7 @@ interface
 {$DEFINE USE_LINKED_BUFFERS}
 {x$DEFINE ALLOW_SYNCHRONOUS_READS}//if enabled, reads can potentially be handled in calling thread, so you're relying more of prefetches to bring things into memory
 {x$DEFINE USE_SPOT_FLUSH}
-{x$DEFINE USE_OPTIMAL_FLUSH}//doesn't work
+{$DEFINE USE_OPTIMAL_FLUSH}//doesn't work
 {x$define COMPLEX_STREAM}//too slow
 {x$DEFINE IDLE_FETCH}//deprecated for a real side-fetch thread
 {$DEFINE TIME_CRITICAL}

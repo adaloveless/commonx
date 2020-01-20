@@ -4,7 +4,7 @@ unit commands_system;
 interface
 
 uses
-  commandprocessor, systemx, commandicons, tickcount, orderlyinit, numbers;
+  classes, commandprocessor, systemx, commandicons, tickcount, orderlyinit, numbers;
 
 type
 
@@ -27,13 +27,16 @@ type
   private
     FCommandObject: TCommand;
     FObject: TObject;
+    FSynchronize: boolean;
     public
+    procedure Go;
     procedure Init;override;
     constructor Create;override;
     procedure DoExecute;override;
     procedure Cancel;override;//<<--this command cannot be cancelled.
     property CommandObject: TCommand read FCommandObject write FCommandObject;
     property ObjectGarbage: TObject read FObject write FObject;
+    property Synchronize: boolean read FSynchronize write FSynchronize;
   end;
 
   Tcmd_SelfDestruct = class(Tcmd_Garbage)
@@ -53,6 +56,7 @@ type
 
 procedure AddSleepCommand(cp: TCommandProcessor; duration: cardinal);
 procedure GarbageCollect(o: TObject; by: TCommandProcessor= nil);
+procedure GarbageCollectEx(o: TObject; sync: boolean; by: TCommandProcessor= nil);
 procedure SelfDestruct(o: TObject; time: Ticker; by: TCommandProcessor = nil);
 function BeginFree(o: TObject; by: TCommandProcessor = nil): Tcmd_Free;
 procedure EndFree(c: Tcmd_Free);
@@ -121,12 +125,20 @@ begin
 end;
 
 procedure Tcmd_Garbage.DoExecute;
-var
-  obj: TObject;
 begin
   inherited;
 
-  
+  if Synchronize then
+    TThread.Synchronize(TThread.CurrentThread, Go)
+  else
+    Go;
+
+end;
+
+procedure Tcmd_Garbage.Go;
+begin
+  var obj: TObject;
+
   if assigned(CommandObject) then begin
     CommandObject.DeadCheck;
 //    Status :='wait for';
@@ -145,7 +157,6 @@ begin
 
 
   end;
-
 
 end;
 
@@ -202,7 +213,7 @@ begin
   c.free;
 end;
 
-procedure GarbageCollect(o: TObject; by: TCommandProcessor= nil);
+procedure GarbageCollectEx(o: TObject; sync: boolean; by: TCommandProcessor= nil);
 var
   c: Tcmd_garbage;
 begin
@@ -211,10 +222,10 @@ begin
 
   IF by = nil then begin
     if GCP = nil then begin
-      ecs(cpcreate);          
+      ecs(cpcreate);
       try
         if by= nil then begin
-          gcp := TCommandProcessor.Create(nil, 'GarbageCollector');            
+          gcp := TCommandProcessor.Create(nil, 'GarbageCollector');
         end;
       finally
         lcs(cpcreate);
@@ -228,8 +239,14 @@ begin
     c.CommandObject := TCommand(o)
   else
     c.ObjectGarbage := o;
+  c.Synchronize := sync;
   c.Start(by);
 
+end;
+
+procedure GarbageCollect(o: TObject; by: TCommandProcessor= nil);
+begin
+  GarbageCollectEx(o, false, by);
 end;
 
 function FloatCompare(f1,f2: double): integer;

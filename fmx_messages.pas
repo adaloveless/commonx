@@ -17,3 +17,12 @@ implementation
 end.
 
 {$ENDIF}
+
+{$IFDEF OSX}
+//    {$I FMX_messages_android.pas}
+interface
+implementation
+end.
+
+{$ENDIF}
+

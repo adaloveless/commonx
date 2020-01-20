@@ -122,6 +122,7 @@ type
   ECritical = class(Exception);
   ENetworkError = class(Exception);
   EUserError = class(Exception);
+  EValidationError = class(Exception);
   EScriptVarError = class(Exception);
 {$IFDEF IS_64BIT}
   nativeQfloat = double;
@@ -255,6 +256,7 @@ function DynInt64ArrayToByteArray(a: TDynInt64Array): TDynByteArray;
 function StringToTypedVariant(s: string): variant;
 function JavaScriptStringToTypedVariant(s: string): variant;
 function VartoStrEx(v: variant): string;
+function VarTypeDesc(v: variant): string;
 function IsVarString(v: variant): boolean;
 
 function rect_notdumb(x1,y1,x2,y2: int64): TRect;
@@ -515,6 +517,46 @@ end;
 function DayToMs(d: double): int64;
 begin
   result := round(d*(24*60*60*1000));
+end;
+
+function VarTypeDesc(v: variant): string;
+begin
+  var typ := VarType(v);
+
+  case typ of
+    $0000: exit('varEmpty');
+    $0001: exit('varNull');
+    $0002: exit('varSmallint');
+    $0003: exit('varInteger');
+    $0004: exit('varSingle');
+    $0005: exit('varDouble');
+    $0006: exit('varCurrency');
+    $0007: exit('varDate');
+    $0008: exit('varOleStr');
+    $0009: exit('varDispatch');
+    $000A: exit('varError');
+    $000B: exit('varBoolean');
+    $000C: exit('varVariant');
+    $000D: exit('varUnknown');
+    $000E: exit('varDecimal');
+    $000F: exit('varUndef0F');
+    $0010: exit('varShortInt');
+    $0011: exit('varByte');
+    $0012: exit('varWord');
+    $0013: exit('varUInt32');
+    $0014: exit('varInt64');
+    $0015: exit('varUInt64');
+    $0024: exit('varRecord');
+    $0048: exit('varStrArg');
+    $0049: exit('varObject');
+    $004A: exit('varUStrArg');
+    $0100: exit('varString');
+    $0101: exit('varAny');
+    $0102: exit('varUString');
+  else
+    exit('????');
+  end;
+
 end;
 
 

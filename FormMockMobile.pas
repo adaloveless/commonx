@@ -102,9 +102,9 @@ uses debug;
 procedure Tmm.ShowFormClass<T>(var f: T);
 begin
   if f = nil then begin
-    Debug.Log(CLR_UI+'***Creating form: '+ f.classname);
+    Debug.Log(CLR_UI+'***Creating form: '+ T.classname);
     f := T.create(application);
-    Debug.Log(CLR_UI+'***Created form: '+ f.classname);
+    Debug.Log(CLR_UI+'***Created form: '+ T.classname);
   end;
   Debug.Log(CLR_UI+'***Showing form: '+ f.classname);
   MM_ShowForm(f);
@@ -487,6 +487,7 @@ begin
     mq.visual := TRectangle.Create(self);
     mq.visual.XRadius := 10;
     mq.visual.YRadius := 10;
+    mq.visual.Fill.color := $EF000000;
     mq.visual.width := self.clientwidth;
     var txt: TLabel := TLabel.create(mq.visual);
     txt.parent := mq.visual;
@@ -494,6 +495,9 @@ begin
     txt.WordWrap := true;
     txt.Text := mq.msg;
     txt.width := mq.visual.Width;
+//    txt.FontColor := $FFFFFFFF;
+    txt.TextSettings.FontColor := $FFFFFFFF;
+    txt.StyledSettings := [];
     //txt.align := TAlignLayout.Contents;
     txt.TextAlign := TTextAlign.Center;
     mq.visual.parent := self;

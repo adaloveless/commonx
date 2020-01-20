@@ -6,7 +6,7 @@ interface
 
 uses
 
-	TickCount, Classes, Sysutils, betterobject, sharedobject, webstring, numbers, mysqlstoragestring,
+	TickCount, Classes, Sysutils, betterobject, sharedobject, webstring, numbers, mysqlstoragestring, mssqlstoragestring,
   InterfaceList, PersistentInterfacedObject, stringx, variants, typex, systemx, better_collections;
 
 var
@@ -29,6 +29,7 @@ type
     DataCenter: integer;
     SessionID: integer;
   end;
+
 
   TServerStat = (
     psTotalReqTime,
@@ -54,6 +55,11 @@ type
 
   TDataField = class; //forward declaration
   TDataFieldClass = class of TDataField;
+
+  TSpecialFieldDef = record
+    Name: string;
+    TypClass: TDataFieldClass;
+  end;
 
 //------------------------------------------------------------------------------
   TObjectFieldValidationEvent = procedure (
@@ -130,7 +136,7 @@ type
     FOrphaned: boolean;
     FCache: TObject;
     FIsChanged: boolean;
-    FSpecialFieldDefs: TStringList;
+    FSpecialFieldDefs: TArray<TSpecialFieldDef>;
     FIsLnk: boolean;
     FIsLink: boolean;
     FLinkTo: string;
@@ -144,7 +150,7 @@ type
     FLimit: ni;
     procedure SetOrphaned(const Value: boolean);
     function GetXMLElementName: string;virtual;
-    function GetSpecialFieldDefs: TStringList;
+    function GetSpecialFieldDefs: TArray<TSpecialFieldDef>;
     function GetLinkTo: string;
     procedure SetLinkto(const Value: string);
     function GetAge: cardinal;
@@ -512,7 +518,7 @@ type
     property Origin: TDataObjectOrigin read FOrigin write FOrigin;
     //Reports where this object came from.  New, Fetch, Ghost...etc.
 
-    property SpecialFieldDefs: TStringList read GetSpecialFieldDefs;
+    property SpecialFieldDefs: TArray<TSpecialFieldDef> read GetSpecialFieldDefs;
     //Calculated fields and such. Some calculated fields are built-in to the
     //TDataObject class.
 
@@ -1395,8 +1401,6 @@ begin
     lstSpecialFields.free;
     lstObjects := nil;
     slAssociates := nil;
-    FSpecialFieldDefs.Free;
-    FSpecialFieldDefs := nil;
     lstSpecialFields := nil;
 
 
@@ -1734,6 +1738,7 @@ begin
     lstObjects.Add(TObject(obj));
     obj.Reference;
   end;
+  IsChanged := true;
 
 
 end;
@@ -2358,8 +2363,9 @@ end;
 procedure TDataField.RaiseTypeCastException(v: variant);
 begin
   raise EDataObjectError.create(
+    'In Object: '+self.Owner.ClassName+' Field: '+self.Name+', '+
     'Value "'+vartostrex(v)+'" passed to ' +self.name+':'+self.ClassName+
-    ' was of unexpected type. (Type '+inttostr(varType(v))+') Object: '+self.Owner.ClassName);
+    ' was of unexpected type '+varTypeDesc(v));
 
 
 end;
@@ -4080,9 +4086,9 @@ begin
 
   sLCFieldName := lowercase(sFieldName);
 
-  for t:= 0 to FSpecialFieldDefs.count-1 do begin
-    if lowercase(FSpecialfieldDefs[t]) = sLCFieldName then begin
-      tfc := TDatafieldClass(FSpecialFieldDefs.objects[t]);
+  for t:= 0 to high(FSpecialFieldDefs) do begin
+    if lowercase(FSpecialfieldDefs[t].Name) = sLCFieldName then begin
+      tfc := FSpecialFieldDefs[t].TypClass;
       result := tfc.createspecial(self,sFieldName);
     end;
   end;
@@ -4091,12 +4097,10 @@ begin
 end;
 
 
-function TDataObject.GetSpecialFieldDefs: TStringList;
+function TDataObject.GetSpecialFieldDefs: TArray<TSpecialFieldDef>;
 begin
-  if FSpecialFieldDefs = nil then
-    FSpecialFieldDefs := TStringList.create;
-
   result := FSpecialFieldDefs;
+  setlength(result, length(result));
 end;
 
 function TDataObject.HasSpecialFieldDef(sFieldName: string): boolean;
@@ -4108,8 +4112,8 @@ begin
     result := false;
   end else begin
     sfieldName := lowercase(sfieldName);
-    for t:= 0 to SpecialFieldDefs.count-1 do begin
-      if sFieldName = lowercase(SpecialFieldDefs[t]) then begin
+    for t:= 0 to high(FSpecialFieldDefs) do begin
+      if sFieldName = lowercase(FSpecialFieldDefs[t].Name) then begin
         result := true;
         break;
       end;
@@ -4120,7 +4124,9 @@ end;
 procedure TDataObject.AddCalculatedField(sName: string;
   FieldType: TDataFieldClass);
 begin
-  SpecialFieldDefs.addObject(sName, pointer(FieldType));
+  setlength(FSpecialFieldDefs, length(FSpecialFieldDefs)+1);
+  FSpecialFieldDefs[high(FSpecialFieldDefs)].Name := sName;
+  FSpecialFieldDefs[high(FSpecialFieldDefs)].TypClass := FieldType;
 
 
 end;
@@ -4440,7 +4446,10 @@ function TDataObject.LazyFetch(sType: string; tokenparams: variant;
   sessionid: ni; bRaiseExceptions: boolean = true): TDataObject;
 begin
   try
-    if not IServerInterface(TDataObjectCache(cache).server).LazyFetch(TDataObjectCache(cache),result, sType, tokenparams, self.SessionID) then begin
+    var srv := TDataObjectCache(cache).server;
+    if srv = nil then
+      raise ECritical.create('cache is not assigned to IServerInterface');
+    if not IServerInterface(srv).LazyFetch(TDataObjectCache(cache),result, sType, tokenparams, self.SessionID) then begin
       if bRaiseExceptions then
         raise ECritical.create('could not fetch '+sType+' from '+self.classname)
       else
@@ -4467,7 +4476,7 @@ end;
 
 function TDataField.GetStorageString: string;
 begin
-  result := mysqlstoragestring.gvs(AsVariant);
+  result := mssqlstoragestring.gvs(AsVariant);
 end;
 
 { TMYSQLDateTimeDataField }

@@ -99,6 +99,7 @@ type
     procedure BeginTransaction;
     procedure Commit;
     procedure Rollback;
+    procedure ResetForPool;virtual;abstract;
     procedure BeginTransactionOn(ch: TSQLChannel);virtual;abstract;
     procedure CommitOn(ch: TSQLChannel);virtual;abstract;
     procedure RollbackOn(ch: TSQLChannel);virtual;abstract;
@@ -563,6 +564,7 @@ procedure TDataPool.NoNeedData(dm: TAbstractRDTPDataModule);
 begin
   if dm= nil then
     exit;
+  dm.ResetForPool;
 {$IFDEF POOL_DMS}
   Lock;
   try

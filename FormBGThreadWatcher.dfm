@@ -245,10 +245,6 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       Margins.Bottom = 6
       Caption = 'RUDP'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Splitter2: TSplitter
         Left = 0
         Top = 107
@@ -456,10 +452,6 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       Margins.Bottom = 6
       Caption = 'Ring Stats'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object memRingStats: TMemo
         Left = 0
         Top = 0
@@ -482,10 +474,6 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       Margins.Bottom = 6
       Caption = 'Better Objects'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object lvClasses: TListView
         Left = 0
         Top = 0
@@ -522,10 +510,6 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       Margins.Bottom = 6
       Caption = 'Disk Usage'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object memDisk: TMemo
         Left = 0
         Top = 0
@@ -548,10 +532,6 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       Margins.Bottom = 6
       Caption = 'Memory'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object lvMemory: TListView
         Left = 0
         Top = 0
@@ -614,10 +594,6 @@ object frmBGThreadWatcher: TfrmBGThreadWatcher
       Margins.Bottom = 6
       Caption = 'TabSheet5'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart1: TChart
         Left = 0
         Top = 0

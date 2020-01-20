@@ -301,7 +301,7 @@ begin
     end;
   end else begin
     s := obj.SaveQuery;
-    Debug.Log('POST '+obj.classname+' with query: '+s);
+    Debug.Log(self, 'POST '+obj.classname+' with query: '+s);
   //  if not IsMYSQL then begin
   //    if obj.tablelink <> '' then
   //      cli.WriteQuery('SET IDENTITY_INSERT '+obj.TableLink+' ON;');
@@ -460,6 +460,7 @@ function TServerInterface.UpdateQuery(cache: TDataObjectCache; sQuery: string;
 begin
 //  WriteQuery(sQuery);
   CheckConnectedOrConnect;
+  Debug.Log(self,'UpdateQuery:'+sQuery);
   result := cli.WriteQuery(sQuery);
 end;
 
@@ -798,7 +799,9 @@ procedure TServerInterface.Delete(cache: TdataObjectCache; obj: TDataObject);
 begin
   if obj.filterphrase = '' then
     raise ECritical.create('trying to delete without filterphrase in '+obj.name);
-  WriteQuery('delete from '+obj.TableLink+obj.FilterPhrase);
+  var s := 'delete from '+obj.TableLink+obj.FilterPhrase;
+  Debug.Log(self,'Delete '+obj.classname+':'+s);
+  WriteQuery(s);
 
 end;
 

@@ -1160,6 +1160,7 @@ begin
       bm.canvas.unlock;
     end;
     imgoriginal.canvas.lock;
+    imgoriginal.PixelFormat := pf24bit;
 
     image1 := TFastBitmap.create;
     try
@@ -1237,7 +1238,8 @@ begin
                 pix[yy,xx].color.r := pix[yy,xx].color.r + (ccc shr 0) and 255;
                 pix[yy,xx].color.g := pix[yy,xx].color.g + (ccc shr 8) and 255;
                 pix[yy,xx].color.b := pix[yy,xx].color.b + (ccc shr 16) and 255;
-                pix[yy,xx].color.a := pix[yy,xx].color.a + (ccc shr 24) and 255;
+                if image1.EnableAlpha then
+                  pix[yy,xx].color.a := pix[yy,xx].color.a + (ccc shr 24) and 255;
 
 //                inc(pix[yy,xx].color.r, (ccc shr 0) and 255);
 //                inc(pix[yy,xx].color.g, (ccc shr 8) and 255);
@@ -1267,11 +1269,14 @@ begin
             pix[y,x].color.r := pix[y,x].color.r / pix[y,x].pixcount;
             pix[y,x].color.g := pix[y,x].color.g / pix[y,x].pixcount;
             pix[y,x].color.b := pix[y,x].color.b / pix[y,x].pixcount;
-{$DEFINE FORCE_1_ALPHA}
+{x$DEFINE FORCE_1_ALPHA}
 {$IFDEF FORCE_1_ALPHA}
             pix[y,x].color.a := 255;
 {$ELSE}
-            pix[y,x].color.a := pix[y,x].color.a / pix[y,x].pixcount;
+            if image1.EnableAlpha then
+              pix[y,x].color.a := pix[y,x].color.a / pix[y,x].pixcount
+            else
+              pix[y,x].color.a := 255;
 {$ENDIF}
           end;
         end;

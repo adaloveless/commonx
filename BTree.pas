@@ -143,8 +143,10 @@ type
   end;
 
 implementation
+{$IFDEF REQUIRE_RAID}
 uses
   raid;
+{$ENDIF}
 { TBTree }
 
 procedure TBTree.DecBalance(var [unsafe] p: TBTreeItem; var balance_changed: boolean; fordelete: boolean);

@@ -36,13 +36,11 @@ type
     sLastXrefSTringSearch: array[1..XREF_STRING_CACHE_SIZE] of string;
     iLastXrefStringSearchResult: array[1..XREF_STRING_CACHE_SIZE] of integer;
     iXRefRoundRobinIndex: integer;
-
     function GetCount: integer;
     function GetObjects(idx: integer): TDataObject;
 
     procedure Add(obj: TDataObject);
     procedure Remove(obj: TDataObject);
-
   public
     PendingDeletes: Tlist<TDataObject>;
     procedure NotifyParentKeyUpdate(parentObject: TDataObject; priorkeys: variant);
