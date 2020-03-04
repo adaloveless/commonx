@@ -188,6 +188,8 @@ destructor TSimpleTCPconnection.Destroy;
 begin
   Disconnect;
   inherited;
+  FTCP.free;
+  FTCP := nil;
 end;
 
 procedure TSimpleTCPconnection.DoDisconnect;
@@ -206,6 +208,9 @@ var
   bbuf: TIDBytes;
   iToRead: ni;
 begin
+  if FTCP.iohandler = nil then
+    exit(0);
+
   iToRead := lesserof(length, FTCP.iohandler.InputBuffer.size);
   if iToRead = 0 then
     iToRead := 1;
@@ -245,6 +250,10 @@ end;
 
 function TSimpleTCPconnection.DoWaitForData(timeout: cardinal): boolean;
 begin
+
+  if FTCP.iohandler = nil then
+    exit(true);
+
   if not FTCP.IOHandler.InputBufferIsEmpty then
     exit(true);
   result := FTCP.Socket.Readable(timeout);

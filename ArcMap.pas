@@ -40,7 +40,7 @@ type
     function CalculateZoneChecksum2(zonebase: int64; zonesize: int64): int64;
 
     procedure Reset;
-    procedure ResetZone(zonebase, zonelength: int64);//
+    procedure ResetZone(zonebase, zonelength: int64; bProvisioned: boolean);//
     procedure IncrementZoneRev(revidx: int64);
     procedure IncrementZoneRevForStartingBlock(block: int64);
   end;
@@ -210,15 +210,21 @@ begin
   end;
 end;
 
-procedure TArcMap.ResetZone(zonebase: int64; zonelength: int64);
+procedure TArcMap.ResetZone(zonebase: int64; zonelength: int64; bProvisioned: boolean);
 var
   sFile: string;
+  arcmap: TArcMapEntry;
 begin
   Lock;
   try
     sFile := fs.FileName;
     fs.GrowFile(zonebase*SizeOf(TArcMapEntry));
-    Stream_WriteZeros(fs, zonelength);
+    if bProvisioned then
+      arcmap.SetLogID(1)
+    else
+      arcmap.SetLogID(0);
+    fs.seek(zonebase*sizeof(TArcmapEntry), soBeginning);
+    Stream_GuaranteeWrite(fs, @arcmap, sizeof(arcmap));
 
 
   finally

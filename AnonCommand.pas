@@ -59,6 +59,7 @@ type
     procedure DoExecute; override;
   public
     iteration: ni;
+    count: ni;
     proc: TProc<ni>;
   end;
 
@@ -84,6 +85,7 @@ type
 
 function InlineProc(proc: TProc): TAnonymousCommand<boolean>;
 function InlineIteratorProc(idx: ni; proc: TProc<ni>): TAnonymousIteratorCommand;
+function InlineIteratorGroupProc(idx: ni; count: ni; proc: TProc<ni>): TAnonymousIteratorCommand;
 function InlineProcWithGui(proc, guiproc: TProc): TAnonymousCommand<boolean>;
 function InlineProcWithGuiEx(proc, guiproc: TProc; exProc:TProc<string>): TAnonymousCommand<boolean>;
 
@@ -139,6 +141,18 @@ function InlineIteratorProc(idx: ni; proc: TProc<ni>): TAnonymousIteratorCommand
 begin
   result := TAnonymousIteratorCommand.create;
   result.iteration := idx;
+  result.count := 1;
+  result.proc := proc;
+//  result.CPUExpense := 1.0;
+  result.start;
+end;
+
+
+function InlineIteratorGroupProc(idx: ni; count: ni; proc: TProc<ni>): TAnonymousIteratorCommand;
+begin
+  result := TAnonymousIteratorCommand.create;
+  result.iteration := idx;
+  result.count := count;
   result.proc := proc;
 //  result.CPUExpense := 1.0;
   result.start;
@@ -422,7 +436,11 @@ end;
 procedure TAnonymousIteratorCommand.DoExecute;
 begin
   inherited;
-  proc(iteration);
+  if count = 0 then
+    count := 1;
+  for var t:= 0 to count-1 do begin
+    proc(iteration+t);
+  end;
 end;
 
 end.

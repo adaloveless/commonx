@@ -187,7 +187,7 @@ procedure RemoveColorTotalWhite(bm: TFastBitmap; grayBound: integer = 0; lowInte
 procedure Invert(bm: Vcl.Graphics.TBitmap; x1,y1,x2,y2: integer);overload;//ok
 procedure Invert(bm: TfastBitmap; x1,y1,x2,y2: integer; bPreserveOriginalAlpha: boolean = true);overload;//ok
 procedure ResizeImage(png: TPNGImage; newwidth: integer; newheight: integer);overload;//ok
-procedure ResizeImage(bm: TFastBitmap; newwidth: integer; newheight: integer);overload;//ok
+procedure ResizeImage(bm: TFastBitmap; newwidth: integer; newheight: integer; bProportional: boolean = true);overload;//ok
 
 procedure ResizeImage(bm: Vcl.Graphics.TBitmap; newwidth: integer; newheight: integer);overload;//ok
 procedure ResizeImage(bm: TJpegimage; newwidth: integer; newheight: integer);overload;//ok
@@ -308,11 +308,11 @@ var
 begin
   result := TFastBitMap.create;
   result.canvas.lock;
-  bm.PixelFormat := pf32Bit;
+  bm.PixelFormat := xpf32Bit;
   bm.canvas.lock;
   try
     result.Allocate(x2-x1+1,y2-y1+1);
-    result.PixelFormat := pf32bit;
+    result.PixelFormat := xpf32bit;
 
     for y:= y1 to y2 do begin
       if y > bm.height-1 then
@@ -570,7 +570,7 @@ var
   p: PByte;
 begin
     bm.canvas.lock;
-    bm.PixelFormat := pf32Bit;
+    bm.PixelFormat := xpf32Bit;
     try
       for y:= 0 to bm.height-1 do begin
         for x := 0 to bm.Width-1 do begin
@@ -895,7 +895,7 @@ begin
       for y:=0 to imgNew.height-1 do begin
         sl := imgNew.ScanLine[y];
         for x:=0 to imgNew.width-1 do begin
-          sc := pix[y,x].color;
+          sc.SetColor(pix[y,x].color.ToColor);
           sl[(x*PNG_REC_SIZE+0)] := sc.r;
           sl[(x*PNG_REC_SIZE+1)] := sc.g;
           sl[(x*PNG_REC_SIZE+2)] := sc.b;
@@ -1026,15 +1026,21 @@ begin
             sx2 := x; sy2 := y;
             if sx1 < 0 then sx1 := 0;
             if sy1 < 0 then sy1 := 0;
+{$IFDEF SL}
             slu := imgOriginal.scanline[sy1];
             sll := imgOriginal.scanline[sy2];
-
 
             //determine four colors for interpolation
             ulc := (ord(slu[(sx1*3+0)]) shl 0)+(ord(slu[(sx1*3+1)]) shl 8)+(ord(slu[(sx1*3+2)]) shl 16);
             urc := (ord(slu[(sx2*3+0)]) shl 0)+(ord(slu[(sx2*3+1)]) shl 8)+(ord(slu[(sx2*3+2)]) shl 16);
             llc := (ord(sll[(sx1*3+0)]) shl 0)+(ord(sll[(sx1*3+1)]) shl 8)+(ord(sll[(sx1*3+2)]) shl 16);
             lrc := (ord(sll[(sx2*3+0)]) shl 0)+(ord(sll[(sx2*3+1)]) shl 8)+(ord(sll[(sx2*3+2)]) shl 16);
+{$ELSE}
+            ulc := imgOriginal.Canvas.Pixels[sx1,sy1];
+            urc := imgOriginal.Canvas.Pixels[sx2,sy1];
+            llc := imgOriginal.Canvas.Pixels[sx1,sy2];
+            lrc := imgOriginal.Canvas.Pixels[sx2,sy2];
+{$ENDIF}
 
             for yy := oy to newy do begin
               //color blend from top to bottom
@@ -1111,7 +1117,7 @@ begin
 end;
 
 
-procedure ResizeImage(bm: TFastBitmap; newwidth: integer; newheight: integer);
+procedure ResizeImage(bm: TFastBitmap; newwidth: integer; newheight: integer; bProportional: boolean = true);
 //Implmements a simple web page request that performs a high-quailty resize of
 //a larger jpeg image.  Not used or dispatched, too CPU intensive currently.
 //An experiment for use in the future potentially.
@@ -1142,7 +1148,11 @@ begin
     if newheight < 1 then begin
       newheight := trunc((bm.height/bm.width)*newwidth);
     end;
+
+{$DEFINE QUICK_EXIT}
+{$IFDEF QUICK_EXIT}
     if (bm.height = newheight) and (bm.width = newwidth) then exit;
+{$ENDIF}
 
 //    if (bm.Height >= newHeight) and (bm.Width >= newWidth) then begin
 //      FasterResizeImage(bm,newwidth, newheight);
@@ -1160,7 +1170,6 @@ begin
       bm.canvas.unlock;
     end;
     imgoriginal.canvas.lock;
-    imgoriginal.PixelFormat := pf24bit;
 
     image1 := TFastBitmap.create;
     try
@@ -1170,7 +1179,10 @@ begin
       image1.new;
       image1.EnableAlpha := imgOriginal.EnableAlpha;
 
-      iOHeight := trunc((image1.height / image1.width) * imgOriginal.width);
+      if bProportional then
+        iOHeight := trunc((image1.height / image1.width) * imgOriginal.width)
+      else
+        iOheight := imgoriginal.height;
 
       image1.Width := image1.width;
       image1.height := image1.height;
@@ -1178,10 +1190,10 @@ begin
       image1.Canvas.Rectangle(0,0,image1.width, image1.height);
 
   //    imgOriginal.canvas.lock;
-      imgOriginal.PixelFormat := pf32bit;
+//      imgOriginal.PixelFormat := pf32bit;
   //    imgOriginal.canvas.unlock;
 
-      image1.PixelFormat := pf32bit;
+      image1.PixelFormat := xpf32bit;
       //setup the length of the arrays
       setlength(pix, image1.height);
       for y := 0 to image1.height-1 do
@@ -1209,6 +1221,8 @@ begin
             sx2 := x; sy2 := y;
             if sx1 < 0 then sx1 := 0;
             if sy1 < 0 then sy1 := 0;
+            if (x=0) and (y=0) then
+              Debug.Log('Original UpperLeft: '+inttohex(imgOriginal.Canvas.pixels[x,y],8));
 
 
             //determine four colors for interpolation
@@ -1269,6 +1283,10 @@ begin
             pix[y,x].color.r := pix[y,x].color.r / pix[y,x].pixcount;
             pix[y,x].color.g := pix[y,x].color.g / pix[y,x].pixcount;
             pix[y,x].color.b := pix[y,x].color.b / pix[y,x].pixcount;
+//            pix[y,x].color.r := 255;
+//            pix[y,x].color.g := 255;
+//            pix[y,x].color.b := 255;
+
 {x$DEFINE FORCE_1_ALPHA}
 {$IFDEF FORCE_1_ALPHA}
             pix[y,x].color.a := 255;
@@ -1285,7 +1303,8 @@ begin
       //copy result
       for y:=0 to image1.height-1 do begin
         for x:=0 to image1.width-1 do begin
-          image1.Canvas.pixels[x,y] := pix[y,x].color;
+          var ccccc := pix[y,x].color;
+          image1.Canvas.pixels[x,y] := ccccc.ToColorWithAlpha(false);
           if (x=0) and (y=0) then
             Debug.Log('UpperLeft: '+inttohex(image1.Canvas.pixels[x,y],8));
         end;
@@ -1437,7 +1456,7 @@ begin
       for y:=0 to image1.height-1 do begin
         sl := image1.ScanLine[y];
         for x:=0 to image1.width-1 do begin
-          sc := pix[y,x].color;
+          sc.setcolor(pix[y,x].color.ToColor);
           sl[(x*3+0)] := byte(sc.r);
           sl[(x*3+1)] := byte(sc.g);
           sl[(x*3+2)] := byte(sc.b);
@@ -1512,10 +1531,10 @@ begin
       image1.new;
 
   //    imgOriginal.canvas.lock;
-      imgOriginal.PixelFormat := pf32bit;
+      imgOriginal.PixelFormat := xpf32bit;
   //    imgOriginal.canvas.unlock;
 
-      image1.PixelFormat := pf32bit;
+      image1.PixelFormat := xpf32bit;
       //setup the length of the arrays
       setlength(pix, image1.height);
       for y := 0 to image1.height-1 do
@@ -1585,7 +1604,7 @@ begin
       //copy result
       for y:=0 to image1.height-1 do begin
         for x:=0 to image1.width-1 do begin
-          image1.Canvas.Pixels[x,y] := pix[y][x].color;
+          image1.Canvas.Pixels[x,y] := pix[y][x].color.ToColorWithAlpha;
         end;
       end;
 
@@ -2032,7 +2051,7 @@ begin
       end;
 
 
-      fb.Canvas.Pixels[x,y] := ccRound;
+      fb.Canvas.Pixels[x,y] := ccRound.ToColorWithAlpha;
 
 
     end;

@@ -23,17 +23,38 @@
 
 interface
 
-{$IFDEF MSWINDOWS}
+
 uses
+
+{$IFDEF MSWINDOWS}
   debug, sysutils, typex, numbers, winapi.TlHelp32, WinSvc,
   winapi.windows, betterobject,
-  managedthread, classes, rtti_helpers, ShellAPI,
-  commandprocessor, backgroundthreads, commandicons, tickcount,orderlyinit;
+  managedthread, classes, rtti_helpers, ShellAPI, dirfile,
+  commandprocessor, backgroundthreads, commandicons, tickcount,
+{$ENDIF}
+  orderlyinit;
 
+{$IFDEF MSWINDOWS}
 const
   NO_RETURN_HANDLE = DWORD(-2);
 
 type
+  TQueryFullProcessImageNameW = function(AProcess: THANDLE; AFlags: DWORD;
+    AFileName: PWideChar; var ASize: DWORD): BOOL; stdcall;
+  TGetModuleFileNameExW = function(AProcess: THANDLE; AModule: HMODULE;
+    AFilename: PWideChar; ASize: DWORD): DWORD; stdcall;
+
+  TProcessInfo = record
+    pid: ni;
+    ExeName: string;
+    running: boolean;
+    runningCount: ni;
+
+    fileDate: TDateTime;
+    function handlecount: ni;
+    function FullPath: string;
+    procedure Init;
+  end;
   TConsoleHandles = record
     stdOUTread, stdOUTWrite: THandle;
     stdINread, stdINWrite: THandle;
@@ -66,6 +87,9 @@ procedure ForgetExe(var hProcessInformation: TBetterProcessInformation);
 procedure RunAndCapture(DosApp: string; wkdir: string; cc: TConsoleCaptureHook; Timeout: ticker);
 function RunExeAndCapture(app: string; params: string = ''; wkdir: string = ''): string;
 function ServiceGetStatus(sMachine, sService: PChar): DWORD;
+function GetFullPathFromPID(PID: DWORD): string;
+function GetFileNameByProcessID(AProcessID: DWORD): UnicodeString;
+function GetProcessList(exeFileName: string): Tarray<TProcessInfo>;
 
 type
   TWAitForExeThread = class(TProcessorThread)
@@ -156,9 +180,12 @@ function NumberOfTasksRunning(sImageName: string): nativeint;
 function KillTaskByName(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false; bForce: boolean = true): boolean;
 procedure KillTaskByID(pid: ni);
 function processExists(exeFileName: string): Boolean;
+function GetProcessInfo(exeFileName: string): TProcessInfo;
 
 var
   ExeCommands: TCommandProcessor;
+  PsapiLib: HMODULE = 0;
+  GetModuleFileNameExW: TGetModuleFileNameExW;
 
 
 procedure CreateElevateScripts(sDir: string);
@@ -1267,18 +1294,6 @@ begin
   DynamicFile := '';
 end;
 
-procedure oinit;
-begin
-  ExeCommands := TCommandProcessor.create(BackGroundThreadMan, 'ExeCommands');
-end;
-
-procedure ofinal;
-begin
-  ExeCommands.free;
-  ExeCommands := nil;
-
-
-end;
 
 { TConsoleHandles }
 
@@ -1313,6 +1328,81 @@ begin
 
 end;
 
+function GetProcessList(exeFileName: string): Tarray<TProcessInfo>;
+var
+  ContinueLoop: BOOL;
+  FSnapshotHandle: THandle;
+  FProcessEntry32: TProcessEntry32;
+  proc: TProcessInfo;
+begin
+  setlength(result,0);
+  FSnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  try
+    FProcessEntry32.dwSize := SizeOf(FProcessEntry32);
+    ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
+    while Integer(ContinueLoop) <> 0 do
+    begin
+      proc.init;
+      proc.ExeName := exeFileName;
+
+      if ((UpperCase(ExtractFileName(FProcessEntry32.szExeFile)) =
+        UpperCase(ExeFileName)) or (UpperCase(FProcessEntry32.szExeFile) =
+        UpperCase(ExeFileName))) then
+      begin
+        //WriteLog(exeFileName + ' is running');
+        proc.running := True;
+        proc.pid := FProcessEntry32.th32ProcessID;
+        try
+          proc.fileDate := GetfileDate(proc.FullPath);
+        except
+          proc.filedate := 0.0;
+        end;
+        inc(proc.runningCount);
+        setlength(result, length(result)+1);
+        result[high(result)] := proc;
+
+      end;
+      ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
+    end;
+  finally
+    CloseHandle(FSnapshotHandle);
+  end;
+end;
+
+
+function GetProcessInfo(exeFileName: string): TProcessInfo;
+var
+  ContinueLoop: BOOL;
+  FSnapshotHandle: THandle;
+  FProcessEntry32: TProcessEntry32;
+begin
+  result.init;
+  result.ExeName := exeFileName;
+  FSnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  try
+    FProcessEntry32.dwSize := SizeOf(FProcessEntry32);
+    ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
+    while Integer(ContinueLoop) <> 0 do
+    begin
+      if ((UpperCase(ExtractFileName(FProcessEntry32.szExeFile)) =
+        UpperCase(ExeFileName)) or (UpperCase(FProcessEntry32.szExeFile) =
+        UpperCase(ExeFileName))) then
+      begin
+        //WriteLog(exeFileName + ' is running');
+        Result.running := True;
+        result.pid := FProcessEntry32.th32ProcessID;
+//        result.FullPath := FProcessEntry32.szExeFile;
+        result.fileDate := GetfileDate(result.FullPath);
+        inc(result.runningCount);
+
+      end;
+      ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
+    end;
+  finally
+    CloseHandle(FSnapshotHandle);
+  end;
+end;
+
 function processExists(exeFileName: string): Boolean;
 var
   ContinueLoop: BOOL;
@@ -1331,6 +1421,7 @@ begin
     begin
       //WriteLog(exeFileName + ' is running');
       Result := True;
+      break;
     end;
     ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
   end;
@@ -1377,12 +1468,180 @@ begin
   Result := dwStat;
 end;
 
+{ TProcessInfo }
+
+
+function GetFullPathFromPID(PID: DWORD): string;
+begin
+  result := GetFileNameByProcessID(pid);
+end;
+(*var
+  hProcess: THandle;
+  ModName : Array[0..MAX_PATH + 1] of Char;
+begin
+ Result:='';
+  hProcess := OpenProcess(PROCESS_ALL_ACCESS,False, PID);
+  try
+    if hProcess <> 0 then
+     if GetModuleFileName(hProcess, ModName, Sizeof(ModName))<>0 then
+       Result:=ModName
+      else
+       result := SysErrorMessage(GetLastError);
+  finally
+   CloseHandle(hProcess);
+  end;
+end;*)
+
+function TProcessInfo.FullPath: string;
+begin
+  result := GEtFullPathFromPID(self.pid);
+end;
+
+function TProcessInfo.handlecount: ni;
+var
+  handles: cardinal;
+begin
+  result := 0;
+  var HProcess := INVALID_HANDLE_VALUE;
+  HProcess := OpenProcess(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ, False, pid);
+  try
+    if GetProcessHandleCount(HProcess, handles) then
+      result := handles
+    else
+      raise ECritical.create(SysErrorMessage(GetLastError));
+  finally
+    if hProcess <> INVALID_HANDLE_VALUE then
+      CloseHandle(hProcess);
+  end;
+end;
+
+procedure TProcessInfo.Init;
+begin
+  Running := false;
+  RunningCount := 0;
+  fileDate := 0.0;
+  ExeName := '';
+//  FullPath := '';
+end;
+
+
+
+
+
+
+
+function IsWindows200OrLater: Boolean;
+begin
+  Result := Win32MajorVersion >= 5;
+end;
+
+function IsWindowsVistaOrLater: Boolean;
+begin
+  Result := Win32MajorVersion >= 6;
+end;
+
+
+procedure DonePsapiLib;
+begin
+  if PsapiLib = 0 then Exit;
+  FreeLibrary(PsapiLib);
+  PsapiLib := 0;
+  @GetModuleFileNameExW := nil;
+end;
+
+procedure InitPsapiLib;
+begin
+  if PsapiLib <> 0 then Exit;
+  PsapiLib := LoadLibrary('psapi.dll');
+  if PsapiLib = 0 then RaiseLastOSError;
+  @GetModuleFileNameExW := GetProcAddress(PsapiLib, 'GetModuleFileNameExW');
+  if not Assigned(GetModuleFileNameExW) then
+    try
+      RaiseLastOSError;
+    except
+      DonePsapiLib;
+      raise;
+    end;
+end;
+
+function GetFileNameByProcessID(AProcessID: DWORD): UnicodeString;
+const
+  PROCESS_QUERY_LIMITED_INFORMATION = $00001000; //Vista and above
+var
+  HProcess: THandle;
+  Lib: HMODULE;
+  QueryFullProcessImageNameW: TQueryFullProcessImageNameW;
+  S: DWORD;
+begin
+  if IsWindowsVistaOrLater then
+    begin
+      Lib := GetModuleHandle('kernel32.dll');
+      if Lib = 0 then RaiseLastOSError;
+      @QueryFullProcessImageNameW := GetProcAddress(Lib, 'QueryFullProcessImageNameW');
+      if not Assigned(QueryFullProcessImageNameW) then RaiseLastOSError;
+      HProcess := OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, AProcessID);
+      if HProcess = 0 then RaiseLastOSError;
+      try
+        S := MAX_PATH;
+        SetLength(Result, S + 1);
+        while not QueryFullProcessImageNameW(HProcess, 0, PWideChar(Result), S) and (GetLastError = ERROR_INSUFFICIENT_BUFFER) do
+          begin
+            S := S * 2;
+            SetLength(Result, S + 1);
+          end;
+        SetLength(Result, S);
+        Inc(S);
+        if not QueryFullProcessImageNameW(HProcess, 0, PWideChar(Result), S) then
+          RaiseLastOSError;
+      finally
+        CloseHandle(HProcess);
+      end;
+    end
+  else
+    if IsWindows200OrLater then
+      begin
+        InitPsapiLib;
+        HProcess := OpenProcess(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ, False, AProcessID);
+        if HProcess = 0 then RaiseLastOSError;
+        try
+          S := MAX_PATH;
+          SetLength(Result, S + 1);
+          if GetModuleFileNameExW(HProcess, 0, PWideChar(Result), S) = 0 then
+            RaiseLastOSError;
+          Result := PWideChar(Result);
+        finally
+          CloseHandle(HProcess);
+        end;
+      end;
+end;
+
+{$ENDIF}
+
+procedure oinit;
+begin
+{$IFDEF MSWINDOWS}
+  ExeCommands := TCommandProcessor.create(BackGroundThreadMan, 'ExeCommands');
+{$ENDIF}
+end;
+
+procedure ofinal;
+begin
+{$IFDEF MSWINDOWS}
+  ExeCommands.free;
+  ExeCommands := nil;
+{$ENDIF}
+
+end;
+
+
 initialization
   init.RegisterProcs('exe', oinit, ofinal, 'ManagedThread');
 
 
 
 finalization
+{$IFDEF MSWINDOWS}
+  DonePsapiLib;
 {$ENDIF}
 
 

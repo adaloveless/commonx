@@ -51,17 +51,6 @@ type
   TGiantColor = record
     r,g,b,a: nativefloat;
 
-    class operator Implicit(var a: integer): TGiantColor;inline;
-    class operator Explicit(var a: integer): TGiantColor;inline;
-    class operator Implicit(var a: TGiantColor): integer;inline;
-    class operator Explicit(var a: TGiantColor): integer;inline;
-    class operator Implicit(var a: TGiantColor): TColor;inline;
-    class operator Explicit(var a: TGiantColor): TColor;inline;
-    class operator Implicit(var a: TGiantColor): TSmallColor;inline;
-    class operator Explicit(var a: TGiantColor): TSmallColor;inline;
-    class operator Implicit(var a: TGiantColor): byte;inline;
-    class operator Explicit(var a: TGiantColor): byte;inline;
-
     class operator Add(a,b: TGiantColor): TGiantColor;inline;
     class operator Add(var a: TGiantColor; b: TColor): TGiantColor;inline;
     class operator Add(var a: TGiantColor; b: byte): TGiantColor;inline;
@@ -69,7 +58,7 @@ type
     class operator Multiply(var a: TGiantColor; b: nativefloat): TGiantColor;inline;
 
     function ToColor: TColor;
-    function ToColorWithAlpha: TColor;
+    function ToColorWithAlpha(bIs1Normal: boolean = true): TColor;
     function ToColorAdditiveMultiplyAlpha: TColor;
     procedure FromColor(c: TColor);
 
@@ -146,6 +135,7 @@ function BGRA_2222_ToColor(bIn: byte): TColor;
 function HexStringToColor(sHex: string): TColor;
 function normalizeColor(c: TColor): TColor;
 function GiantColor_New(r,g,b,a: nativefloat): TGiantColor;
+function ColorFormat(c: TColor; const sIn, sOut: string): TColor;
 
 implementation
 
@@ -576,39 +566,6 @@ begin
 
 end;
 
-class operator TGiantColor.Explicit(var a: TGiantColor): integer;
-begin
-  result := round(a.b*255)+(round(a.b*255) shl 8)+(round(a.b*255) shl 16);
-end;
-
-class operator TGiantColor.Implicit(var a: TGiantColor): TSmallColor;
-begin
-  result.r := round(a.r*255);
-  result.g := round(a.g*255);
-  result.b := round(a.b*255);
-end;
-class operator TGiantColor.Explicit(var a: TGiantColor): TSmallColor;
-begin
-  result.r := round(a.r*255);
-  result.g := round(a.g*255);
-  result.b := round(a.b*255);
-end;
-
-
-class operator TGiantColor.Implicit(var a: TGiantColor): integer;
-begin
-  result := round(a.r*255)+(round(a.g*255) shl 8)+(round(a.g*255) shl 16);
-end;
-
-class operator TGiantColor.Implicit(var a: TGiantColor): byte;
-begin
-  result := round(a.a*255);
-end;
-
-class operator TGiantColor.Implicit(var a: TGiantColor): TColor;
-begin
-  result := round(a.r*255)+(round(a.g * 255) shl 8)+(round(a.b * 255) shl 16);
-end;
 
 procedure TGiantColor.SetAlpha(aa: byte);
 begin
@@ -656,20 +613,22 @@ begin
   result := (rr)+((gg) shl 8)+(((bb) shl 16));
 end;
 
-function TGiantColor.ToColorWithAlpha: TColor;
+function TGiantColor.ToColorWithAlpha(bIs1Normal: boolean = true): TColor;
 var
   rr,gg,bb,aa: integer;
 begin
-  aa := clamp(round(a * 255),0,255);
-  rr := clamp(round(r * 255),0,255);
-  gg := clamp(round(g * 255),0,255);
-  bb := clamp(round(b * 255),0,255);
+  if bIs1Normal then begin
+    aa := clamp(round(a * 255),0,255);
+    rr := clamp(round(r * 255),0,255);
+    gg := clamp(round(g * 255),0,255);
+    bb := clamp(round(b * 255),0,255);
+  end else begin
+    aa := clamp(round(a),0,255);
+    rr := clamp(round(r),0,255);
+    gg := clamp(round(g),0,255);
+    bb := clamp(round(b),0,255);
+  end;
   result := (rr)+((gg) shl 8)+(((bb) shl 16))+(aa shl 24);
-end;
-
-class operator TGiantColor.Explicit(var a: TGiantColor): byte;
-begin
-  result := round(a.a*255);
 end;
 
 {$IFDEF FMX}
@@ -690,25 +649,7 @@ begin
   b := ((c shr 16) and 255)/255;
 end;
 
-class operator TGiantColor.Explicit(var a: TGiantColor): TColor;
-begin
-  result := round(a.r*255)+(round(a.g * 256))+(round(a.b * 65536));
-end;
 
-class operator TGiantColor.Implicit(var a: integer): TGiantColor;
-begin
-  result.r := (a shr 0) and 255;
-  result.g := (a shr 8) and 255;
-  result.b := (a shr 16) and 255;
-
-end;
-class operator TGiantColor.Explicit(var a: integer): TGiantColor;
-begin
-  result.r := (a shr 0) and 255;
-  result.g := (a shr 8) and 255;
-  result.b := (a shr 16) and 255;
-
-end;
 
 
 procedure TGiantColor.Init;
@@ -759,5 +700,27 @@ begin
   result := r + (g shl 8) + (b shl 16) + (a shl 24);
 end;
 {$ENDIF COLORREC}
+
+function ColorFormat(c: TColor; const sIn, sOut: string): TColor;
+  function FindByte(cc: Char): byte;
+  begin
+    result := 255;
+    for var t := low(sIn) to high(sIn) do begin
+      if sIN[t] = cc then begin
+        result := PByte(@c)[t-STRZ];
+      end;
+    end;
+  end;
+begin
+  result := 0;
+  var pr : PByte := PByte(@result);
+  for var x := low(sOut) to high(sOut) do begin
+    pr[x-STRZ] := FindByte(sOut[x]);
+  end;
+
+
+
+end;
+
 
 end.

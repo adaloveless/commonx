@@ -108,6 +108,9 @@ begin
       CleanPool;
   //    debug.log('1. there are '+FPool.count.tostring+' in the pool.');
       for t:= 0 to FPool.count-1 do begin
+        //range check T because there is a possibility that it will be out of range
+        if t>= Fpool.count then
+          break;
   //      debug.log('2. there are '+FPool.count.tostring+' in the pool.');
         si := FPool[t];
 

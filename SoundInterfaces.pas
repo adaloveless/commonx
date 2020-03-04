@@ -1,15 +1,21 @@
 unit SoundInterfaces;
+{$I DelphiDefs.inc}
 {$Message '********************************Compiling SoundInterfaces'}
 {$IFNDEF CPUX64}
   {$DEFINE PURE_TSTEREOSOUNDSAMPLE}
 {$ENDIF CPUX64}
 {$DEFINE FREEWHEEL2}
 {$DEFINE SAFE_OVERSAMPLE_WIEGHT}
+{$DEFINE NEW_RESAMPLE}
+{$DEFINE USE_READ_FUNC}
 
 interface
 
 uses
-  system.types,
+{$IFDEF NEED_FAKE_ANSISTRING}
+  ios.stringx.iosansi,
+{$ENDIF}
+  system.types, soundwavesampler,
   typex, betterobject, sharedobject, classes, generics.collections.fixed,
   commandprocessor, math, geometry, multibuffermemoryfilestream,
   memoryfilestream, commandicons, sysutils, soundconversions_commandline,
@@ -41,9 +47,18 @@ const
   SOUND_IDX_DATA_v2 = 28;
   SOUND_IDX_DATA_v3 = 32;
 
-
-
 type
+  TSoundPlaybackInfo = record
+    Fsamplerate: integer;
+    channels: integer;
+    fmt: TXSoundFormat;
+    procedure Init;
+  public
+
+    procedure SetSampleRate(const Value: integer);
+    property SampleRate: integer read FSampleRate write SetSampleRate;
+  end;
+  PSoundPlaybackInfo = ^TSoundPlaybackInfo;
   TComplexFrequencyArray = array[0..MAX_CHANNELS-1] of PAfftw_complex;
   ToscMessageType = (mtGetSample, mtBeginWindow, mtEndWindow, mtAttack, mtRelease);
   TSoundOscillatorHook = procedure(mt: ToscMessageType; out ss: TStereoSoundSample; iSampletime: int64; bIgnoreMods: boolean) of object;
@@ -80,8 +95,6 @@ type
     [unsafe] FThr: ISoundOscillatorRenderer;
     FObject: TObject;
 
-
-
   protected
     FBufL: array [0 .. (VU_BUFFER_SIZE - 1)] of nativefloat;
     FBufR: array [0 .. (VU_BUFFER_SIZE - 1)] of nativefloat;
@@ -89,6 +102,7 @@ type
     FHookSSE: TSoundOscillatorHookSSE;
 
   public
+    dev: PSoundPlaybackInfo;
     constructor Create;override;
     destructor Destroy;override;
     property HookSSE: TSoundOscillatorHookSSE read FhookSSE write FhookSSE;
@@ -140,6 +154,7 @@ type
     procedure SetCacheResults(const Value: boolean);
 
   protected
+    function MasterStreamSampleRate: ni;
 
     procedure BeforeDestruction;override;
     procedure SetMasterStream(const Value: ISoundOscillatorRenderer);virtual;
@@ -150,6 +165,7 @@ type
 
 
   public
+//    dev: PSoundPlaybackInfo;
     property Tag: cardinal read FTag write FTag;
     procedure o(mt: ToscMessageType; out ss: TStereoSoundSample; iSampletime: int64); virtual; abstract;
 
@@ -184,10 +200,6 @@ type
     property InSampling: boolean read FInSampling;
 
   end;
-
-
-
-
 
 
   TOscBufferInfo = record
@@ -362,6 +374,8 @@ type
     procedure WriteNextSample(rLeft, rRight: FLoatSample);virtual;abstract;
   end;
 
+  TSoundSampleReadFunction = function: TStereoSoundSample of object;
+
   TSoundStream = class(TAbstractSoundStream)
   protected
     FSampleRate: integer;
@@ -382,20 +396,42 @@ type
     FBufferEntireFile: boolean;
     FResampled: boolean;
     FOriginalSampleRate: nativeint;
+    FSampleFormat: TXSoundFormat;
     procedure SetBufferEntireFile(const Value: boolean);
     function GetRestingPOint: single;
+    procedure SetSampleFormat(const Value: TXSoundFormat);
+    procedure SetChannels(const Value: smallint);
   protected
     iSeekPosition: int64;
     iLastSampleStart: int64;
     mp3info: Tmp3info;
+    microsoftWAV: TSoundWaveSampler;
 
     function GetSize: int64; override;
 
 
     procedure ApplyEq(buf: multibuffermemoryfilestream.PMBBufferInfo);
     procedure UpdateLastSampleStart;
+
+    function GetSoundSample_8i_2ch: TStereoSoundSample;
+    function GetSoundSample_16i_2ch: TStereoSoundSample;
+    function GetSoundSample_24i_2ch: TStereoSoundSample;
+    function GetSoundSample_32i_2ch: TStereoSoundSample;
+    function GetSoundSample_64i_2ch: TStereoSoundSample;
+    function GetSoundSample_32f_2ch: TStereoSoundSample;
+    function GetSoundSample_64f_2ch: TStereoSoundSample;
+    function GetSoundSample_8i_1ch: TStereoSoundSample;
+    function GetSoundSample_16i_1ch: TStereoSoundSample;
+    function GetSoundSample_24i_1ch: TStereoSoundSample;
+    function GetSoundSample_32i_1ch: TStereoSoundSample;
+    function GetSoundSample_64i_1ch: TStereoSoundSample;
+    function GetSoundSample_32f_1ch: TStereoSoundSample;
+    function GetSoundSample_64f_1ch: TStereoSoundSample;
+    procedure UpdateSampleFunctionPointer;
   public
+    fnReadNextSample: TSoundSampleReadFunction;
     filename: string;
+    SampleDataStart: int64;
 
     constructor Create(const AFileName: string; Mode: cardinal; Rights: Cardinal; Flags: cardinal);overload;
     constructor Create(const AFileName: string; Mode: cardinal);overload;
@@ -404,10 +440,11 @@ type
 
     procedure WriteHeader;
     function LoadHeader:TBoogerHeader;
-    property channels: smallint read FChannels write FChannels;
+    property channels: smallint read FChannels write SetChannels;
     property samplerate: integer read FSampleRate write FSampleRate;
     procedure Rewind;
-    function GetResample(rTime: double; out ss: TStereoSoundSample): boolean;
+    function GetResample(rTime: double; out ss: TStereoSoundSample): boolean;overload;
+    function GetResample(targetSampleRate: ni; rTime: double; out ss: TStereoSoundSample): boolean;overload;
     function Read(var Buffer; Count: Longint): Longint; override;
     function Seek(const offset: int64; Origin: TSeekOrigin): int64; override;
 
@@ -440,6 +477,8 @@ type
     property OriginalSampleRate: nativeint read FOriginalSampleRate write FOriginalSampleRate;
 
     property REstingPOint: single read GetRestingPOint;
+    property SampleFormat: TXSoundFormat read FSampleFormat write SetSampleFormat;
+
   public
     property Position;
   end;
@@ -535,12 +574,136 @@ function GetMp3Info(sFile: string): TMp3Info;overload;
 function GetMp3Info(p: Pbyte): TMp3Info;overload;
 
 
+function ss_GetSoundSample_8i_2ch(strm: TStream): TStereoSoundSample;
+function ss_GetSoundSample_16i_2ch(strm: TStream): TStereoSoundSample;
+function ss_GetSoundSample_24i_2ch(strm: TStream): TStereoSoundSample;
+function ss_GetSoundSample_32i_2ch(strm: TStream): TStereoSoundSample;
+function ss_GetSoundSample_64i_2ch(strm: TStream): TStereoSoundSample;
+function ss_GetSoundSample_32f_2ch(strm: TStream): TStereoSoundSample;
+function ss_GetSoundSample_64f_2ch(strm: TStream): TStereoSoundSample;
+
+
 
 implementation
 
 uses
   soundconversion;
 
+function ss_GetSoundSample_8i_1ch(strm: TStream): TStereoSoundSample;
+var
+  mono: tinyint;
+begin
+  Stream_GuaranteeRead(strm, @mono, sizeof(mono));
+  result.Left := mono/int64($7f);
+  result.Right := result.Left;
+end;
+function ss_GetSoundSample_16i_1ch(strm: TStream): TStereoSoundSample;
+var
+  mono: smallint;
+begin
+  Stream_GuaranteeRead(strm, @mono, sizeof(mono));
+  result.Left := mono/int64($7fff);
+  result.Right := result.Left;
+end;
+function ss_GetSoundSample_24i_1ch(strm: TStream): TStereoSoundSample;
+var
+  mono: uint24;
+begin
+  Stream_GuaranteeRead(strm, @mono, sizeof(mono));
+  result.Left := mono.toint64/int64($7fffff);
+  result.Right := result.Left;
+end;
+function ss_GetSoundSample_32i_1ch(strm: TStream): TStereoSoundSample;
+var
+  mono: integer;
+begin
+  Stream_GuaranteeRead(strm, @mono, sizeof(mono));
+  result.Left := mono/int64($7fffffff);
+  result.Right := result.Left;
+end;
+function ss_GetSoundSample_64i_1ch(strm: TStream): TStereoSoundSample;
+var
+  mono: int64;
+begin
+  Stream_GuaranteeRead(strm, @mono, sizeof(mono));
+  result.Left := mono/int64($7fffffffffffffff);
+  result.Right := result.Left;
+end;
+function ss_GetSoundSample_32f_1ch(strm: TStream): TStereoSoundSample;
+var
+  mono: single;
+begin
+  Stream_GuaranteeRead(strm, @mono, sizeof(mono));
+  result.Left := mono;
+  result.Right := result.Left;
+end;
+function ss_GetSoundSample_64f_1ch(strm: TStream): TStereoSoundSample;
+var
+  mono: double;
+begin
+  Stream_GuaranteeRead(strm, @mono, sizeof(mono));
+  result.Left := mono;
+  result.Right := result.Left;
+end;
+
+
+function ss_GetSoundSample_8i_2ch(strm: TStream): TStereoSoundSample;
+var
+  lr: array[0..1] of tinyint;
+begin
+  Stream_GuaranteeRead(strm, @lr[0], sizeof(lr));
+  result.Left := lr[0]/127;
+  result.Right := lr[1]/127;
+end;
+function ss_GetSoundSample_16i_2ch(strm: TStream): TStereoSoundSample;
+var
+  lr: array[0..1] of smallint;
+begin
+  Stream_GuaranteeRead(strm, @lr[0], sizeof(lr));
+  result.Left := lr[0]/32767;
+  result.Right := lr[1]/32767;
+end;
+function ss_GetSoundSample_24i_2ch(strm: TStream): TStereoSoundSample;
+var
+  lr: array[0..1] of uint24;
+begin
+  Stream_GuaranteeRead(strm, @lr[0], sizeof(lr));
+  result.Left := lr[0].toint64/int64($7fffff);
+  result.Left := lr[1].toint64/int64($7fffff);
+end;
+function ss_GetSoundSample_32i_2ch(strm: TStream): TStereoSoundSample;
+var
+  lr: array[0..1] of integer;
+begin
+  Stream_GuaranteeRead(strm, @lr[0], sizeof(lr));
+  result.Left := lr[0]/int64($7fffffff);
+  result.Right := lr[1]/int64($7fffffff);
+end;
+function ss_GetSoundSample_64i_2ch(strm: TStream): TStereoSoundSample;
+var
+  lr: array[0..1] of int64;
+begin
+  Stream_GuaranteeRead(strm, @lr[0], sizeof(lr));
+  result.Left := lr[0]/int64($7fffffffffffffff);
+  result.Right := lr[1]/int64($7ffffffffffffff);
+end;
+
+function ss_GetSoundSample_32f_2ch(strm: TStream): TStereoSoundSample;
+var
+  lr: array[0..1] of single;
+begin
+  Stream_GuaranteeRead(strm, @lr[0], sizeof(lr));
+  result.Left := lr[0];
+  result.Right := lr[1];
+end;
+function ss_GetSoundSample_64f_2ch(strm: TStream): TStereoSoundSample;
+var
+  lr: array[0..1] of double;
+begin
+  Stream_GuaranteeRead(strm, @lr[0], sizeof(lr));
+  result.Left := lr[0];
+  result.Right := lr[1];
+end;
 
 
 
@@ -750,6 +913,16 @@ begin
   FOwnedObjects := TList.create;
   FresultCacheSize := 44100;
   FCacheResults := false;
+end;
+
+function ToscillatorObject.MasterStreamSampleRate: ni;
+begin
+  if assigned(MasterStream) then
+    result := MasterStream.SampleRate
+  else begin
+    result := 44100;
+    raise ECritical.create('masterstream not assigned, cannot get masterstreamsamplerate');
+  end;
 end;
 
 procedure ToscillatorObject.oo(mt: ToscMessageType; out ss: TStereoSoundSample; iSampletime: int64; bIgnoreMods: boolean);
@@ -1576,8 +1749,18 @@ begin
       exit;
     end;
 
+
+{$IFDEF NEW_RESAMPLE}
+//    if dev = nil then
+//      raise ECritical.create('dev not assigned');
+//    Debug.log(self, 'oscillate');
+    FStream.GetResample(MasterStreamSampleRate,iThisSample+FStartAt,ss);
+//    FStream.SeekSample(iThisSample + FStartAt);
+//    FStream.GetNextSample(ss);
+{$ELSE}
     FStream.SeekSample(iThisSample + FStartAt);
     FStream.GetNextSample(ss);
+{$ENDIF}
     if not Loop then begin
       if (iThisSample + FStartAt) >= (SampleCount-1) then begin
         Fconcluded := true;
@@ -1851,6 +2034,8 @@ end;
 
 constructor TSoundStream.Create(const AFileName: string; Mode: cardinal; Rights: Cardinal; Flags: cardinal);
 begin
+  FChannels := 1;
+  FSampleFormat := sf8;
   inherited CReate();
   filename := afilename;
   Create(TSoundFileStreamBase.create(afilename, mode, rights, flags), extractfileext(aFileName));
@@ -1867,6 +2052,8 @@ constructor TSoundStream.Create(stream_takes_ownership: TStream; ext: string);
 var
   bh: TBoogerHeader;
 begin
+  FSampleFormat := sf8;
+  FChannels := 1;
   inherited Create();
   FRestingPOint := INVALID_RESTING_POINT;
   FUnderStream := stream_takes_ownership;
@@ -1924,24 +2111,31 @@ begin
 end;
 
 function TSoundStream.GetNextSample(out ss: TStereoSoundSample): boolean;
-var
-  iL, iR: smallint;
+
 begin
   if (Position < 0) or (Position > iLastSampleStart) then begin
     ss.Init;
     result := false;
     exit;
   end;
-  Read(iL, 2);
-  if channels > 1 then begin
-    Read(iR, 2);
-  end
-  else begin
-    iR := iL;
-  end;
 
-  ss.Left := iL / 32767;
-  ss.Right := iR / 32767;
+{$IFDEF USE_READ_FUNC}
+    ss := fnReadNextSample;
+{$ELSE}
+  begin
+    var
+      iL, iR: smallint;
+    Read(iL, 2);
+    if channels > 1 then begin
+      Read(iR, 2);
+    end
+    else begin
+      iR := iL;
+    end;
+    ss.Left := iL / 32767;
+    ss.Right := iR / 32767;
+  end;
+{$ENDIF}
 
   ss.Left := ss.Left * Volume;
   ss.Right := ss.Right * Volume;
@@ -2012,6 +2206,15 @@ begin
 
   end;
 
+end;
+
+function TSoundStream.GetResample(targetSampleRate: ni; rTime: double;
+  out ss: TStereoSoundSample): boolean;
+begin
+  if targetsamplerate = 0 then
+    targetsamplerate := 44100;
+  var nuTime := rTime;//(TArgetSampleRate *rTime) / SampleRate;
+  result := GetResample(nuTime, ss);
 end;
 
 function TSoundStream.GetRestingPOint: single;
@@ -2150,6 +2353,78 @@ begin
     result := FUncompressed.Size;
 end;
 
+function TSoundStream.GetSoundSample_16i_1ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_16i_1ch(self);
+end;
+
+function TSoundStream.GetSoundSample_16i_2ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_16i_2ch(self);
+end;
+
+function TSoundStream.GetSoundSample_24i_1ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_24i_1ch(self);
+end;
+
+function TSoundStream.GetSoundSample_24i_2ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_24i_2ch(self);
+
+end;
+
+function TSoundStream.GetSoundSample_32f_1ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_32f_1ch(self);
+end;
+
+function TSoundStream.GetSoundSample_32f_2ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_32f_2ch(self);
+
+end;
+
+function TSoundStream.GetSoundSample_32i_1ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_32i_1ch(self);
+end;
+
+function TSoundStream.GetSoundSample_32i_2ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_32i_2ch(self);
+end;
+
+function TSoundStream.GetSoundSample_64f_1ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_64f_1ch(self);
+end;
+
+function TSoundStream.GetSoundSample_64f_2ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_64f_2ch(self);
+end;
+
+function TSoundStream.GetSoundSample_64i_1ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_64i_1ch(self);
+end;
+
+function TSoundStream.GetSoundSample_64i_2ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_64i_2ch(self);
+end;
+
+function TSoundStream.GetSoundSample_8i_1ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_8i_1ch(self);
+end;
+
+function TSoundStream.GetSoundSample_8i_2ch: TStereoSoundSample;
+begin
+  result := ss_GetSoundSample_8i_2ch(self);
+end;
+
 function TSoundStream.LengthInSeconds: nativefloat;
 begin
   result := samplecount / samplerate;
@@ -2159,21 +2434,46 @@ function TSoundStream.LoadHeader: TBoogerHeader;
 begin
   Seek(0, soBeginning);
   Stream_GuaranteeRead(self, Pbyte(@result), sizeof(result));
-  if result.fourcc[0] <> 65{'A'} then
-    raise Exception.Create('Invalid FOURCC. Only ADA3 supported');
-  if result.fourcc[1] <> 68{'D'} then
-    raise Exception.Create('Invalid FOURCC. Only ADA3 supported');
-  if result.fourcc[2] <> 65{'A'} then
-    raise Exception.Create('Invalid FOURCC. Only ADA3 supported');
-  if result.fourcc[3] <> 51{'3'} then
-    raise Exception.Create('Invalid FOURCC. Only ADA3 supported');
+  if (result.fourcc[0] = ord(ansichar('R')))
+  and (result.fourcc[1] = ord(ansichar('I')))
+  and (result.fourcc[2] = ord(ansichar('F')))
+  and (result.fourcc[3] = ord(ansichar('F'))) then begin
+    //NEW IN 2020, better, more universal sampler for WAV files,
+    //should support lots of formats and sample rates
+    microsoftWAV := TSoundWaveSampler.Create;
+    microsoftWAV.fileName := self.filename;
 
-  FChannels := result.channels;
-  self.FSamples := result.length div (FChannels * 2);
-  FByteLength := result.length;
-  FChannels := result.channels;
-  FSampleRate := result.samplerate;
-  FBytesPerSample := 2;
+    var fmt := microsoftWAV.GetFormat;
+    Channels := fmt.channels;
+    FSamples := fmt.lengthInSamples;
+    FSampleRate := fmt.rate;
+    FBytesPerSample := fmt.bytespersample;
+    SampleFormat := fmt.fmt;
+    SampleDataStart := microsoftWAV.DataStart;
+    FByteLength := Size - SampleDataStart;
+
+  end else begin
+    //LOAD ADA3 format
+    if result.fourcc[0] <> 65{'A'} then
+      raise Exception.Create('Invalid FOURCC. Only ADA3 supported for boog files');
+    if result.fourcc[1] <> 68{'D'} then
+      raise Exception.Create('Invalid FOURCC. Only ADA3 supported for boog files');
+    if result.fourcc[2] <> 65{'A'} then
+      raise Exception.Create('Invalid FOURCC. Only ADA3 supported for boog files');
+    if result.fourcc[3] <> 51{'3'} then
+      raise Exception.Create('Invalid FOURCC. Only ADA3 supported for boog files');
+
+    SampleDataStart := SOUND_HEADER_LENGTH_v3;
+    FChannels := result.channels;
+    self.FSamples := result.length div (FChannels * 2);
+    FByteLength := result.length;
+    FChannels := result.channels;
+    FSampleRate := result.samplerate;
+    FBytesPerSample := 2;
+    SampleFormat := sf16;
+
+
+  end;
   UpdateLastSampleStart;
 
 end;
@@ -2188,11 +2488,11 @@ end;
 procedure TSoundStream.PrefetchSample(iSample: int64; iLength: int64);
 begin
   if FUnderstream is TSoundFileStreamBase then
-    TSoundFileStreamBase(FUnderStream).Prefetch(SOUND_HEADER_LENGTH_V3 + SamplesToBytes(iSample),
+    TSoundFileStreamBase(FUnderStream).Prefetch(SampleDataStart + SamplesToBytes(iSample),
       SamplesToBytes(iLength));
 end;
 
-function TSoundStream.Read(var Buffer; Count: Integer): Longint;
+function TSoundStream.Read(var Buffer; Count: longint): Longint;
 begin
   if not assigned(FUncompressed) then
     result := FUnderStream.read(buffer, count)
@@ -2209,7 +2509,7 @@ end;
 
 procedure TSoundStream.Rewind;
 begin
-  Seek(SOUND_HEADER_LENGTH_v3, soBeginning);
+  Seek(SampleDataStart, soBeginning);
 end;
 
 function TSoundStream.SamplePosition: int64;
@@ -2240,7 +2540,7 @@ begin
   if assigned(FUncompressed) then
     hl := 0
   else
-    hl := SOUND_HEADER_LENGTH_v3;
+    hl := SampleDataStart;
 
   if Loop then
     Seek(hl + SamplesToBytes(iSample mod SampleCount),
@@ -2259,6 +2559,21 @@ begin
 
 end;
 
+procedure TSoundStream.SetChannels(const Value: smallint);
+begin
+  FChannels := Value;
+  UpdateSampleFunctionPointer;
+end;
+
+procedure TSoundStream.SetSampleFormat(const Value: TXSoundFormat);
+begin
+  FSampleFormat := Value;
+  UpdateSampleFunctionPointer;
+
+
+
+end;
+
 procedure TSoundStream.UpdateLastSampleStart;
 var
   iUseSize: int64;
@@ -2268,6 +2583,38 @@ begin
   else
     iUsesize := size;
   iLastSampleStart := iUseSize-(channels*BytesperSample);
+end;
+
+procedure TSoundStream.UpdateSampleFunctionPointer;
+begin
+  case channels of
+    1:
+      case FSampleFormat of
+        sf8: fnReadNextSample := self.GetSoundSample_8i_1ch;
+        sf16: fnReadNextSample := self.GetSoundSample_16i_1ch;
+        sf24: fnReadNextSample := self.GetSoundSample_24i_1ch;
+        sf32: fnReadNextSample := self.GetSoundSample_32i_1ch;
+        sf64: fnReadNextSample := self.GetSoundSample_64i_1ch;
+        sf32f: fnReadNextSample := self.GetSoundSample_32f_1ch;
+        sf64f: fnReadNextSample := self.GetSoundSample_64f_1ch;
+      else
+        raise ECritical.create('sample format not handled');
+      end;
+    2:
+      case FSampleFormat of
+        sf8: fnReadNextSample := self.GetSoundSample_8i_2ch;
+        sf16: fnReadNextSample := self.GetSoundSample_16i_2ch;
+        sf24: fnReadNextSample := self.GetSoundSample_24i_2ch;
+        sf32: fnReadNextSample := self.GetSoundSample_32i_2ch;
+        sf64: fnReadNextSample := self.GetSoundSample_64i_2ch;
+        sf32f: fnReadNextSample := self.GetSoundSample_32f_2ch;
+        sf64f: fnReadNextSample := self.GetSoundSample_64f_2ch;
+      else
+        raise ECritical.create('sample format not handled');
+      end;
+  else
+    raise ECritical.create('channel count '+channels.tostring+' not handled');
+  end;
 end;
 
 procedure TSoundStream.WriteHeader;
@@ -2324,7 +2671,7 @@ begin
     fs := TFileStream.Create(sFile, fmOpenRead+fmShareDenyWrite);
     try
       for t:= 0 to fs.size-5 do begin
-        fs.seek(t,0);
+        fs.seek(t,soBeginning);
         stream_guaranteeread(fs, @mp3header[0], 4, true);
         if (mp3header[0] = $ff) and ((mp3header[1] and $D0) = $D0) then begin
           result := GetMp3Info(@mp3header[0]);
@@ -2476,6 +2823,21 @@ begin
   stream_GuaranteeWrite(s, pbyte(@self), sizeof(self));
   s.seek(iPos,soBeginning);
 
+end;
+
+{ TSoundPlaybackInfo }
+
+procedure TSoundPlaybackInfo.Init;
+begin
+  Debug.log('TSoundPlaybackInfo@'+inttohex(nativeint(@self),16)+' init');
+  samplerate := 44100;
+  channels := 2;
+  fmt:= sf16;
+end;
+
+procedure TSoundPlaybackInfo.SetSampleRate(const Value: integer);
+begin
+  FSampleRate := Value;
 end;
 
 end.

@@ -32,7 +32,14 @@ begin
   if vt = varDate then begin
     result := Quote(datetoMYSQLDate(v));
   end else
+  if vt = varDouble then begin
+    result := floatprecision(double(v),8);
+  end else
+  if vt = varSingle then begin
+    result := floatprecision(single(v),8);
+  end else
   begin
+
     result := VarToStr(v);
     IF result = 'INF' then
       result := '0.0';

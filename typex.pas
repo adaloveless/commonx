@@ -135,7 +135,7 @@ type
   ni = nativeint;
   fi = integer;
   TDynVariantArray = array of variant;
-  TDynByteArray = array of byte;
+  TDynByteArray = TArray<byte>;
   TDynInt64Array = array of Int64;
   PInt16 = ^smallint;
   PInt32 = ^integer;
@@ -144,7 +144,9 @@ type
   signedbyte = shortint;
 
 
-{$IFDEF ZEROBASEDSTRINGS}
+
+
+{$IFNDEF ONESTR}
 const STRZERO = 0;
 {$ELSE}
 const STRZERO = 1;
@@ -245,8 +247,15 @@ type
   Pfftw_float = system.Pdouble;
   PAfftw_float = PDoubleArray;
 
+  uint24 = packed record
+    first16: cardinal;
+    next8: byte;
+    function toint64: int64;
+    procedure fromint64(i: int64);
+  end;
+
 function PointToStr(pt:TPoint): string;
-function STRZ(): nativeint;
+function STRZ(): nativeint;inline;
 function BoolToTriBool(b: boolean): TriBool;inline;
 function TriBoolToBool(tb: TriBool): boolean;inline;
 function BoolToint(b: boolean): integer;
@@ -299,11 +308,8 @@ end;
 function STRZ(): nativeint;
 //Returns the index of the first element of a string based on current configuration
 begin
-{$IFDEF MSWINDOWS}
-  exit(1);
-{$ELSE}
-  exit(0);
-{$ENDIF}
+  result := strZERO;
+
 end;
 
 { TStringHelperEx }
@@ -559,6 +565,17 @@ begin
 
 end;
 
+function uint24.toint64: int64;
+begin
+  result := self.first16 + (self.next8 shl 16);
+end;
+
+procedure uint24.fromint64(i: int64);
+begin
+  first16 := i and $FFFF;
+  next8 := (i shr 16) and $FF;
+
+end;
 
 
 end.

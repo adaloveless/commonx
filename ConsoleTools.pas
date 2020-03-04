@@ -3,12 +3,17 @@ unit ConsoleTools;
 interface
 
 uses
-  commandprocessor, stringx, typex, systemx, sysutils, betterobject, windows;
+{$IFDEF MSWINDOWS}
+  windows,
+{$ENDIF}
+  commandprocessor, stringx, typex, systemx, sysutils, betterobject;
 
 type
   TConsole = class(TBetterObject)
   private
+{$IFDEF MSWINDOWS}
     FHandle: THandle;
+{$ENDIF}
     FForeGroundColorNumber: nativeint;
     FBAckGroundColorNumber: nativeint;
     procedure SetBackGroundColorNumber(const Value: nativeint);
@@ -16,7 +21,9 @@ type
   protected
 
   public
+{$IFDEF MSWINDOWS}
     property Handle: THandle read FHandle;
+{$ENDIF}
     procedure Init;override;
     procedure SetTextAttribute(iAttr: nativeint);
     procedure Write(sString: string);
@@ -75,14 +82,18 @@ end;
 procedure TConsole.Init;
 begin
   inherited;
+{$IFDEF MSWINDOWS}
   Fhandle := GetStdHandle(STD_OUTPUT_HANDLE);
+{$ENDIF}
 end;
 
 procedure TConsole.SetBackGroundColorNumber(const Value: nativeint);
 begin
 {$IFDEF CONSOLE}
   FBAckGroundColorNumber := Value;
+{$IFDEF MSWINDOWS}
   SetConsoleTextAttribute(handle, ((FBAckGroundColorNumber and $f) shl 4) or (FForeGroundColorNumber and $f));
+{$ENDIF}
 {$ENDIF}
 end;
 
@@ -91,14 +102,18 @@ procedure TConsole.SetForeGroundColorNumber(const Value: nativeint);
 begin
 {$IFDEF CONSOLE}
   FForeGroundColorNumber := Value;
+{$IFDEF MSWINDOWS}
   SetConsoleTextAttribute(handle, ((FBAckGroundColorNumber and $f) shl 4) or (FForeGroundColorNumber and $f));
+{$ENDIF}
 {$ENDIF}
 end;
 
 procedure TConsole.SetTextAttribute(iAttr: nativeint);
 begin
 {$IFDEF CONSOLE}
+{$IFDEF MSWINDOWS}
   windows.SetConsoleTextAttribute(handle, iAttr);
+{$ENDIF}
 {$ENDIF}
 end;
 
@@ -110,6 +125,10 @@ begin
 end;
 
 procedure ClearScreen;
+{$IFNDEF MSWINDOWS}
+begin
+end;
+{$ELSE}
 var
   stdout: THandle;
   csbi: TConsoleScreenBufferInfo;
@@ -129,5 +148,6 @@ begin
     NumWritten));
   Win32Check(SetConsoleCursorPosition(stdout, Origin));
 end;
+{$ENDIF}
 
 end.

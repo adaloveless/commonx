@@ -3,7 +3,7 @@ unit FormBase;
 interface
 {$DEFINE DISABLE_GLASS}
 {x$DEFINE BEEP_ON_STATE_SAVE}
-{$DEFINE LOCALCOMMANDWAIT}
+{x$DEFINE LOCALCOMMANDWAIT}
 
 uses
   Windows, anoncommand,
@@ -143,10 +143,12 @@ type
     procedure CleanupExpiredCommands;
     function SetTimer(interval: ni; ontimerproc: TAnonTimerProc): TAnonFormTimer;
     procedure SetTimerAndWatch(interval: ni; ontimerproc: TAnonTimerProc);
+    procedure HardWork(proc: TProc; guiproc: TProc = nil);
   end;
 
 
-
+threadvar
+  hardworker: TCommand;
 type
   TfrmBaseClass = class of TfrmBase;
 
@@ -433,6 +435,22 @@ begin
   result := classname;
 end;
 
+procedure TfrmBase.HardWork(proc: TProc; guiproc: TProc);
+var
+  c: TCommand;
+begin
+  if assigned(guiproc) then
+    c := InlineProc(proc)
+  else
+    c := InlineProcWithGui(proc, guiproc);
+  FMonitoringCommands.add(c);
+  hardworker := c;
+  c.FireForget := false;
+  c.Start;
+  WaitForSinglecommand(c);
+
+end;
+
 function TfrmBase.HasMenu: boolean;
 var
   t: integer;
@@ -685,7 +703,7 @@ begin
           self.ShowStatus(c);
           tmLastUpdate := getticker;
         end;
-        application.processmessages;
+//        application.processmessages;
       end;
       try
         c.WaitFor;

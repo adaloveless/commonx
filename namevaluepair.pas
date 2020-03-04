@@ -85,6 +85,8 @@ type
   end;
 
 function QuickNVPSearch(sFile: string; sfield, sValue: string): boolean;
+function nvpstr(s: string): Iholder<TNameValuePairList>;
+
 
 implementation
 
@@ -92,6 +94,13 @@ uses
   helpers_stream;
 
 { TNameValuePairList }
+function nvpstr(s: string): Iholder<TNameValuePairList>;
+begin
+  result := THolder<TNameValuePairlist>.create;
+  result.o := TNamevaluePairList.create;
+  result.o.autoadd := true;
+  result.o.LoadFromString(s);
+end;
 
 { TNameValuePairList }
 

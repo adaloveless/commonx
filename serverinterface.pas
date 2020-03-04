@@ -868,7 +868,8 @@ begin
       for fd := 0 to rs.FieldCount-1 do begin
 
         f := rs.FieldDefs[fd];
-        osub.AddFieldDef(f.sName, RSTypeToDOType(f.vType), '');
+        var dot := RSTypeToDOType(f.vType);
+        osub.AddFieldDef(f.sName, dot , '');
 
         osub.FieldByIndex[fd].AsVariant := rs.Values[fd, t];
       end;
@@ -1055,6 +1056,7 @@ end;
 function RSTypeToDOType(rs: data.db.TFieldType): TDataFieldClass;
 begin
   case rs of
+    ftMemo, ftWideString,
     ftString : result := TstringDataField;
 
     ftSmallint,
@@ -1069,8 +1071,8 @@ begin
     ftFloat: result := TFloatingPointDataField;
 
 
-
-
+  else
+    raise ECritical.create('Unhandled field type in RSTypeToDOType()');
 
   end;
 

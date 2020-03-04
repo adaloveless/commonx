@@ -245,6 +245,7 @@ procedure TAbstractdb.Init;
 begin
   inherited;
   accumulator := TStringBuilder.create;
+  DBPort := '3306';
 end;
 
 

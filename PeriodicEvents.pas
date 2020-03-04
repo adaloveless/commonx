@@ -15,7 +15,8 @@ type
   TPeriodicEvent = class(TLockQueue)
   strict
   private
-    FSynchronized: boolean; protected
+    FSynchronized: boolean;
+  protected
     FFrequency: ticker;
     FEnabled: boolean;
     FLastExecutionTime: ticker;

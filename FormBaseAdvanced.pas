@@ -6,7 +6,7 @@ interface
 
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, FrameBusyFMX,
-  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, typex,systemx, guihelpers_fmx, FramBaseFMX,
+  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, typex,systemx, guihelpers_fmx, FrameBaseFMX,
   FMX.Objects, commandprocessor, FMX.Controls.Presentation, FMX.StdCtrls, AnonCommand,
   FormFMXBase, tickcount, betterobject, stringx;
 
@@ -59,8 +59,6 @@ type
     //NEW Services Offered by Base Form
     function GetControl<T: TControl>(parent: TControl): T;
 
-
-
     procedure ShowMessage(m: string);override;
     procedure ToggleBusy(working: Boolean);override;
 
@@ -72,7 +70,7 @@ var
 implementation
 
 uses
-  FormMockMobile;
+  FormMockMobile, debug;
 
 {$R *.fmx}
 
@@ -173,6 +171,9 @@ end;
 
 destructor TfrmBaseAdvanced.Destroy;
 begin
+  Debug.Log(CLR_F+'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+  Debug.Log(CLR_F+'Destroying form: '+classname);
+  Debug.Log(CLR_F+'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
 //  BGCmd.WaitForAll;
 

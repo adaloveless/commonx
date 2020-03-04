@@ -201,7 +201,6 @@ begin
   inherited;
   hSocket := INVALID_SOCKET;
   bClosed := true;
-
 end;
 
 destructor TSimpleWinsockconnection.Destroy;
@@ -269,6 +268,7 @@ begin
     Inc(i);
   end;
 end;
+
 
 procedure TSimpleWinsockconnection.CheckSocketError(iJustSent: nativeint);
 begin

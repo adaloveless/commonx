@@ -7,7 +7,7 @@ uses
 {$IFDEF MSWINDOWS}
   windows, Winapi.Messages, Winapi.IpTypes, fmx.platform.win, fmx.platform,
 {$ENDIF}
-  guihelpers_fmx, SCALEDlayoutproportional, commandprocessor, systemx, typex, tickcount,numbers,
+  betterobject, guihelpers_fmx, SCALEDlayoutproportional, commandprocessor, systemx, typex, tickcount,numbers,
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, fmx_messages,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, system.messaging,
   FMX.Objects, anoncommand, fmx_glass;
@@ -43,14 +43,21 @@ type
     property state: TCurtainState read FState write SetState;
   end;
 
+  Tptrptr = ^pointer;
 
   TfrmFMXBase = class(TForm)
+    tmFormMessages: TTimer;
+    procedure FormActivate(Sender: TObject);
+    procedure tmFormMessagesTimer(Sender: TObject);
   private
+    in_activation: boolean;
     FTransplanted: boolean;
     procedure Transition(proc: TProc);
     { Private declarations }
 
   protected
+    mq: TFatMessageQueue;
+    globalinstance: Tptrptr;
     watch_last_active: boolean;
     default_curtains: array[0..CURTAIN_COUNT-1] of TCurtainPoint;
     curtainsdata : TCurtains;
@@ -64,7 +71,11 @@ type
     procedure DoHide; override;
     procedure WatchCommand(c: TCommand; bTakeOwnership: boolean);
     procedure BringDefaultCurtainsToFront;
+    procedure FatMessagePosted;virtual;
+    function HandleFatMessage(m: TFatMessage): boolean;virtual;
   public
+    isFirstActivation: boolean;
+    quietBGcmd: TCommand;
     mock: TForm;
     WorkingHard: boolean;
     LastWorkError: string;
@@ -77,6 +88,7 @@ type
     procedure ActivateOrTransplant;virtual;
     procedure ActivateByPush;virtual;
     procedure ActivateByPop;virtual;
+    procedure DeactivateOrTransplant;virtual;
     procedure UnregisterWithMockMobile;
     procedure UpdateMouseCursor;
     constructor Create(AOwner: TComponent); override;
@@ -113,13 +125,13 @@ type
     procedure BusyWork(proc: TProc);overload;
     procedure BusyWork(proc: TProc; guiSuccess: TProc);overload;
     procedure ShowMessage(sMessage: string);virtual;
-
+    procedure WorkIfNotBusy(proc, guiproc: TProc);
+    procedure CleanBGCmd(bWait:boolean);
+    procedure FirstActivation;virtual;
 
 
   end;
 
-var
-  frmFMXBase: TfrmFMXBase;
 
 implementation
 
@@ -144,13 +156,21 @@ end;
 
 procedure TfrmFMXBase.ActivateOrTransplant;
 begin
+  if not in_activation then begin
   DoShow;
-  if assigned(onActivate) then
-    OnActivate(self);
-  if mock <> nil then
-    Tmm(mock).SetBounds(Tmm(mock).GetBounds)
-  else
-    self.setbounds(self.getbounds);
+    if assigned(onActivate) then
+      OnActivate(self);
+    if mock <> nil then
+      Tmm(mock).SetBounds(Tmm(mock).GetBounds)
+    else
+      self.setbounds(self.getbounds);
+  end;
+
+  if isfirstActivation then begin
+    isfirstactivation := false;
+    FirstActivation;
+  end;
+
 end;
 
 procedure TfrmFMXBase.BringDefaultCurtainsToFront;
@@ -173,8 +193,33 @@ begin
   HardWork(proc);
 end;
 
+procedure TfrmFMXBase.CleanBGCmd(bWait: boolean);
+begin
+  if quietbgcmd <> nil then begin
+    if bWait then
+      quietbgcmd.waitfor;
+
+    if quietbgcmd.IsComplete then begin
+      quietbgcmd.free;
+      quietbgcmd := nil;
+    end;
+  end;
+end;
+
+
 constructor TfrmFMXBase.Create(AOwner: TComponent);
 begin
+  mq := MainMessageQueue.NewSubQueue;
+  mq.handler := function (m: IHolder<TFatMessage>): boolean begin
+    result := HandleFatMessage(m.o);
+  end;
+
+  mq.onposted := procedure begin
+    TThread.Synchronize(TThread.CurrentThread, FatMessagePosted);
+  end;
+
+
+  isFirstActivation := true;
   Debug.Log('Creating '+classname);
   inherited;
 {$IFDEF MSWINDOWS}
@@ -513,14 +558,25 @@ begin
 end;
 
 
+procedure TfrmFMXBase.DeactivateOrTransplant;
+begin
+  //
+end;
+
 destructor TfrmFMXBase.Destroy;
 begin
+  CleanBGCmd(true);
   ActiveCommands.WaitForAll;
   ActiveCommands.ClearAndDestroyCommands;
 
+
   inherited;
   ActiveCommands.free;
-
+  if globalinstance <> nil then
+    globalinstance^ := nil;
+  globalinstance := nil;
+  MainMessageQueue.DeleteSubQueue(mq);
+  mq := nil;
 end;
 
 procedure TfrmFMXBase.DoBoundsSet;
@@ -554,9 +610,37 @@ begin
   //
 end;
 
+procedure TfrmFMXBase.FatMessagePosted;
+begin
+  tmFormMessages.Enabled := true;
+
+end;
+
+procedure TfrmFMXBase.FirstActivation;
+begin
+  //no implementation required
+
+end;
+
+procedure TfrmFMXBase.FormActivate(Sender: TObject);
+begin
+  in_activation := true;
+  try
+    ActivateOrTransplant;
+  finally
+    in_activation := false;
+  end;
+end;
+
 function TfrmFMXBase.GetControl<T>(parent: TControl): T;
 begin
   result := TGuiHelper.control_Getcontrol<T>(parent);
+end;
+
+function TfrmFMXBase.HandleFatMessage(m: TFatMessage): boolean;
+begin
+  result := false;
+
 end;
 
 procedure TfrmFMXBase.HardWork(proc, guiSuccess: TProc; guiFail: TProc = nil);
@@ -588,9 +672,11 @@ begin
       cl := Tmm(mock).ActiveCommands;
 
     cl.Add(InlineProcWithGuiEx(proc, procedure begin end, procedure(s: string) begin WorkError(s) end));
+    if mock <> nil then
+      Tmm(mock).WatchCommands;
     WatchCommands;
   finally
-    WorkingHard := false;
+    //WorkingHard := false;
   end;
 
 end;
@@ -630,6 +716,21 @@ end;
 procedure TfrmFMXBase.ShowMessage(sMessage: string);
 begin
   fmx.Dialogs.showmessage(sMessage);
+end;
+
+procedure TfrmFMXBase.tmFormMessagesTimer(Sender: TObject);
+begin
+  //
+  var l := mq.Locki;
+  while mq.ProcessNextMessage do begin
+
+  end;
+
+  tmFormMessages.Enabled := false;
+
+
+
+
 end;
 
 procedure TfrmFMXBase.ToggleBusy(busy: boolean);
@@ -727,6 +828,7 @@ begin
     Debug.Log(CLR_F+'********* ALL COMMANDS watched by '+self.classname+' ARE COMPLETE');
 //    Debug.Log(CLR_F+'*********************************************************');
   end;
+  WorkingHard := not result;
   ToggleBusy(not result);
 
 end;
@@ -737,6 +839,19 @@ procedure TfrmFMXBase.WorkError(sMessage: string);
 begin
   showmessage(sMessage);
   LastWorkError := sMessage;
+end;
+
+procedure TfrmFMXBase.WorkIfNotBusy(proc, guiproc: TProc);
+begin
+  CleanBGCmd(false);
+
+  if quietbgcmd = nil then begin
+    quietbgcmd := InlineProcWithGuiEx(proc,guiproc, nil);
+  end;
+
+
+
+
 end;
 
 end.

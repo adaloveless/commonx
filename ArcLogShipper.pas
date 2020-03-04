@@ -1,6 +1,6 @@
 unit ArcLogShipper;
 {x$DEFINE DISABLE_SHIPPER}
-{$DEFINE USE_TCP}
+{x$DEFINE USE_TCP}
 
 interface
 
@@ -282,8 +282,8 @@ uses
 
 const
   RESERVE_ID_COUNT = 1000000;
-  MAX_UNIQUE_CLIENTS = 16;
-  RESERVE_UNIQUE_CLIENTS = 8;
+  MAX_UNIQUE_CLIENTS = 32;
+  RESERVE_UNIQUE_CLIENTS = 24;
   ZONES_TO_BACKUP = { $200} MAX_ZONES;
   ARC_ZONE_CHECKSUM_SIZE = $10000;
 type
@@ -614,7 +614,7 @@ begin
 
       result := (s<>'') and (cs = csLocal);
       if not result then begin
-        TVirtualDisk_Advanced(self.disk).zonerevs.ResetZone(zonebase, ARC_ZONE_CHECKSUM_SIZE);
+        TVirtualDisk_Advanced(self.disk).zonerevs.ResetZone(zonebase, ARC_ZONE_CHECKSUM_SIZE,true);
         result := true;
       end;
 
@@ -1541,7 +1541,7 @@ procedure TArcLogShipper.NoNeedClient(cli: TRDTPArchiveClient);
 begin
   IF CLI= nil then
     raise ECritical.create('trying to put nil client in pool!');
-  if not cli.Connected then begin
+  if (not cli.Connected) or (cli.errors > 0) then begin
     cli.Free;
     cli := nil;
   end else
@@ -1912,7 +1912,7 @@ begin
             FThr.status := 'VR '+validateidx.tohexstring+' prt '+Commaize(ring.DAtaAvailable)+' bytes behind. Since-Busy='+bt.tostring;
 //            sleep(500);
           end;
-          if (bt > 100) (*and (((GetTicker div 2000) mod 2)=0)*) then begin
+          if (bt > 1000) (*and (((GetTicker div 2000) mod 2)=0)*) then begin
             tm := GetTicker;
             while ring.DataAvailable > 0 do begin
               FThr.status := 'VR '+validateidx.tohexstring+' prt '+Commaize(ring.DAtaAvailable)+' bytes behind. Since-Busy='+bt.tostring;

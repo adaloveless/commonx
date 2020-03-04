@@ -4,7 +4,7 @@ interface
 {$DEFINE FANCY}
 
 uses
-  debug, betterobject, numbers, systemx, typex, pxl.types, tickcount, FramBaseFMX,
+  debug, betterobject, numbers, systemx, typex, pxl.types, tickcount, FrameBaseFMX,
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
   FMX.Objects, guihelpers_fmx;
@@ -50,7 +50,7 @@ type
 
   TAnimStage = (asStop, asIn, asPlay, asOut);
 
-  TframBusyFMX = class(TframeBaseFMX)
+  TframBusyFMX = class(TframBaseFMX)
     RectBusyAnim: TRectangle;
     tmAnim: TTimer;
     procedure tmAnimTimer(Sender: TObject);

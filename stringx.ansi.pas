@@ -16,7 +16,7 @@ type
   PAnsiChar = Pbyte;
 {$ENDIF}
 
-{$IFNDEF WINDOWS}
+{$IFDEF NEED_FAKE_ANSISTRING}
 procedure SetLength(var s: string; len: nativeint);overload;
 procedure SetLength(var s: ansistring; len: nativeint);overload;
 {$ENDIF}
@@ -309,7 +309,7 @@ begin
     result := true;
   end;
 end;
-{$IFNDEF WINDOWS}
+{$IFDEF NEED_FAKE_ANSISTRING}
 procedure SetLength(var s: string; len: nativeint);
 begin
   system.SetLength(s, len);

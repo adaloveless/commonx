@@ -2,7 +2,6 @@ unit betterobject;
 {x$DEFINE DEBUG_HOLDER}
 {$INCLUDE DelphiDefs.inc}
 {$MESSAGE '*******************COMPILING betterobject.pas'}
-
 {$IFNDEF LAZ}
 {$inline auto}
 {$ENDIF}
@@ -38,7 +37,7 @@ uses
   generics.collections.fixed,
   systemx, tickcount,
   //generics.collections.fixed;
-  {$IFDEF WINDOWS}
+  {$IFDEF MSWINDOWS}
     {$IFDEF LAZ}
         windows,
     {$ELSE}
@@ -86,7 +85,7 @@ type
     function GetIsDead: boolean;
   protected
 {$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
-{$IFNDEF AUTOREFCOUNT}
+{$IFDEF NOARC}
     FRefSect: TCLXCriticalSection;
 {$ENDIF}
 {$ENDIF}
@@ -154,12 +153,10 @@ type
     procedure Set__Holding(const Value: T);
   protected
     procedure Init;override;
-
   public
     FO: T;
     constructor create;override;
     destructor Destroy;override;
-
 {$IFDEF DEBUG_HOLDER}
     function _AddRef: Integer; override;
     function _Release: Integer;override;
@@ -457,9 +454,48 @@ type
 
   end;
 
+  TFatMessage = class(TBetterObject)
+  public
+    //if you add new members also update Copy() constructor
+    //if you add new members also update Copy() constructor
+    messageClass: string;
+    params: TArray<String>;
+    //if you add new members also update Copy() constructor
+    //if you add new members also update Copy() constructor
+    handled: boolean;
+    function Copy: IHolder<TFatMessage>;
+  end;
+
+  TFatMessageQueue = class(TSharedObject)
+  private
+    sectSubQueues: TCLXCriticalSection;
+    pending: TArray<IHolder<TFatMessage>>;
+    subqueues: TList<TFatMessageQueue>;
+    function GetNextMessage: IHolder<TFatMessage>;
+    procedure Posted;virtual;
+  public
+    handler: TFunc<IHolder<TFatMessage>, boolean>;
+    onposted: TProc;
+    procedure Post(m: IHolder<TFatMessage>);//process later
+    function Send(m: IHolder<TFatMessage>): boolean;//send through hierarchy... like a broadcast, but synchronous, stops when handled
+    procedure Broadcast(m: IHolder<TFatMessage>);//post copies into hierarchy
+    function ProcessNextMessage: boolean;
+    function NewSubQueue: TFatMessageQueue;
+    procedure DeleteSubQueue(fmq: TFatMessageQueue);
+    constructor Create; override;
+    procedure Detach; override;
+    function NewMessage: IHolder<TFatMessage>;
+    procedure QuickBroadcast(messageClass: string);overload;
+    procedure QuickBroadcast(messageClass: string; params: TArray<String>);overload;
+
+  end;
+
+  TMainMessageQueue = class(TFatMessageQueue);
+
 
 
 var
+  MMQ, MainMessageQueue: TMainMessageQueue;
   gNamedLocks: TNamedLocks;
   nodebug: boolean;
 
@@ -484,7 +520,7 @@ var
 begin
   tas := TAutoScope.create;
   result := tas;
-{$IFNDEF AUTOREFCOUNT}
+{$IFDEF NOARC}
   tas._Release;
 {$ENDIF}
 
@@ -526,7 +562,7 @@ end;
 constructor TBetterObject.create;
 begin
 {$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
-{$IFNDEF AUTOREFCOUNT}
+{$IFDEF NOARC}
   ics(FRefSect);
 {$ENDIF}
 {$ENDIF}
@@ -557,7 +593,7 @@ begin
     bor.ObjectDestroyed(TBetterClass(self.ClassType), '');
 {$ENDIF}
 {$IFDEF NO_INTERLOCKED_INSTRUCTIONS}
-{$IFNDEF AUTOREFCOUNT}
+{$IFDEF NOARC}
   dcs(FRefSect);
 {$ENDIF}
 {$ENDIF}
@@ -607,7 +643,7 @@ begin
   if self = nil then exit;
 
   Detach;
-{$IFDEF WINDOWS}
+{$IFDEF NOARC}
   Free;
 {$ENDIF}
 
@@ -739,7 +775,7 @@ end;
 
 function TBetterObject._AddRef: Integer;
 begin
-{$IFDEF AUTOREFCOUNT}
+{$IFNDEF NOARC}
   result := inherited _AddRef;
 {$ELSE}
   ecs(FRefSect);
@@ -752,7 +788,7 @@ end;
 
 function TBetterObject._RefCount: Integer;
 begin
-{$IFDEF AUTOREFCOUNT}
+{$IFNDEF NOARC}
   result := RefCount;
 {$ELSE}
   ecs(FRefSect);
@@ -767,12 +803,12 @@ begin
   if FDead = $DEAD then
     raise ECritical.create('trying to release a dead object');
 
-{$IFNDEF AUTOREFCOUNT}
+{$IFDEF NOARC}
   ecs(FRefSect);
 {$ENDIF}
   DeadCheck;
 
-{$IFDEF AUTOREFCOUNT}
+{$IFNDEF NOARC}
   result := inherited _Release();
 {$ELSE}
   dec(FRefCount);
@@ -781,7 +817,7 @@ begin
   lcs(FRefSect);
 
   if (Result = FreeAtRef) or ((Result = 0) and FreeWithReferences) then begin
-{$IFDEF WINDOWS}
+{$IFDEF NOARC}
     Destroy;//<--- android has ARC, don't destroy on FMX platforms
 {$ELSE}
 {$IFDEF DEBUG_HOLDER}
@@ -799,7 +835,10 @@ end;
 
 procedure oinit;
 begin
+  MainMessageQueue := TMainMessageQueue.create;
+  MMQ := MainMessageQueue;
   gNamedLocks := TNamedLocks.create;
+
 //  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
@@ -808,6 +847,9 @@ procedure ofinal;
 begin
   gNamedLocks.free;
   gNamedLocks := nil;
+  MainMessageQueue.free;
+  MainMessageQueue := nil;
+  MMQ := MainMessageQueue;
 //  raise ECritical.create('unimplemented');
 //TODO -cunimplemented: unimplemented block
 end;
@@ -820,7 +862,7 @@ end;
 constructor THolder<T>.create;
 begin
   inherited;
-{$IFDEF MSWINDOWS}
+{$IFDEF NOARC}
   FreeByInterface;
 {$ELSE}
   FreeWithReferences := true;
@@ -2134,9 +2176,170 @@ begin
   tracking[high(tracking)] := o;
 end;
 
+{ TFatMessageQueue }
+
+procedure TFatMessageQueue.Broadcast(m: IHolder<TFatMessage>);
+begin
+  ecs(sectSubQueues);
+  try
+    //recursively broadcast a copy to subqueues (ultimately posts)
+    for var t := 0 to subqueues.Count-1 do begin
+      subqueues[t].Broadcast(m.o.copy);
+    end;
+  finally
+    lcs(sectSubQueues);
+  end;
+
+
+  //post original (which might be a copy) to self
+  Post(m);
+
+end;
+
+constructor TFatMessageQueue.Create;
+begin
+  inherited;
+  ics(sectSubQueues);
+  subqueues := TList<TFatMessageQueue>.create;
+
+end;
+
+procedure TFatMessageQueue.DeleteSubQueue(fmq: TFatMessageQueue);
+begin
+  var l := self.locki;
+  subqueues.remove(fmq);
+  fmq.free;
+  fmq := nil;
+end;
+
+procedure TFatMessageQueue.Detach;
+begin
+  if detached then exit;
+
+  subqueues.free;
+  subqueues := nil;
+  dcs(sectSubQueues);
+  inherited;
+
+end;
+
+function TFatMessageQueue.GetNextMessage: IHolder<TFatMessage>;
+begin
+  var l := Locki;
+  result := nil;
+  if length(pending) = 0 then
+    exit;
+
+  result := pending[0];
+  for var t := 1 to high(pending) do
+    pending[t-1] := pending[t];
+
+  setlength(pending, length(pending)-1);
+end;
+
+function TFatMessageQueue.NewMessage: IHolder<TFatMessage>;
+begin
+  result := THolder<TFatMessage>.create;
+  result.o := TFatMessage.create;
+end;
+
+function TFatMessageQueue.NewSubQueue: TFatMessageQueue;
+begin
+  var l := self.locki;
+  result := TFatMessageQueue.create;
+  subqueues.add(result);
+
+end;
+
+procedure TFatMessageQueue.Post(m: IHolder<TFatMessage>);
+begin
+  var l := Locki;
+
+  //queue must have an onposted handler in order to
+  //accept posted messages, this is to prevent memory leaks due to
+  //unprocessed message buildups
+  //onposted simply notifies something (via mechanism of your choice) when
+  //a message is available, the case of a queue for a form, it turns on a
+  //timer
+  //... could be a signal... etc...
+  //queues that do not have this handler can still process synchronous messages
+  //via send()
+  if assigned(onposted) then begin
+    setlength(pending, length(pending)+1);
+    pending[high(pending)] := m;
+    Posted;
+  end;
+
+end;
+
+procedure TFatMessageQueue.Posted;
+begin
+  if Assigned(onposted) then begin
+    onposted();
+  end;
+end;
+
+function TFatMessageQueue.ProcessNextMessage: boolean;
+begin
+  result := false;
+  var m := GetNextMessage;
+  if m = nil then
+    exit(false);//we didn't handle anything
+
+  Send(m);
+
+end;
+
+procedure TFatMessageQueue.QuickBroadcast(messageClass: string;
+  params: TArray<String>);
+begin
+  var m := MMQ.NewMessage;
+  m.o.messageClass := messageClass;
+  m.o.params := params;
+  mmq.Broadcast(m);
+
+end;
+
+procedure TFatMessageQueue.QuickBroadcast(messageClass: string);
+begin
+  var m := MMQ.NewMessage;
+  m.o.messageClass := messageClass;
+  mmq.Broadcast(m);
+
+
+
+end;
+
+function TFatMessageQueue.Send(m: IHolder<TFatMessage>): boolean;
+begin
+  result := false;
+  if assigned(handler) then begin
+    result := handler(m);
+  end;
+
+  if not result then begin
+    for var t := 0 to subqueues.count-1 do begin
+      result := subqueues[t].Send(m) or result;
+    end;
+  end;
+
+end;
+
+{ TFatMessage }
+
+function TFatMessage.Copy: IHolder<TFatMessage>;
+begin
+  result := THolder<TFatMessage>.create;
+  result.o := TfatMessage.create;
+  result.o.messageClass := self.messageClass;
+  result.o.params := self.params;
+
+end;
+
 initialization
 orderlyinit.init.RegisterProcs('betterobject', oinit, ofinal, 'betterobjectregistry');
 
 finalization
 
 end.
+

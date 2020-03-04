@@ -3,14 +3,21 @@ unit helpers.sockets;
 interface
 
 uses
-  typex,systemx, sockfix, better_sockets, classes, numbers, debug, sysutils,idtcpconnection,idglobal, better_indy;
+  typex,systemx,
+{$IFDEF MSWINDOWS}
+  sockfix,
+  better_sockets,
+{$ENDIF}
+  classes, numbers, debug, sysutils,idtcpconnection,idglobal, better_indy;
 
 procedure Socket_GuaranteeWrite(s: TidTCPConnection; p: Pbyte; iLength: ni);overload;
+
+{$IFDEF MSWINDOWS}
 procedure Socket_GuaranteeRead(s: TCustomIPClient; p: pbyte; iLength: ni);overload;
 procedure Socket_GuaranteeWrite(s: TCustomIPClient; p: pbyte; iLength: ni);overload;
 procedure Socket_GuaranteeWriteStreamPart(str: TStream; rangestart, rangeend_notincluding: int64; s: TCustomIPClient);overload;
 function Socket_Read(s: TCustomIPClient; p: pbyte; iLength: ni): ni;overload;
-
+{$ENDIF}
 
 
 
@@ -21,7 +28,7 @@ implementation
 uses
   helpers_stream;
 
-
+{$IFDEF MSWINDOWS}
 procedure Socket_GuaranteeWriteStreamPart(str: TStream; rangestart, rangeend_notincluding: int64; s: TCustomIPClient);overload;
 var
   a: array[0..511] of byte;
@@ -100,7 +107,7 @@ begin
     inc(iWrote, iJustWrote);
   end;
 end;
-
+{$ENDIF}
 
 procedure Socket_GuaranteeWrite(s: TidTCPConnection; p: Pbyte; iLength: ni);overload;
 begin

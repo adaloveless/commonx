@@ -21,6 +21,9 @@ uses
   windows,
   USock,
 {$ELSE}
+{$IFDEF MACOSX}
+  MacApi.foundation,
+{$ENDIF}
   stringx.ansi,
 {$ENDIF}
 
@@ -168,7 +171,7 @@ function RAndomOrder(iItems: ni): TDynInt64Array;
 function IsDLL: boolean;
 
 function LowOrderBit(Value:NativeInt):NativeInt;
-function HextoMemory(s: string): TDynByteArray;
+function HextoMemory(const s: string): TDynByteArray;
 function boolToInt(b: boolean): nativeint;
 function MemoryToHex(p: pointer; iSize: integer): string;
 function MemoryToHexAndASCII(p: pointer; iSize: integer): string;
@@ -1177,14 +1180,36 @@ end;
 
 
 
+{$IFDEF MACOSX}
+function GetMacName: string;
+var
+  Pool: NSAutoreleasePool;
+  Host: NSHost;
+begin
+  NSDefaultRunLoopMode; //just something to ensure the Cocoa Foundation framework is loaded
+  Pool := TNSAutoreleasePool.Create;
+  try
+    Host := TNSHost.Wrap(TNSHost.OCClass.currentHost);
+    result := UTF8ToUnicodeString(Host.localizedName.UTF8String);
+  finally
+    Pool.drain;
+  end;
+end;
+{$ENDIF}
+
 function GetComputerName: string;
+{$IFDEF MSWINDOWS}
 var
   sTemp: string;
   nSize: cardinal;
+{$ENDIF}
 begin
 
-  {$IFDEF MACOS}
-  result := 'ios.stub.computername';
+  {$IFDEF IOS}
+  result := 'ios.device';
+  {$ENDIF}
+  {$IFDEF MACOSX}
+  result := GetMacName;
   {$ELSE}
   {$IFDEF LINUX}
   result := 'linux.stub.computername';
@@ -1192,11 +1217,13 @@ begin
   {$IFDEF ANDROID}
   result := 'android.stub.computername';
   {$ELSE}
-  nSize := 1024;
-  SetLength(sTemp, nsize);
-  Windows.GetComputerName(@sTEmp[strz], nsize);
-  sTemp := zcopy(sTemp, 0, nsize);
-  result := sTemp;
+{$IFDEF MSWINDOWS}
+    nSize := 1024;
+    SetLength(sTemp, nsize);
+    Windows.GetComputerName(@sTEmp[strz], nsize);
+    sTemp := zcopy(sTemp, 0, nsize);
+    result := sTemp;
+{$ENDIF}
   {$ENDIF}
   {$ENDIF}
   {$ENDIF}
@@ -3157,8 +3184,33 @@ begin
   lcs(cs2);
 end;
 
+function HexDigitTovalue(const c:char): nativeint;inline;
+begin
+  case c of
+    '0': exit(0);
+    '1': exit(1);
+    '2': exit(2);
+    '3': exit(3);
+    '4': exit(4);
+    '5': exit(5);
+    '6': exit(6);
+    '7': exit(7);
+    '8': exit(8);
+    '9': exit(9);
+    'a','A': Exit(10);
+    'b','B': exit(11);
+    'c','C': exit(12);
+    'd','D': exit(13);
+    'e','E': exit(14);
+    'f','F': exit(15);
+  else
+    Raise ECritical.create('invalid hex digit '+c);
+  end;
 
-function HextoMemory(s: string): TDynByteArray;
+end;
+
+
+function HextoMemory(const s: string): TDynByteArray;
 var
   sHexOnly: string;
   idxOut, idxIn: ni;
@@ -3185,9 +3237,15 @@ begin
 
   system.setlength(result, (idxOut-STRZ) div 2);
 
-  for idxIn := 0 to high(result) do begin
+  for idxIn := 0 to length(result)-1 do begin
+{$IFDEF SLOW}
     sTemp := '$'+zcopy(sHexOnly, idxIn*2, 2);
     result[idxIn] := strtoint(sTemp);
+{$ELSE}
+    result[idxIn] := (hexdigittovalue(shexonly[(idxIn*2)+0+strz]) shl 4)+
+                      hexdigittovalue(shexonly[(idxIn*2)+1+strz]);
+
+{$ENDIF}
   end;
 
 

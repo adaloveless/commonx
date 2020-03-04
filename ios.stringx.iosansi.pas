@@ -25,6 +25,8 @@ type
     class operator Implicit(const s: Tiosansichar): pointer;
     class operator Implicit(const c: char): TiosAnsiChar;
     class operator Implicit(const b: byte): TiosAnsiChar;
+    class operator NotEqual(a,b: TiosAnsiChar): boolean;
+    class operator Equal(a,b: TiosAnsiChar): boolean;
   end;
 
   Tiosbytestring = record
@@ -197,6 +199,11 @@ begin
   result := s[low(s)];
 end;
 
+class operator Tiosansichar.Equal(a, b: TiosAnsiChar): boolean;
+begin
+  result := a.b=b.b;
+end;
+
 procedure Tiosansichar.FromChar(c: char);
 begin
   self.b := AnsiFromChar(c);
@@ -245,6 +252,11 @@ end;
 class operator Tiosansichar.Implicit(const b: byte): TiosAnsiChar;
 begin
   result := CharFromAnsi(b);
+end;
+
+class operator Tiosansichar.NotEqual(a, b: TiosAnsiChar): boolean;
+begin
+  result := a.b <> b.b;
 end;
 
 end.

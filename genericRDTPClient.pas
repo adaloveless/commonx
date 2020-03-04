@@ -180,7 +180,12 @@ type
   end;
 
 var
+{$IFDEF ALLOW_UDP}
+  RDTP_USE_TCP: boolean = false;
+{$ELSE}
   RDTP_USE_TCP: boolean = true;
+{$ENDIF}
+
   RDTP_USE_SOCKS: boolean = false;
 
 implementation
@@ -320,7 +325,7 @@ begin
   result := FConnection.connected;
   if not result then begin
 //{$IFDEF PACKET_DEBUG_MESSAGES}
-    Debug.ConsoleLog('Attempting to connect to '+self.FHost+':'+self.FEndpoint);
+    Debug.Log('Attempting to connect to '+self.FHost+':'+self.FEndpoint);
 //{$ENDIF}
 //    FConnection.free;
 //    FConnection := InitConnectionClass;

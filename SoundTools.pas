@@ -9,7 +9,7 @@ unit soundtools;
 {x$O-}
 
 {$DEFINE THREAD_SOUND_MODS}
-
+{x$DEFINE USE_PLAYBACK_INFO}
 
 
 {x$DEFINE PRESERVE_XMM}
@@ -252,6 +252,9 @@ type
     procedure ResolveDeviceName;virtual;
     procedure DeviceChanged;virtual;
   public
+{$IFDEF USE_PLAYBACK_INFO}
+    playbackinfo: TSoundPlaybackInfo;
+{$ENDIF}
     UDP_LagRecordsWhenUnlocked: smallint;
     UDP_LagRecordsWhenLocked: smallint;
     UDP_FineAdjust: single;
@@ -268,6 +271,7 @@ type
     FUDPBacklog: array[0..UDP_BACKLOG_SIZE-1] of TSoundPacket;
     FUDPBAcklogPtr: nativeint;
     FBacklogFill: nativeint;
+    FSampleRate: ni;
     ControlRoomVolume: single;
     procedure MakeSureQueueIsSTarted;
     procedure MakeSureQueueIsStopped;
@@ -296,7 +300,7 @@ type
     property EngineStartTime : int64 read GetEngineSTartTime write SetEngineStartTime;
     property DeviceID: integer read FDeviceID write SetDeviceID;
     property Buffersize: nativeint read GetBufferSize write SetBufferSize;
-    property SampleRate: nativeint read GEtSampleRate;
+    property SampleRate: nativeint read GEtSampleRate write FSampleRate;
     property NyquistFrequency: nativeint read GEtNyquistFrequency;
     property Remote: boolean read FRemote write FRemote;
     property RemoteHost: string read FRemoteHost write FRemoteHost;
@@ -985,9 +989,9 @@ var
   i: int64;
 begin
   i := fs.Position;
-  fs.Seek(0, 0);
+  fs.Seek(0, soBeginning);
   Stream_guaranteeWrite(fs, Pbyte(@iLength), 4);
-  fs.Seek(i, 0);
+  fs.Seek(i, soBeginning);
 end;
 
 { TSoundPlayerThread }
@@ -1011,10 +1015,10 @@ begin
       amp := 0;
       cnt := 0;
       iSample := 0;
-      ms.Seek(SOUND_IDX_LENGTH, 0);
+      ms.Seek(SOUND_IDX_LENGTH, soBeginning);
       Stream_GuaranteeRead(ms, Pbyte(@l), 4);
 
-      ms.Seek(SOUND_IDX_DATA_V3, 0);
+      ms.Seek(SOUND_IDX_DATA_V3, soBeginning);
 
       for t := 0 to l - 1 do begin
 
@@ -1030,7 +1034,7 @@ begin
           // rewrite length header
           val := iSample;
           p := ms.Position;
-          ms.Seek(SOUND_IDX_CUE2, 0);
+          ms.Seek(SOUND_IDX_CUE2, soBeginning);
           Stream_guaranteeWrite(ms, Pbyte(@val), 4);
           ms.Seek(p, 0);
           break;
@@ -1065,7 +1069,7 @@ begin
     try
       ms2 := TMemoryStream.Create;
       try
-        ms2.Seek(0, 0);
+        ms2.Seek(0, soBeginning);
         amp := 0;
         for t := 0 to 4 do begin
           Stream_GuaranteeRead(ms, Pbyte(@val), 4);
@@ -1086,7 +1090,7 @@ begin
             // rewrite length header
             val := iSample;
             p := ms2.Position;
-            ms2.Seek(SOUND_IDX_LENGTH, 0);
+            ms2.Seek(SOUND_IDX_LENGTH, soBeginning);
             Stream_guaranteeWrite(ms2, Pbyte(@val), 4);
             ms2.Seek(p, 0);
             break;
@@ -1536,6 +1540,11 @@ end;
 
 procedure TAbstractSoundDevice.AddOscillator(o: ToscillatorObject);
 begin
+  Debug.Log(self, 'sample rate clobbered!');
+{$IFDEF USE_PLAYBACK_INFO}
+  o.dev := @playbackinfo;
+  o.dev.init;
+{$ENDIF}
 
   if (o.MasterStream <> ISoundOscillatorRenderer(self)) then begin
     o.MasterStream := self;
@@ -1560,6 +1569,9 @@ begin
   Lock;
   try
     osc := TSoundOscillator.Create;
+{$IFDEF USE_PLAYBACK_INFO}
+    osc.dev := @playbackinfo;
+{$ENDIF}
     osc.HookSSE := p;
     osc.Obj := o;
     osc.thr := self;
@@ -1694,6 +1706,7 @@ end;
 constructor TAbstractSoundDevice.Create(Owner: TObject; Manager: TThreadManager; pool: TThreadpoolBase);
 begin
   inherited;
+  debug.log(self, 'Creating sound device');
   FDeviceList := TStringlist.create;
   FOscillators := TList<TSoundOscillator>.Create;
 
@@ -1702,7 +1715,9 @@ begin
   remoteaudio := TRemoteAudioList.create;
   BufferSize := 4096;
   UDP_TargetLag := DEFAULT_TARGET_UDP_LAG;
-
+{$IFDEF USE_PLAYBACK_INFO}
+  playbackinfo.Init;
+{$ENDIF}
 end;
 
 procedure TAbstractSoundDevice.CreateUDPConnection;
@@ -1865,7 +1880,11 @@ end;
 
 function TAbstractSoundDevice.GEtSampleRate: nativeint;
 begin
-  result := 44100;
+{$IFDEF USE_PLAYBACK_INFO}
+  result := playbackinfo.samplerate;
+{$ELSE}
+  result := FSampleRAte;
+{$ENDIF}
 end;
 
 procedure TAbstractSoundDevice.MakeSureQueueIsSTarted;

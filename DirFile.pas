@@ -85,10 +85,30 @@ TFileInformation = class(Tobject)
 end;
 function LastPos(sub,s : string):integer;
 function GetFileSize(sFile: string): int64;
+function GetFileDate(sFile: string): TDateTime;
 
 implementation
 uses
   dir;
+
+function GetFileDate(sFile: string): TDateTime;
+var
+  fil: TFileInformation;
+begin
+  result := 0.0;
+  try
+    fil := TFileInformation.Create;
+    try
+      fil.LoadFromFile(sFile);
+      result := fil.Date;
+    finally
+        fil.Free;
+    end;
+  except
+    result := 0;
+  end;
+end;
+
 
 function GetFileSize(sFile: string): int64;
 var

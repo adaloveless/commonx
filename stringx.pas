@@ -6,7 +6,7 @@ interface
 
 
 uses
-{$IFNDEF MSWINDOWS}
+{$IFDEF NEED_FAKE_ANSISTRING}
   stringx.ansi,
 {$ENDIF}
   Classes, variants, math, commonconstants, systemx, sort, numbers, typex, betterobject, types,
@@ -94,6 +94,7 @@ function StrSize(s: string): integer;
 function HextoString(sHexString: string): string;
 function StringTohex(s: string): string;
 function DelimitIfNotEmpty(sInput: string; sDelimiter: string): string;
+
 function StringRepeat(s: string; iCount: ni): string;
 procedure AppendTextToFile(sFile: string; sText: string);
 function AppendURLParam(bStandAlone: boolean; sURLorExistingParams: string; sParam: string): string;
@@ -111,6 +112,9 @@ function InterpretInterval(sTimeRepresentation: string): double;overload;
 function InterpretInterval(sTimeRepresentation: string; defaultIfblank: double): double;overload;
 
 
+function ReplaceXMLCharacters(s: String):String;
+function MonthToInt(const sMon: string): ni;
+
 function Unquote(s: string): string;
 function StartsWith(sMaster: string; sStartsWith: string): boolean;
 function StartsWithThenSkip(var sMaster: string; sStartsWith: string): boolean;
@@ -120,6 +124,7 @@ function PairsToParams(sPairs: string): string;
 //function FloatPrecision(r: real; iDigits: integer): string;
 function FloatPrecision(r: double; iDecPLaces: integer; bCollapseIntegers: boolean = false): string;
 procedure TrimStringList(sl: tStringlist);
+procedure TrimStringListDeleteEmpty(sl: tStringlist);
 
 function IntToRank(i: integer): string;
 function MatchCase(sSource, sTarget: string): string;
@@ -1753,6 +1758,8 @@ begin
   result := FormatDateTime('yyyy-mm-dd hh:nn:ss', dt);
 end;
 
+
+
 function MYSQLDateTimeToDateTime(s: string): TDateTime;
 var
   s1,s2,s3,s4,s5,s6: string;
@@ -2516,6 +2523,18 @@ begin
 
 end;
 
+procedure TrimStringListDeleteEmpty(sl: tStringlist);
+var
+  t: integer;
+begin
+  for t:= sl.count-1 downto 0 do begin
+    sl[t] := trim(sl[t]);
+    if sl[t] = '' then
+      sl.Delete(t);
+  end;
+
+end;
+
 function FloatPrecision(r: double; iDecPLaces: integer; bCollapseIntegers: boolean = false): string;
 var
   iTemp: int64;
@@ -2748,7 +2767,9 @@ begin
     end;
 
     //if chars don't match... return false
-    if sSub[t+strz] <> sString[i+STRZ] then begin
+    var a: char := sSub[t+strz];
+    var b: char := sString[i+STRZ];
+    if a <> b then begin
       result := false;
       exit;
     end;
@@ -2811,8 +2832,8 @@ begin
   result := '';
   if length(sString) = 0 then
     exit;
-  setlength(result, lesserof(iLength, length(sString)-iStartZerobased));
-  movemem32(@result[strz], @sString[(strz+iStartZeroBased)], length(result)*sizeof(char));
+  setlength(result, lesserof(iLength, length(sString)-(iStartZeroBased)));
+  movemem32(@result[low(result)], @sString[((low(sString)+iStartZeroBased))], length(result)*sizeof(char));
 end;
 
 function ocopy(sString: string; iStartOneBased: nativeint; iLength: nativeint): string;
@@ -4538,12 +4559,15 @@ begin
 
 end;
 
+
 function AnsiStringToBytes(s: ansistring): TArray<byte>;
 begin
   system.setlength(result, length(s));
+{$IFDEF NEED_FAKE_ANSISTRING}
   movemem32(@result[0], s.addrof[STRZ], length(s));
-
-
+{$ELSE}
+  movemem32(@result[0], @s[STRZ], length(s));
+{$ENDIF}
 end;
 
 function AnsiStringToTBytes(ss: ansistring): Tbytes;
@@ -4554,19 +4578,26 @@ begin
   system.setlength(result, length(ss));
 
   d := @result[0];
+{$IFDEF NEED_FAKE_ANSISTRING}
   s := ss.addrof[STRZ];
+{$ELSE}
+  s := @ss[STRZ];
+{$ENDIF}
   l := system.length(ss);
   movemem32(d, s, l);
 end;
 
+
 function BytesToAnsiString(b: TArray<byte>): ansistring;
 begin
-{$IFNDEF MSWINDOWS}
+{$IFDEF NEED_FAKE_ANSISTRING}
   result.SetLength(length(b));
+  movemem32(result.addrof[STRZ], @b[0], length(b));
 {$ELSE}
   system.setlength(result, length(b));
+  movemem32(@result[STRZ], @b[0], length(b));
 {$ENDIF}
-  movemem32(result.addrof[STRZ], @b[0], length(b));
+
 end;
 
 function InterpretInterval(sTimeRepresentation: string; defaultIfblank: double): double;
@@ -4648,7 +4679,76 @@ begin
 
 
 end;
+function ReplaceXMLCharacters(s: String):String;
+var
+  t   : String;
+//  i,o : Integer;
+begin
+  t:=s;
+  t:=stringreplace(t,#160,' ',[rfReplaceAll]);
+  t:=stringreplace(t,'&','&amp;',[rfReplaceAll]);
+  t:=stringreplace(t,'©','&#169;',[rfReplaceAll]);
+  t:=stringreplace(t,'®','&#174;',[rfReplaceAll]);
+  t:=stringreplace(t,'°','&#176;',[rfReplaceAll]);
+  t:=stringreplace(t,'«','&#171;',[rfReplaceAll]);
+  t:=stringreplace(t,'»','&#187;',[rfReplaceAll]);
+  t:=stringreplace(t,'"','&quot;',[rfReplaceAll]);
+  t:=stringreplace(t,'<','&#60;',[rfReplaceAll]);
+  t:=stringreplace(t,'>','&#62;',[rfReplaceAll]);
+  t:=stringreplace(t,'''','&#39;',[rfReplaceAll]);
+  t:=stringreplace(t,'/','&#47;',[rfReplaceAll]);
+  t:=stringreplace(t,'\','&#92;',[rfReplaceAll]);
+  t:=stringreplace(t,'|','&#124;',[rfReplaceAll]);
+//  i:=1;
+//  while i<Length(t) do begin
+//    o:=Ord(t[i]);
+//    if o>127 then begin
+//      Delete(t,i,1);
+//      Insert('&#'+IntToStr(o)+';',t,i);
+//    end else begin
+//      if o<32 then begin
+//        Delete(t,i,1);
+//      end else begin
+//        inc(i);
+//      end;
+//    end;
+//  end;
+  Result:=t;
+end;
 
+
+function MonthToInt(const sMon: string): ni;
+begin
+  var l := zcopy(sMon,0,3);
+  if 0=comparetext(l,'Jan') then exit(1);
+  if 0=comparetext(l,'Feb') then exit(2);
+  if 0=comparetext(l,'Mar') then exit(3);
+  if 0=comparetext(l,'Apr') then exit(4);
+  if 0=comparetext(l,'May') then exit(5);
+  if 0=comparetext(l,'Jun') then exit(6);
+  if 0=comparetext(l,'Jul') then exit(7);
+  if 0=comparetext(l,'Aug') then exit(8);
+  if 0=comparetext(l,'Sep') then exit(9);
+  if 0=comparetext(l,'Oct') then exit(10);
+  if 0=comparetext(l,'Nov') then exit(11);
+  if 0=comparetext(l,'Dev') then exit(12);
+  if 0=comparetext(l,'01') then exit(1);
+  if 0=comparetext(l,'02') then exit(2);
+  if 0=comparetext(l,'03') then exit(3);
+  if 0=comparetext(l,'04') then exit(4);
+  if 0=comparetext(l,'05') then exit(5);
+  if 0=comparetext(l,'06') then exit(6);
+  if 0=comparetext(l,'07') then exit(7);
+  if 0=comparetext(l,'08') then exit(8);
+  if 0=comparetext(l,'09') then exit(9);
+  if 0=comparetext(l,'10') then exit(10);
+  if 0=comparetext(l,'11') then exit(11);
+  if 0=comparetext(l,'12') then exit(12);
+
+
+  raise ECritical.create('invalid month '+sMon+' passed to MonthToInt');
+
+end;
 
 
 

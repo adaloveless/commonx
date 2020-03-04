@@ -35,7 +35,7 @@ type
     procedure SetupWave;override;
     procedure CleanupWave;override;
     function GetSamplePosition: int64;
-    property SampleRate: ni read FSampleRate write FSampleRate;
+//    property SampleRate: ni read FSampleRate write FSampleRate;
     procedure AudioLoop;override;
     function PAAudioFill(const inputbuffer, outputbuffer: pointer; framesperbuffer: cardinal; const timeinfo: TPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags): integer;
 
@@ -192,6 +192,9 @@ const
 
 begin
   inherited;
+  if 0<>(statusFlags and paPrimingOutput) then
+    exit(0);
+
   if shuttingdown then
     exit(0);
   result := 0;
@@ -217,7 +220,9 @@ begin
             begin
               thissample := sampletime+s;
               rCurrent.Init;
+
               for t := 0 to OscillatorCount - 1 do begin
+//                debug.log(self, 'oscillate');
                 Oscillators[t].Fill(thissample, mtGetSample, rTemp, thissample);
                 rCurrent := rCurrent + rTemp;
               end;
@@ -280,7 +285,7 @@ begin
 
         //WaitForSingleObject(self.handle, 10);
 
-
+  exit(0);
 end;
 
 function TSoundDevice_PortAudio.PADeviceNameToPAIdx: ni;
@@ -310,9 +315,10 @@ var
   err: TPaError;
 begin
   inherited;
+  SampleRate := 192000;
   shuttingdown := false;
   //Pa_Initialize;
-  Debug.Log('Setup '+DeviceName);
+  Debug.Log(self, 'Setup '+DeviceName);
   sp.device := PADeviceNameToPAIdx;
   sp.channelCount := 2;
   sp.sampleFormat := paFloat32;
@@ -323,7 +329,15 @@ begin
 
   sp.hostApiSpecificStreamInfo := nil;
 
-  err := Pa_OpenStream(str, nil, @sp, 44100, 256, 0,@pacallback_global, pointer(self));
+
+{$IFDEF USE_PLAYBACK_INFO}
+  self.playbackinfo.init;
+{$ENDIF}
+
+{$IFDEF ALT_DATA_POINTER}
+  sp.hostApiSpecificStreamInfo := pointer(self);
+{$ENDIF}
+  err := Pa_OpenStream(str, nil, @sp, SampleRate, 256, 0,@pacallback_global, pointer(self));
   //err := Pa_OpenStream(str, nil, @sp, 44100, 256, 0,@patestcallback, pointer(self));
   if err <> 0 then begin
     Debug.Consolelog('Error '+inttostr(err)+' when opening audio!');
@@ -359,7 +373,9 @@ end;
 
 function pacallback_global(const inputbuffer, outputbuffer: pointer; framesperbuffer: cardinal; const timeinfo: TPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags; userdata:pointer): integer; cdecl;
 begin
-  result := TSoundDevice_PortAudio(userdata).PAAudioFill(inputbuffer, outputbuffer, framesperbuffer, timeinfo, statusFlags);
+  var pa := TSoundDevice_PortAudio(userdata);
+
+  result := pa.PAAudioFill(inputbuffer, outputbuffer, framesperbuffer, timeinfo, statusFlags);
 end;
 
 //function HostAPIToString(const api: TPaHostApiTypeId): string;

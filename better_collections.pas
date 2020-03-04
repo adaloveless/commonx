@@ -5,6 +5,7 @@ unit better_collections;
 {$DEFINE USE_FAST_LIST}
 {$ENDIF}
 {$DEFINE DEBUG_ITEMS}
+{$D-}
 interface
 
 

@@ -3,7 +3,7 @@ unit fmx_bitmaps;
 interface
 
 uses
-  fastbitmap, typex, systemx, fmx.graphics, uitypes, types;
+  betterobject,fastbitmap, typex, systemx, fmx.graphics, uitypes, types;
 
 
 function ColorblendAlphaColors(a,b: TAlphaColor): TAlphaColor;
@@ -12,6 +12,8 @@ function ColorAddAlphaColors(a,b: TAlphaColor): TAlphaColor;
 
 
 function fmxBitmapToFastBitmap(bm: TBitmap): TFastBitmap;overload;
+function fmxBitmapToFastBitmapH(bm: TBitmap): IHolder<TFastBitmap>;overload;
+
 function fmxBitmapToFastBitmap(var bm: TBitmapData): TFastBitmap;overload;
 function FastBitmapToFmxBitmap(bm: TFAstBitmap): TBitmap;overload;
 procedure FastBitmapToFmxBitmap(fb: TFastBitmap; var bm: TBitmapData);overload;
@@ -46,6 +48,13 @@ begin
   end;
 end;
 
+function fmxBitmapToFastBitmapH(bm: TBitmap): IHolder<TFastBitmap>;
+begin
+  result := THolder<TFastBitmap>.create;
+  result.o := fmxBitmaptoFastBitmap(bm);
+end;
+
+
 
 function fmxBitmapToFastBitmap(var bm: TBitmapData): TFastBitmap;overload;
 var
@@ -58,6 +67,7 @@ begin
   for y:= 0 to result.Height-1 do begin
     for x := 0 to result.width-1 do begin
       with result.canvas do begin
+//        var c := colorconversion.ColorFormat(bm.GetPixel(x,y), 'rgba', 'bgra');
         AlphaPixels[x,y] := bm.GetPixel(x,y);
       end;
     end;

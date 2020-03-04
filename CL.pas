@@ -55,10 +55,10 @@ unit CL;
 interface
 
 {$INCLUDE 'CL.inc'}
+
 uses
-  {$IFDEF WINDOWS}
   Windows;
-  {$ENDIF}
+
 
 var
   OpenCL_handle: THandle; // handle for the OpenCL.dll library

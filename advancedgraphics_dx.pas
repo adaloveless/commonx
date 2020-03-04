@@ -18,7 +18,7 @@ type
   TDXMouseEvent = (dxmeDown, dxmeUp, dxmeMove, dxmeEnter, dxmeLeave);
   TDXTime = cardinal;
 {$IFDEF CPUx64}
-  TDXFloat = single;
+  TDXFloat = double;
 {$ELSE}
   TDXFloat = single;
 {$ENDIF}
@@ -2020,7 +2020,8 @@ procedure TDX2D.ResetText;
 begin
   CharWidth := 16;
   CharHeight := 16;
-  Color := clSilver;
+  Color := clWhite;
+  TextColor := $FFFFFF;
   FLastTextFlags := [tfStroke, tfBold];
   TextPosition.x := 0;
   TextPosition.y := 0;
@@ -3377,7 +3378,7 @@ end;
 
 procedure TDX2D.canvas_Text(sText: string; rFlags: TTFLags);
 const
-  TEXT_LINE_HEIGHT = 1.1;
+  TEXT_LINE_HEIGHT = 1.5;
 var
   s,ss: ansistring;
 begin
@@ -4078,7 +4079,7 @@ begin
         c4 := ColorBlend(c3,cp,0.50);
 
         FDX.alphaop := aoStandard;
-        FDX.Rectangle_Fill(l, t, l+w, t+h, cp, cp.a);
+        FDX.Rectangle_Fill(single(l), single(t), single(l+w), single(t+h), cp.ToColor, cp.a);
         FDX.alphaop := aoAdd;
         FDX.Rectangle_Fill(l, t, l+w, t+h, c2.ToColorAdditiveMultiplyAlpha,clBlack, clBlack, clBlack);
         FDX.alphaop := aoStandard;
@@ -4115,7 +4116,7 @@ begin
         c4 := ColorBlend(c3,cp,0.50);
 
         FDX.alphaop := aoStandard;
-        FDX.Rectangle_Fill(l, t, l+w, t+h, cp, cp.a);
+        FDX.Rectangle_Fill(l, t, l+w, t+h, cp.tocolor, cp.a);
         FDX.alphaop := aoAdd;
         FDX.Rectangle_Fill(l, t, l+w, t+h, c2.ToColorAdditiveMultiplyAlpha,clBlack, clBlack, clBlack);
         FDX.alphaop := aoStandard;

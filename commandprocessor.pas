@@ -930,6 +930,7 @@ procedure TCommand.Init;
 begin
   inherited;
   FIcon := @CMD_ICON_DEFAULT;
+  Status := 'Working...';
 
 end;
 

@@ -1,9 +1,14 @@
 unit SimpleAbstractConnection;
 {x$DEFINE VERBOSE COMMUNICATION LOG}
 {$DEFINE READ_AHEAD}
+{$I 'DelphiDefs.inc'}
 
 interface
-uses SysUtils, systemx, betterobject, sharedobject, debug, numbers, typex, tickcount, signals, ringbuffer, commandprocessor;
+uses
+{$IFDEF NEED_FAKE_ANSISTRING}
+  ios.stringx.iosansi,
+{$ENDIF}
+  SysUtils, systemx, betterobject, sharedobject, debug, numbers, typex, tickcount, signals, ringbuffer, commandprocessor;
 
 type
   ETransportError = class(Exception);
@@ -66,6 +71,8 @@ type
     property PolledByReader: boolean read FPolledByReader write FPolledByReader;
     procedure UpdateBufferStatus;
   public
+    readln_eol: ansichar;
+    readln_ignore: ansichar;
     Disconnecting: boolean;
     bufferState: TConnectionBufferState;
     evData: TSignal;
@@ -107,6 +114,8 @@ type
     function EndConnect(c:Tcmd_ConnectionConnector): boolean;
     property IsDataAvailable: boolean read GetISDataAvailable;
     function CheckConnectedOrConnect: boolean;
+    function ReadLn(): string;
+    procedure SendLn(sLine: string);
   end;
 
 
@@ -189,6 +198,8 @@ end;
 constructor TSimpleAbstractConnection.Create;
 begin
   inherited;
+  readln_eol := #13;
+  readln_ignore := #10;
   FHostName := '';
   FEndPoint := '';
   FOnData := nil;
@@ -455,5 +466,38 @@ begin
     exit(1.0);
   exit(consumed/size);
 end;
+
+function TSimpleAbstractConnection.ReadLn(): string;
+var
+  ansi: ansistring;
+begin
+  result := '';
+  ansi := '';
+  while true do begin
+    if WaitforData(10) then begin
+      var b: ansichar;
+      if ReadData(@b, 1) = 0 then
+        raise ETransportError.create('failed to read byte during ReadLn.  Connection dropped.');
+      if b <> readln_ignore then begin
+        if b=readln_eol then
+          exit(string(ansi));
+        ansi := ansi + b;
+      end;
+    end;
+
+  end;
+
+end;
+
+procedure TSimpleAbstractConnection.SendLn(sLine: string);
+begin
+  var ansi := ansistring(sLine)+readln_eol+readln_ignore;
+{$IFDEF NEED_FAKE_ANSISTRING}
+  SendData(ansi.addrof[strz],length(ansi), true);
+{$ELSE}
+  SendData(@ansi[strz],length(ansi), true);
+{$ENDIF}
+end;
+
 
 end.

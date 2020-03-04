@@ -56,6 +56,7 @@ begin
     self.width := frm.Width;
     self.Height := frm.Height;
     frm.Parent := self;
+    frm.Align := alClient;
   finally
     self.Anchors := anc;
     self.Align := al;

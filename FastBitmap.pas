@@ -2,13 +2,15 @@ unit FastBitmap;
 
 interface
 {$I DELPHIDEFS.inc}
+{$IFDEF WINDOWS}
 {$DEFINE ALLOW_OPENCL}
+{$ENDIF}
 
 uses
 {$DEFINE MT_FBM}//THIS MAKES TFastBitMapThreadSafe!
 
 {$IFNDEF WINDOWS}
-  {$DEFINE SLOW_CANVAS_CALLS}
+  {x$DEFINE SLOW_CANVAS_CALLS}
 {$ELSE}
   Winapi.windows,
 {$ENDIF}
@@ -24,7 +26,13 @@ uses
   fastbitmap_opencl_extension,
 {$ENDIF}
   gridwalker,
-  debug,endian, vcl.imaging.pngimage, vcl.imaging.jpeg, commandprocessor,
+  debug,endian,
+{$IFDEF WINDOWS}
+  vcl.imaging.pngimage,
+  vcl.imaging.jpeg,
+{$ELSE}
+{$ENDIF}
+commandprocessor,
   betterobject, sharedobject, graphicsx, classes, geometry, types, colorconversion,
   typex, numbers, sysutils, stringx.ansi, systemx,
 
@@ -60,7 +68,9 @@ type
   protected
     procedure DoExecute; override;
     procedure DoExecute_CPU;
+{$IFDEF ALLOW_OPENCL}
     function DoExecute_GPU: boolean;
+{$ENDIF}
   public
     src, dest: TFastBitmap;
     opencl: string;
@@ -170,7 +180,7 @@ type
     [unsafe] Fcanvas: TFastCanvas;
     FCanvasHold: TFastCanvas;
 
-    FPixelFormat: TPixelFormat;
+    FPixelFormat: TXPixelFormat;
     FAlign: integer;
     FCurrentScanLine: integer;
     FCurrentScanLinePtr: PByte;
@@ -184,7 +194,7 @@ type
     procedure Setwidth(const Value: integer);
 
     procedure FreeAllocation;
-    procedure SetPixelFormat(const Value: TPixelFormat);
+    procedure SetPixelFormat(const Value: TXPixelFormat);
 
 
   public
@@ -209,7 +219,7 @@ type
 {$ENDIF}
     procedure From24BitRGB(p: PByte; w,h: integer);
     property Canvas: TFastCanvas read Fcanvas;
-    property PixelFormat: TPixelFormat read FPixelFormat write SetPixelFormat;
+    property PixelFormat: TXPixelFormat read FPixelFormat write SetPixelFormat;
     property FAST_BITMAP_PIXEL_ALIGN: integer read FAlign;
     procedure Assign(bm: TFastBitmap);overload;
     procedure LoadFromFile(sFile: string);
@@ -230,7 +240,7 @@ type
     procedure AssignToControl(gi: TPersistent);
     procedure FromFAstBitmapRect(fbm: TFastBitmap; r: TPixelRect);
 {$ELSE}
-    procedure FromFAstBitmapRect(fbm: TFastBitmap; ul, br: TPoint);
+//    procedure FromFAstBitmapRect(fbm: TFastBitmap; ul, br: TPoint);
 {$ENDIF}
     procedure SavetoStream(s: TStream);
     procedure LoadFromStream(s: TStream);
@@ -462,7 +472,7 @@ begin
   FCanvasHold := TFastCanvas.create;
   FCanvas := FCanvasHold;
   FCanvas.owner := self;
-  FPixelFormat := pf32Bit;
+  FPixelFormat := xpf32Bit;
   FAlign := 4;
   FCurrentscanline := -1;
 end;
@@ -877,7 +887,7 @@ begin
   try
     Allocate(w, bm.height);
     bm.pixelFormat := pf32bit;
-    pixelformat := pf32bit;
+    pixelformat := xpf32bit;
 
     for t:= 0 to h-1 do begin
       MoveMem32(FScanlines[t], bm.scanline[t], w * FAST_BITMAP_PIXEL_ALIGN);
@@ -901,7 +911,7 @@ begin
   w := bm.width;
   h := bm.height;
   Allocate(w, h);
-  bm.pixelFormat := pf32bit;
+  bm.pixelFormat := xpf32bit;
 
 //  if FScanlines.count < h then exit;
 //  canvas.paste(bm,0,0);
@@ -1234,9 +1244,10 @@ begin
 //      result := p[3]+(p[2] shl 8)+(p[1] shl 16)+(p[0] shl 24)
     end else begin
 //      result := (p[2] shl 0)+(p[1] shl 8)+(p[0] shl 16);
-      pc[0] := p[2];
-      pc[1] := p[1];
-      pc[2] := p[0];
+      pc[0] := p[3];
+      pc[1] := p[2];
+      pc[2] := p[1];
+      pc[3] := p[0];
     end;
 
     //MoveMem32(@result, p, 4);
@@ -1504,6 +1515,9 @@ begin
     if owner.EnableAlpha then begin
       p^ := byte((value shr 24) and 255);
       inc(p);
+    end else begin
+      p^ := 255;
+      inc(p);
     end;
     p^ := byte((value shr 16) and 255);
     inc(p);
@@ -1768,7 +1782,7 @@ procedure TFastBitmap.New;
 begin
   if (width > 0) and (height > 0) then begin
     allocate(width,height);
-    pixelformat := pf32bit;
+    pixelformat := xpf32bit;
   end;
 end;
 
@@ -1966,7 +1980,7 @@ begin
   FH := Value;
 end;
 
-procedure TFastBitmap.SetPixelFormat(const Value: TPixelFormat);
+procedure TFastBitmap.SetPixelFormat(const Value: TXPixelFormat);
 begin
   if FPIxelFormat = value then begin
     exit;
@@ -1975,10 +1989,10 @@ begin
   FPixelFormat := Value;
 
   case FPixelFormat of
-    pf8bit: FAlign := 1;
-    pf16bit: FAlign := 2;
-    pf24bit: FAlign := 3;
-    pf32bit: FAlign := 4;
+    xpf8bit: FAlign := 1;
+    xpf16bit: FAlign := 2;
+    xpf24bit: FAlign := 3;
+    xpf32bit: FAlign := 4;
   end;
 
   Allocate(Width,height);
@@ -2012,8 +2026,10 @@ end;
 function TFastBitmap.ToByteArray: TDynByteArray;
 var
   stride, t: nativeint;
+  len: int64;
 begin
-  setlength(result, width*height*FAST_BITMAP_PIXEL_ALIGN);
+  len := self.width*self.height*FAST_BITMAP_PIXEL_ALIGN;
+  system.SetLength(result, len);
   stride := width*FAST_BITMAP_PIXEL_ALIGN;
   for t:= 0 to height-1 do begin
     MoveMem32(@result[t*stride], FScanlines[t], stride);
@@ -2041,8 +2057,11 @@ var
   t,x,y: integer;
   c: cardinal;
 begin
-  result := TPNGImage.CreateBlank(COLOR_RGBALPHA, 8, width,height);
-  result.canvas.lock;
+//  if EnableAlpha then
+    result := TPNGImage.CreateBlank(COLOR_RGBALPHA, 8, width,height)
+//  else
+//    result := TPNGImage.CreateBlank(COLOR_RGB, 8, width,height);
+  ;result.canvas.lock;
   try
     result.Canvas.Rectangle(0,0,width,height);
     if EnableAlpha then
@@ -2060,8 +2079,12 @@ begin
           result.Canvas.Pixels[x,y] := c and $FFFFFF;
           result.AlphaScanline[y][x] := (c shr 24);
         end else begin
+{$DEFINE SLOW_CANVAS_CALLS}
 {$IFDEF SLOW_CANVAS_CALLS}
-          result.Canvas.Pixels[x,y] := self.Canvas.Pixels[x,y];
+          const formatIn = 'rgb';
+          const formatOut = 'rgb';
+          result.Canvas.Pixels[x,y] := colorformat(self.Canvas.Pixels[x,y], formatIn, formatOut);
+//          result.Canvas.Pixels[x,y] := self.Canvas.Pixels[x,y];
 {$ELSE}
           Winapi.Windows.SetPixel(result.canvas.Handle, X, Y, ColorToRGB(self.Canvas.Pixels[x,y]));
 {$ENDIF}
@@ -2092,7 +2115,8 @@ begin
 end;
 
 
-procedure TFastBitmap.FromFAstBitmapRect(fbm: TFastBitmap; r: TPixelRect);
+{$IFNDEF FMX}
+procedure TFastBitmap.FromFastBitmapRect(fbm: TFastBitmap; r: TPixelRect);
 var
   xy: TPoint;
   x,y: ni;
@@ -2113,14 +2137,23 @@ begin
     end;
   end;
 
-
-
 end;
+{$ENDIF}
 
+{$IFNDEF FMX}
 procedure TFastBitmap.FromJPEG(jpg: TJpegImage);
+var
+  bm: vcl.graphics.TBitmap;
 begin
-  raise ENotImplemented.create('FromJPEG is not implemented, but should be easy to do so');
+  bm  := nil;
+  try
+    bm := JpegToBitMap(jpg);
+    FromBitMap(bm);
+  finally
+    bm.free;
+  end;
 end;
+{$ENDIF}
 
 { Tcmd_FastBitmapFX }
 
@@ -2148,6 +2181,7 @@ end;
 procedure Tcmd_FastBitmapIterate.DoExecute;
 begin
   inherited;
+{$IFDEF ALLOW_OPENCL}
   try
     if not DoExecute_GPU then begin
       DoExecute_CPU;
@@ -2155,7 +2189,9 @@ begin
   except
     DoExecute_CPU;
   end;
-
+{$ELSE}
+  DoExecute_CPU;
+{$ENDIF}
 end;
 
 procedure Tcmd_FastBitmapIterate.DoExecute_CPU;
@@ -2224,6 +2260,7 @@ begin
   end;
 end;
 
+{$IFDEF ALLOW_OPENCL}
 function Tcmd_FastBitmapIterate.DoExecute_GPU: boolean;
 var
   cl: TOpenCL_FastBitmap;
@@ -2268,9 +2305,8 @@ begin
     end;
   end;
 
-
-
 end;
+{$ENDIF}
 
 end.
 

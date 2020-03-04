@@ -30,18 +30,31 @@ const
 {$ENDIF}
 
 type
+  TXPixelFormat = (xpf8bit, xpf16bit, xpf24Bit, xpf32bit);
 {$IFDEF FMX}
   TColor = TAlphaColor;
   TPixelFormat = (gpf8bit, gpf16bit, gpf24Bit, gpf32bit);
+
 {$ELSE}
   TColor = graphics.TColor;
   TPixelFormat = graphics.Tpixelformat;
       //(pfDevice, pf1bit, pf4bit, pf8bit, pf15bit, pf16bit, pf24bit, pf32bit, pfCustom);
 {$ENDIF}
 
-function PixelSize(pf: TPixelFormat): ni;
+function PixelSize(pf: TPixelFormat): ni;overload;
+function PixelSize(pf: TXPixelFormat): ni;overload;
 
 implementation
+
+function PixelSize(pf: TXPixelFormat): ni;
+begin
+  case pf of
+    xpf8Bit: exit(1);
+    xpf16bit: exit(2);
+    xpf24bit: exit(3);
+    xpf32bit: exit(4);
+  end;
+end;
 
 function PixelSize(pf: TPixelFormat): ni;
 begin

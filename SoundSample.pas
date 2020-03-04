@@ -20,6 +20,9 @@ type
   TRawSoundArrayPOinterMono = array of smallint;
   TRawSoundArrayPOinterStereo = array of smallint;
 
+  TStereoArray<T> = array[0..1] of T;
+
+
   TStereoSoundSample = packed record
     Left: floatsample;
     Right: floatsample;
@@ -34,6 +37,13 @@ type
     procedure InterpolateAndScale(a,b, Fade, Scale: PStereoSoundSample);overload;{$IFDEF PURE_TSTEREOSOUNDSAMPLE}inline;{$ENDIF}
     procedure Init;
     procedure Clip;
+    procedure FromStereoArray_8i(a: TStereoArray<shortint>);
+    procedure FromStereoArray_16i(a: TStereoArray<smallint>);
+    procedure FromStereoArray_24i(a: TStereoArray<uint24>);
+    procedure FromStereoArray_32i(a: TStereoArray<integer>);
+    procedure FromStereoArray_64i(a: TStereoArray<int64>);
+    procedure FromStereoArray_32f(a: TStereoArray<single>);
+    procedure FromStereoArray_64f(a: TStereoArray<double>);
   end;
 
 implementation
@@ -207,6 +217,51 @@ begin
   Right := r;
 end;
 
+procedure TStereoSoundSample.FromStereoArray_16i(a: TStereoArray<smallint>);
+begin
+  Left := a[0] /32767;
+  Right := a[1] / 32767;
+
+
+end;
+
+
+procedure TStereoSoundSample.FromStereoArray_24i(a: TStereoArray<uint24>);
+begin
+  Left := a[0].toint64 / int64($7FFFFF);
+  Right := a[1].toint64 / int64($7FFFFF);
+end;
+
+procedure TStereoSoundSample.FromStereoArray_32f(a: TStereoArray<single>);
+begin
+  left := a[0];
+  right := a[1];
+end;
+
+procedure TStereoSoundSample.FromStereoArray_32i(a: TStereoArray<integer>);
+begin
+  left := ni(a[0])/ni($7fffffff);
+  right := ni(a[1])/ni($7fffffff);
+end;
+
+procedure TStereoSoundSample.FromStereoArray_64f(a: TStereoArray<double>);
+begin
+
+end;
+
+procedure TStereoSoundSample.FromStereoArray_64i(a: TStereoArray<int64>);
+begin
+  left := int64(a[0])/int64($7fffffffffffffff);
+  right := int64(a[1])/int64($7fffffffffffffff);
+
+end;
+
+procedure TStereoSoundSample.FromStereoArray_8i(a: TStereoArray<shortint>);
+begin
+  left := ni(a[0])/ni($7f);
+  right := ni(a[1])/ni($7f);
+end;
+
 class operator TStereoSoundSample.divide(const a,
   b: TStereoSoundSample): TStereoSoundSample;
 {$IFDEF PURE_TSTEREOSOUNDSAMPLE}
@@ -217,7 +272,7 @@ end;
 
 {$ELSE}
 asm
-  .NOFRAME
+.NOFRAME
 {$IFDEF SLOWASM}
   //SoundTools.pas.3952: result.Left := a.Left+b.Left;
   //mov rax,[rbp+$40]

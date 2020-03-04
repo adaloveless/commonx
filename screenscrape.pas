@@ -4,7 +4,7 @@ unit screenscrape;
 interface
 
 uses
-  systemx, sysutils, classes,forms,
+  systemx, sysutils, classes,forms, graphicsx,
   mouse, windows, graphics, betterobject,
   generics.collections.fixed, easyimage, dir, dirfile, stringx, fastbitmap;
 
@@ -182,8 +182,8 @@ begin
     exit;
   end;
   result := true;
-  bmScreen.pixelformat := pf32bit;
-  bm.pixelformat := pf32bit;
+  bmScreen.pixelformat := xpf32bit;
+  bm.pixelformat := xpf32bit;
   Y2 := Y1 + bm.height - 1;
   X2 := X1 + bm.width - 1;
 

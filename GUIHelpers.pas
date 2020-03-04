@@ -56,6 +56,7 @@ function Control_IsShowing(c: TControl): boolean;
 procedure RecsToListView(lv: TListView; firstinst: pointer; stride: ni; count: ni; TypeInfoOfRec: pointer);
 function GetTaskBardimensions: TRect;
 procedure RichEdit_SetBGColor(re: TRichEdit; c: cardinal);
+function listbox_GetSelected(lb: TListBox): TArray<string>;
 
 type
   TControlHelper = class helper for TControl
@@ -1002,6 +1003,16 @@ end;
 
 
 
+function listbox_GetSelected(lb: TListBox): TArray<string>;
+begin
+  setlength(result,0);
+  for var t:= 0 to lb.count-1 do begin
+    if lb.selected[t] then begin
+      setlength(result, length(result)+1);
+      result[high(result)] := lb.items[t];
+    end;
+  end;
+end;
 
 
 

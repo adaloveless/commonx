@@ -18,11 +18,41 @@ procedure LimitValues(c: TChart; iSeriesIndex: ni; limit: int64);
 
 procedure JSONToSeries(j: TJSON; s: TChartSeries; xField,yField: string);
 procedure JSONToSeriesXTime(j: TJSON; s: TChartSeries; xField,yField: string);
-
+procedure chart_SyncSeriesCount(c: Tchart; iCount: ni);
+Function chart_CloneChartSeries(ASeries:TChartSeries; AOwner:TComponent; AChart:TCustomAxisPanel):TChartSeries;
 
 
 implementation
 
+
+procedure chart_SyncSeriesCount(c: Tchart; iCount: ni);
+begin
+  if iCount < 1 then
+    iCount := 1;
+  while c.SeriesCount < icount do begin
+    chart_CloneChartSeries(c.Series[0],c.Owner,c);
+  end;
+
+  while c.seriescount > iCount do begin
+    c.SeriesList.Delete(c.seriescount-1);
+  end;
+end;
+
+Function chart_CloneChartSeries(ASeries:TChartSeries; AOwner:TComponent; AChart:TCustomAxisPanel):TChartSeries;
+var tmp : TTeeFunctionClass;
+begin
+  with ASeries do
+  begin
+    if FunctionType=nil then
+       tmp:=nil
+    else
+       tmp:=TTeeFunctionClass(FunctionType.ClassType);
+
+    result:=CreateNewSeries(AOwner,AChart,TChartSeriesClass(ClassType),tmp);   //The OnAddseries will then be run
+  end;
+
+  result.Assign(ASeries);     //here the new series(clone) gets assigned the properties from the source series
+end;
 
 procedure chart_ClearData(c: TChart);
 var

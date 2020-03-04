@@ -2,6 +2,8 @@ unit Debug;
 {$I 'DelphiDefs.inc'}
 
 interface
+
+{x$DEFINE LOG_TO_IRC}
 {$IFDEF MSWINDOWS}
   {$IFNDEF NO_DISK_LOGGING}
     {$DEFINE LOG_TO_DISK}
@@ -27,16 +29,8 @@ interface
 {$ENDIF}
 
 uses
-{$IFDEF WINDOWS}
-  windows,
-{$ELSE}
-  {$IFDEF IOS}
-  {$ELSE}
-    {$IFNDEF OSX}
-    androidapi.log,
-    {$ENDIF}
-  {$ENDIF}
-{$ENDIF}
+{$IFDEF ANDROID}androidapi.log,{$ENDIF}
+{$IFDEF WINDOWS}windows,{$ENDIF}
 {$IFDEF LOG_TO_CTO}
 xxx
 //  edi_log_jan,
@@ -80,6 +74,7 @@ type
     function GetFilter: string;
     procedure SetFilter(const Value: string);
     function LogFileName(bDated: boolean = true): string;
+    function MergedLogFileName(bDated: boolean = true): string;
     procedure ArchiveLogDataIfTime;
     procedure ArchiveLogData;
   public
@@ -91,6 +86,9 @@ type
     property Filter: string read GetFilter write SetFilter;
     procedure lock;inline;
     procedure unlock;inline;
+    procedure log_to_irc(s, sFilter: string);
+
+    procedure WriteToSharedLog(sLine: string);
 
   end;
 
@@ -109,8 +107,17 @@ function DebugLog: TDebugLog;
 procedure SetDebugThreadVar(thr: TObject);
 procedure LogToThreadStatus(s: string);
 
+{$IFDEF LOG_TO_IRC}
+threadvar
+  logging : boolean;
+{$ENDIF}
 var
+{$IFDEF LOG_TO_STDOUT}
+  logToStdout : boolean = true;
+{$ELSE}
   logToStdout : boolean = false;
+{$ENDIF}
+
   GDebugLog: TDebugLog = nil;
   log_is_shut_down: boolean;
 
@@ -120,10 +127,32 @@ var
 implementation
 
 uses OrderlyInit, helpers_stream, tickcount,
+{$IFDEF LOG_TO_IRC}
+  irc_monitor, irc_abstract, betterobject, ircconversationd,
+{$ENDIF}
 {$IFDEF LOG_TO_TOOLBELT}
   ToolBelt_Log,
 {$ENDIF}
   managedthread;
+
+
+
+{$IFDEF LOG_TO_IRC}
+type
+  TIRCDebugConversation = class(TIRCConversationDaemon)
+  protected
+    procedure SendhelpCommands; override;
+
+  public
+    function OnCommand(sOriginalLine: string; sCmd: string;
+      params: TStringList): Boolean; override;
+    procedure Msg(s: string);
+  end;
+
+var
+  conD: TIRCDebugConversation = nil;
+
+{$ENDIF}
 
 
 type
@@ -296,6 +325,7 @@ begin
   ics(sect);
   slLog := TRingBuffer.create;
 //  slLog := TStringlist.create;
+
 {$IFDEF LOG_TO_DISK}
 
 
@@ -305,6 +335,11 @@ end;
 
 destructor TDebugLog.Destroy;
 begin
+{$IFDEF LOG_TO_IRC}
+  conD.free;
+  conD := nil;
+//  irc_monitor.ircmon.EndConversation(IHolder<TIRCConversation>(conversation));
+{$ENDIF}
   if assigned(fs) then
     fs.free;
   slLog.Free;
@@ -357,17 +392,35 @@ var
   sLog2: logstring;
   pb: PByte;
   ss: ansistring;
+  sss: string;
   sNewFile: string;
 begin
   try
+{$IFDEF LOG_TO_IRC}
+  log_to_irc(s, sFilter);
+{$ENDIF}
+
+{$IFDEF MSWINDOWS}
   {$IFDEF LOG_TO_CONSOLE}
   if ltConsole in targets then begin
-    Windows.OutputDebugString(pchar(s));
+    if length(s) > 256 then
+      sss := zcopy(s,0,256)
+    else
+      sss := s;
+    Windows.OutputDebugStringW(pchar(sss));
     if LogToStdout then
       if IsConsole then
         WriteLn(s);
   end;
   {$ENDIF}
+{$ENDIF}
+{$IFDEF LINUX}
+  if ltConsole in targets then begin
+    if LogToStdout then
+      if IsConsole then
+        WriteLn(s);
+  end;
+{$ENDIF}
   {$IFDEF LOG_TO_THREAD_STATUS}
   if ltThread in targets then
     threadlog.Log(s);
@@ -380,6 +433,10 @@ begin
       logHook(sLog);
 {$IFDEF LOG_TO_DISK}
     if ltDisk in targets then begin
+      {$IFDEF LOG_TO_DISK_SHARED}
+      WriteToSharedLog(s);
+      {$ENDIF}
+
       sNewFile := LogFileNAme;
 
 
@@ -472,10 +529,11 @@ begin
 
 {$IFDEF LOG_TO_MEMORY}
     ss := ansistring(s)+ansistring(NEWLINE);
-{$IFDEF MSWINDOWS}
-    slLog.BufferData(@ss[STRZ], length(ss));
-{$ELSE}
+{$IFDEF NEED_FAKE_ANSISTRING}
     slLog.BufferData(ss.addrof[STRZ], length(ss));
+
+{$ELSE}
+    slLog.BufferData(@ss[STRZ], length(ss));
 {$ENDIF}
 
 {$ENDIF}
@@ -508,9 +566,40 @@ begin
   else
     result := sPath+(changefileext(logfileprefix+extractfilename(DLLNAme),'.log'));
 
-
 {$ENDIF}
 
+end;
+
+procedure TDebugLog.log_to_irc(s, sFilter: string);
+begin
+{$IFDEF LOG_TO_IRC}
+  if logging then exit;
+
+  logging := true;
+  try
+    if ircmon = nil then
+      exit;
+
+    if conD = nil then begin
+      if ircmon <> nil then
+        conD := TIRCDebugConversation.create(ircmon, '#log');
+    end;
+    //establish conversations
+    if conD <> nil then
+      conD.Msg(s);
+  finally
+    logging := false;
+  end;
+
+
+{$ENDIF}
+end;
+
+function TDebugLog.MergedLogFileName(bDated: boolean): string;
+begin
+{$IFNDEF MOBILE}
+  result := dllpath+'shared.'+FormatDateTime('YYYYMMDD', now)+'.log';
+{$ENDIF}
 end;
 
 procedure TDebugLog.SetFilter(const Value: string);
@@ -529,6 +618,42 @@ begin
   lcs(sect);
 end;
 
+
+procedure TDebugLog.WriteToSharedLog(sLine: string);
+begin
+  var strm: TfileStream := nil;
+
+  var sFile := MergedLogFileName;
+  var tmStart := GetTicker;
+  repeat
+    try
+      //NOTE that at midnight there is a very slight chance that a single
+      //log message will be lost
+
+      if fileexists(sFile) then
+        strm := TFileStream.create(sfile, fmopenWrite+fmShareExclusive)
+      else
+        strm := TFileStream.create(sfile, fmCreate);
+
+      break;
+    except
+      if gettimesince(tmStart) > 30000 then
+        raise Ecritical.create('unable to open log file for more than 30 seconds: '+sFile);
+      sleep(random(1000));
+    end;
+  until false;
+
+
+  var s: logstring := logstring(sLine);
+  if s = '' then exit;
+  try
+    stream_GuaranteeWrite(strm, @s[STRZ], sizeof(s[STRZ])*length(s));
+  finally
+    strm.free;
+    strm := nil;
+  end;
+
+end;
 
 procedure TThreadLog.Log(s: string);
 begin
@@ -606,6 +731,37 @@ end;
 
 
 { TThreadLog }
+
+{ TIRCDebugConversation }
+
+{$IFDEF LOG_TO_IRC}
+procedure TIRCDebugConversation.Msg(s: string);
+begin
+  var l := conversation.o.LockI;
+  conversation.o.PrivMsg(s);
+end;
+
+function TIRCDebugConversation.OnCommand(sOriginalLine, sCmd: string;
+  params: TStringList): Boolean;
+begin
+  result := false;
+  if not result then
+   result := inherited;
+
+end;
+{$ENDIF}
+
+
+{$IFDEF LOG_TO_IRC}
+procedure TIRCDebugConversation.SendHelpcommands;
+begin
+  //inherited;
+  Msg('HELP:');
+  Msg('  I am a LOG bot.');
+  Msg('  Currently there are no commands that I understand.  I just log stuff.');
+  Msg('END HELP');
+end;
+{$ENDIF}
 
 initialization
 {$IFDEF LOG_TO_CTO}

@@ -269,6 +269,7 @@ begin
 
   if showingform <> nil then begin
       showingform.Parent := nil;
+    showingform.DeactivateOrTransplant;
     giveBackControls;
 //    showingform.Hide;
   end;

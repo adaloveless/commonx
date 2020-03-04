@@ -68,6 +68,7 @@ procedure Stream_WriteZerosXX(const s: TAdaptiveQueuedFileSTream; const iCount: 
 {$ENDIF}
 
 
+
 type
   EStreamGuarantee = class(Exception)
   public
