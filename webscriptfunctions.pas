@@ -17,7 +17,7 @@ const
 implementation
 
 uses  sysutils, webstring, kiddienames, Dataobject, windows,
-  webfunctions, webScriptMTDTInterface, exceptions, webresource, errorresource, stringx,
+  webfunctions, webScriptMTDTInterface, ExceptionsX, webresource, errorresource, stringx,
   webscript, MTDTInterface, VersionInfo, WebConfig, systemx, rights, ExtendedScriptFunctions,
   CoreWebScriptFunctions;
 

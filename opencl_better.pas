@@ -109,7 +109,7 @@ var
   f: ansistring;
 begin
   // Create OpenCL program with source code
-  sourceStr:=FProg;
+  sourceStr:=ansistring(FProg);
   sourceSize:=Length(sourceStr);
   sourcePAnsiChar:=PAnsiChar(sourceStr);
   clProgram := clCreateProgramWithSource(context, 1, @sourcePAnsiChar, @sourceSize, @errcode_ret);

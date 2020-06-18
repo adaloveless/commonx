@@ -7,6 +7,8 @@ interface
 {$IFDEF MSWINDOWS}
   {$IFNDEF NO_DISK_LOGGING}
     {$DEFINE LOG_TO_DISK}
+  {$ELSE}
+    {$UNDEF LOG_TO_DISK}
   {$ENDIF}
 {$ENDIF}
 {$DEFINE NO_US}
@@ -71,12 +73,15 @@ type
     fs: TFileStream;
     fsInstance: TFileStream;
     lastArchiveTime: Tdatetime;
+    FHeartBeatOnLog: boolean;
     function GetFilter: string;
     procedure SetFilter(const Value: string);
     function LogFileName(bDated: boolean = true): string;
     function MergedLogFileName(bDated: boolean = true): string;
     procedure ArchiveLogDataIfTime;
     procedure ArchiveLogData;
+    procedure WriteToSharedLogEx(sLine, sFile: string;
+      out bLogWasCreated: boolean);
   public
     constructor Create;virtual;
     destructor Destroy;override;
@@ -90,6 +95,9 @@ type
 
     procedure WriteToSharedLog(sLine: string);
 
+    procedure SaveLog(sToFile: string);
+    property HeartbeatOnLog: boolean read FHeartBeatOnLog write FHeartBeatOnLog;
+    procedure WriteHeartBeat;
   end;
 
 
@@ -99,6 +107,7 @@ procedure Log(s: string; sFilter: string = '');overload;
 procedure Log(targets: TLogTargets; s: string; sFilter: string = '');overload;
 procedure Log(sTypeName: string; ptr: pointer; s: string; sFilter: string = '');overload;
 procedure Log(targets: TLogTargets; sTypeName: string; ptr: pointer; s: string; sFilter: string = '');overload;
+procedure SaveLog(sToFile:string);
 procedure ConsoleLog(s: string);
 
 function DebugLog: TDebugLog;
@@ -117,7 +126,7 @@ var
 {$ELSE}
   logToStdout : boolean = false;
 {$ENDIF}
-
+  g_log_initialized: boolean = false;
   GDebugLog: TDebugLog = nil;
   log_is_shut_down: boolean;
 
@@ -164,7 +173,10 @@ type
 threadvar
   threadlog: TThreadLog;
 
-
+procedure SaveLog(sToFile:string);
+begin
+  GDebugLog.SaveLog(sToFile);
+end;
 
 procedure LogToThreadStatus(s: string);
 begin
@@ -395,6 +407,7 @@ var
   sss: string;
   sNewFile: string;
 begin
+
   try
 {$IFDEF LOG_TO_IRC}
   log_to_irc(s, sFilter);
@@ -428,6 +441,14 @@ begin
 
   Lock;
   try
+{$IFNDEF PRESERVE_OLD_PRIMARY_LOG}
+    if not g_log_initialized then
+    try
+      deletefile(changefileext(DLLNAme,'.log'));
+    except
+    end;
+{$ENDIF}
+    g_log_initialized := true;
     sLog := s;
     if assigned(LogHook) then
       logHook(sLog);
@@ -435,8 +456,11 @@ begin
     if ltDisk in targets then begin
       {$IFDEF LOG_TO_DISK_SHARED}
       WriteToSharedLog(s);
-      {$ENDIF}
+      if HeartbeatonLog then
+        WriteHeartbeat;
 
+
+      {$ELSE}
       sNewFile := LogFileNAme;
 
 
@@ -457,11 +481,13 @@ begin
         {$ENDIF}
 
         //if the target file already exists, openit for read/write
+
         if fileexists(sNewFile) then begin
           fs := TFileStream.Create(sNewFile, fmOpenReadWrite+fmShareDenyNone);
         end
-        //else create a few one then open it for read/write
-        else begin
+        //else create a new one then open it for read/write
+        else
+        begin
           fs := nil;
 
           //create the new file
@@ -479,10 +505,13 @@ begin
       //Deal with the real-time log (non-dated)
       //create a new one or use existing one
       if fsInstance = nil then begin
+{$IFDEF PRESERVE_OLD_PRIMARY_LOG}
         if fileexists(LogFileName(false)) then begin
           fsInstance := TFileStream.Create(LogFileName(false), fmOpenReadWrite+fmShareDenyNone);
         end
-        else begin
+        else
+{$ENDIF}
+        begin
           //create a new one
           fsInstance := nil;
           try
@@ -511,6 +540,7 @@ begin
       finally
         FreeMemory(pb);
       end;
+      {$ENDIF}
     end;
 {$ENDIF}
 
@@ -598,8 +628,28 @@ end;
 function TDebugLog.MergedLogFileName(bDated: boolean): string;
 begin
 {$IFNDEF MOBILE}
-  result := dllpath+'shared.'+FormatDateTime('YYYYMMDD', now)+'.log';
+  result := changefileext(dllname,'')+'.'+FormatDateTime('YYYYMMDD', now)+'.log';
 {$ENDIF}
+end;
+
+procedure TDebugLog.SaveLog(sToFile: string);
+begin
+Lock;
+try
+  if fsInstance= nil then
+    exit;
+  var fsOut := TfileStream.create(sToFile, fmCreate);
+  try
+    fsInstance.Seek(0,soBeginning);
+    Stream_GuaranteeCopy(self.fsInstance,fsOut);
+    fsInstance.Seek(0,soEnd);
+
+  finally
+    fsOut.free;
+  end;
+finally
+  Unlock;
+end;
 end;
 
 procedure TDebugLog.SetFilter(const Value: string);
@@ -619,18 +669,19 @@ begin
 end;
 
 
-procedure TDebugLog.WriteToSharedLog(sLine: string);
+procedure TDebugLog.WriteToSharedLogEx(sLine: string; sFile: string; out bLogWasCreated: boolean);
 begin
+
   var strm: TfileStream := nil;
 
-  var sFile := MergedLogFileName;
   var tmStart := GetTicker;
   repeat
     try
       //NOTE that at midnight there is a very slight chance that a single
       //log message will be lost
 
-      if fileexists(sFile) then
+      bLogWasCreated := not fileexists(sFile);
+      if not bLogWasCreated {"was" means should-be created in this context} then
         strm := TFileStream.create(sfile, fmopenWrite+fmShareExclusive)
       else
         strm := TFileStream.create(sfile, fmCreate);
@@ -644,14 +695,67 @@ begin
   until false;
 
 
-  var s: logstring := logstring(sLine);
+  var s: logstring := logstring(sLine+CRLF);
   if s = '' then exit;
   try
+    strm.Seek(0, soEnd);
     stream_GuaranteeWrite(strm, @s[STRZ], sizeof(s[STRZ])*length(s));
   finally
     strm.free;
     strm := nil;
   end;
+
+end;
+
+procedure TDebugLog.WriteHeartBeat;
+begin
+  try
+    var cl: TCommandline;
+    cl.ParseCommandLine();
+    var logfileprefix := cl.GetNamedParameterEx('-lfp', '--log-file-prefix', '');
+    SaveStringAsFile(dllpath+slash(LogFilePrefix,'.')+'check.heartbeat','');
+  except
+  end;
+end;
+
+procedure TDebugLog.WriteToSharedLog(sLine: string);
+var
+  cl: TCommandLine;
+begin
+  cl.ParseCommandLine();
+  var logfileprefix := cl.GetNamedParameterEx('-lfp', '--log-file-prefix', '');
+
+
+  var sFile := MergedLogFileName;
+  var sStandardLogFile := changefileext(dllname,'.log');
+
+  var NewLogFile: boolean := false;
+
+  var sLineMod  := sLine;
+
+  var partialpre :=  '['+zcopy(logfileprefix, 0, 10)+']';
+  partialpre := PadString(partialpre, ' ', 12);
+
+{$IFNDEF ALWAYS_PREFIX_LOGS}
+  if logfileprefix <> '' then begin
+{$ENDIF}
+    sLineMod := stringreplace(sLineMod, ': ', ','+partialpre+':', []);
+{$IFNDEF ALWAYS_PREFIX_LOGS}
+  end;
+{$ENDIF}
+  WriteToSharedLogEx(sLineMod, sFile, NewLogFile);
+  if NewLogFile then begin
+    while fileexists(sStandardLogFile) do begin
+      try
+        deletefile(sStandardLogFile);
+      except
+        sleep(random(1000));
+      end;
+    end;
+  end;
+  WriteToSharedLogEx(sLine, sStandardLogFile, NewLogFile);
+
+
 
 end;
 
@@ -764,6 +868,7 @@ end;
 {$ENDIF}
 
 initialization
+
 {$IFDEF LOG_TO_CTO}
   orderlyinit.init.RegisterProcs('Debug', oinit, ofinal, 'edi_log_jan');
 {$ELSE}

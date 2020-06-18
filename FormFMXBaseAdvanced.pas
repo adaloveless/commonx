@@ -1,12 +1,12 @@
 unit FormFMXBaseAdvanced;
-
+{$I DelphiDefs.inc}
 interface
 {x$DEFINE USE_ANON_THREAD}
 
 uses
-  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, FrameBusyFMX,
+  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, FrameBusyFMX, tickcount, numbers,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, typex,systemx, guihelpers_fmx, FrameBaseFMX,
-  FMX.Objects, commandprocessor, FMX.Controls.Presentation, FMX.StdCtrls, AnonCommand, formfmxbase;
+  FMX.Objects, commandprocessor, FMX.Controls.Presentation, FMX.StdCtrls, AnonCommand, formfmxbase, FormFMXOverlay;
 
 type
 {$IFNDEF USE_ANON_THREAD}
@@ -18,6 +18,11 @@ type
   TOnCommandFinished = procedure (c: TCommand) of object;
   TOnCommandFinishedThen = reference to procedure (c: Tcommand);
 
+  Tcmd_TestSleep=class(TCommand)
+  public
+    ms: ni;
+    procedure DoExecute;override;
+  end;
 
   TfrmFMXBaseAdvanced = class(TfrmFMXBase, IUnknown)
     BusyCircle: TCircle;
@@ -26,6 +31,7 @@ type
     BusyRect: TRectangle;
     procedure BusyTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+
   private
     bSelfRef: boolean;
     FrefSect: TCLXCriticalsection;
@@ -49,7 +55,7 @@ type
     FonCommandFinish: TOnCommandFinished;
     FonCommandFinishedThen: TOnCommandFinishedThen;
     procedure ShowFancy(show: boolean);
-    procedure ToggleBusy(working: Boolean);
+    procedure ToggleBusy(working: Boolean);override;
     procedure BeforeDestruction;override;
     { Private declarations }
     function BackgroundOp(AThreadFunc: TFunc<boolean>;
@@ -57,9 +63,13 @@ type
       bAutoDestroy: boolean=true): TLocalBackground;
   protected
     procedure DoUpdateState;virtual;
+    procedure DoUpdateCommandProgress(status: string; prog: TProgress);
+      override;
+
   public
     detached: boolean;
     fancyAnim: TFramBusyFMX;
+    overlay: TfrmFMXOverlay;
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
     property FreeWithReferences: boolean read FFreeWithReferences write FFreeWithReferences;
@@ -81,7 +91,9 @@ type
     property ActiveCommand: TCommand read FWaitingOn;
     procedure UpdateState;
 
+    function UseOverlay: boolean;
 
+    procedure TestSleep(ms: ni);
   end;
 
 var
@@ -140,6 +152,7 @@ begin
   if Busy.StartAngle>359 then
     Busy.StartAngle:=0;
 
+  WatchCommands;
   if FWaitingOn <> nil then begin
 {$IFDEF USE_ANON_THREAD}
     if FWaitingOn.Finished then begin
@@ -198,6 +211,15 @@ begin
   detached := true;
 end;
 
+procedure TfrmFMXBaseAdvanced.DoUpdateCommandProgress(status: string;
+  prog: TProgress);
+begin
+  inherited;
+  if overlay <> nil then begin
+    overlay.UpdateCommandProgress(status, prog);
+  end;
+end;
+
 procedure TfrmFMXBaseAdvanced.DoUpdateState;
 begin
   //no implementation required
@@ -237,14 +259,42 @@ end;
 procedure TfrmFMXBaseAdvanced.ShowFancy(show: boolean);
 begin
   if show then begin
-    if fancyAnim <> nil then exit;
-    fancyAnim := TframBusyFMX.Create(self);
-    fancyAnim.Parent := BusyRect;
-    fancyAnim.Align := TAlignLayout.Client;
+    if UseOverlay then begin
+      Self.disableAllControls;
+      if overlay = nil then begin
+        Self.overlay := FormFMXOverlay.TfrmFMXOverlay.create(self);
+        if fancyAnim <> nil then exit;
+        fancyAnim := TframBusyFMX.Create(self);
+        fancyAnim.Parent := overlay;
+        fancyAnim.Align := TAlignLayout.Contents;
+        fancyAnim.bringtofront;
+        fancyAnim.AnimateTransitionIn;
+        overlay.Parent := self;
+//        overlay.Width := self.Width;
+//        overlay.Height := self.Height div 3;
+//        overlay.Top := self.top + (self.Height div 3);
+//        overlay.Left := self.left;
+        overlay.Show;
+        var prog: TProgress;
+        prog.step := 0;
+        prog.stepcount := 100;
+        overlay.UpdateCommandProgress('...',prog);
+      end;
+    end else begin
+
+      if fancyAnim <> nil then exit;
+      fancyAnim := TframBusyFMX.Create(self);
+      fancyAnim.Parent := BusyRect;
+      fancyAnim.Align := TAlignLayout.Client;
+    end;
+
 
   end else begin
+    self.ReenableDisabledControls;
     fancyAnim.DisposeOf;
     fancyAnim := nil;
+    overlay.DisposeOf;
+    overlay := nil;
   end;
 
 end;
@@ -294,6 +344,16 @@ begin
 end;
 
 
+procedure TfrmFMXBaseAdvanced.TestSleep(ms: ni);
+begin
+  var c := Tcmd_TestSleep.Create;
+  c.ms := ms;
+  c.Start;
+  self.WatchCommand(c,true);
+
+
+end;
+
 procedure TfrmFMXBaseAdvanced.ToggleBusy(working: Boolean);
 begin
   if working=true then
@@ -332,6 +392,16 @@ begin
   DoUpdateState;
 end;
 
+function TfrmFMXBaseAdvanced.UseOverlay: boolean;
+begin
+{$IFDEF DESKTOP}
+  exit(true);
+{$ELSE}
+  exit(false);
+{$ENDIF}
+
+end;
+
 procedure TfrmFMXBaseAdvanced.WaitForCommand(c: TCommand; bTakeOwnership: boolean;
   p: TOnCommandFinished);
 begin
@@ -362,269 +432,24 @@ begin
 end;
 {$ENDIF}
 
-end.
+{ Tcmd_TestSleep }
 
-unit ValorDraw;
-
-interface
-
-
-uses
-  debug, betterobject, advancedgraphics_dx, graphics, numbers, systemx, typex, better_colors, colorconversion, sysutils, D3DX9, pxl.types, tickcount;
-
-
-const
-  PROJECTILE_COUNT = 4000;
-
-const
-  GRAV_POINT_TEST_CONST : TVector4 = (FX: 0; Fy: 0; Fz: 0; Fw: 0);
-  GRAV_POINTS : array [0..7] of TVector4 = (
-      (FX: 0;       Fy: -1;     Fz: 0; Fw: 1),
-      (FX: 0.666;   Fy: -0.666; Fz: 0; Fw: 1),
-      (FX: 1;       Fy: 0;      Fz: 0; Fw: 1),
-      (FX: 0.666;   Fy: 0.666;  Fz: 0; Fw: 1),
-      (FX: 0;       Fy: 1;      Fz: 0; Fw: 1),
-      (FX: -0.666;  Fy: 0.666;  Fz: 0; Fw: 1),
-      (FX: -1;      Fy: 0;      Fz: 0; Fw: 1),
-      (FX: -0.666;  Fy: -0.666; Fz: 0; Fw: 1));
-
-
-type
-  TGravityPoint = record
-    pos: TVector4;
-    oldpos: TVector4;
-    deltaFrameTimeInSeconds: single;
-    function VacuumForce: TVector4;
-
-    procedure Init;
-    procedure Draw(canvas: TDX2D);
-  end;
-
-  TProjectile = class(TBetterobject)
-  public
-    pos: TVector4;
-    Velocity: TVector4;
-    canvas: TDX2D;
-    belowground: boolean;
-    c: TColor;
-    sz: single;
-    procedure Draw;
-    procedure init;override;
-
-  end;
-
-
-  TValorDraw = class(TDX2d)
-  private
-    procedure Update;
-  public
-    physicstime: single;
-    grav : array[0..7] of TGravityPoint;
-    proj: array[0..PROJECTILE_COUNT-1] of TProjectile;
-    procedure DoDraw; override;
-    procedure LoadTextures; override;
-    procedure Init; override;
-    procedure UpdatePhysics(rDeltaTime: Cardinal); override;
-  end;
-
-
-
-
-
-
-implementation
-
-
-
-{ TValorDraw }
-
-procedure TValorDraw.DoDraw;
-var
-  x: integer;
-  x1,y1,x2,y2: single;
-  c: Tcolor;
-  t: integer;
-begin
-  inherited;
-  ClearScreen(0);
-
-  SetIdentityBounds;
-
-  for t := 0 to high(grav) do begin
-    grav[t].Draw(self);
-  end;
-
-  for t := 0 to PROJECTILE_COUNT-1 do begin
-    proj[t].Draw;
-  end;
-
-
-
-
-end;
-
-procedure TValorDraw.Init;
-var
-  t: integer;
-begin
-  inherited;
-  for t := 0 to PROJECTILE_COUNT-1 do begin
-    proj[t] := TProjectile.Create;
-    proj[t].pos.Init;
-    proj[t].Velocity.init;
-    proj[t].canvas := self;
-   // projectile[t].vx := random(300);
-    proj[t].pos.x := random(1920);
-    proj[t].pos.y := random(1080);
-    proj[t].c := random($FFFFFFFF);
-  end;
-end;
-
-procedure TValorDraw.LoadTextures;
-begin
-  inherited;
-  LoadTexture('graphics\spark2.png');
-  LoadFont('graphics\font.png',2,2);//0
-
-
-end;
-
-procedure TValorDraw.Update;
+procedure Tcmd_TestSleep.DoExecute;
 begin
   inherited;
 
-end;
+  var tmStart := getticker;
+  Status := 'Sleeping...';
+  Step := 0;
+  StepCount := ms;
+  repeat
+    sleep(lesserof(ms, 100));
+    step := gettimesince(tmStart);
+    if gettimesince(tmStart) >= ms then
+      break;
 
-procedure TValorDraw.UpdatePhysics(rDeltaTime: Cardinal);
-var
-  t: integer;
-begin
-  inherited;
-  var deltatimeinseconds: single := rDeltaTime / 1000;
-  physicstime := physicstime + deltatimeinseconds;
-  var center: pxl.types.TVector4;
-  center.Init;
-  center.w := 1;
-  center.x := ((Self.BoundX2-Self.BoundX1)/2)+Self.BoundX1;
-  center.y := ((Self.Boundy2-Self.Boundy1)/2)+Self.Boundy1;
-  var radius := 25;
-  var speed := 8;
-  var size := 800* sin(getticker*0.0005);
-
-  //GRAV_POINTS are constant
-  //we need a translation matrix to move them to the center
-  var trans := TranslateMtx4(center);
-
-  //we need a rotate matrix to rotate
-  var rotate := RotateMtx4(Vector3(0,0,1), speed*physicstime);
-
-  //we need a scale matrix to make it bigger or smaller
-  var scale := ScaleMtx4(Vector3(size, size, size));
-
-  //build the composite matrix, first scale, then rotate, then translate
-  var composite := (scale * rotate) * trans;
-
-  //ram all the points through the composite matrix
-  for t:= 0 to high(GRAV_POINTS) do begin
-    grav[t].oldpos := grav[t].pos;
-    grav[t].pos := GRAV_POINTS[t] * composite;
-    if grav[t].deltaFrameTimeInSeconds = 0 then begin
-      grav[t].oldpos := grav[t].pos;
-    end;
-    grav[t].deltaFrameTimeInSeconds := deltatimeinseconds;
-
-//    grav[t].pos := grav[t].pos * trans;
-  end;
-
-  for t := 0 to projectile_COUNT -1 do begin
-    var p := proj[t];
-    for var u := 0 to High(grav) do begin
-      var g := grav[u];
-      //each projectile is influenced by each gravity point
-
-      //calculate distance from p->g
-      var gravVector := g.pos-p.pos;
-      var dist := gravVector.Length;
-      gravVector.normalize;
-//      if ((t=0) and (u=0)) then Debug.Log(diff.ToString);
-      var attraction : single := (1/(dist))*80000*(greaterof(0.0,(lesserof(1.0,0.6+(sin(getticker*0.0005))))));;
-      var VacuumVector :=  ((g.VacuumForce*10.0));
-      p.Velocity := p.Velocity + (gravVector * attraction);
-      p.Velocity := p.Velocity + (VacuumVector * attraction);
-      var range: integer := 64;
-      var minus: integer := 32;
-      var rnd: TVector4 := Vector4(random(range)-minus, random(range)-minus, 0.0, 0.0);
-      p.velocity := p.velocity + rnd;
-
-
-    end;
-    var terminal: single := 1000.0;
-    if p.velocity.Length > terminal then
-        p.velocity := p.Velocity / (p.velocity.Length / terminal);
-
-    if p.velocity.Length < 0-terminal then
-        p.velocity := p.Velocity / (p.velocity.Length / (0-terminal));
-
-
-    p.pos := p.pos + (p.Velocity * deltatimeinSeconds);
-
-  end;
-
-end;
-
-{ TProjectile }
-
-procedure TProjectile.Draw;
-begin
-  canvas.settexture(0);
-  canvas.AlphaOp := aoAdd;
-  canvas.Sprite(pos.x,pos.y, c, 0.2, sz);
-
-//  canvas.ResetText;
-//  canvas.SetFont(0);
-//  canvas.TextColor := c;
-//  canvas.TextPosition.X := 0;
-//  canvas.TextPosition.y := 0;
-//  canvas.TextOffset := D3DXVector3(pos.x,pos.y,0);
-//
-//  canvas.canvas_Text('o');
-
-end;
-
-
-procedure TProjectile.init;
-begin
-  pos.init;
-  Velocity.init;
-  sz := random(64);
-end;
-
-{ TGravityPoint }
-
-procedure TGravityPoint.Draw(canvas: TDX2D);
-begin
-  exit;
-  canvas.ResetText;
-  canvas.SetFont(0);
-  canvas.TextColor := clWhite;
-  canvas.TextPosition.X := 0;
-  canvas.TextPosition.y := 0;
-  canvas.TextOffset := D3DXVector3(pos.x,pos.y,0);
-  canvas.canvas_Text('x');
-end;
-
-procedure TGravityPoint.Init;
-begin
-  pos.Init;
-end;
-
-function TGravityPoint.VacuumForce: TVector4;
-begin
-  result := (pos-oldpos) *Self.deltaFrameTimeInSeconds;
-  result.w := 0.0;
-
-
-
+  until false;
 end;
 
 end.
+

@@ -37,9 +37,12 @@ type
     useragent: string;
     track: ni;
     sz: int64;
+    valid: boolean;
     procedure FromLogLine(sLine: string);
     procedure Decode;
     function endtime: TDateTime;
+  private
+    function ToString: string;
   end;
 
   PGanttRecord = ^TGanttRecord;
@@ -50,7 +53,9 @@ type
     maxtrack: ni;
     recs: TArray<TGanttRecord>;
     selected: PGanttRecord;
+    loadedFrom: string;
     Procedure LoadFromfile(sfile: string);
+    procedure SaveToDayLogs;
     function Loaded: boolean;
     procedure Analyze;
     procedure CheckOverlap(idx: ni;width: ni;bReset: boolean; multiplytime: ni);
@@ -71,25 +76,47 @@ implementation
 procedure TganttRecord.Decode;
 begin
   var l,r,day,month,year,h,m,s,ms: string;
-  //13/Feb/2020:06:25:08 +0000
-  SplitString(dateutc, '-', year, month);
-  SplitString(month, '-', month, day);
-  SplitString(day, ' ', day, h);
-  SplitString(h, ':', h,m);
-  SplitString(m, ':', m,s);
-  SplitString(s, '.', s,ms);
-  SplitString(ms, ' ', ms,r);
-  ms := zcopy(ms, 0,4);
+  var monthint: ni;
 
+  if zcopy(dateutc,0,1) = '[' then begin
+  //13/Feb/2020:06:25:08 +0000
+    var start := zcopy(dateutc,1,length(dateutc)-2);
+    SplitString(start,'/',day,month);
+    SplitString(month,'/',month, year);
+    Splitstring(year,':',year,h);
+    SplitString(h,':',h,m);
+    SplitString(m,':',m,s);
+    SplitString(s,' ',s, ms);
+    ms := '0';
+    monthint := MonthToInt(month,true);
+
+
+
+  end else begin
+
+    SplitString(dateutc, '-', year, month);
+    SplitString(month, '-', month, day);
+    SplitString(day, ' ', day, h);
+    SplitString(h, ':', h,m);
+    SplitString(m, ':', m,s);
+    SplitString(s, '.', s,ms);
+    SplitString(ms, ' ', ms,r);
+    ms := zcopy(ms, 0,4);
+    monthint := monthtoint(month,true);
+  end;
 
 
 
   //EncodeDate(strtoint(year),strtoint(month), strtoint(day));
 
-
-  var time: TDateTime := (strtoint(h)/24)+(strtoint(m)/(24*60))+(strtoint(s)/(24*60*60)+(strtoint(ms)/(24*60*60*1000)));
-  var date: TdateTime := EncodeDate(strtoint(year), MonthToInt(month), strtoint(day));
-  self.date := date+time-(6/24);
+  if monthint =0 then begin
+    self.date := 0.0;
+    self.valid := false;
+  end else begin
+    var time: TDateTime := (strtoint(h)/24)+(strtoint(m)/(24*60))+(strtoint(s)/(24*60*60)+(strtoint(ms)/(24*60*60*1000)));
+    var date: TdateTime := EncodeDate(strtoint(year), monthint, strtoint(day));
+    self.date := date+time-(6/24);
+  end;
 
   runtimef := ((runtime / 1000)/(24*60*60));
 
@@ -106,15 +133,49 @@ begin
   var l,r: string;
   sLine := StringReplace(sLine, ' - - ', ' ', []);
   var slh := ParseStringNotInH(sLine,' ', '"');
-  ip := slh.o[0];
-  dateutc := slh.o[1]+' '+slh.o[2];
-  head:= unquote(slh.o[3]);
-  resultcode := slh.o[4];
-  runtime := strtoint64(slh.o[5]);
-  sz := strtoint64(slh.o[6]);
-  referer := slh.o[7];
-  useragent := slh.o[8];
-  decode;
+  if slh.o.count <5 then begin
+    valid := false;
+  end else
+  if slh.o.count <9 then begin
+    try
+    ip := slh.o[0];
+    dateutc := slh.o[1]+' '+slh.o[2];
+    head:= unquote(slh.o[3]);
+    resultcode := slh.o[4];
+    runtime := 250;//we don't know the runtime, assume typical 1/4 second
+    var s := slh.o[5];
+    if IsInteger(s) then
+      sz := strtoint64(s)
+    else
+      sz := 0;
+    if slh.o.count > 6 then begin
+      referer := slh.o[6];
+      useragent := slh.o[7];
+    end else begin
+      referer := '';
+      useragent :='';
+    end;
+    decode;
+    except
+    valid := false;
+    end;
+  end else begin
+    ip := slh.o[0];
+    dateutc := slh.o[1]+' '+slh.o[2];
+    head:= unquote(slh.o[3]);
+    resultcode := slh.o[4];
+    runtime := strtoint64(slh.o[5]);
+    sz := strtoint64(slh.o[6]);
+    referer := slh.o[7];
+    useragent := slh.o[8];
+    decode;
+    valid := true;
+  end;
+end;
+
+function TGanttRecord.ToString: string;
+begin
+  result := ip+' - - '+dateutc+' '+quote(head)+' '+resultcode+' '+inttostr(runtime)+' '+inttostr(sz)+' '+referer+' '+useragent;
 
 end;
 
@@ -122,6 +183,9 @@ end;
 
 procedure TGanttData.Analyze;
 begin
+  if length(recs) = 0 then
+    exit;
+
   minx := recs[0].date;
   startday := trunc(minx);
   maxx := (recs[high(recs)].date)+recs[high(recs)].runtimef;
@@ -249,6 +313,7 @@ end;
 
 procedure TGanttData.LoadFromfile(sfile: string);
 begin
+  loadedfrom := sfile;
   selected := nil;
   var recs := self.recs;
   var sl := TStringList.create;
@@ -284,15 +349,17 @@ begin
       end;
 
       cl.WaitForAll_DestroyWhileWaiting;
+//      dEBUG.lOG('Log ends: '+datetimetostr(recs[high(recs)].date));
 
     finally
       cl.free;
     end;
 {$ELSE}
 
-    for var t:= SL.COUNT-2 to sl.count-1 do begin
+    for var t:= 0 to sl.count-1 do begin
       recs[t].FromLogLine(sl[t]);
     end;
+      dEBUG.lOG('Log ends: '+datetimetostr(recs[high(recs)].date));
 {$ENDIF}
 
     self.recs := recs;
@@ -303,6 +370,45 @@ begin
   finally
     sl.free;
   end;
+
+end;
+
+
+
+
+procedure TGanttData.SaveToDayLogs;
+var
+  path: string;
+  lastdate: TDateTime;
+  slOut: TStringlist;
+    procedure CommitStrings;
+    begin
+      if slOut <> nil then begin
+        var s: string := slash(extractfilepath(loadedFrom))+formatdatetime('YYYYMMDD', lastdate)+'.txt';
+        Debug.Log('saving '+s);
+        slOut.SaveToFile(s);
+        slOut.free;
+        slOut := nil;
+      end;
+    end;
+begin
+  lastdate := 0.0;
+  slOut := nil;
+  path := ExtractFilePath(loadedfrom);
+  for var t := 0 to high(self.recs) do begin
+    if (trunc(lastdate) <> trunc(recs[t].date)) or (slOut=nil) then begin
+      //NEW LOG FILE... SETUP
+      CommitStrings;
+      slOut := TStringlist.create;
+    end;
+
+    //write the record
+    slOut.Add(recs[t].ToString);
+    lastdate := trunc(recs[t].date);
+  end;
+
+  CommitStrings;
+
 
 end;
 

@@ -2690,13 +2690,14 @@ end;
 procedure TRDTPClientGenerator.Process_RQFILE(sParams: string; bCSharp: boolean);
 var
   s: string;
+CONST
+  CONSTANT_RQ_FILE_LOCATION = '..\RDTP_DEFINITIONS\';
 begin
   if bCSharp then begin
-    s := slash(extractfilepath(FFilename))+RQFILE_LOCATION_RELATIVE_TO_CSHARP+ExtractFileName(sParams);
-    s := ResolveRelativePath(s);
+    s := dllpath+CONSTANT_RQ_FILE_LOCATION+extractfilename(sParams);
     FDirectives.add(LoadStringFromFile(s));
   end else begin
-    s := slash(extractfilepath(FFilename))+RQFILE_LOCATION_RELATIVE_TO_DELPHI+ExtractFileName(sParams);
+    s := dllpath+CONSTANT_RQ_FILE_LOCATION+extractfilename(sParams);
     FDirectives.add(LoadStringFromFile(s));
   end;
   FDirectives.text := FDirectives.text;

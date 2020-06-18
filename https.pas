@@ -53,6 +53,15 @@ type
     procedure Init; override;
   end;
 
+  Tcmd_HTTPsToFile = class(Tcmd_HTTPS)
+  public
+    UrL: string;
+    IgnoreIftargetExists: boolean;
+    LocalFile: String;
+    procedure DoExecute; override;
+
+  end;
+
 //function QuickHTTPSGet(sURL: ansistring): ansistring;
 function QuickHTTPSGet(sURL: ansistring; out sOutREsponse: string; addHead: string =''; addHeadValue: string = ''): boolean;overload;
 function QuickHTTPSGet(sURL: ansistring; out sOutREsponse: string; addHeaders: TArray<TExtraHeader>): boolean;overload;
@@ -331,6 +340,24 @@ procedure THTTPResults.AddCookieHeader(s: string);
 begin
   setlength(self.cookie_headers, length(self.cookie_headers)+1);
   cookie_headers[high(cookie_headers)] := s;
+end;
+
+{ Tcmd_HTTPsToFile }
+
+procedure Tcmd_HTTPsToFile.DoExecute;
+begin
+  //inherited;
+  request.url := URL;
+  if (not IgnoreIftargetExists) or (not FileExists(LocalFile)) then begin
+    inherited;
+    var fs := TfileStream.create(LocalFile, fmCreate);
+    try
+      Stream_GuaranteeCopy(self.Results.bodystream.o, fs);
+    finally
+      fs.free;
+    end;
+
+  end;
 end;
 
 initialization

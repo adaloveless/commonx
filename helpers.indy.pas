@@ -27,7 +27,7 @@ begin
 
 end;
 function AnsiStringToIDBytes(a: ansistring): TIDBytes;
-{$IFDEF MSWINDOWS}
+{$IFNDEF NEEDFAKEANSISTRING}
 var
   t: ni;
 begin

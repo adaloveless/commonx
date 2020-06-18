@@ -7,7 +7,7 @@ uses
 
 function FindProgramFiles(sExe: string): string;
 function FindTool(sExe: string; bExhaustive: boolean = false): string;
-function FindMedia(sFile: string): string;
+function FindMedia(sFile: string; bThrowExceptions: boolean = true): string;
 
 function FindRecursive(sPath, sFile: string; out sFullFile: string): boolean;
 
@@ -93,8 +93,9 @@ begin
 
 end;
 
-function FindMedia(sFile: string): string;
+function FindMedia(sFile: string; bThrowExceptions: boolean = true): string;
 begin
+  result := '';
   try  result := slash(DLLPath)+sFile; if TFile.Exists(result) then exit;  except  end;
   try  result := slash(DLLPath)+'..\'+sFile; if TFile.Exists(result) then exit; except  end;
   try  result := slash(DLLPath)+'..\Media\'+sFile; if TFile.Exists(result) then exit; except  end;
@@ -109,7 +110,8 @@ begin
   try  result := slash(DLLPath)+'..\..\..\..\Media\'+sFile; if TFile.Exists(result) then exit; except  end;
   try  result := slash(DLLPath)+'..\..\..\..\art\'+sFile; if TFile.Exists(result) then exit; except  end;
 
-  raise ECritical.Create('could not find media '+sFile+' using FindMedia()');
+  if bThrowExceptions then
+    raise ECritical.Create('could not find media '+sFile+' using FindMedia()');
 
 
 end;

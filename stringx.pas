@@ -4,7 +4,6 @@ unit stringx;
 
 interface
 
-
 uses
 {$IFDEF NEED_FAKE_ANSISTRING}
   stringx.ansi,
@@ -113,7 +112,7 @@ function InterpretInterval(sTimeRepresentation: string; defaultIfblank: double):
 
 
 function ReplaceXMLCharacters(s: String):String;
-function MonthToInt(const sMon: string): ni;
+function MonthToInt(const sMon: string; bNoExceptions: boolean=false): ni;
 
 function Unquote(s: string): string;
 function StartsWith(sMaster: string; sStartsWith: string): boolean;
@@ -134,6 +133,8 @@ function ZSubCopy(sSource: string; iPOs: nativeint; iLength: nativeint): string;
 function zpos(sSubString: string; sString: string;iSTartAt:ni=0): nativeint;overload;
 function zpos_ignorecase(sSubString: string; sString: string;iSTartAt:ni=0): nativeint;
 function zpos(sSubString: string; sString: string;bIgnoreCase: boolean; iSTartAt:ni=0): nativeint;overload;
+function opos(sSubString: string; sString: string;iSTartAt:ni=0): nativeint;overload;
+
 function StrToFloatEx(s: string; nanresult: double = 0): double;
 
 function ZFindSplitMidPOint(sPattern: string; sString: string;bIgnoreCase: boolean): nativeint;
@@ -148,7 +149,8 @@ function zExtractDelimitedString(sSource: string; sDelimiter: string; var iStart
 function MemoryToString(p: pointer; l: ni): string;overload;
 function MemoryToString(m: TDynByteArray): string;overload;
 function StringToMemory(s: string): TDynByteArray;
-
+function LinuxPath(s: string): string;
+function WinPath(s: string): string;
 
 
 
@@ -182,9 +184,9 @@ function VArtoJSONStorage(v: variant): string;
 function SQLEscape(s: string): string;
 procedure SaveStringAsFile(sFile: string; data: string);
 
-function LoadFileAsString(sFile: string; iLimitLength: integer = 0): string;
+function LoadFileAsString(sFile: string; Encoding: TEncoding = nil; iLimitLength: integer = 0): string;
 function LoadStreamAsString(s: TStream): string;
-function LoadStringFromFile(sFile: string; iLimitLength: integer = 0): string;
+function LoadStringFromFile(sFile: string; Encoding: TEncoding = nil; iLimitLength: integer = 0): string;
 function LoadStringFromStream(s: TStream; iLimitLength: integer = 0): string;
 function SortStringCompare(s1,s2: string): integer;
 function CleanString(s: string): string;
@@ -203,8 +205,8 @@ function stringToStringListH(s: string): IHolder<TStringList>;
 function TrimStr(s: string): string;
 procedure CrackDelimitedString(const sLine : string; cDelimiter : char; slList : TStringList);
 function ExtractStr(src: string; what: string): string;
-function LeftStr(s: string; n: integer): string;
 function RightStr(s: string; n: integer): string;
+function LeftStr(s: string; n: integer): string;
 function MidStr(s: string; p: integer; n: integer): string;
 
 function StrExtract(src: string; what: string): string;
@@ -271,6 +273,14 @@ type
   end;
 
 
+function LinuxPath(s: string): string;
+begin
+  result := StringReplace(s, '\', '/', [rfReplaceAll]);
+end;
+function WinPath(s: string): string;
+begin
+  result := StringReplace(s, '/', '\', [rfReplaceAll]);
+end;
 
 
 
@@ -1108,9 +1118,9 @@ begin
 end;
 
 
-function LoadFileAsString(sFile: string; iLimitLength: integer = 0): string;
+function LoadFileAsString(sFile: string; Encoding: TEncoding = nil; iLimitLength: integer = 0): string;
 begin
-  result := LoadStringFromfile(sfile, iLimitLength);
+  result := LoadStringFromfile(sfile, Encoding, iLimitLength);
 end;
 
 
@@ -1127,7 +1137,7 @@ begin
   end;
 
 end;
-function LoadStringFromFile(sFile: string; iLimitLength: integer = 0): string;
+function LoadStringFromFile(sFile: string; Encoding: TEncoding = nil; iLimitLength: integer = 0): string;
 var
   sl : TStringList;
   fs: TfileStream;
@@ -1147,7 +1157,11 @@ begin
       sl := TStringLIst.create;
       if FileExists(sFile) then
       try
-        sl.LoadFromFile(sFile);
+        if Encoding = nil then
+          sl.LoadFromFile(sFile)
+        ELSE
+          sl.LoadFromFile(sFile, encoding);
+
         result := sl.text;
       except
       end;
@@ -2051,15 +2065,22 @@ function IsInteger(s: string): boolean;
 var
   t: integer;
   c: char;
+  bContainsNumbers: boolean;
 begin
   result := length(s) > 0;
+  bContainsNumbers := false;
   for t:= STRZ to high(s) do begin
     c := s[t];
     if not charinSet(c, ['-','0'..'9']) then begin
       result := false;
       break;
+    end else begin
+      if charinset(c, ['0'..'9']) then
+        bContainsNumbers := true;
     end;
+
   end;
+  result := bContainsNumbers;
 end;
 
 function IsSimpleFloat(s: string): boolean;
@@ -2791,6 +2812,11 @@ begin
       exit;
     end;
   end;
+end;
+
+function opos(sSubString: string; sString: string;iSTartAt:ni=0): nativeint;overload;
+begin
+  result := zpos(sSubString, sString, iStartAt-1)+1;
 end;
 
 function zpos_ignorecase(sSubString: string; sString: string;iSTartAt:ni=0): nativeint;
@@ -4024,7 +4050,7 @@ begin
             slTemp2.add(s2);
             bDone := false;
           end else begin
-            slTemp2.Add(s1);            
+            slTemp2.Add(s1);
           end;
         end;
         sl := slTemp2;
@@ -4042,17 +4068,17 @@ begin
             slTemp2.add(s2);
             bDone := false;
           end else begin
-            slTemp2.Add(s1);            
+            slTemp2.Add(s1);
           end;
         end;
         sl := slTemp2;
         slTemp2 := slTEmp;
         slTemp := sl;
 
-        result := slTEmp;        
+        result := slTEmp;
 
       end;
-      
+
 
     finally
       slTemp2.free;
@@ -4172,12 +4198,13 @@ begin
   s := StringReplace(s, #13, #10, [rfReplaceAll]);
   s2 := s;
   clear;
-  while SplitString(s2, #10, s1,s2) do begin
-    add(s1);
-  end;
-
-  if s1 <> '' then
-    add(s1);
+  ParseString(s,#10,self);
+//  while SplitString(s2, #10, s1,s2) do begin
+//    add(s1);
+//  end;
+//
+//  if s1 <> '' then
+//    add(s1);
 
 end;
 
@@ -4717,7 +4744,7 @@ begin
 end;
 
 
-function MonthToInt(const sMon: string): ni;
+function MonthToInt(const sMon: string; bNoExceptions: boolean=false): ni;
 begin
   var l := zcopy(sMon,0,3);
   if 0=comparetext(l,'Jan') then exit(1);
@@ -4731,7 +4758,7 @@ begin
   if 0=comparetext(l,'Sep') then exit(9);
   if 0=comparetext(l,'Oct') then exit(10);
   if 0=comparetext(l,'Nov') then exit(11);
-  if 0=comparetext(l,'Dev') then exit(12);
+  if 0=comparetext(l,'Dec') then exit(12);
   if 0=comparetext(l,'01') then exit(1);
   if 0=comparetext(l,'02') then exit(2);
   if 0=comparetext(l,'03') then exit(3);
@@ -4745,8 +4772,10 @@ begin
   if 0=comparetext(l,'11') then exit(11);
   if 0=comparetext(l,'12') then exit(12);
 
-
-  raise ECritical.create('invalid month '+sMon+' passed to MonthToInt');
+  if bNoExceptions then
+    exit(0)
+  else
+    raise ECritical.create('invalid month '+sMon+' passed to MonthToInt');
 
 end;
 
@@ -4761,9 +4790,12 @@ begin
 end;
 {$ENDIF}
 
+
+
 initialization
   UTF.RegisterClass(TUT_StringX);
 
 end.
+
 
 

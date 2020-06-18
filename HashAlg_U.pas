@@ -72,7 +72,7 @@ begin
   retVal := '';
   for i:=0 to ((DigestSize div 8)-1) do
     begin
-    retVal := retVal + inttohex(theHash[i], 2);
+    retVal := retVal + ansistring(inttohex(theHash[i], 2));
     end;
 
   Result := retVal;

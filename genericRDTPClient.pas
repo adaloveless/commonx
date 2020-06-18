@@ -21,7 +21,7 @@ uses
   tickcount, stringx,
   simplereliableudp, simplebufferedconnection, betterobject, sharedobject, packet,
   classes,
-  sysutils, exceptions,
+  sysutils, ExceptionsX,
 {$IFDEF USE_WINSOCK}
   simplewinsock,
   windows,

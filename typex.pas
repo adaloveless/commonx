@@ -6,11 +6,14 @@ uses
 {$IFDEF NEED_FAKE_ANSISTRING}
   ios.stringx.iosansi,
 {$ENDIF}
-  sysutils, variants, types;
+  sysutils, variants, types, math;
 
 
 
 const
+  ESCIRC = #26;
+  IRCCR = #27;
+  IRCCONT = #25;
 
 
   ESCX = #26;
@@ -99,13 +102,6 @@ const
   POINTER_SHIFT_ = 2;
 {$ENDIF}
 
-
-
-
-
-
-
-
 type
   void = record
   end;
@@ -142,6 +138,31 @@ type
   tinyint = shortint;
   signedchar = shortint;
   signedbyte = shortint;
+
+  TRegionI = record
+    startpoint: int64;
+    endpoint: int64;
+    function Dif: int64;
+    function Center: int64;
+  end;
+
+  TRegionS = record
+    startpoint: single;
+    endpoint: single;
+    function Dif: single;
+    function Center: single;
+  end;
+
+  TRegionD = record
+    startpoint: double;
+    endpoint: double;
+    function Dif: double;
+    function Center: double;
+    class operator Add(a: TRegionD; b: double): TRegionD;
+    class operator Subtract(a: TRegionD; b: double): TRegionD;
+  end;
+
+
 
 
 
@@ -276,13 +297,23 @@ function Null20(v: variant): variant;
 function EscSeq(s: string): string;
 function objaddr(o: TObject): string;
 function DayToMs(d: double): int64;
+function RoundRectF(rf: TRectF): TRect;
 
+procedure NoFPUExceptions;
 
 
 implementation
 
 uses
   systemx, numbers;
+
+
+procedure NoFPUExceptions;
+begin
+  SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide,
+                   exOverflow, exUnderflow, exPrecision]);
+
+end;
 
 function objaddr(o: TObject): string;
 begin
@@ -437,7 +468,7 @@ end;
 function VartoStrEx(v: variant): string;
 begin
   if vartype(v) = varNull then
-    exit('null');
+    exit('');
   exit(vartostr(v));
 end;
 
@@ -576,6 +607,67 @@ begin
   next8 := (i shr 16) and $FF;
 
 end;
+
+
+function TRegionI.Dif: int64;
+begin
+  result := endpoint-startpoint;
+
+end;
+
+function TRegionI.Center: int64;
+begin
+  result := (Dif div 2) +startpoint;
+end;
+
+
+function TRegionS.Dif: single;
+begin
+  result := endpoint-startpoint;
+
+end;
+
+function TRegionS.Center: single;
+begin
+  result := (Dif / 2) +startpoint;
+end;
+
+function TRegionD.Dif: double;
+begin
+  result := endpoint-startpoint;
+
+end;
+
+function TRegionD.Center: double;
+begin
+  result := (Dif / 2) +startpoint;
+end;
+
+class operator TRegionD.Add(a: TRegionD; b: double): TRegionD;
+begin
+  result.startpoint := a.startpoint + b;
+  result.endpoint := a.endpoint + b;
+
+end;
+
+
+class operator TRegionD.Subtract(a: TRegionD; b: double): TRegionD;
+begin
+  result.startpoint := a.startpoint - b;
+  result.endpoint := a.endpoint - b;
+
+end;
+
+function RoundRectF(rf: TRectF): TRect;
+begin
+  result.Left := round(rf.Left);
+  result.Top := round(rf.Top);
+  result.Width := round(rf.Width);
+  result.Height := round(rf.height);
+end;
+
+initialization
+  NoFPUExceptions;
 
 
 end.

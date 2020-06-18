@@ -2,7 +2,7 @@ unit WebScript;
 {$INLINE AUTO}
 interface
 
-uses Variants, variantlist, classes, sysutils, requestinfo, dialogs, MTDTInterface, WebDispatch, windows, Exceptions, ErrorResource,systemx, Dataobject, webfunctions, betterobject, sharedobject, simplewinsock, debug, stringx, typex;
+uses Variants, variantlist, classes, sysutils, requestinfo, dialogs, MTDTInterface, WebDispatch, windows, ExceptionsX, ErrorResource,systemx, Dataobject, webfunctions, betterobject, sharedobject, simplewinsock, debug, stringx, typex;
 
 
 const

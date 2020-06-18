@@ -516,7 +516,7 @@ begin
     vdh.vdlist[iDISKID].WantLock;//hint to any heavy processes that we want a lock
     l := vdh.vdlist[iDISKID].getlock;
     try
-      vdh.vdlist[iDISKID].CachedSTripes := value;
+      vdh.vdlist[iDISKID].DesiredCachedSTripes := value;
     finally
       vdh.vdlist[iDISKID].unlockLock(l);
     end;

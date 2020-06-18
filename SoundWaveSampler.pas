@@ -69,7 +69,8 @@ implementation
 
 procedure TSoundWaveSampler.ReadFormat_Wav;
 var
-  shit, c1, c2, c3, c4: ansichar;
+  c1, c2, c3, c4: ansichar;
+  shit: int64;
   b: boolean;
 begin
     // find beginning of fmt  section

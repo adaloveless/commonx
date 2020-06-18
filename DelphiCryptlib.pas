@@ -648,7 +648,7 @@ procedure TCryptObject.SetAttributeString(const attributeType: CRYPT_ATTRIBUTE_T
 var
   err: Integer;
 begin
-  err := cryptSetAttributeString(CryptHandle, attributeType, PAnsiChar(value), Length(value));
+  err := cryptSetAttributeString(CryptHandle, attributeType, PAnsiChar(ansistring(value)), Length(value));
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptSetAttributeString');
 end;
@@ -713,7 +713,7 @@ begin
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptGetAttributeString');
   SetString(result, nil, Len);
-  err := cryptGetAttributeString(CryptHandle, attributeType, PAnsiChar(result), Len);
+  err := cryptGetAttributeString(CryptHandle, attributeType, PAnsiChar(ansistring(result)), Len);
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptGetAttributeString');
 end;
@@ -766,7 +766,7 @@ class procedure TCryptObject.SetOption(const cryptOption: CRYPT_ATTRIBUTE_TYPE;
 var
   err: Integer;
 begin
-  err := cryptSetAttributeString(CRYPT_UNUSED, cryptOption, PAnsiChar(value), Length(value));
+  err := cryptSetAttributeString(CRYPT_UNUSED, cryptOption, PAnsiChar(ansistring(value)), Length(value));
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptSetAttributeString');
 end;
@@ -780,7 +780,7 @@ begin
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptGetAttributeString');
   SetString(result, nil, Len);
-  err := cryptGetAttributeString(CRYPT_UNUSED, attributeType, PAnsiChar(result), Len);
+  err := cryptGetAttributeString(CRYPT_UNUSED, attributeType, PAnsiChar(ansistring(result)), Len);
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptGetAttributeString');
 end;
@@ -1002,7 +1002,7 @@ begin
   FSize := Length(SourceString);
   if FSize <= 0 then
     raise EStreamError.CreateRes(@ErrTxtStream0);
-  ActBuffer := PAnsiChar(SourceString);
+  ActBuffer := PAnsiChar(ansistring(SourceString));
   ActLen := FSize;
   OutBuffer := nil;
   try
@@ -1121,7 +1121,7 @@ constructor TCryptKey.GetPublicKey(var Keyset: TCryptKeyset;
 var
   err: Integer;
 begin
-  err := cryptGetPublicKey(Keyset.CryptHandle, Self.CryptHandle, keyIDtype, PAnsiChar(keyID));
+  err := cryptGetPublicKey(Keyset.CryptHandle, Self.CryptHandle, keyIDtype, PAnsiChar(ansistring(keyID)));
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptGetPublicKey')
 end;
@@ -1132,9 +1132,9 @@ var
   err: Integer;
 begin
   if Length(password) = 0 then 
-    err := cryptGetPrivateKey(Keyset.CryptHandle, Self.CryptHandle, keyIDtype, PAnsiChar(keyID), nil)
+    err := cryptGetPrivateKey(Keyset.CryptHandle, Self.CryptHandle, keyIDtype, PAnsiChar(ansistring(keyID)), nil)
   else
-    err := cryptGetPrivateKey(Keyset.CryptHandle, Self.CryptHandle, keyIDtype, PAnsiChar(keyID), PAnsiChar(password));
+    err := cryptGetPrivateKey(Keyset.CryptHandle, Self.CryptHandle, keyIDtype, PAnsiChar(ansistring(keyID)), PAnsiChar(ansistring(password)));
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptGetPrivateKey')
 end;
@@ -1217,7 +1217,7 @@ begin
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptExportKey');
   SetString(result, nil, exportedKeyLength);
-  err := cryptExportKey(PAnsiChar(result), exportedKeyLength, exportedKeyLength, Self.CryptHandle, SessionKey.CryptHandle);
+  err := cryptExportKey(PAnsiChar(ansistring(result)), exportedKeyLength, exportedKeyLength, Self.CryptHandle, SessionKey.CryptHandle);
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptExportKey');
 end;
@@ -1233,7 +1233,7 @@ begin
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptExportKeyEx');
   SetString(result, nil, exportedKeyLength);
-  err := cryptExportKeyEx(PAnsiChar(result), exportedKeyLength, exportedKeyLength, formatType,
+  err := cryptExportKeyEx(PAnsiChar(ansistring(result)), exportedKeyLength, exportedKeyLength, formatType,
     Self.CryptHandle, SessionKey.CryptHandle);
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptExportKeyEx');
@@ -1252,12 +1252,12 @@ begin
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptCreateSignature');
   SetString(result, nil, signatureLength);
-  err := cryptCreateSignature(PAnsiChar(result), signatureLength, actualLength,
+  err := cryptCreateSignature(PAnsiChar(ansistring(result)), signatureLength, actualLength,
     Self.CryptHandle, hashContext.CryptHandle);
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptCreateSignature');
   if signatureLength > actualLength then
-    SetString(result, PAnsiChar(result), actualLength);
+    SetString(result, PAnsiChar(ansistring(result)), actualLength);
 end;
 
 function TCryptKey.Sign(const hashContext: TCryptKey; const formatType: CRYPT_FORMAT_TYPE): string;
@@ -1276,12 +1276,12 @@ begin
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptCreateSignatureEx');
   SetString(result, nil, signatureLength);
-  err := cryptCreateSignatureEx(PAnsiChar(result), signatureLength, actualLength,
+  err := cryptCreateSignatureEx(PAnsiChar(ansistring(result)), signatureLength, actualLength,
     formatType, Self.CryptHandle, hashContext.CryptHandle, extras);
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptCreateSignatureEx');
   if signatureLength > actualLength then
-    SetString(result, PAnsiChar(result), actualLength);
+    SetString(result, PAnsiChar(ansistring(result)), actualLength);
 end;
 
 procedure TCryptKey.CheckSignature(const signature: string;
@@ -1289,7 +1289,7 @@ procedure TCryptKey.CheckSignature(const signature: string;
 var
   err: Integer;
 begin
-  err := cryptCheckSignature(PAnsiChar(signature), Length(signature), Self.CryptHandle, hashContext.CryptHandle);
+  err := cryptCheckSignature(PAnsiChar(ansistring(signature)), Length(signature), Self.CryptHandle, hashContext.CryptHandle);
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptCheckSignature');
 end;
@@ -1300,7 +1300,7 @@ class function TCryptKey.QueryObject(ObjectData: string): CRYPT_OBJECT_INFO;
 var
   err: Integer;
 begin
-  err := cryptQueryObject(PAnsiChar(ObjectData), Length(ObjectData), result);
+  err := cryptQueryObject(PAnsiChar(ansistring(ObjectData)), Length(ObjectData), result);
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptQueryObject');
 end;
@@ -1350,7 +1350,7 @@ procedure TCryptKeyset.AddPrivateKey(const cryptKey: TCryptKey; const password: 
 var
   err: Integer;
 begin
-  err := cryptAddPrivateKey(CryptHandle, cryptKey.CryptHandle, PAnsiChar(password));
+  err := cryptAddPrivateKey(CryptHandle, cryptKey.CryptHandle, PAnsiChar(ansistring(password)));
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptAddPrivateKey');
 end;
@@ -1363,7 +1363,7 @@ procedure TCryptKeyset.DeleteKey(const keyIDtype: CRYPT_KEYID_TYPE; const keyID:
 var
   err: Integer;
 begin
-  err := cryptDeleteKey(CryptHandle, keyIDtype, PAnsiChar(keyID));
+  err := cryptDeleteKey(CryptHandle, keyIDtype, PAnsiChar(ansistring(keyID)));
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptDeleteKey');
 end;
@@ -1385,7 +1385,7 @@ constructor TCryptCert.GetPublicKey(var Keyset: TCryptKeyset;
 var
   err: Integer;
 begin
-  err := cryptGetPublicKey(Keyset.CryptHandle, Self.CryptHandle, keyIDtype, PAnsiChar(keyID));
+  err := cryptGetPublicKey(Keyset.CryptHandle, Self.CryptHandle, keyIDtype, PAnsiChar(ansistring(keyID)));
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptGetPublicKey')
 end;
@@ -1537,7 +1537,7 @@ constructor TCryptCert.Import(const certObject: string);
 var
   err: Integer;
 begin
-  err := cryptImportCert(PAnsiChar(certObject), Length(certObject), CRYPT_UNUSED, CryptHandle);
+  err := cryptImportCert(PAnsiChar(ansistring(certObject)), Length(certObject), CRYPT_UNUSED, CryptHandle);
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptImportCert');
 end;
@@ -1561,11 +1561,11 @@ begin
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptExportCert');
   SetString(result, nil, certObjectLength);
-  err := cryptExportCert(PAnsiChar(result), certObjectLength, actObjectLength, certFormatType, CryptHandle);
+  err := cryptExportCert(PAnsiChar(ansistring(result)), certObjectLength, actObjectLength, certFormatType, CryptHandle);
   if err < 0 then
     raise ErrCodeTab[FindCode(err)].ex.Create(err, 'cryptExportCert');
   if certObjectLength > actObjectLength then
-    SetString(result, PAnsiChar(result), actObjectLength);
+    SetString(result, PAnsiChar(ansistring(result)), actObjectLength);
 end;
 
 function TCryptCert.CertificateCursor(moveto: Integer): Boolean;

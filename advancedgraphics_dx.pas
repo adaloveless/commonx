@@ -1,6 +1,7 @@
 unit advancedgraphics_DX;
 {x$INLINE AUTO}
 {$DEFINE USE_ACTUAL_SURFACE_WIDTH}
+{$DEFINE ASS}
 interface
 
 uses
@@ -10,10 +11,13 @@ uses
 
 
 CONST
+  CM_LAZY_DRAW = WM_USER+99;
   BOUND_SNAP = 1;
   BOUND_STACK_SIZE = 256;
   PHYSICS_INCREMENT = 8;
   MAX_VERTEX_BATCH_SIZE = 20000;
+  DX2D_DEFAULT_CHAR_WIDTH = 16;
+  DX2D_DEFAULT_CHAR_HEIGHT =16;
 type
   TDXMouseEvent = (dxmeDown, dxmeUp, dxmeMove, dxmeEnter, dxmeLeave);
   TDXTime = cardinal;
@@ -82,6 +86,7 @@ type
     FMouseRight: boolean;
     FMouseWasDown: boolean;
     ScreenBound: TSingleRect;
+    mouse_buttons_were_down: array [0..2] of boolean;
     mouse_buttons_down: array [0..2] of boolean;
 
     procedure Resized;virtual;
@@ -103,7 +108,6 @@ type
     procedure DoMouseEnter;virtual;
     procedure DoMouseLeave;virtual;
     procedure DoMouseOut;virtual;
-
 
     procedure MouseMove(x,y: single);virtual;
     function MouseEvent(dxme: TDXMouseEvent; screenx, screeny,x,y: single; ss: TShiftState): boolean;
@@ -131,13 +135,10 @@ type
     property TargetHeight: single read FTargetHeight write FTargetHeight;
     property TargetTop: single read FTargetTop write FTargetTop;
 
-
-
     function LocalToScreenX(x: single): single;
     function LocalToScreenY(Y: single): single;
     function X_RolledUp: single;
     function Y_RolledUp: single;
-
 
     procedure Draw;
     procedure DrawTop;
@@ -319,6 +320,8 @@ type
     procedure SetLeftMarginF(const Value: TDXFloat);
     procedure SetrightMarginF(const Value: TDXFloat);
     procedure SetTopMarginF(const Value: TDXFloat);
+    function GetEnabletimer: boolean;
+    procedure SetEnableTimer(const Value: boolean);
 
 
   strict private
@@ -329,11 +332,15 @@ type
     function BeginDXLineDraw: ID3DXLine;
     procedure EndDXLine(l: ID3DXLine);
     procedure PendingResetTimer(sender: TObject);
+    procedure DelayDrawTimerExecute(sender: TObject);
+    procedure InternalDrawTimerExecute(sender: TObject);
   protected
     fLastMouseX, FLastMouseY: nativefloat;
     fLastMouseXX, FLastMouseYY: nativefloat;
+    FLastMouseShift: TShiftState;
     sect: _RTL_CRITICAL_SECTION;
     material: TNativeMaterial;
+    mouse_buttons_were_down:array[0..2] of boolean;
     mouse_buttons_down:array[0..2] of boolean;
     font_index: ni;
     MouseHandled: boolean;
@@ -344,7 +351,11 @@ type
     bInitialized: boolean;
     ControlsDrawn: boolean;
     tmResetTimer: tTimer;
+    tmDelayDraw: TTimer;
+    tmInternalDrawTimer: TTimer;
+    paintedAtLeastOnce: boolean;
 
+    function MouseButtonChanged(btn: ni): boolean;
     procedure SetParent(AParent: TWinControl); override;
     procedure InitControls;virtual;
 
@@ -438,6 +449,7 @@ type
       clr2: TColor; clr3: TColor; clr4: TColor; alpha: TDXFloat = 1.0);
 
     procedure DLGCode(var message: TMessage);message WM_GETDLGCODE;
+    procedure LazyDraw(var message: TMessage);message CM_LAZY_DRAW;
 
 
 
@@ -482,14 +494,17 @@ type
     procedure UpdatePhysics(rDeltaTime: TDXTime);overload;virtual;
     procedure SetBounds(ALeft: Integer; ATop: Integer; AWidth: Integer;
       AHeight: Integer); override;
+    procedure Invalidate; override;
 
     property Frames: integer read FFrames write FFrames;
     procedure Initialize;
     procedure Paint; override;
+
     procedure Rectangle_Fill(x1, y1, x2, y2: TDXFloat; clr: TColor;
       alpha: TDXFloat = 1.0);overload;
     procedure Rectangle_Fill(x1, y1, x2, y2: TDXFloat; c1,c2,c3,c4: TColor;
       alpha: TDXFloat = 1.0);overload;
+    procedure SetCanvasPixel(x1,y1: ni; c: TColor);
     procedure Rectangle(x1, y1, x2, y2: TDXFloat; color: TColor;
       Fill: boolean = false; bGradient: boolean = false;
       bgcolor: TColor = clBlack); overload; virtual;
@@ -543,7 +558,11 @@ type
     procedure ApplyInterpolatedBoundsChanges;
 
     procedure EnableScissor(b: boolean);
+    procedure ClearScissor;
     procedure ScissorControl(c: TDXControl);
+    procedure ScissorGlobal(rf: TRectF);
+    function GlobalToScreenRect(rf: TRectF): TRectF;
+    function ScreenToGlobalRect(rf: TRectF): TRectF;
 
 
 
@@ -593,7 +612,8 @@ type
     procedure BeginLine;
     procedure FlushLine;
     procedure EndLIne;
-    procedure DrawLine(x,y: single; alpha_color: cardinal);
+    procedure DrawLine(xy: TpointF; alpha_color: cardinal);overload;
+    procedure DrawLine(x,y: single; alpha_color: cardinal);overload;
     property LineColor: cardinal read FLineColor write SetLineColor;
     property MinSurfaceWidth: ni read FMinSurfaceWidth write FMinSurfaceWidth;
     property MaxSurfaceWidth: ni read FMaxSurfaceWidth write FMaxSurfaceWidth;
@@ -601,6 +621,7 @@ type
     property MaxSurfaceHeight: ni read FMaxSurfaceHeight write FMaxSurfaceHeight;
     property SurfaceHeight: ni read FSurfaceheight;
     property SurfaceWidth: ni read FSurfaceWidth;
+    property EnableInternalDrawTimer: boolean read GetEnabletimer write SetEnableTimer;
   end;
 
 { TDrawingBoard = class(TFastBackBufferedControl)
@@ -853,6 +874,11 @@ begin
 
 end;
 
+procedure TDX2D.ClearScissor;
+begin
+  EnableScissor(false);
+end;
+
 procedure TDX2D.ClearScreen(c: Tcolor);
 begin
   EnableScissor(false);
@@ -874,8 +900,11 @@ end;
 
 procedure TDX2D.CommitBatch;
 begin
+  var was :=   FBatchIndex > -1;
+
   EndVertexBatch;
-  BeginVertexBatch;
+  if was then
+    BeginVertexBatch;
 end;
 
 procedure TDX2D.CommitVertexBatch;
@@ -886,8 +915,16 @@ begin
   if dx9window = nil then exit;
   if dx9window.dev = nil then exit;
 
-  d3dassert(dx9window.dev.DrawPrimitiveUP(FBatchType, FBatchindex div 3, FVertexBatch[0],
-      SizeOf(TNativeVertex)));
+  var ix := FBatchindex div 3;
+  if ix > 0 then
+{$IFDEF ASS}
+    d3dassert(
+{$ENDIF}
+      dx9window.dev.DrawPrimitiveUP(FBatchType, ix, FVertexBatch[0],
+      SizeOf(TNativeVertex))
+{$IFDEF ASS}
+    );
+{$ENDIF}
 
 
 
@@ -910,11 +947,21 @@ end;
 
 constructor TDX2D.Create(aOwner: TComponent);
 begin
-  inherited;
+  inherited Create(aowner);
 
   tmResetTimer := TTimer.create(self);
   tmResetTimer.enabled := false;
   tmResetTimer.OnTimer := self.PendingResetTimer;
+  tmDelayDraw := TTimer.create(self);
+  tmDelayDraw.OnTimer := self.DelayDrawTimerExecute;
+  tmDelayDraw.Enabled := false;
+  tmDelayDraw.Interval := 10;
+  tmInternalDrawTimer := TTimer.create(self);
+  tminternalDrawtimer.Interval := 16;
+  tmInternalDrawTimer.OnTimer := self.InternalDrawTimerExecute;
+  tminternalDrawTimer.enabled := false;
+
+
   InitializeCRiticalSection(sect);
   FMinSurfaceWidth := 720;
   FMaxSurfaceWidth := 1920*2;
@@ -934,8 +981,8 @@ begin
   FDirty := true;
   FTextures := TList<INativeTexture>.Create;
   FFonts := TList<TFontinfo>.Create;
-  FCharHeight := 16;
-  FCharWidth := 12;
+  FCharHeight := DX2D_DEFAULT_CHAR_WIDTH;
+  FCharWidth := DX2D_DEFAULT_CHAR_HEIGHT;
   fCharPadU := 0;
   fCharPadV := 0;
 
@@ -1143,11 +1190,20 @@ begin
 end;
 
 
+procedure TDX2D.DelayDrawTimerExecute(sender: TObject);
+begin
+  Draw;
+  dirty := false;
+  tmDelayDraw.Enabled := false;
+end;
+
 procedure TDX2D.DelayReset;
 begin
+  binitialized := false;
   tmResetTimer.Enabled := false;
   tmResetTimer.Interval := 50;
   tmResetTimer.Enabled := true;
+
 end;
 
 destructor TDX2D.Destroy;
@@ -1252,6 +1308,7 @@ end;
 
 procedure TDX2D.Draw(bNoFlip: boolean = false);
 begin
+  try
   if GetTimeSince(lastFPSUpdateTime) > 1000 then begin
     fps := fpsframes;
     fpsframes := 0;
@@ -1279,10 +1336,16 @@ begin
       DrawControls;
     if not bNoFlip then begin
       Flip;
+      paintedAtLeastOnce := true;
     end;
     PopBounds;
     inc(FFrames);
     AfterDraw;
+  end;
+  except
+    on E: Exception do begin
+      Debug.Log('Exception during draw of '+self.classname+' '+e.Message);
+    end;
   end;
 
 end;
@@ -1309,6 +1372,11 @@ begin
   end;
 
   ControlsDrawn := true;
+end;
+
+procedure TDX2D.DrawLine(xy: TpointF; alpha_color: cardinal);
+begin
+  drawline(xy.x,xy.y,alpha_color);
 end;
 
 procedure TDX2D.DrawLine(x, y: single; alpha_color: cardinal);
@@ -1372,7 +1440,6 @@ begin
         debug.log(self,'Unknown HRESULT:'+inttostr(hr));
         Reset;
       end;
-
     end;
   finally
 //    Unlock;
@@ -1444,6 +1511,11 @@ end;
 function TDX2D.GetDimensiONY: TDXFloat;
 begin
   result := BoundY2 - BoundY1;
+end;
+
+function TDX2D.GetEnabletimer: boolean;
+begin
+  Result := tmInternalDrawTimer.Enabled;
 end;
 
 function GetFullPathToAsset(sFile: string): string;
@@ -1532,6 +1604,16 @@ begin
 
 end;
 
+function TDX2D.GlobalToScreenRect(rf: TRectF): TRectF;
+begin
+  result.Left := GlobalToScreenX(rf.Left);
+  result.Top := globaltoScreenY(rf.Top);
+  result.Width := ScaleGlobalXtoScreen(rf.Width);
+  result.Height := ScaleGlobalYtoScreen(rf.Height);
+
+
+end;
+
 function TDX2D.GlobalToScreenX(globalX: TDXFloat): TDXFloat;
 begin
   if FUseScreenCoordinates then
@@ -1582,6 +1664,8 @@ begin
       EnableScissor(true);
     end;
 
+    NoFPUExceptions;
+
     bInitialized := true;
     if IsFunctional then begin
       LoadTextures;
@@ -1591,9 +1675,40 @@ begin
 
 end;
 
+procedure TDX2D.InternalDrawTimerExecute(sender: TObject);
+begin
+  UpdatePhysics;
+  Draw;
+end;
+
+procedure TDX2D.Invalidate;
+begin
+  inherited;
+//  dirty := true;
+//  if initialized then
+//  if paintedatleastonce then
+//    PostMessage(self.Handle, CM_LAZY_DRAw,0,0);
+
+  if paintedatleastonce then
+    tmDelayDraw.Enabled := true;
+end;
+
 function TDX2D.IsFunctional: boolean;
 begin
   result := Assigned(dx9window) and assigned(dx9window.dev);
+end;
+
+procedure TDX2D.LazyDraw(var message: TMessage);
+begin
+  if Parent = nil then
+    exit;
+//  if not initialized then
+//    exit;
+  if dirty then begin
+    Draw;
+    dirty := false;
+  end;
+
 end;
 
 procedure TDX2D.LoadFont(sfile: string; rOverdrawX: single = 1.0; rOverDrawY: single = 1.0);
@@ -1667,26 +1782,39 @@ begin
   EnterCRiticalSection(sect);
 end;
 
+function TDX2D.MouseButtonChanged(btn: ni): boolean;
+begin
+  result := mouse_buttons_were_down[btn] <> mouse_buttons_down[btn];
+end;
+
 procedure TDX2D.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Integer);
 var
   xx,yy: single;
 begin
   inherited;
+  try
   xx := FormToGlobalX(x);
   yy := FormToGlobalY(y);
   fLastMouseXX := xx;
   FLastMouseYY := yy;
   fLastMouseX := x;
   FLastMouseY := y;
+  FLastMouseShift := shift;
 
-  case button of
-    mbLeft: mouse_buttons_down[0] := true;
-    mbRight: mouse_buttons_down[1] := true;
-    mbMiddle: mouse_buttons_down[2] := true;
+
+    case button of
+      mbLeft: mouse_buttons_down[0] := true;
+      mbRight: mouse_buttons_down[1] := true;
+      mbMiddle: mouse_buttons_down[2] := true;
+    end;
+    if not BroadcastMouseEvent(dxmeDown, shift, x,y,xx,yy) then
+      DoMouseDown;
+
+  finally
+    for var t := 0 to high(mouse_buttons_were_down) do
+      mouse_buttons_were_down[t] := mouse_buttons_down[t];
   end;
-  if not BroadcastMouseEvent(dxmeDown, shift, x,y,xx,yy) then
-    DoMouseDown;
 
 end;
 
@@ -1714,7 +1842,7 @@ var
   xx,yy: nativefloat;
 begin
   inherited;
-
+  try
   xx := FormToGlobalX(x);
   yy := FormToGlobalY(y);
   fLastMouseXX := xx;
@@ -1738,7 +1866,10 @@ begin
 
 
 
-
+  finally
+    for var t := 0 to high(mouse_buttons_were_down) do
+      mouse_buttons_were_down[t] := mouse_buttons_down[t];
+  end;
 
 
 
@@ -1772,7 +1903,6 @@ end;
 procedure TDX2D.Paint;
 begin
    //inherited;
-//  Draw;
 end;
 
 procedure TDX2D.PendingResetTimer(sender: TObject);
@@ -2018,8 +2148,8 @@ end;
 
 procedure TDX2D.ResetText;
 begin
-  CharWidth := 16;
-  CharHeight := 16;
+  CharWidth := DX2d_DEFAULT_CHAR_WIDTH;
+  CharHeight := DX2d_DEFAULT_CHAR_HEIGHT;
   Color := clWhite;
   TextColor := $FFFFFF;
   FLastTextFlags := [tfStroke, tfBold];
@@ -2031,6 +2161,8 @@ end;
 
 procedure TDX2D.REsize;
 begin
+  Reset;
+//  DelayReset;
   inherited;
 {$IFDEF USE_ACTUAL_SURFACE_WIDTH}
   DelayReset;
@@ -2139,6 +2271,31 @@ begin
 
 end;
 
+procedure TDX2D.ScissorGlobal(rf: TRectF);
+var
+  r: TRect;
+  pr: PRect;
+begin
+  CommitVertexBatch;
+  r := RoundRectF(GlobalToScreenRect(rf));
+//  r := RoundRectF(rf);
+
+  pr := @r;
+  dx9window.dev.SetScissorRect(pr);
+  EnableScissor(true);
+
+
+end;
+
+function TDX2D.ScreenToGlobalRect(rf: TRectF): TRectF;
+begin
+  result.Left := ScreenToGlobalX(rf.Left);
+  result.Top := ScreenToGlobalY(rf.Top);
+  result.Width := ScaleScreenXtoGlobal(rf.Width);
+  result.Height := ScaleScreenXtoGlobal(rf.Height);
+
+end;
+
 function TDX2D.ScreenToGlobalX(screenX: TDXFloat): TDXFloat;
 begin
   if FUseScreenCoordinates then
@@ -2235,6 +2392,24 @@ begin
 
 end;
 
+procedure TDX2D.SetCanvasPixel(x1, y1: ni; c: TColor);
+begin
+// DWORD * row = (DWORD *)((char *)lrt.pBits + pitch * Y);
+//for(int z=0;xmsg.iNum;z++)
+//{
+//   if( xmsg.iDataBlock[z]>0 )
+//      row[X+z] = 0xFFFFFF00;
+//   else
+//      row[X+z] = 0xFF000000;
+//   }
+//} *)
+
+//  var row := dx9window.
+
+
+
+end;
+
 procedure TDX2D.SetConstrainProportions(const Value: boolean);
 begin
   FConstrainProportions := Value;
@@ -2250,6 +2425,11 @@ end;
 procedure TDX2D.SetDimensionY(const Value: TDXFloat);
 begin
   BoundY2 := BoundY1 + Value;
+end;
+
+procedure TDX2D.SetEnableTimer(const Value: boolean);
+begin
+  tmInternalDrawTimer.ENABLED := VALUE;
 end;
 
 procedure TDX2D.SetFont(iSlot: integer);
@@ -2791,6 +2971,7 @@ Type
   simple_point = dx9_tools.TNativeVertex;
 var
   matView, matWorld, matProj: dx9_tools.TNativeMatrix;
+  nv : TNativeVertex;
 begin
 
   clr1 := ColorReverse(clr1);
@@ -2804,74 +2985,80 @@ begin
 
   NeedBatchSpace(6);
 
-  FVertexBatch[FBatchIndex].x := x1;
-  FVertexBatch[FBatchIndex].y := y1;
-  FVertexBatch[FBatchIndex].z := 50;
-  FVertexBatch[FBatchIndex].color := clr1;
-  FVertexBatch[FBatchIndex].n.x := 0;
-  FVertexBatch[FBatchIndex].n.y := 0;
-  FVertexBatch[FBatchIndex].n.z := -1;
-  FVertexBatch[FBatchIndex].tu := 0;
-  FVertexBatch[FBatchIndex].tv := 0;
+
+
+  nv.x := x1;
+  nv.y := y1;
+  nv.z := 50;
+  nv.color := clr1;
+  nv.n.x := 0;
+  nv.n.y := 0;
+  nv.n.z := -1;
+  nv.tu := 0;
+  nv.tv := 0;
+  FVertexBatch[FBatchIndex] := nv;
   NextBatchVertex;
 
 
-  FVertexBatch[FBatchIndex].x := x2;
-  FVertexBatch[FBatchIndex].y := y1;
-  FVertexBatch[FBatchIndex].z := 50;
-  FVertexBatch[FBatchIndex].color := clr2;
-  FVertexBatch[FBatchIndex].n.x := 0;
-  FVertexBatch[FBatchIndex].n.y := 0;
-  FVertexBatch[FBatchIndex].n.z := -1;
-  FVertexBatch[FBatchIndex].tu := 1;
-  FVertexBatch[FBatchIndex].tv := 0;
+  nv.x := x2;
+  nv.y := y1;
+  nv.z := 50;
+  nv.color := clr2;
+  nv.n.x := 0;
+  nv.n.y := 0;
+  nv.n.z := -1;
+  nv.tu := 1;
+  nv.tv := 0;
+  FVertexBatch[FBatchIndex] := nv;
   inc(FBatchIndex);
 
-  FVertexBatch[FBatchIndex].x := x1;
-  FVertexBatch[FBatchIndex].y := y2;
-  FVertexBatch[FBatchIndex].z := 50;
-  FVertexBatch[FBatchIndex].color := clr3;
-  FVertexBatch[FBatchIndex].n.x := 0;
-  FVertexBatch[FBatchIndex].n.y := 0;
-  FVertexBatch[FBatchIndex].n.z := -1;
-  FVertexBatch[FBatchIndex].tu := 0;
-  FVertexBatch[FBatchIndex].tv := 1;
+  nv.x := x1;
+  nv.y := y2;
+  nv.z := 50;
+  nv.color := clr3;
+  nv.n.x := 0;
+  nv.n.y := 0;
+  nv.n.z := -1;
+  nv.tu := 0;
+  nv.tv := 1;
+  FVertexBatch[FBatchIndex] := nv;
   NextBatchVertex;
 
-  FVertexBatch[FBatchIndex].x := x1;
-  FVertexBatch[FBatchIndex].y := y2;
-  FVertexBatch[FBatchIndex].z := 50;
-  FVertexBatch[FBatchIndex].color := clr3;
-  FVertexBatch[FBatchIndex].n.x := 0;
-  FVertexBatch[FBatchIndex].n.y := 0;
-  FVertexBatch[FBatchIndex].n.z := -1;
-  FVertexBatch[FBatchIndex].tu := 0;
-  FVertexBatch[FBatchIndex].tv := 1;
+  nv.x := x2;
+  nv.y := y1;
+  nv.z := 50;
+  nv.color := clr2;
+  nv.n.x := 0;
+  nv.n.y := 0;
+  nv.n.z := -1;
+  nv.tu := 1;
+  nv.tv := 0;
+  FVertexBatch[FBatchIndex] := nv;
   NextBatchVertex;
 
-  FVertexBatch[FBatchIndex].x := x2;
-  FVertexBatch[FBatchIndex].y := y1;
-  FVertexBatch[FBatchIndex].z := 50;
-  FVertexBatch[FBatchIndex].color := clr2;
-  FVertexBatch[FBatchIndex].n.x := 0;
-  FVertexBatch[FBatchIndex].n.y := 0;
-  FVertexBatch[FBatchIndex].n.z := -1;
-  FVertexBatch[FBatchIndex].tu := 1;
-  FVertexBatch[FBatchIndex].tv := 0;
+  nv.x := x2;
+  nv.y := y2;
+  nv.z := 50;
+  nv.color := clr4;
+  nv.n.x := 0;
+  nv.n.y := 0;
+  nv.n.z := -1;
+  nv.tu := 1;
+  nv.tv := 1;
+  FVertexBatch[FBatchIndex] := nv;
   NextBatchVertex;
 
-  FVertexBatch[FBatchIndex].x := x2;
-  FVertexBatch[FBatchIndex].y := y2;
-  FVertexBatch[FBatchIndex].z := 50;
-  FVertexBatch[FBatchIndex].color := clr4;
-  FVertexBatch[FBatchIndex].n.x := 0;
-  FVertexBatch[FBatchIndex].n.y := 0;
-  FVertexBatch[FBatchIndex].n.z := -1;
-  FVertexBatch[FBatchIndex].tu := 1;
-  FVertexBatch[FBatchIndex].tv := 1;
+  nv.x := x1;
+  nv.y := y2;
+  nv.z := 50;
+  nv.color := clr3;
+  nv.n.x := 0;
+  nv.n.y := 0;
+  nv.n.z := -1;
+  nv.tu := 0;
+  nv.tv := 1;
+  FVertexBatch[FBatchIndex] := nv;
   NextBatchVertex;
-
-
 
 
 end;
@@ -3309,6 +3496,7 @@ var
   istroke: nativeint;
   iShadow: nativeint;
 begin
+  CommitBatch;
   if tfBold in rFlags then iBold := 1 else iBold := 0;
   if tfEmboss in rFlags then inc(iBold);
   if tfStroke in rFlags then iStroke := 2 else iStroke := 0;
@@ -3330,8 +3518,7 @@ begin
     end;
   end;
 
-  CommitVertexBatch;
-  BeginVertexBatch;
+  CommitBatch;
 
    AlphaOP := aoAdd;
 //  for i := 0 to iBold do begin
@@ -3341,14 +3528,13 @@ begin
     end;
 //  end;
 
-  CommitVertexBatch;
-  BeginVertexBatch;
+  CommitBatch;
   AlphaOP := aoStandard;
 
   for i := 0 to iBold do begin
     canvas_Text(sText, i+x1,y1,TextColor,1,1);
   end;
-
+  CommitBatch;
 
 
 

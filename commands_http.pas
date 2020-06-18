@@ -4,13 +4,13 @@ unit commands_http;
 interface
 
 uses
-  commandprocessor, httpclient, sysutils, tickcount;
+  commandprocessor, httpclient, sysutils, tickcount, https;
 
 type
   Tcmd_HTTPDownload = class(TCommand)
   private
     FURL: string;
-    FClient: THTTPCLient;
+    FClient: THTTPSCLient;
     FTimeout: ticker;
     function GetTimeout: ticker;
     procedure SetTimeout(const Value: ticker);
@@ -35,6 +35,8 @@ type
     procedure DoExecute;override;
     property LocalFile: string read FFile write FFile;
   end;
+
+
 
 
 implementation
@@ -85,7 +87,7 @@ end;
 
 procedure Tcmd_HTTPDownLoadToFile.DoExecute;
 begin
-  if not FileExists(localfile) then begin
+  if (not IgnoreIfTargetExists) or (not FileExists(localfile)) then begin
     inherited;
     Client.SaveToFile(LocalFile);
   end;

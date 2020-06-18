@@ -2,7 +2,7 @@ unit RequestManager;
 {x$DEFINE ENABLE}
 interface
 {$IFDEF ENABLE}
-uses classes, windows, requestInfo, exceptions, sysutils, betterobject, sharedobject, stringx, beeper,orderlyinit;
+uses classes, windows, requestInfo, ExceptionsX, sysutils, betterobject, sharedobject, stringx, beeper,orderlyinit;
 type
   TUserAgents = class;
 

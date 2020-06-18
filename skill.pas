@@ -52,6 +52,7 @@ type
     function GetSkillsOfType(sType: string; protocol: string = 'RDTP/TCP'): TSkillArray;
 
     function Find(sName: string): TSkillDef;
+    function FindAll(sName: string): TArray<TSkillInfo>;
 
     procedure ScrubSkills;
     procedure Remove(sk: ansistring; byIP: boolean);
@@ -202,6 +203,24 @@ begin
   end;
 end;
 
+function TSkills.FindAll(sName: string): TArray<TSkillInfo>;
+var
+  t: ni;
+begin
+  setlength(result, 0);
+  Lock;
+  try
+    for t:= 0 to Flist.count-1 do begin
+      if comparetext(Flist[t].info.name,sName) = 0 then begin
+        setlength(result, length(result)+1);
+        result[high(result)] := FList[t].info;
+      end;
+    end;
+  finally
+    Unlock;
+  end;
+end;
+
 function TSkills.GetSkillList(localonly: boolean): IHolder<TStringList>;
 var
   t: ni;
@@ -340,7 +359,7 @@ var
 begin
   skcheck.FromString(s);
 
-  s := zcopy(s,0,length(s)-2);
+  s := ansistring(zcopy(s,0,length(s)-2));
   result := -1;
   Lock;
   try
@@ -498,12 +517,12 @@ end;
 
 function TSkillDef.IsValid: boolean;
 begin
-  result := info.local or ((Now-lastValidation) < (1/(60*24)));
+  result := info.local or ((Now-lastValidation) < (30*(1/(60*24))));
 end;
 
 function TSkillDef.NeedsValidation: boolean;
 begin
-  result := (not info.local) and ((Now- lastValidationRequest) > 1/(60*24*30));
+  result := (not info.local) and ((Now- lastValidationRequest) > (15*(1/(60*24))));
 end;
 
 initialization

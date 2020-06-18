@@ -101,7 +101,7 @@ type
   protected
     procedure AdjustBounds; dynamic;
     procedure DoDrawText(var Rect: TRect; Flags: Longint); dynamic;
-    function GetLabelText: ansistring; virtual;
+    function GetLabelText: string; virtual;
     procedure Loaded; override;
     procedure Notification(AComponent: TComponent;
       Operation: TOperation); override;
@@ -584,14 +584,14 @@ begin
     ControlStyle := ControlStyle + [csOpaque];
 end;
 
-function TCustomGlassLabel.GetLabelText: ansistring;
+function TCustomGlassLabel.GetLabelText: string;
 begin
   Result := Caption;
 end;
 
 procedure TCustomGlassLabel.DoDrawText(var Rect: TRect; Flags: Longint);
 
-  procedure DoDrawThemeTextEx(DC: HDC; const Text: ansistring; TextLen: Integer;
+  procedure DoDrawThemeTextEx(DC: HDC; const Text: string; TextLen: Integer;
     var TextRect: TRect; TextFlags: Cardinal);
   var
     Options: TDTTOpts;
@@ -639,7 +639,7 @@ procedure TCustomGlassLabel.DoDrawText(var Rect: TRect; Flags: Longint);
 
   end;
 
-  procedure DrawText(DC: HDC; const Text: ansistring; TextLen: Integer;
+  procedure DrawText(DC: HDC; const Text: string; TextLen: Integer;
     var TextRect: TRect; TextFlags: Cardinal);
   var
     LForm: TCustomForm;
@@ -656,7 +656,7 @@ procedure TCustomGlassLabel.DoDrawText(var Rect: TRect; Flags: Longint);
     if PaintOnGlass then
       DoDrawThemeTextEx(DC, Text, TextLen, TextRect, TextFlags)
     else
-     winapi.Windows.DrawText(DC, PAnsiChar(Text), TextLen, TextRect, TextFlags);
+     winapi.Windows.DrawText(DC, PChar(Text), TextLen, TextRect, TextFlags);
   end;
 
 const
@@ -664,7 +664,7 @@ const
   Ellipsis: array[TEllipsisPosition] of Longint = (0, DT_PATH_ELLIPSIS,
     DT_END_ELLIPSIS, DT_WORD_ELLIPSIS);
 var
-  Text, DText: ansistring;
+  Text, DText: string;
   NewRect: TRect;
   Height, Delim: Integer;
 begin
@@ -684,7 +684,7 @@ begin
       repeat
         NewRect := Rect;
         Dec(NewRect.Right, Canvas.TextWidth(EllipsisStr));
-        winapi.Windows.DrawText(Canvas.Handle, PAnsiChar(DText), Length(DText), NewRect, Flags or DT_CALCRECT);
+        winapi.Windows.DrawText(Canvas.Handle, PChar(DText), Length(DText), NewRect, Flags or DT_CALCRECT);
         Height := NewRect.Bottom - NewRect.Top;
         if (Height > ClientHeight) and (Height > Canvas.Font.Height) then
         begin

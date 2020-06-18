@@ -18,6 +18,7 @@
 {$DEFINE ALLOW_CONSOLE_REDIRECT}
 {x$DEFINE NO_INHERIT_HANDLES}
 {$DEFINE SEGREGATE_CONSOLE_REDIRECT}
+{x$DEFINE USE_SW_SHOWNA}  //Disabled in 2020, this option, when enabled was causing CMD windows to pop-up during console captures... making the console captures FAIL
 
 //TODO 1: Figure out why .BATs run with command but not with direct call to RunProgram()
 
@@ -54,6 +55,17 @@ type
     function handlecount: ni;
     function FullPath: string;
     procedure Init;
+
+  end;
+  TRunningTask = record
+  private
+  public
+    exeName: string;
+    ExePath: string;
+    Parameters: string;
+    processid: int64;
+    procedure Init;
+    class operator notequal(a,b: TRunningTask): boolean;
   end;
   TConsoleHandles = record
     stdOUTread, stdOUTWrite: THandle;
@@ -89,7 +101,8 @@ function RunExeAndCapture(app: string; params: string = ''; wkdir: string = ''):
 function ServiceGetStatus(sMachine, sService: PChar): DWORD;
 function GetFullPathFromPID(PID: DWORD): string;
 function GetFileNameByProcessID(AProcessID: DWORD): UnicodeString;
-function GetProcessList(exeFileName: string): Tarray<TProcessInfo>;
+function GetProcessList(exeFileName: string; iForceCount: ni = 0): Tarray<TProcessInfo>;
+function GetHandleCountFromPID(pid: int64): ni;
 
 type
   TWAitForExeThread = class(TProcessorThread)
@@ -111,6 +124,14 @@ type
     procedure InitExpense; override;
     procedure DoExecute; override;
     property ExeHandle: THandle read FExehandle write FExehandle;
+  end;
+
+  TServiceInfo = record
+    DisplayName: string;
+    Name: string;
+    State: string;
+    procedure Init;
+    function filled: boolean;
   end;
 
   Tcmd_RunExe = class(TCommand)
@@ -174,13 +195,33 @@ type
 
   end;
 
+function GetRunningServices(): IHolder<TStringList>;
+function GetAllServices: TArray<TServiceInfo>;
+function GetServicesNamed(sName: string): TArray<TServiceInfo>;
+function IsServiceInstalled(sName: string): boolean;
+
+function IsServiceRunning(sDisplayName: string): boolean;
+
+
+function IsTaskRunning_old(sImageName: string): boolean;
 function IsTaskRunning(sImageName: string): boolean;
 
+
 function NumberOfTasksRunning(sImageName: string): nativeint;
+function KillTaskByNameWithTimeoutForce(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false; iTimeout: nativeint = 60000): boolean;
 function KillTaskByName(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false; bForce: boolean = true): boolean;
-procedure KillTaskByID(pid: ni);
+function TryKillTaskByName(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false; bForce: boolean = true): boolean;
+procedure KillTaskByID(pid: ni; bForce: boolean = true);
 function processExists(exeFileName: string): Boolean;
 function GetProcessInfo(exeFileName: string): TProcessInfo;
+function ServiceCommand(sCmd: string; sServiceName: string): string;
+function GetNetCommandPath: string;
+function StartService(sServiceName: string): boolean;
+function StopService(sServiceName: string): boolean;
+function GetTaskListEx(): IHolder<TStringList>;
+function GetTaskListExArray(): TArray<TRunningTask>;overload;
+function GetTaskListExArray(exefilter: string; paramfilter: string = ''): TArray<TRunningTask>;overload;
+
 
 var
   ExeCommands: TCommandProcessor;
@@ -198,6 +239,222 @@ implementation
 uses
   stringx, systemx;
 
+
+function GetHandleCountFromPID(pid: int64): ni;
+var
+  pi: TProcessInfo;
+begin
+  try
+    pi.pid := pid;
+    result := pi.handlecount;
+  except
+    exit(0);
+  end;
+end;
+
+function GetTaskListExArraySub(): TArray<TRunningTask>;
+var
+  current: TRunningTask;
+begin
+  var sl := GetTasklistEx();
+  setlength(result, 0);
+  for var t := 0 to sl.o.count-1 do begin
+    var sLine := sl.o[t];
+    var l,r: string;
+
+    if SplitString(sLine, '=', l,r) then begin
+      if lowercase(l) = 'commandline' then begin
+        SplitStringNoCaseEx(r, ' ', l, r, '"', '"');
+        current.Parameters := r;
+      end;
+      if lowercase(l) = 'executablepath' then begin
+        current.ExePath := r;
+      end;
+      if lowercase(l) = 'name' then begin
+        current.exename := r;
+      end;
+      if lowercase(l) = 'processid' then begin
+        current.processid := strtoint64(r);
+        setlength(result, length(result)+1);
+        result[high(result)] := current;
+        current.init;
+      end;
+    end;
+  end;
+end;
+
+function GetTaskListExArray(): TArray<TRunningTask>;
+{$IFDEF VERIFY}
+var
+  t1, t2,t3: TArray<TRunningTask>;
+  stable: boolean;
+{$ENDIF}
+begin
+{$IFDEF VERIFY}
+  repeat
+    stable := false;
+    t1 := GetTaskListExArraySub();
+    t2 := GetTaskListExArraySub();
+    t3 := GetTaskListExArraySub();
+
+    if high(t1) <> high(t2) then
+      continue;
+    if high(t1) <> high(t3) then
+      continue;
+
+    stable := true;
+    for var t := 0 to high(t1) do begin
+      if (t1[t] <> t2[t]) or (t1[t]<>t3[t]) then begin
+        stable := false;
+      end;
+    end;
+
+  until stable;
+{$ELSE}
+  result := GetTaskListExArraySub();
+{$ENDIF}
+
+
+
+end;
+
+function GetTaskListExArray(exefilter: string; paramfilter: string = ''): TArray<TRunningTask>;
+var
+  tl: TArray<TRunningTask>;
+begin
+  tl := GetTaskListExArray();
+//  result := tl;
+//  exit;
+
+  var count := 0;
+  for var t := 0 to high(tl) do begin
+    if (exefilter = '')  or (lowercase(tl[t].exeName) = lowercase(exefilter)) then begin
+      if (paramfilter = '')
+      or (zpos(lowercase(paramfilter),lowercase(tl[t].Parameters)) >=0)
+      then begin
+        inc(count);
+      end;
+    end;
+  end;
+
+  setlength(result, count);
+  if count = 0 then
+    exit;
+
+  var idx: ni := 0;
+  for var t := 0 to high(tl) do begin
+    if (exefilter = '') or (lowercase(tl[t].exeName) = lowercase(exefilter)) then begin
+      if (paramfilter = '')
+      or (zpos(lowercase(paramfilter),lowercase(tl[t].Parameters)) >=0)
+      then begin
+        result[idx]:= tl[t];
+        inc(idx);
+      end;
+    end;
+  end;
+  setlength(result, count);
+
+end;
+
+
+
+
+function GetTaskListEx(): IHolder<TStringList>;
+begin
+  var sTasks := exe.RunExeAndCapture(getsystemdir+'wbem\wmic.exe', 'process get name,processid,commandline,executablePath /format:value');
+    result := stringToStringListH(sTasks);
+
+
+  for var t := result.o.Count-1 downto 0 do begin
+    if trim(result.o[t]) = '' then
+      result.o.Delete(t);
+  end;
+
+  result.o.delete(0);
+
+
+end;
+
+
+
+function StartService(sServiceName: string): boolean;
+begin
+  var s := ServiceCommand('start', sServiceName);
+
+  result := zpos('failed', s) < 0;
+
+end;
+
+function StopService(sServiceName: string): boolean;
+begin
+  var s := ServiceCommand('stop', sServiceName);
+
+  result := zpos('failed', s) < 0;
+end;
+
+function GetNetCommandPath: string;
+begin
+  result := GetSystemDir+'net.exe';
+end;
+
+function ServiceCommand(sCmd: string; sServiceName: string): string;
+begin
+  result := exe.RunExeAndCapture(GetNetCommandPath, sCMD+' '+Quote(sServiceName));
+end;
+
+function IsServiceRunning(sDisplayName: string): boolean;
+begin
+  var services := GetRunningServices();
+
+  for var t := 0 to services.o.count-1 do begin
+    var sline := services.o[t];
+
+    if comparetext(sLine, sDisplayName)=0 then
+      exit(true);
+
+  end;
+
+  result := false;
+
+
+end;
+
+function GetRunningServices(): IHolder<TStringList>;
+begin
+
+//  var sTasks := exe.RunExeAndCapture(getsystemdir+'tasklist.exe');
+//  result := stringtostringlisth(sTasks);
+  var c := Tcmd_RunExe.create;
+  try
+    c.Prog := getsystemdir+'net.exe';
+    c.Params := 'start';
+    c.batchwrap := true;
+//    c.CaptureConsoleoutput := true;
+    c.start;
+    c.Hide := true;
+    c.WaitFor;
+    var services := c.ConsoleOutput;
+
+    var temp := stringToStringListH(services);
+
+    result := stringToStringListH('');
+
+    for var t := 1 to temp.o.Count-1 do begin
+      var sLine := temp.o[t];
+      sLine := trim(sLine);
+
+      if (sLine <> '') and (0<>Comparetext('The command completed successfully.', sLine)) then
+        result.o.add(sLine);
+
+
+    end;
+  finally
+    c.Free;
+  end;
+
+
+end;
+
 function NumberOfTasksRunning(sImageName: string): nativeint;
 var
   sTasks: string;
@@ -209,7 +466,7 @@ begin
   result := 0;
   sImageName := lowercase(sImageName);
   sTasks := exe.RunExeAndCapture(getsystemdir+'tasklist.exe');
-//  SaveStringAsFile('d:\tasks.txt', stasks);
+//  SaveStringAsFile(dllpath+'tasks.txt', stasks);
   h := stringToStringListH(lowercase(sTasks));
   for t:= 0 to h.o.count-1 do begin
     sLine := h.o[t];
@@ -217,8 +474,16 @@ begin
 //    if zcopy(sLine, 0,4) = 'nice' then
 //      Debug.Log('here');
     if SplitString(sLine, ' ', sProg, sExtra) then begin
-      if comparetext(sLine, sImageName)=0 then
+      if comparetext(sProg, sImageName)=0 then
         inc(result);
+//      else
+//        Debug.log('NOT! '+sline);
+    end;
+    if SplitString(sLine, #9, sProg, sExtra) then begin
+      if comparetext(sProg, sImageName)=0 then
+        inc(result);
+//      else
+//        Debug.log('NOT #9 '+sline);
     end;
   end;
 
@@ -251,6 +516,11 @@ begin
 end;
 
 function IsTaskRunning(sImageName: string): boolean;
+begin
+  var ar := GetTaskListExArray(sImageName);
+  result := length(ar) > 0;
+end;
+function IsTaskRunning_old(sImageName: string): boolean;
 var
   t: ni;
 begin
@@ -285,9 +555,65 @@ begin
   end;
 end;
 
-procedure KillTaskByID(pid: ni);
+function KillTaskByNameWithTimeoutForce(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false; iTimeout: nativeint = 60000): boolean;
+var
+  sTasks: string;
+  tflag: string;
+  fflag: string;
 begin
-  exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+pid.tostring+'" /T /F', DLLPath, true, false);
+  var tmStart := GetTicker;
+  var bForce := false;
+  tflag := '';
+  fflag := '';
+  if bKillchildTasks then
+    tflag := ' /T';
+  if bForce then
+    fflag := ' /F';
+  result := false;
+  exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'"'+tflag+fflag, DLLPath, true, false);
+  while IsTaskRunning(sImageName) do begin
+    bForce := getTimeSince(tmStart) > iTimeout;
+    if bForce then
+      fflag := ' /F';
+    Debug.Log('Task '+sImageName+' is still running, retry terminate.');
+    exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'"'+tflag+fflag, DLLPath, true, false);
+    sleep(2000);
+    result := true;
+    if not bKillall then
+      exit;
+  end;
+end;
+
+function TryKillTaskByName(sImageName: string; bKillAll: boolean = true; bKillchildTasks: boolean = false; bForce: boolean = true): boolean;
+var
+  sTasks: string;
+  tflag: string;
+  fflag: string;
+begin
+  tflag := '';
+  fflag := '';
+  if bKillchildTasks then
+    tflag := ' /T';
+  if bForce then
+    fflag := ' /F';
+  result := false;
+  exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'"'+tflag+fflag, DLLPath, true, false);
+  if IsTaskRunning(sImageName) then begin
+    Debug.Log('Task '+sImageName+' is still running, retry terminate.');
+    exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/IM "'+sImageName+'"'+tflag+fflag, DLLPath, true, false);
+  end;
+  result := not IsTaskRunning(sImageName);
+
+
+end;
+
+procedure KillTaskByID(pid: ni; bForce: boolean = true);
+begin
+  var sForce := '';
+  if bForce then
+    sForce := ' /F';
+
+  exe.RunProgramAndWait(getsystemdir+'taskkill.exe', '/PID '+pid.tostring+' /T'+sForce, DLLPath, true, false);
 end;
 
 procedure CreateElevateScripts(sDir: string);
@@ -637,8 +963,15 @@ begin
       Debug.Log('--startup: '+sStartup);
       Debug.Log('--security attributes: '+sSec);
 {$ENDIF}
+      var fCreateNoWindow := CREATE_NO_WINDOW;
+      if not bhide then
+        fCreateNoWindow := 0;
+
       if CreateprocessW(nil, PChar(cl2), @Security, @Security, true,
-        8 or IDLE_PRIORITY_CLASS, nil, nil, rstartup, rProcess.pi)
+{$IFDEF USE_SW_SHOWNA}
+        8 or
+{$ENDIF}
+        IDLE_PRIORITY_CLASS or fCreateNoWindow, nil, nil, rstartup, rProcess.pi)
         then // PAnsiChar(sWorkingdir)
           result := rProcess;
 
@@ -653,8 +986,11 @@ begin
       Debug.Log('--startup: '+sStartup);
       Debug.Log('--security attributes: '+sSec);
 {$ENDIF}
+      var fCreateNoWindow := CREATE_NO_WINDOW;
+      if not bhide then
+        fCreateNoWindow := 0;
       if CreateprocessW(nil, cl2, @Security, @Security, false,
-        IDLE_PRIORITY_CLASS, nil, nil, rStartup, rProcess.pi)
+        IDLE_PRIORITY_CLASS or fCreateNoWindow, nil, nil, rStartup, rProcess.pi)
         then // PAnsiChar(sWorkingdir)
         result := rProcess;
         if integer(result.pi.hProcess) <= 0 then
@@ -1061,6 +1397,7 @@ begin
 // end;
 // end;
 
+
 end;
 
 function Tcmd_RunExe.DrainConsole: string;
@@ -1192,8 +1529,12 @@ begin
     var pc: PChar := nil;
     if wkdir <> '' then
       pc := PChar(wkdir);
+    var fCreateNoWindow := CREATE_NO_WINDOW;
     if CreateprocessW(nil, PChar(DosApp), @Security, @Security, true,
-      8 or IDLE_PRIORITY_CLASS, nil, pc, start, ProcessInfo.pi) then begin
+{$IFDEF USE_SW_SHOWNA}
+      8 or
+{$ENDIF}
+      IDLE_PRIORITY_CLASS or fCreatenoWindow, nil, pc, start, ProcessInfo.pi) then begin
       TotalBytesRead := 0;
       cc(ccStart, '');
       waittime := 1;
@@ -1328,7 +1669,7 @@ begin
 
 end;
 
-function GetProcessList(exeFileName: string): Tarray<TProcessInfo>;
+function GetProcessList(exeFileName: string; iForceCount: ni = 0): Tarray<TProcessInfo>;
 var
   ContinueLoop: BOOL;
   FSnapshotHandle: THandle;
@@ -1366,6 +1707,14 @@ begin
     end;
   finally
     CloseHandle(FSnapshotHandle);
+  end;
+  if length(result) < iForceCount then begin
+    var x := length(result);
+    setlength(result, iForcecount);
+    for var t := x to high(result) do begin
+      result[t].Init;
+      result[t].ExeName := exefileName;
+    end;
   end;
 end;
 
@@ -1492,6 +1841,7 @@ begin
   end;
 end;*)
 
+
 function TProcessInfo.FullPath: string;
 begin
   result := GEtFullPathFromPID(self.pid);
@@ -1617,6 +1967,78 @@ end;
 
 {$ENDIF}
 
+
+function GetAllServices: TArray<TServiceInfo>;
+var
+  l,r: string;
+  nurec: TServiceInfo;
+  res: TArray<TServiceInfo>;
+  procedure CommitRec;
+  begin
+    if nurec.filled then begin
+      setlength(res, length(res)+1);
+      res[high(res)] := nurec;
+    end;
+  end;
+begin
+
+//  var sTasks := exe.RunExeAndCapture(getsystemdir+'tasklist.exe');
+//  result := stringtostringlisth(sTasks);
+  var c := Tcmd_RunExe.create;
+  try
+    c.Prog := getsystemdir+'sc.exe';
+    c.Params := 'query type= service state= all';
+    c.batchwrap := true;
+//    c.CaptureConsoleoutput := true;
+    c.start;
+    c.Hide := true;
+    c.WaitFor;
+    var services := c.ConsoleOutput;
+
+    var temp := stringToStringListH(services);
+
+    setlength(result,0);
+
+
+    for var t := 0 to temp.o.Count-1 do begin
+(*
+SERVICE_NAME: Appinfo
+DISPLAY_NAME: Application Information
+        TYPE               : 30  WIN32
+        STATE              : 4  RUNNING
+                                (STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x0
+*)
+
+      if SplitString(temp.o[t], ':', l,r) then begin
+        l := trim(l);
+        r := trim(r);
+        if l = 'SERVICE_NAME' then begin
+          CommitRec;
+          nurec.Init;
+          nurec.Name := r;
+        end;
+        if l = 'DISPLAY_NAME' then begin
+          nurec.DisplayName := r;
+        end;
+        if l = 'STATE' then begin
+          nurec.State := r;
+        end;
+      end;
+    end;
+    CommitRec;
+
+  finally
+    c.Free;
+  end;
+
+  result := res;
+
+end;
+
 procedure oinit;
 begin
 {$IFDEF MSWINDOWS}
@@ -1632,6 +2054,65 @@ begin
 {$ENDIF}
 
 end;
+
+
+
+
+{ TRunningTask }
+{$IFDEF MSWINDOWS}
+procedure TRunningTask.Init;
+begin
+  exeName := 'Unknown';
+  Parameters := '';
+  processid := -1;
+end;
+
+class operator TRunningTask.notequal(a,b: TRunningTask): boolean;
+begin
+  if a.exeName <> b.exeName then exit(false);
+  if a.ExePath <> b.ExePath then exit(false);
+  if a.Parameters <> b.Parameters then exit(false);
+  if a.processid <> b.processid then exit(false);
+  exit(true);
+end;
+
+{$ENDIF}
+
+{ TServiceInfo }
+
+function TServiceInfo.filled: boolean;
+begin
+  result := state <> '';
+end;
+
+procedure TServiceInfo.Init;
+begin
+  DisplayName := '';
+  Name := '';
+  State := '';
+end;
+
+function GetServicesNamed(sName: string): TArray<TServiceInfo>;
+var
+  a: TArray<TServiceInfo>;
+begin
+  a := GetAllServices();
+  setlength(result, 0);
+  for var t := 0 to high(a) do begin
+    if (0=comparetext(a[t].DisplayName, sName))
+    or (0=comparetext(a[t].Name, sName)) then begin
+      setlength(result, length(result)+1);
+      result[high(result)] := a[t];
+    end;
+  end;
+end;
+
+function IsServiceInstalled(sName: string): boolean;
+begin
+  result := length(GetServicesNamed(sNAme)) > 0;
+
+end;
+
 
 
 initialization

@@ -1027,7 +1027,7 @@ uses
   {$IFDEF DEBUG}
   {$ENDIF}
   Dataobjectcache, serverinterfaceinterface,
-  Exceptions, DataObjectFactory, DataObjectServices;
+  ExceptionsX, DataObjectFactory, DataObjectServices;
 
 //------------------------------------------------------------------------------
 

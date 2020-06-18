@@ -11,12 +11,12 @@ uses classes, systemx, sysutils, namevaluepair, stringx.ansi, debug;
 type
   HTTPException = class(Exception);
 {$ifdef MSWINDOWS}
-  HTTPString = AnsiString;
-  HTTPChar = AnsiChar;
-  PHTTPChar = ^AnsiChar;
+  HTTPString = string;
+  HTTPChar = char;
+  PHTTPChar = ^char;
   HTTPContentTextString = UTF8String;
-  HTTPContentTextChar = AnsiChar;
-  PHTTPContentTextChar = PAnsiChar;
+  HTTPContentTextChar = char;
+  PHTTPContentTextChar = char;
 {$ELSE}
   HTTPContentTextString = string;
   HTTPContentTextChar = Char;
@@ -994,7 +994,7 @@ begin
 
 end;
 
-procedure BlankString(var sHTTPString: HTTPString; sBlankChar: HTTPChar; iStartAt, iEndAt: integer);
+procedure BlankString(var sHTTPString: string; sBlankChar: char; iStartAt, iEndAt: integer);
 var
   t: integer;
 

@@ -194,7 +194,7 @@ begin
     for var t:= 0 to FList.count-1 do begin
       var rm := Flist[t];
 
-      if InRange(nativeint(p), nativeint(rm.p), nativeint(rm.p)+rm.size-1) then
+      if InRange(nativeint(p), nativeint(rm.p), nativeint(rm.p)+nativeint(rm.size)-1) then
         exit(true);
     end;
   finally

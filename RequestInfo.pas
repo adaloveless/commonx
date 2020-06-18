@@ -4,7 +4,7 @@ unit RequestInfo;
 interface
 
 uses typex, classes, DataObjectCache, DataObjectServices, DataObjectCacheManager, DataObject, ServerInterfaceInterface, windows,
-  errorHandler, Exceptions, ErrorResource, webstring, webconfig, betterobject, sharedobject, stringx, XMLTools, variants, simpleserverinterface, httpclient, variantlist, interfacelist, debug, sysutils;
+  errorHandler, ExceptionsX, ErrorResource, webstring, webconfig, betterobject, sharedobject, stringx, XMLTools, variants, simpleserverinterface, httpclient, variantlist, interfacelist, debug, sysutils;
 
 type
   EObjectMissing = class(Exception);

@@ -5,7 +5,7 @@ unit ProgressForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, exceptions,orderlyinit,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, ExceptionsX,orderlyinit,
   Dialogs, StdCtrls, ComCtrls, FormBase, GlassControls,exe, commandprocessor,
   ExtCtrls, generics.collections.fixed, debug, FrameHostPanel, FormBGThreadWatcher,
   Vcl.WinXCtrls;

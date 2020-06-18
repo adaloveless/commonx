@@ -6,7 +6,7 @@ unit RDTPTowerGameServerImplib;
 interface
 
 uses debug, gamestream, RDTPTowerGameServer, RDTPKeybotClient, windows, ServerInterfaceInterface, DataobjectCache,xref, systemobjects, dataobject, mastergamelist,
-  Dataobjectservices, dataobjectcachemanager, ServerInterfaceFactory, serverinterface, exceptions, gamelist, sysutils, commands_system, systemx, stringx;
+  Dataobjectservices, dataobjectcachemanager, ServerInterfaceFactory, serverinterface, ExceptionsX, gamelist, sysutils, commands_system, systemx, stringx;
 
 const
   MW_HOST = 'localhost';

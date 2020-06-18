@@ -257,7 +257,7 @@ end;
 
 function TNextIDCache.GetNextID(FHost, FEndPoint, FContext, sKey: string): int64;
 begin
-  var l := self.LockI;
+  var l : ILock := self.LockI;
   var keytok := GetKeyTOken(fhost, fendpoint, fcontext, sKey);
 
   var p: PNextIDCacheRec := Self.FindNextIDRec(keytok);

@@ -126,12 +126,12 @@ type
   public
     constructor Create;override;
     destructor Destroy;override;
-    procedure AddToQueue(sFile: ansistring);
-    function IsStillInQueue(sFile: ansistring): boolean;
+    procedure AddToQueue(sFile: string);
+    function IsStillInQueue(sFile: string): boolean;
     function processSingle: boolean;
     procedure ProcessAll;
-    function GetFileFromQueue: ansistring;
-    procedure RemoveFromQueue(sFile: ansistring);
+    function GetFileFromQueue: string;
+    procedure RemoveFromQueue(sFile: string);
   end;
 
 
@@ -195,7 +195,7 @@ procedure FasterResizeImage(bm: Vcl.Graphics.TBitmap; newwidth: integer; newheig
 procedure FasterResizeImage(bm: TFastBitmap; newwidth: integer; newheight: integer);overload;//ok
 
 function GetJpegFromBitMap(bm: Vcl.Graphics.TBitmap): Tjpegimage;
-procedure SaveAsJpeg(bm: Vcl.Graphics.TBitmap; sfile: ansistring);
+procedure SaveAsJpeg(bm: Vcl.Graphics.TBitmap; sfile: string);
 procedure NegativeImage(bm: Vcl.Graphics.TBitmap);//ok
 function DuplicateBitmap(bm: Vcl.Graphics.TBitmap): Vcl.Graphics.TBitmap;//ok
 procedure TotalWhiteAndTotalBlack(bm: Vcl.Graphics.TBitmap);//ok
@@ -222,8 +222,8 @@ procedure QuantizePNG(png: TPNGImage; rLevels, gLevels, bLevels, aLevels: intege
 procedure QuantizeFB(fb: TFastBitmap; rLevels, gLevels, bLevels, aLevels: integer; bDither: boolean=true; bDitherAlpha: boolean = false);overload;
 function DitherQuantize(x,y: integer; rColorLevel: nativefloat; iLevels: integer): nativefloat;
 function ConvertPNGToGIF(pngNotOwned: TPNGImage): TGIFImage;overload;
-function ConvertPNGToGIF(sPNGFile: ansistring; sGIFFile: ansistring = ''): boolean;overload;
-function QueueConvertPNGToGIF(sPNGFile: ansistring): boolean;overload;
+function ConvertPNGToGIF(sPNGFile: string; sGIFFile: string = ''): boolean;overload;
+function QueueConvertPNGToGIF(sPNGFile: string): boolean;overload;
 function GetPNGColors(png: TPNGImage; var colors: array of TColor): integer;overload;
 
 function FocusPNG(png: TPNGImage; xFocus, yFocus: nativefloat): boolean;overload;
@@ -241,7 +241,7 @@ implementation
 
 uses AppLock, advancedgraphics, multibuffermemoryfilestream, CommandIcons;
 
-function QueueConvertPNGToGIF(sPNGFile: ansistring): boolean;overload;
+function QueueConvertPNGToGIF(sPNGFile: string): boolean;overload;
 begin
   result := true;
 
@@ -1647,7 +1647,7 @@ begin
 end;
 
 
-procedure SaveAsJpeg(bm: Vcl.Graphics.TBitmap; sfile: ansistring);
+procedure SaveAsJpeg(bm: Vcl.Graphics.TBitmap; sfile: string);
 var
   jp: TJpegImage;
 begin
@@ -2282,7 +2282,7 @@ begin
   end;
 end;
 
-function ConvertPNGToGIF(sPNGFile: ansistring; sGIFFile: ansistring = ''): boolean;overload;
+function ConvertPNGToGIF(sPNGFile: string; sGIFFile: string = ''): boolean;overload;
 var
   png: TPNGImage;
   gif: TGIFImage;
@@ -2317,7 +2317,7 @@ end;
 
 { TGIFConversionQueue }
 
-procedure TGIFConversionQueue.AddToQueue(sFile: ansistring);
+procedure TGIFConversionQueue.AddToQueue(sFile: string);
 begin
   LockWrite;
   try
@@ -2342,7 +2342,7 @@ begin
   inherited;
 end;
 
-function TGIFConversionQueue.GetFileFromQueue: ansistring;
+function TGIFConversionQueue.GetFileFromQueue: string;
 begin
   LockRead;
   try
@@ -2353,7 +2353,7 @@ begin
   end;
 end;
 
-function TGIFConversionQueue.IsStillInQueue(sFile: ansistring): boolean;
+function TGIFConversionQueue.IsStillInQueue(sFile: string): boolean;
 begin
   LockRead;
   try
@@ -2371,7 +2371,7 @@ end;
 
 function TGIFConversionQueue.processSingle: boolean;
 var
-  sFile: ansistring;
+  sFile: string;
 begin
   sFile := self.GetFileFromQueue;
 
@@ -2391,7 +2391,7 @@ begin
 
 end;
 
-procedure TGIFConversionQueue.RemoveFromQueue(sFile: ansistring);
+procedure TGIFConversionQueue.RemoveFromQueue(sFile: string);
 begin
   LockWrite;
   try

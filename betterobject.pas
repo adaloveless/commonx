@@ -7,9 +7,6 @@ unit betterobject;
 {$ENDIF}
 {$D+}
 {x$DEFINE REGISTER_OBJECTS}
-{$IFDEF MACOS}
-{$DEFINE NO_INTERLOCKED_INSTRUCTIONS}
-{$ENDIF}
 {$DEFINE NO_INTERLOCKED_INSTRUCTIONS}
 {$DEFINE UNDEAD_PROTECTION}
 {x$DEFINE OBJECT_DEBUG_FACILITIES}
@@ -466,11 +463,15 @@ type
     function Copy: IHolder<TFatMessage>;
   end;
 
-  TFatMessageQueue = class(TSharedObject)
+  TFatMessageQueue = class(TBetterObject)
   private
     sectSubQueues: TCLXCriticalSection;
-    pending: TArray<IHolder<TFatMessage>>;
+    sectIncoming: TCLXCriticalSection;
+    sectWorking: TCLXCriticalSection;
+    incoming: TArray<IHolder<TFatMessage>>;
+    working: TArray<IHolder<TFatMessage>>;
     subqueues: TList<TFatMessageQueue>;
+    procedure AssimilateIncoming;
     function GetNextMessage: IHolder<TFatMessage>;
     procedure Posted;virtual;
   public
@@ -487,6 +488,14 @@ type
     function NewMessage: IHolder<TFatMessage>;
     procedure QuickBroadcast(messageClass: string);overload;
     procedure QuickBroadcast(messageClass: string; params: TArray<String>);overload;
+
+  end;
+
+  TTestObject = class(TBetterObject)
+  public
+    constructor Create; override;
+    destructor Destroy; override;
+    procedure Detach; override;
 
   end;
 
@@ -2178,6 +2187,26 @@ end;
 
 { TFatMessageQueue }
 
+procedure TFatMessageQueue.AssimilateIncoming;
+begin
+  ecs(sectWorking);
+  try
+    if tecs(sectIncoming) then
+    try
+      var base := length(working);
+      setlength(working, length(working)+length(incoming));
+      for var t := 0 to high(incoming) do begin
+        working[t+base] := incoming[t];
+      end;
+      setlength(incoming,0);
+    finally
+      lcs(sectIncoming);
+    end;
+  finally
+    lcs(sectWorking);
+  end;
+end;
+
 procedure TFatMessageQueue.Broadcast(m: IHolder<TFatMessage>);
 begin
   ecs(sectSubQueues);
@@ -2200,16 +2229,22 @@ constructor TFatMessageQueue.Create;
 begin
   inherited;
   ics(sectSubQueues);
+  ics(sectIncoming);
+  ics(sectWorking);
   subqueues := TList<TFatMessageQueue>.create;
 
 end;
 
 procedure TFatMessageQueue.DeleteSubQueue(fmq: TFatMessageQueue);
 begin
-  var l := self.locki;
-  subqueues.remove(fmq);
-  fmq.free;
-  fmq := nil;
+  ecs(sectSubQueues);
+  try
+    subqueues.remove(fmq);
+    fmq.free;
+    fmq := nil;
+  finally
+    lcs(sectSubQueues);
+  end;
 end;
 
 procedure TFatMessageQueue.Detach;
@@ -2219,22 +2254,29 @@ begin
   subqueues.free;
   subqueues := nil;
   dcs(sectSubQueues);
+  dcs(sectIncoming);
+  dcs(sectWorking);
   inherited;
 
 end;
 
 function TFatMessageQueue.GetNextMessage: IHolder<TFatMessage>;
 begin
-  var l := Locki;
+  AssimilateIncoming;
   result := nil;
-  if length(pending) = 0 then
-    exit;
+  ecs(sectWorking);
+  try
+    if length(working)  = 0 then
+      exit;
 
-  result := pending[0];
-  for var t := 1 to high(pending) do
-    pending[t-1] := pending[t];
+    result := working[0];
+    for var t := 1 to high(working) do
+      working[t-1] := working[t];
 
-  setlength(pending, length(pending)-1);
+    setlength(working, length(working)-1);
+  finally
+    lcs(sectWorking);
+  end;
 end;
 
 function TFatMessageQueue.NewMessage: IHolder<TFatMessage>;
@@ -2245,15 +2287,21 @@ end;
 
 function TFatMessageQueue.NewSubQueue: TFatMessageQueue;
 begin
-  var l := self.locki;
-  result := TFatMessageQueue.create;
-  subqueues.add(result);
+  ecs(sectSubQueues);
+  try
+    result := TFatMessageQueue.create;
+    subqueues.add(result);
+  finally
+    lcs(sectSubQueues);
+  end;
+
 
 end;
 
 procedure TFatMessageQueue.Post(m: IHolder<TFatMessage>);
 begin
-  var l := Locki;
+  ecs(sectIncoming);
+  try
 
   //queue must have an onposted handler in order to
   //accept posted messages, this is to prevent memory leaks due to
@@ -2265,9 +2313,12 @@ begin
   //queues that do not have this handler can still process synchronous messages
   //via send()
   if assigned(onposted) then begin
-    setlength(pending, length(pending)+1);
-    pending[high(pending)] := m;
+    setlength(incoming, length(incoming)+1);
+    incoming[high(incoming)] := m;
     Posted;
+  end;
+  finally
+    lcs(sectIncoming);
   end;
 
 end;
@@ -2333,6 +2384,31 @@ begin
   result.o := TfatMessage.create;
   result.o.messageClass := self.messageClass;
   result.o.params := self.params;
+
+end;
+
+{ TTestObject }
+
+constructor TTestObject.Create;
+begin
+  inherited;
+  debug.log('created '+classname);
+end;
+
+destructor TTestObject.Destroy;
+begin
+  debug.log('destroying '+classname);
+
+  inherited;
+end;
+
+procedure TTestObject.Detach;
+begin
+  if detached then exit;
+
+  debug.log('detach '+classname);
+
+  inherited;
 
 end;
 

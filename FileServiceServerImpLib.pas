@@ -9,9 +9,9 @@ unit FileServiceServerImpLib;
 interface
 uses
   windows, memoryfilestream, FileTransfer, FileServiceServer, nvidiatools,
-    sysutils, rdtpprocessor, dir, dirfile, classes, systemx,
+    sysutils, rdtpprocessor, dir, dirfile, classes, systemx, debug,
     betterobject, spam, stringx, exe, rdtpserverlist,orderlyinit,
-    helpers_stream, consolelock, commandprocessor, rdtp_file,
+    helpers_stream, consolelock, commandprocessor, rdtp_file, sharefinder,
     SoundConversion_Windows, SoundConversions_CommandLine, numbers;
 
   type
@@ -50,6 +50,8 @@ uses
     function RQ_GetGPUList():string;overload;override;
     function RQ_GetGPUCount():integer;overload;override;
     function RQ_StartExeCommandExFFMPEG(sPath:string; sProgram:string; sParams:string; sGPUParams:string; cpus:single; memgb:single; gpu:single):int64;overload;override;
+    function RQ_FileExists(sFile:string):boolean;overload;override;
+    function RQ_PathExists(sPath:string):boolean;overload;override;
 
 {INTERFACE_END}
   end;
@@ -59,6 +61,7 @@ function FindSharedExeCommandResource(handle:int64): Tcmd_RunExe;
 function FindFileResource(proc: TRDTPProcessor; iHandle: THandle): TMemoryFileStream;
 function FindCommandResource(proc: TRDTPProcessor; handle: int64): TCommand;
 function FindExeCommandResource(proc: TRDTPProcessor; handle: int64): Tcmd_RunExe;
+function ResolveSharePath(sFile: string): string;
 
 var
   CPWerk: TcommandProcessor;
@@ -166,6 +169,11 @@ begin
   end;
 end;
 
+
+function TFileServiceServer.RQ_PathExists(sPath: string): boolean;
+begin
+  result := DirectoryExists(resolvesharepath(sPath));
+end;
 
 function TFileServiceServer.RQ_putFile(ofile: TFileTransferReference): boolean;
 var
@@ -291,7 +299,7 @@ end;
 function TFileServiceServer.RQ_StartExeCommand(sPath, sProgram, sParams: string;
   cpus, memgb: single): int64;
 begin
-  result := RQ_StartExeCommandEx(sPath, sProgram, sParams, cpus, memgb, '');
+  result := RQ_StartExeCommandEx(resolvesharepath(sPath), sProgram, sParams, cpus, memgb, '');
 
 end;
 
@@ -300,6 +308,7 @@ function TFileServiceServer.RQ_StartExeCommandEx(sPath, sProgram,
 var
   c: Tcmd_RunExe;
 begin
+  sPath := resolvesharepath(sPath);
   c := Tcmd_Runexe.create;
   c.Prog := slash(sPath)+sProgram;
   c.prog := stringreplace(c.prog, '%dllpath%', dllpath, [rfReplaceAll, rfIgnoreCase]);
@@ -329,6 +338,7 @@ function TFileServiceServer.RQ_StartExeCommandExFFMPEG(sPath, sProgram,
 var
   c: Tcmd_RunExe;
 begin
+  sPath := resolvesharepath(sPath);
   c := Tcmd_Runexe.create;
   c.Prog := slash(sPath)+sProgram;
   c.prog := stringreplace(c.prog, '%dllpath%', dllpath, [rfReplaceAll, rfIgnoreCase]);
@@ -407,17 +417,27 @@ function TFileServiceServer.RQ_OpenFile(sFile:string; out oFile:TFileTransferREf
 var
   r: TMemoryFileStream;
 begin
+  Debug.Log('open file transfer '+sFile);
   if iMode = fmCreate then
-    ForceDirectories(dllpath+extractfilepath(sFile));
+    ForceDirectories(extractfilepath(resolvesharepath(sFile)));
 
-  r := TMemoryFileStream.create(sFile, iMode);
+  try
+    r := TMemoryFileStream.create(resolvesharepath(sFile), iMode);
 
-  oFile := THolder<TFileTransferREferenceObj>.create;
-  oFile.o := TFileTransferREferenceObj.create;
-  self.Resources.Add(r);
-  oFile.o.FileName := sFile;
-  oFile.o.Handle := r.handle;
-  result := true;
+    oFile := THolder<TFileTransferREferenceObj>.create;
+    oFile.o := TFileTransferREferenceObj.create;
+    self.Resources.Add(r);
+    oFile.o.FileName := sFile;
+    oFile.o.Handle := r.handle;
+    result := true;
+  except
+    on E: Exception do begin
+      if not fileexists(resolvesharepath(sFile)) then begin
+        raise EFileNotFoundException.create('File not found: '+resolvesharepath(sFile));
+      end else
+        raise;
+    end;
+  end;
 end;
 //------------------------------------------------------------------------------
 function TFileServiceServer.RQ_AppendTextFile(filename, text: string): boolean;
@@ -428,7 +448,7 @@ var
 begin
   LockConsole;
   try
-    fullname := dllpath+filename;
+    fullname := resolvesharepath(filename);
     if not fileexists(fullname) then begin
       ForceDirectories(extractfilepath(fullname));
       SaveStringAsFile(fullname, text);
@@ -465,6 +485,8 @@ begin
 {$ENDIF}
   sHue :=changefileext(sTemp, '.hue');
 
+  sTemp1 := resolvesharepath(sTemp1);
+  sTemp := resolvesharepath(sTemp);
 {$IFDEF BUILD_SAFE}
   if fileexists(sTemp1) then
     deletefile(sTemp1);
@@ -563,15 +585,22 @@ end;
 
 function TFileServiceServer.RQ_DeleteFile(sFile: string): boolean;
 begin
-  Deletefile(sfile);
-  result := Not FileExists(sFile);
+  Deletefile(resolvesharepath(sfile));
+  result := Not FileExists(resolvesharepath(sFile));
 end;
 
 function TFileServiceServer.RQ_Dir(sRemotePath:string):TDirectory;
 var
   dir: TDirectory;
 begin
-  result := Tdirectory.create(sRemotePath, '*.*', 0,0, false, true, false);
+  var s := 'Dir of: '+sRemotePath+' resolves to '+resolvesharepath(sRemotePath)+' ';
+
+
+  result := Tdirectory.create(resolvesharepath(sRemotePath), ALL_FILES, 0,0, false, true, false);
+  s := s + 'and has '+result.Filecount.tostring+' files';
+//  SaveStringAsFile(dllpath+'dir.txt',s);
+  Debug.Log(s);
+
 //  raise Exception.create('unimplemented');
 
 //TODO -cunimplemented: unimplemented block
@@ -609,7 +638,7 @@ var
   c: Tcmd_RunExe;
 begin
   c := Tcmd_Runexe.create;
-  c.Prog := slash(sPath)+sProgram;
+  c.Prog := slash(resolvesharepath(sPath))+sProgram;
   c.prog := stringreplace(c.prog, '%dllpath%', dllpath, [rfReplaceAll, rfIgnoreCase]);
   c.Params := sParams;
   c.WorkingDir := extractfilepath(c.Prog);
@@ -626,6 +655,7 @@ var
   c: Tcmd_RunExe;
   sTemp: string;
 begin
+  sPath := resolvesharepath(sPath);
   c := Tcmd_Runexe.create;
   c.Prog := slash(sPath)+sProgram;
   sTemp := gettemppath+inttostr(getcurrentthreadid)+'.output.txt';
@@ -639,16 +669,21 @@ begin
   result := loadfileasstring(sTemp);
 end;
 
+function TFileServiceServer.RQ_FileExists(sFile: string): boolean;
+begin
+  result := FileExists(resolvesharepath(sFile));
+end;
+
 function TFileServiceServer.RQ_GetUpgradePath(sProgramName:string):string;
 begin
-  result := DLLPath+'UpgradeRepos\';
+  result := resolvesharepath('UpgradeRepos\');
 end;
 function TFileServiceServer.RQ_GetUpgradeScript(sProgramName:string; iFromVersion:integer; iToVersion:integer):string;
 var
   s1,s2: string;
   t: integer;
 begin
-  s2 := LoadStringFromFile(DLLPath+'UpgradeRepos\'+sProgramName+'\upgrade_script.txt');
+  s2 := LoadStringFromFile(resolvesharepath('UpgradeRepos\'+sProgramName+'\upgrade_script.txt'));
 
   for t := 0 to iFromVersion+1 do begin
     //if the version is not declared in the file, then use the rest of the file
@@ -678,7 +713,8 @@ end;
 
 function TFileServiceServer.RQ_GetFileChecksum(sFile:string):TAdvancedFileChecksum;
 begin
-  result.Calculate(sFile);
+  Debug.Log('Calculate checksum for '+resolvesharepath(sFile));
+  result.Calculate(resolvesharepath(sFile));
 end;
 
 
@@ -708,7 +744,7 @@ end;
 
 function TFileServiceServer.RQ_GetFileSize(filename: string): int64;
 begin
-  result := dirfile.GetFileSize(filename);
+  result := dirfile.GetFileSize(resolvesharepath(filename));
 end;
 
 
@@ -720,6 +756,19 @@ end;
 function TFileServiceServer.RQ_GetGPUList: string;
 begin
   result := nvidiatools.GetGPUList.o.Text;
+
+end;
+
+function ResolveSharePath(sFile: string): string;
+begin
+  if zcopy(sFile, 1,1) = ':' then
+    exit(sfile);
+
+  if zcopy(sFile,0,2) = '\\' then
+    exit(sFile);
+
+  result := sharefinder.GetFileServiceSharePath+sFile;
+
 
 end;
 

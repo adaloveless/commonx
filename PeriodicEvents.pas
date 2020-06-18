@@ -4,7 +4,7 @@ unit PeriodicEvents;
 interface
 
 uses
-  debug, systemx, typex, lockqueue, tickcount, managedthread, generics.collections.fixed, orderlyinit, commandprocessor, classes, betterobject;
+  numbers,debug, systemx, typex, lockqueue, tickcount, managedthread, generics.collections.fixed, orderlyinit, commandprocessor, classes, betterobject, types, sysutils;
 
 type
   TPeriodicEvent = class;//forward
@@ -31,10 +31,12 @@ type
     FAggregator: TPeriodicEventAggregator;
   public
     Startimmediately: boolean;
+    BanStartTime: ticker;
     destructor Destroy;override;
     procedure Execute;
     function CanArm: boolean;virtual;
     function Finished: boolean;virtual;
+    procedure HeartBeatcheck;virtual;
     property Frequency: ticker read FFrequency write FFrequency;
     property LastExecutionTime: ticker read FLastExecutionTime write FLastExecutionTime;
     property Enabled: boolean read FEnabled write FEnabled;
@@ -50,7 +52,7 @@ type
   protected
     procedure Destroycommand;
   public
-    cmd: TCommand;
+    cmd: TCommand;//SET this from your inherited version, don't pass in an external cmd
     function Finished: boolean;override;
     function CanArm: boolean;override;
     procedure Detach;override;
@@ -152,6 +154,12 @@ begin
 
 end;
 
+procedure TPeriodicEvent.HeartBeatcheck;
+begin
+  //implement this in a descendant to decide what to do if the
+  //event runs too long
+end;
+
 procedure TPeriodicEvent.Unregister;
 begin
   if FAggregator <> nil then begin
@@ -192,7 +200,7 @@ var
   tm: ticker;
 begin
   inherited;
-  ColdRunInterval := 1000;
+
   Lock;
   try
     if idx >= FEvents.count then begin
@@ -200,11 +208,18 @@ begin
       idx := 0;
       exit;
     end;
+    var crv := 1000;
+    for var t := 0 to FEvents.Count-1 do begin
+      crv := lesserof(crv, FEvents[t].Frequency);
+    end;
+    ColdRunInterval := crv;
+
 
     RunHot := true;
     FCurrent := FEvents[idx];
     if FCurrent.canarm then begin
       tm := GetTicker;
+      if (FCurrent.BanStartTime = 0) or (gettimesince(tm,FCurrent.BanStartTime) > 60000) then
       if FCurrent.StartImmediately or (GetTimeSince(tm,FCurrent.LastExecutionTime) > FCurrent.Frequency) then begin
         FCurrent.StartImmediately := false;
         FCurrent.Armed := true;
@@ -218,8 +233,17 @@ begin
   end;
 
   try
-    if FCurrent.Armed then
-      FCurrent.Execute;
+    if FCurrent.Armed then begin
+      try
+        FCurrent.Execute;
+      except
+        on e: exception do begin
+          FCurrent.BanStartTime := getticker;
+          Debug.Log('Could not execute periodic event '+FCurrent.ClassName+' '+e.message);
+          Debug.Log('Execution of this event will be banned for 60 seconds.');
+        end;
+      end;
+    end;
   finally
     FCurrent.Armed := false;
   end;
@@ -284,6 +308,8 @@ function TPeriodicCommandEvent.CanArm: boolean;
 begin
   result := cmd = nil;
   if not result then begin
+    HeartBeatCheck;
+
     if cmd.IsComplete then begin
       DestroyCommand;
       exit(cmd = nil);
@@ -310,7 +336,8 @@ end;
 
 function TPeriodicCommandEvent.Finished: boolean;
 begin
-  result := cmd.IsComplete;
+
+  result := (cmd = nil) or cmd.IsComplete;
 end;
 
 { TPeriodicSingleTon }

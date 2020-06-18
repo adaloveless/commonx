@@ -44,6 +44,7 @@ type
     procedure FromStereoArray_64i(a: TStereoArray<int64>);
     procedure FromStereoArray_32f(a: TStereoArray<single>);
     procedure FromStereoArray_64f(a: TStereoArray<double>);
+    function Amp: floatsample;
   end;
 
 implementation
@@ -203,6 +204,11 @@ asm
 end;
 {$ENDIF PURE_TSTEREOSOUNDSAMPLE}
 
+function TStereoSoundSample.Amp: floatsample;
+begin
+  result := (Left+right)*0.5;
+end;
+
 procedure TStereoSoundSample.Clip;
 var
   l,r: FloatSample;
@@ -247,6 +253,8 @@ end;
 procedure TStereoSoundSample.FromStereoArray_64f(a: TStereoArray<double>);
 begin
 
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
 end;
 
 procedure TStereoSoundSample.FromStereoArray_64i(a: TStereoArray<int64>);

@@ -28,7 +28,7 @@ uses
 {$IFDEF WINDOWS}
   winapi.windows,
 {$ENDIF}
-  systemx, Debug, sysutils, exceptions, stringx,
+  systemx, Debug, sysutils, ExceptionsX, stringx,
   ManagedThread, Classes, SharedObject, BetterObject, ThreadManager,
   backgroundthreads, commandicons;
 {$DEFINE RAISE_EXCEPTIONS_FROM_COMMANDS_ON_WAITFOR}
@@ -3590,8 +3590,10 @@ begin
 end;
 
 function TCommandProcessor.GetResourceLimit(s: string): single;
+var
+  l: ILock;
 begin
-  var l := FResourceLimits.LockI;
+  l := FResourceLimits.LockI;
   result := FResourceLimits.GetItemEx(s, 1.0);
 
 end;

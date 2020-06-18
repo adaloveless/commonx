@@ -114,6 +114,12 @@ type
     function StartExeCommandExFFMPEG(sPath:string; sProgram:string; sParams:string; sGPUParams:string; cpus:single; memgb:single; gpu:single):int64;overload;virtual;
     procedure StartExeCommandExFFMPEG_Async(sPath:string; sProgram:string; sParams:string; sGPUParams:string; cpus:single; memgb:single; gpu:single);overload;virtual;
     function StartExeCommandExFFMPEG_Response():int64;
+    function FileExists(sFile:string):boolean;overload;virtual;
+    procedure FileExists_Async(sFile:string);overload;virtual;
+    function FileExists_Response():boolean;
+    function PathExists(sPath:string):boolean;overload;virtual;
+    procedure PathExists_Async(sPath:string);overload;virtual;
+    function PathExists_Response():boolean;
 
 
     function DispatchCallback: boolean;override;
@@ -2181,6 +2187,136 @@ begin
     packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
     //packet.SeqRead;//read off the service name and forget it (it is already known)
     Getint64FromPacket(packet, result);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.FileExists(sFile:string):boolean;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6030);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6030:TFileServiceClient.FileExists');{$ENDIF}
+    WritestringToPacket(packet, sFile);
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    GetbooleanFromPacket(packet, result);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.FileExists_Async(sFile:string);
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6030);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    WritestringToPacket(packet, sFile);
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.FileExists_Response():boolean;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    GetbooleanFromPacket(packet, result);
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.PathExists(sPath:string):boolean;
+var
+  packet: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try try
+    packet.AddVariant($6031);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+{$IFDEF RDTP_CLIENT_LOGGING}Debug.Log('RDTP$6031:TFileServiceClient.PathExists');{$ENDIF}
+    WritestringToPacket(packet, sPath);
+    if not Transact(packet) then raise ECritical.create('transaction failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    GetbooleanFromPacket(packet, result);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+  finally
+    packet.free;
+  end;
+end;
+//------------------------------------------------------------------------------
+procedure TFileServiceClient.PathExists_Async(sPath:string);
+var
+  packet,outpacket: TRDTPPacket;
+begin
+  if not connect then
+     raise ETransportError.create('Failed to connect');
+  packet := NeedPacket;
+  try
+    packet.AddVariant($6031);
+    packet.AddVariant(0);
+    packet.AddString('FileService');
+    WritestringToPacket(packet, sPath);
+    BeginTransact2(packet, outpacket,nil, false);
+  except
+    on E:Exception do begin
+      e.message := 'RDTP Call Failed:'+e.message;
+      raise;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
+function TFileServiceClient.PathExists_Response():boolean;
+var
+  packet: TRDTPPacket;
+begin
+  packet := nil;
+  try
+    if not EndTransact2(packet, packet,nil, false) then raise ECritical.create('Transaction Failure');
+    if not packet.result then raise ECritical.create('server error: '+packet.message);
+    packet.SeqSeek(PACKET_INDEX_RESULT_DETAILS);
+    //packet.SeqRead;//read off the service name and forget it (it is already known)
+    GetbooleanFromPacket(packet, result);
   finally
     packet.free;
   end;

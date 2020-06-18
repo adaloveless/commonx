@@ -145,7 +145,7 @@ begin
     except
     end;
     //load the file
-    s := LoadStringFromFile(sFile, 1000000);
+    s := LoadStringFromFile(sFile);
     if FileExists(sfile+'.temp') then begin
       Deletefile(sfile+'.temp');
     end;
@@ -461,7 +461,7 @@ var
 begin
   iBlacklistCount := 0;
   sReason := '';
-  sMail := LoadStringFromFile(sfileName, 8000);
+  sMail := LoadStringFromFile(sfileName);
   Actions := 0;
 
   //check if it is addressed to the honeypot
@@ -687,7 +687,7 @@ begin
       for u := 0 to dir.Filecount-1 do begin
         try
           bGood := true;
-          sMail := LoadStringFromFile(dir.files[u].FullName, 8000);
+          sMail := LoadStringFromFile(dir.files[u].FullName);
 
           if SplitStringNoCase(sMail, 'mail-validator:', sLeft, sRight) then begin
             continue;

@@ -7,18 +7,25 @@ uses
 
 type
   TIRCConversationDaemon = class(TSharedObject)
+  private
+    procedure DoSendHelpHEader;
   protected
     conversation: Iholder<TIRCConversation>;
     irc: TIRCMultiUserClient;
     procedure SendHelp();
-    procedure DoSendHelpHeader();virtual;
+    procedure SendHelpOverView();virtual;
     procedure SendhelpCommands();virtual;
+    function GetConversation: TIRCConversation;
+    procedure SendHelpHeader;
+    procedure SendHelpLine(sCommand, sParams, sHelp: string);
+    procedure SendHelpFooter;
   public
     constructor Create(irc: TIRCMultiUserClient; channel: string); reintroduce;virtual;
     procedure Detach; override;
     function OnCommand(sOriginalLine, sCmd: string; params: TStringList): boolean;virtual;
-    procedure SayHello;
+    procedure SayHello;virtual;
     procedure TestUTF8;
+    property conv: TIRCConversation read Getconversation;
   end;
 
 
@@ -38,7 +45,12 @@ begin
       result := OnCommand(sOriginalLine, sCmd, params);
     end;
 
-  SayHello;
+  if irc.WaitForState(irccsStarted) then begin
+    try
+      SayHello;
+    except
+    end;
+  end;
 
 
 
@@ -59,6 +71,11 @@ procedure TIRCConversationDaemon.DoSendHelpHEader;
 begin
   conversation.o.PrivMsg('Help for '+classname);
 
+end;
+
+function TIRCConversationDaemon.GetConversation: TIRCConversation;
+begin
+  result := conversation.o;
 end;
 
 function TIRCConversationDaemon.OnCommand(sOriginalLine, sCmd: string;
@@ -99,16 +116,44 @@ begin
 
 end;
 
+
 procedure TIRCConversationDaemon.SendHelp;
 begin
-  DoSendHelpHeader;
+  SendHelpHeader;
   SendHelpCommands;
+  SendHelpFooter;
 end;
 
 procedure TIRCConversationDaemon.SendhelpCommands;
 begin
-  conversation.o.PrivMsg('  hello       - causes server to reply with "hello", essentially a ping');
-  conversation.o.PrivMsg('  testutf8    - a test of utf8 encoding, if you get a bunch of ?s then utf8 is not supported currently');
+  SendHelpLine('hello', '','causes server to reply with "hello", essentially a ping');
+  SendHelpLine('testutf8    ','','a test of utf8 encoding, if you get a bunch of ?s then utf8 is not supported currently');
+
+end;
+
+procedure TIRCConversationDaemon.SendHelpFooter;
+begin
+    conv.PM(ESCIRC+'</table>');
+    conv.PM(ESCIRC+'<span color=red>To Send a command, type ! followed by the command name, space, and params (if applicable)</span>');
+
+end;
+
+procedure TIRCConversationDaemon.SendHelpHeader;
+begin
+  conv.PMHold(ESCIRC+'<table><tr><th align=left colspan=3><h2>Help for '+classname+'</h2></th></tr>');
+  conv.PMHold(ESCIRC+'<tr><th align=left>Command</th><th align=left>Params</th><th align=left>Details</th></tr>');
+end;
+
+procedure TIRCConversationDaemon.SendHelpLine(sCommand, sParams, sHelp: string);
+begin
+//  conv.PM(ESCIRC+'<tr><td><b>'+sCommand+'</b></td><td>'+AmpEncode(sHelp)+'</td></tr>');
+  conv.PMHold(ESCIRC+'<tr><td><b>'+sCommand+'</b></td><td><i>'+AmpEncode(sParams)+'</i></td><td>'+AmpEncode(sHelp)+'</td></tr>');
+
+end;
+
+procedure TIRCConversationDaemon.SendHelpOverView;
+begin
+  //''
 end;
 
 procedure TIRCConversationDaemon.TestUTF8;

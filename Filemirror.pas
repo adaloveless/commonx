@@ -1,11 +1,12 @@
 unit Filemirror;
 
 interface
-uses ioutils, debug, classes, filectrl, managedthread, threadmanager, commandprocessor, commands_file, systemx, typex, dir, dirfile, fileex, filefind, tickcount;
+
+uses ioutils, debug, classes, managedthread, threadmanager, commandprocessor, commands_file, systemx, typex, dir, dirfile, fileex, filefind, tickcount;
 
 
 const
-  MAX_FILES = 10000;
+  MAX_FILES = 5000;
 type
 
 {$DEFINE ENABLE_THREADED_DIRS}
@@ -114,11 +115,25 @@ type
 //procedure CopyFile2(sSource, sTarget: string);
 
 
+function BeginReplicate(sSource, sDest, sTrash: string): TfileReplicator;
+
+
+
+
 
 
 implementation
 
 uses windows, sysutils;
+
+function BeginReplicate(sSource, sDest, sTrash: string): TfileReplicator;
+begin
+  result := TFileReplicator.create;
+  result.SourceDir := sSource;
+  result.TargetDir := sDest;
+  result.TrashDir := sTrash;
+  result.start;
+end;
 
 procedure TFileReplicator.MoveFiles(sSourceDir, sTargetDir: string; bRoot: boolean);
 var
@@ -140,7 +155,7 @@ begin
 
     end;
   finally
-
+    dir.free;
   end;
 end;
 
@@ -539,7 +554,7 @@ begin
 
   while filecommands.Commandcount > MAX_FILES do begin
     if assigned(COMMAND) then Command.WaitingForResources := true;
-    SleepEx(4000,false);
+    SleepEx(400,false);
   end;
   if assigned(COMMAND) then Command.WaitingForResources := false;
 
@@ -989,7 +1004,7 @@ begin
 
   while filecommands.Commandcount > MAX_FILES do begin
     if assigned(COMMAND) then Command.WaitingForResources := true;
-    SleepEx(4000,false);
+    SleepEx(400,false);
   end;
   if assigned(COMMAND) then Command.WaitingForResources := false;
 

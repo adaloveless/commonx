@@ -11,7 +11,7 @@ uses
 
   {$IFDEF COMPILE_DOSV_IN_EXE}
   {$ENDIF}
-  DataObjectCommonDefinitions, Exceptions, ServerInterfaceInterface;
+  DataObjectCommonDefinitions, ExceptionsX, ServerInterfaceInterface;
 type
 
   TDataObjectServices = class(TLockQueuedObject)

@@ -15,6 +15,10 @@ type
 
 
   Tcmd_ConnectionConnector = class;//forward
+  TReadLnResult = record
+    success: boolean;
+    line: string;
+  end;
 
 //############################################################################
   TDebugEvent = procedure;
@@ -53,7 +57,11 @@ type
     procedure DebugTagUpdated(s: string);virtual;
     function GetConnected: boolean;virtual;abstract;//<---------------------------------------------
     function DoReadData(buffer: pbyte; length: integer): integer;virtual;abstract;//<<------------------------------
+
+    //IMPLMENTATION MUST BLOCK to send at LEAST 1 byte
     function DoSendData(buffer: pbyte; length: integer): integer;virtual;abstract;//<---------------------------------------------
+    //IMPLMENTATION MUST BLOCK to send at LEAST 1 byte
+
     function GetBaudRate: integer;virtual;
     procedure SetBaudRate(const Value: integer);virtual;
     function HasLeftOvers: boolean;inline;
@@ -62,6 +70,7 @@ type
     function GetISDataAvailable: boolean;virtual;
   strict protected
     tmLastDebugTime: ticker;
+    FFailedReadLn: ansistring;
     function CheckForData: boolean;
     function DoCheckForData: boolean;virtual;abstract;
     function DoWaitForData(timeout: cardinal): boolean;virtual;abstract;//<---------------------------------------------
@@ -114,7 +123,7 @@ type
     function EndConnect(c:Tcmd_ConnectionConnector): boolean;
     property IsDataAvailable: boolean read GetISDataAvailable;
     function CheckConnectedOrConnect: boolean;
-    function ReadLn(): string;
+    function ReadLn(out sLine: string; iTimeout: nativeint): boolean;
     procedure SendLn(sLine: string);
   end;
 
@@ -389,7 +398,7 @@ begin
   while iSent < length do begin
     iToSend := length-isent;
     ijustSent := DoSendData(@buffer[iSent], length-iSent);
-    if (iJustSent=0) and (not Connected) then
+    if (iJustSent=0)(* and (not Connected)*) then
       raise ETransportError.Create('Connection dropped during send.');
     inc(iSent, iJustSent);
     if not bSendAll then break;
@@ -467,22 +476,33 @@ begin
   exit(consumed/size);
 end;
 
-function TSimpleAbstractConnection.ReadLn(): string;
+function TSimpleAbstractConnection.ReadLn(out sLine: string; iTimeout: nativeint): boolean;
 var
   ansi: ansistring;
 begin
-  result := '';
-  ansi := '';
+  result := false;
+  sline := '';
+  ansi := FFailedReadln;
+  FFailedReadln := '';
   while true do begin
-    if WaitforData(10) then begin
+    if WaitforData(iTimeout) then begin
       var b: ansichar;
       if ReadData(@b, 1) = 0 then
         raise ETransportError.create('failed to read byte during ReadLn.  Connection dropped.');
-      if b <> readln_ignore then begin
-        if b=readln_eol then
-          exit(string(ansi));
+//      if b <> readln_ignore then begin
+        if b=readln_eol then begin
+          sline := StringReplace(string(ansi), readln_ignore, '', [rfReplaceAll]);
+          exit(true);
+        end;
         ansi := ansi + b;
-      end;
+//      end;
+    end else begin
+      FFailedReadLn := ansi;
+      //if we call readln but fail to get even a PARTIAL line, then the connection
+      //dropped presumably because we called WaitForData before this
+      if FFailedReadLn = '' then
+        raise ETransportError.create('connection broken during readln()');
+      exit(false);
     end;
 
   end;

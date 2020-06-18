@@ -7,6 +7,7 @@ uses
 {$IFDEF MSWINDOWS}
   windows, Winapi.Messages, Winapi.IpTypes, fmx.platform.win, fmx.platform,
 {$ENDIF}
+  generics.collections,
   betterobject, guihelpers_fmx, SCALEDlayoutproportional, commandprocessor, systemx, typex, tickcount,numbers,
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, fmx_messages,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, system.messaging,
@@ -52,7 +53,10 @@ type
   private
     in_activation: boolean;
     FTransplanted: boolean;
+    FatMessagesPending: boolean;
+    FShowOnTaskBar: boolean;
     procedure Transition(proc: TProc);
+    procedure SetShowOnTaskBar(const Value: boolean);
     { Private declarations }
 
   protected
@@ -73,6 +77,10 @@ type
     procedure BringDefaultCurtainsToFront;
     procedure FatMessagePosted;virtual;
     function HandleFatMessage(m: TFatMessage): boolean;virtual;
+  protected
+    disabledControlList: TList<TControl>;
+    procedure DoUpdateCommandProgress(status: string; prog: TProgress);virtual;
+
   public
     isFirstActivation: boolean;
     quietBGcmd: TCommand;
@@ -81,6 +89,7 @@ type
     LastWorkError: string;
 
     function WatchCommands: boolean;virtual;
+    procedure UpdateCommandProgress(status: string; prog: TProgress);
     { Public declarations }
 
     function GetControl<T: TControl>(parent: TControl): T;
@@ -128,7 +137,11 @@ type
     procedure WorkIfNotBusy(proc, guiproc: TProc);
     procedure CleanBGCmd(bWait:boolean);
     procedure FirstActivation;virtual;
-
+    procedure DisableAllControls;
+    procedure ReenableDisabledControls;
+    procedure FillScreen;
+  published
+    property ShowOnTaskBar: boolean read FShowOnTaskBar write SetShowOnTaskBar;
 
   end;
 
@@ -209,13 +222,14 @@ end;
 
 constructor TfrmFMXBase.Create(AOwner: TComponent);
 begin
+  disabledControllist := Tlist<TControl>.create;
   mq := MainMessageQueue.NewSubQueue;
   mq.handler := function (m: IHolder<TFatMessage>): boolean begin
     result := HandleFatMessage(m.o);
   end;
 
   mq.onposted := procedure begin
-    TThread.Synchronize(TThread.CurrentThread, FatMessagePosted);
+    FatMessagesPending := true;
   end;
 
 
@@ -228,6 +242,8 @@ begin
 //  FMsgSys.RegisterMessageHandler(  <<---- you can use this to subscribe to windows messages if NEEDED
   ActiveCommands := TCommandList<TCommand>.create;
   ActiveCommands.RestrictedtoThreadID := Tthread.Currentthread.threadid;
+
+  ShowOnTaskbar := true;
 
 
 
@@ -577,6 +593,22 @@ begin
   globalinstance := nil;
   MainMessageQueue.DeleteSubQueue(mq);
   mq := nil;
+  disabledControlList.free;
+  disabledControlList := nil;
+
+end;
+
+procedure TfrmFMXBase.DisableAllControls;
+begin
+  for var t := 0 to self.children.count-1 do begin
+    if children[t] is TControl then begin
+      var c := children[t] as Tcontrol;
+      if c.Enabled then begin
+        c.Enabled := false;
+        disabledControlList.add(c);
+      end;
+    end;
+  end;
 end;
 
 procedure TfrmFMXBase.DoBoundsSet;
@@ -605,6 +637,11 @@ begin
   UnregisterWithMockMobile;
 end;
 
+procedure TfrmFMXBase.DoUpdateCommandProgress(status: string; prog: TProgress);
+begin
+  //
+end;
+
 procedure TfrmFMXBase.DoUpdatestate;
 begin
   //
@@ -613,6 +650,32 @@ end;
 procedure TfrmFMXBase.FatMessagePosted;
 begin
   tmFormMessages.Enabled := true;
+
+end;
+
+procedure TfrmFMXBase.FillScreen;
+begin
+  if screen.DisplayCount = 0 then
+    exit;
+
+{$IFnDEF MSWINDOWS}
+  var r := screen.Displays[0].Workarea;
+
+  self.Left := r.Left;
+  self.Top := r.Top;
+  self.Width := r.width;
+  self.Height := r.Height;
+
+{$ELSE}
+
+  var r: TRect;
+  r := screen.Displays[0].Workarea;
+  self.Left := round(r.Left);//Left and top do not need to be scaled
+  self.Top := round(r.Top);//left and top do not need to be scaled
+  self.Width := round(r.width / self.handle.Scale);
+  self.Height := round(r.Height / self.handle.Scale);
+  self.WindowState := TWindowState.wsMaximized;
+{$ENDIF}
 
 end;
 
@@ -706,10 +769,36 @@ begin
 
 end;
 
+procedure TfrmFMXBase.ReenableDisabledControls;
+begin
+  for var t := 0 to disabledControlList.Count-1 do begin
+    disabledControlList[t].Enabled := true;
+  end;
+  disabledControlList.Clear;
+end;
+
 procedure TfrmFMXBase.SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
 begin
   inherited;
   DoBoundsSet;
+
+end;
+
+procedure TfrmFMXBase.SetShowOnTaskBar(const Value: boolean);
+begin
+  FShowOnTaskBar := Value;
+{$IFDEF MSWINDOWS}
+  if not (csDesigning in ComponentState) then begin
+    if value then begin
+      var hwnd := FormToHWND(self);
+      SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd,GWL_EXSTYLE) or WS_EX_APPWINDOW);
+    end else begin
+      var hwnd := FormToHWND(self);
+      SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd,GWL_EXSTYLE) and (not WS_EX_APPWINDOW));
+
+    end;
+  end;
+{$ENDIF}
 
 end;
 
@@ -720,13 +809,19 @@ end;
 
 procedure TfrmFMXBase.tmFormMessagesTimer(Sender: TObject);
 begin
+  if not FatMessagesPending then exit;
   //
-  var l := mq.Locki;
-  while mq.ProcessNextMessage do begin
+//  if mq.TryLock then
+//  try
+    while mq.ProcessNextMessage do begin
 
-  end;
+    end;
+//    tmFormMessages.Enabled := false;
+//  finally
+//    mq.unlock;
+//  end;
 
-  tmFormMessages.Enabled := false;
+
 
 
 
@@ -779,6 +874,11 @@ begin
   DoupdateState;
 end;
 
+procedure TfrmFMXBase.UpdateCommandProgress(status: string; prog: TProgress);
+begin
+  DoUpdateCommandProgress(status, prog);
+end;
+
 procedure TfrmFMXBase.UpdateFromModel;
 begin
   //
@@ -790,6 +890,10 @@ begin
   if c.OwnedByProcessor then
     raise ECritical.create('cannot wait on a free-on-complete command');
 
+  WorkingHard := true;
+
+  ToggleBusy(true);
+
 end;
 
 procedure TfrmFMXBase.Watch(bTakeOwnership: boolean; c: TCommand);
@@ -797,8 +901,7 @@ begin
   if mock <> nil then
     Tmm(mock).Watch(bTakeOwnerShip, c)
   else begin
-    ToggleBusy(true);
-    WAtchCommand(c, bTakeOwnership);
+    WatchCommand(c, bTakeOwnership);
   end;
 end;
 
@@ -814,6 +917,7 @@ begin
   var wererunning := ActiveCommands.count = 0;
   if ActiveCommands.count > 0 then begin
     ToggleBusy(true);
+    UpdateCommandProgress(activecommands[0].status, activecommands[0].volatile_progress);
     if activecommands[0].IsComplete then begin
       var c := activecommands[0];
 
@@ -828,8 +932,14 @@ begin
     Debug.Log(CLR_F+'********* ALL COMMANDS watched by '+self.classname+' ARE COMPLETE');
 //    Debug.Log(CLR_F+'*********************************************************');
   end;
-  WorkingHard := not result;
-  ToggleBusy(not result);
+  if result then begin
+    WorkingHard := not result;
+    ToggleBusy(not result);
+  end else begin
+    WorkingHard := not result;
+    ToggleBusy(not result);
+  end;
+
 
 end;
 

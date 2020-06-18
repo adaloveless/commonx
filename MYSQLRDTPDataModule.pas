@@ -7,7 +7,7 @@ interface
 //TODO 1:Should not export TCustomSQLDataset
 
 uses
-  DBXDynalink, DBXMySQL,SqlExpr, SysUtils, Classes, DB, better_Sockets, typex,inifiles, replaylog, exceptions, DBXCommon,
+  DBXDynalink, DBXMySQL,SqlExpr, SysUtils, Classes, DB, better_Sockets, typex,inifiles, replaylog, ExceptionsX, DBXCommon,
   sharedobject, abstractrdtpdatamodule, storageenginetypes, managedthread, rdtpprocessor, beeper, inifile, systemx, namevaluepair, consolelock, betterobject;
 
 const

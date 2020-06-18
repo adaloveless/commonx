@@ -11,7 +11,7 @@ uses Packet, SysUtils, DataObject, simpleabstractconnection, GenericRDTPClient, 
   Windows,
   simplewinsock,
 {$ENDIF}
-  exceptions, ServerInterfaceInterface, debug, SimpleReliableUDP, storageenginetypes,
+  ExceptionsX, ServerInterfaceInterface, debug, SimpleReliableUDP, storageenginetypes,
   DataObjectCache, classes, sharedobject, variants, packethelpers, systemx, rdtpdb, RDTPKeyBotClient;
 
 const

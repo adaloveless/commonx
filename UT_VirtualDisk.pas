@@ -620,7 +620,7 @@ var
   t,u: ni;
   sRandomFile: string;
   fs: TFileSTream;
-  f1,f2: string;
+  f1,f2,f3,f4: string;
   fPayloads: array of string;
 const
   BLOCKS:int64 = 100000*4;

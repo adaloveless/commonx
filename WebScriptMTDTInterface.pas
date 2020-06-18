@@ -2,7 +2,7 @@ unit WebScriptMTDTInterface;
 
 interface
 
-uses Variants,classes, sysutils, requestinfo, MTDTInterface, DataobjectServices, DataObject, Exceptions, ErrorResource, clientconstants, windows, rights, webscript;
+uses Variants,classes, sysutils, requestinfo, MTDTInterface, DataobjectServices, DataObject, ExceptionsX, ErrorResource, clientconstants, windows, rights, webscript;
 
 procedure ScriptNew(rqInfo: TRequestInfo; bGhost: boolean; slParams: TScriptParamList);
 function ScriptFetch(rqInfo: TRequestInfo; bLazy: boolean; slParams: TScriptParamList; bNoException: boolean = false): boolean;

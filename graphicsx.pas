@@ -48,12 +48,16 @@ implementation
 
 function PixelSize(pf: TXPixelFormat): ni;
 begin
+  result := 0;
   case pf of
     xpf8Bit: exit(1);
     xpf16bit: exit(2);
     xpf24bit: exit(3);
     xpf32bit: exit(4);
+  else
+    raise ECritical.create('TXPixelFormat size not handled');
   end;
+  raise ECritical.create('unhandled pixel type');
 end;
 
 function PixelSize(pf: TPixelFormat): ni;

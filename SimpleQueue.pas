@@ -104,6 +104,7 @@ type
     FOnNotEmpty: TNotifyEvent;
     FTotalActiveTime: int64;
     FActiveNow: boolean;
+    FAONEmpty: TProc;
     procedure ProcessItem;virtual;abstract;
 
     procedure BlockIncoming;
@@ -151,7 +152,7 @@ type
     procedure WaitForAll;
     function Stop(bySelf: boolean=false): boolean; override;
     property MaxItemsInQueue: ni read FMaxItemsInQueue write FMaxItemsInQueue;
-    procedure OptimizeIncoming(incomingitem: TQueueItem);virtual;
+    procedure OptimizeIncoming(var incomingitem: TQueueItem);virtual;
     procedure WaitForFinish;override;
     property Hold: boolean read GetHold write SetHold;
     procedure UpdateStatus(bForce: boolean);inline;
@@ -163,6 +164,7 @@ type
     property AutoMaintainIdleInterval: boolean read FAutoMaintainIdleInterval write FAutoMaintainIdleInterval;
     procedure SelfAdd(qi: TQueueItem);
     property OnEmpty: TNotifyEvent read FOnEmpty write FOnEmpty;
+    property AOnEmpty: TProc read FAONEmpty write FAONEmpty;
     property OnNotEmpty: TNotifyEvent read FOnNotEmpty write FOnNotEmpty;
     function QueueFull: boolean;
     property EnableItemDebug: boolean read FEnableItemDebug write FEnableItemDEbug;
@@ -252,6 +254,7 @@ begin
     if estimated_queue_size = 0 then begin
       if assigned(FOnNotEmpty) then
         FOnNotEmpty(self);//!!!!!!NOT UNDER LOCK
+
     end;
 
     if estimated_queue_size + estimated_backlog_size = 0 then begin
@@ -329,7 +332,7 @@ begin
   //  Debug.ConsoleLog('Queued item #'+inttostr(FIncomingitems.count));
     OptimizeIncoming(itm);
     if itm.Queue = nil then
-      raise Ecritical.Create('catastrophe!');
+      raise Ecritical.Create('catastrophe! .. no queue assigned to '+itm.classname);
     bWait := (FIncomingItems.count > MaxItemsInQueue) and (MaxItemsInQueue > 0);
   finally
     FIncomingItems.Unlock;
@@ -379,6 +382,7 @@ procedure TAbstractSimpleQueue.AfterUrgentCopy;
 begin
 //no implementation required
 end;
+
 
 procedure TAbstractSimpleQueue.BlockIncoming;
 begin
@@ -456,6 +460,8 @@ begin
   if not result then begin
     if Assigned(OnEmpty) then
       OnEmpty(self);
+    if Assigned(FAONEmpty) then
+      FAOnEmpty();
   end;
 
 end;
@@ -505,6 +511,8 @@ begin
   last_process_time := GetTImeSince(tm2,tm1);
   if keepstats then
     rs.addstat(last_process_time);
+
+
 
   if AutoMaintainIdleInterval then begin
      NoWorkRunInterval := greaterof(1, round(rs.PeriodicAverage*0.0002))
@@ -1100,6 +1108,7 @@ end;
 procedure TMultiQueue.QueueOnEmpty(sender: TObject);
 begin
   evEmptyAvailable.Signal(true);
+
 end;
 
 procedure TMultiQueue.SetMaxItemsInQueue(const Value: ni);

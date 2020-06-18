@@ -50,6 +50,8 @@ type
     procedure RQ_HANDLE_GetGPUList(proc: TRDTPProcessor);
     procedure RQ_HANDLE_GetGPUCount(proc: TRDTPProcessor);
     procedure RQ_HANDLE_StartExeCommandExFFMPEG_string_string_string_string_single_single_single(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_FileExists_string(proc: TRDTPProcessor);
+    procedure RQ_HANDLE_PathExists_string(proc: TRDTPProcessor);
 
   protected
     
@@ -91,6 +93,8 @@ type
     function RQ_GetGPUList():string;overload;virtual;abstract;
     function RQ_GetGPUCount():integer;overload;virtual;abstract;
     function RQ_StartExeCommandExFFMPEG(sPath:string; sProgram:string; sParams:string; sGPUParams:string; cpus:single; memgb:single; gpu:single):int64;overload;virtual;abstract;
+    function RQ_FileExists(sFile:string):boolean;overload;virtual;abstract;
+    function RQ_PathExists(sPath:string):boolean;overload;virtual;abstract;
 
 
     function Dispatch: boolean;override;
@@ -489,6 +493,26 @@ begin
   GetsingleFromPacket(proc.request, gpu);
   res := RQ_StartExeCommandExFFMPEG(sPath, sProgram, sParams, sGPUParams, cpus, memgb, gpu);
   Writeint64ToPacket(proc.response, res);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_FileExists_string(proc: TRDTPProcessor);
+var
+  res: boolean;
+  sFile:string;
+begin
+  GetstringFromPacket(proc.request, sFile);
+  res := RQ_FileExists(sFile);
+  WritebooleanToPacket(proc.response, res);
+end;
+//-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-xx-x-x-x-x-x-x-
+procedure TFileServiceServerBase.RQ_HANDLE_PathExists_string(proc: TRDTPProcessor);
+var
+  res: boolean;
+  sPath:string;
+begin
+  GetstringFromPacket(proc.request, sPath);
+  res := RQ_PathExists(sPath);
+  WritebooleanToPacket(proc.response, res);
 end;
 
 
@@ -915,6 +939,32 @@ begin
         RQ_HANDLE_StartExeCommandExFFMPEG_string_string_string_string_single_single_single(self);
 {$IFDEF RDTP_LOGGING}
         LocalDebug('End Server Handling of StartExeCommandExFFMPEG','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //FileExists
+    $6030:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of FileExists','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_FileExists_string(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of FileExists','RDTPCALLS');
+{$ENDIF}
+      end;
+
+    //PathExists
+    $6031:
+      begin
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('Begin Server Handling of PathExists','RDTPCALLS');
+{$ENDIF}
+        result := true;//set to true BEFORE calling in case of exception
+        RQ_HANDLE_PathExists_string(self);
+{$IFDEF RDTP_LOGGING}
+        LocalDebug('End Server Handling of PathExists','RDTPCALLS');
 {$ENDIF}
       end;
 

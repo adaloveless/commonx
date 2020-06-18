@@ -244,12 +244,12 @@ end;
 
 function GetUserPAramsFileName: string;
 begin
-{$IFDEF WINDOWS}
+{$IFDEF DESKTOP}
   result := DLLNAme;
-  result := ChangeFilePath(result, slash(TPath.GetDocumentsPath))+'.app.params';
+  result := ChangeFilePath(result, slash(TPath.GetHomePath))+'.app.params';
 {$ELSE}
 //  result := System.IOUtils.TPath.GetHomePath;
-  result := System.IOUtils.TPath.GetDocumentsPath+'app.params';
+  result := slash(System.IOUtils.TPath.GetDocumentsPath)+'app.params';
 //  result := GetTempPath+'app.params';
 {$ENDIF}
 end;

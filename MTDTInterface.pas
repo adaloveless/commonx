@@ -7,7 +7,7 @@ unit MTDTInterface;
 interface
 
 uses
-  Variants, typex, systemx, signals, RequestInfo, WebFunctions, DataObject, DataObjectCache, windows, classes, Exceptions, ErrorResource, WebConfig, managedthread;
+  Variants, typex, systemx, signals, RequestInfo, WebFunctions, DataObject, DataObjectCache, windows, classes, ExceptionsX, ErrorResource, WebConfig, managedthread;
 
 type
   TInsertSelectThread = class(TProcessorThread)

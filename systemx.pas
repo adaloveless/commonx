@@ -1,5 +1,5 @@
 unit systemx;
-{$INCLUDE DelphiDefs.inc}
+{$I DelphiDefs.inc}
 interface
 {$IFNDEF WINDOWS}
   {$DEFINE USE_SYNCOBJS}
@@ -10,7 +10,7 @@ interface
   {$DEFINE DEBUG_BLOCKING}
 {$ENDIF}
 {x$DEFINE ALWAYS_SINGLE_BYTE_MASK_MOVE}
-
+{$DEFINE MACEXE}
 uses
   typex, numbers,
 {$IFDEF IOS}
@@ -23,6 +23,9 @@ uses
 {$ELSE}
 {$IFDEF MACOSX}
   MacApi.foundation,
+{$IFDEF MacEXE}
+  MacApiEx,
+{$ENDIF}
 {$ENDIF}
   stringx.ansi,
 {$ENDIF}
@@ -41,6 +44,7 @@ uses
   //SynCommons,
   {$ENDIF}
   sysutils;
+
 
 type
   TAlignedTempSpace = record
@@ -93,6 +97,7 @@ procedure FreeListContents(list: TList);
 function GetCurrentThreadID: cardinal;
 function DLLName: string;
 function DLLPath: string;
+function PackagePath: string;
 procedure MoveMem32(const D,S: pointer; const Size: ni);inline;
 procedure MoveMem_Up(const DD,SS: pointer; const Size: ni);
 procedure MoveMem_Down(const D,S: pointer; const Size: ni);
@@ -132,14 +137,18 @@ function GetVolumeInformation(lpRootPathName: PChar;
 function InterlockedIncrement(var whatever: integer): integer;inline;
 function InterlockedDecrement(var whatever: integer): integer;inline;
 
+procedure MakeFileExecutable(sFile: string);
 function _ics_(var sect: TCLXCriticalSection): Integer;stdcall;
 function _ecs_(var sect: TCLXCriticalSection): Integer;stdcall;
 function LeaveCriticalSection(var sect: TCLXCriticalSection): Integer;stdcall;
 function _tecs_(var sect: TCLXCriticalSection): Boolean;stdcall;
 function DeleteCriticalSection(var sect: TCLXCriticalSection): Integer;stdcall;
 function PathSeparator: char;
+function WinSlash(sPath: string): string;
+function LinSlash(sPath: string): string;
+function FixSlashes(sPath: string): string;
 function ComplyFilePath(const sPath: string; sSlash: string = ''): string;
-function ResolveRelativePath(const sPAth: string): string;
+function ResolveRelativePath(sPAth: string): string;
 function Slash(const sPath: string; sSlashType: string = ''): string;
 function UnSlash(const sPath: string): string;
 function ExtractNetworkRoot(s: string): string;
@@ -227,6 +236,7 @@ function GMTtoLocalTime(dt: TDateTime): TDatetime;
 {$IFDEF MSWINDOWS}
 function GetLogicalProcessorInfo: TLogicalProcessorInformation;
 {$ENDIF}
+function GetCurrentProcessID_XPlatform(): ni;
 
 procedure AssertGUIThread;
 
@@ -301,6 +311,13 @@ uses
   debug,
   tickcount;
 
+function GetCurrentProcessID_XPlatform(): ni;
+begin
+  result :=0;
+{$IFDEF MSWInDOWS}
+  Result := GetCurrentProcessID();
+{$ENDIF}
+end;
 
 {$IFDEF MSWINDOWS}
 function GetLogicalProcessorInfo: TLogicalProcessorInformation;
@@ -417,6 +434,23 @@ end;
 function DLLPath: string;
 begin
   result := slash(ExtractFilePath(DLLName));
+end;
+
+function PackagePath: string;
+begin
+{$IFDEF MACOSX}
+  var l,r: string;
+
+  if SplitString(dllpath, '.app', l,r,true) then begin
+    result := extractfilepath(l);
+  end else begin
+    result := r;
+  end;
+
+{$ELSE}
+  result := dllpath;
+
+{$ENdIF}
 end;
 
 procedure FillMem(p:pbyte; length:integer; fill:byte);
@@ -1379,8 +1413,15 @@ begin
 {$ENDIF}
 end;
 
+function FixSlashes(sPath: string): string;
+begin
+  result := sPath;
+  result := stringreplace(result, '\', pathseparator, [rfReplaceAll]);
+  result := stringreplace(result, '/', pathseparator, [rfReplaceAll]);
+end;
 
-function ResolveRelativePath(const sPAth: string): string;
+
+function ResolveRelativePath(sPAth: string): string;
 var
   sl: TStringlist;
   function ResolvePass: boolean;
@@ -1392,11 +1433,18 @@ var
         sl.delete(t);
         sl.Delete(t-1);
         exit(true);
+      end else
+      if sl[t] = '.' then begin
+        sl.delete(t);
+        exit(true);
       end;
     end;
     exit(false);
   end;
 begin
+  var currentdir := TDirectory.GetCurrentDirectory;
+  if IsRelativePath(sPath) then
+    sPath := slash(currentdir)+sPath;
   sl := TStringlist.create;
   try
     ParseString(sPAth, '\', sl);
@@ -1412,6 +1460,15 @@ begin
   end;
 
 
+end;
+
+function WinSlash(sPath: string): string;
+begin
+  result := ComplyFilePath(sPath, '\');
+end;
+function LinSlash(sPath: string): string;
+begin
+  result := ComplyFilePath(sPath, '/');
 end;
 
 function ComplyFilePath(const sPath: string; sSlash: string = ''): string;
@@ -1432,7 +1489,6 @@ begin
     else
       sFrom := '/';
   end;
-
 
   result := StringReplace(sPath, sFrom, sTo, [rfReplaceAll]);
 
@@ -3505,6 +3561,16 @@ begin
   result := now()- AppStartTime;
 end;
 
+
+procedure MakeFileExecutable(sFile: string);
+begin
+{$IFDEF MACOSX}
+{$IFDEF MacEXE}
+  MacApiEx.MakeFileExecutable(sFile);
+{$ENDIF}
+{$ENDIF}
+//  _system(PAnsiChar(UTF8Encode('chmod +x ' + AnsiQuotedStr(aFile, #39))));
+end;
 
 
 

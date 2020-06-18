@@ -3,6 +3,10 @@ interface
 {x$DEFINE HOLD}
 {$IFDEF MSWINDOWS}
 {$DEFINE PACKED_MASK}
+{x$DEFINE CHECK_FLUSH_OFTEN}//<<-----probably slows down fast disks...okay for USBS
+{$DEFINE READ_PRIORITY_CODE_2020}
+{$DEFINE BULK_READ_BEFORE_FLUSH}//<<---maybe for USBs...
+{x$DEFINE LIMIT_FREQUENCY_OF_CHECK_FLUSH}
 //!!!!WINDOWS ONLY FOR NOW!!!!
 
 {x$DEFINE DOUBLE_READ}
@@ -78,7 +82,7 @@ interface
 {$DEFINE USE_LINKED_BUFFERS}
 {x$DEFINE ALLOW_SYNCHRONOUS_READS}//if enabled, reads can potentially be handled in calling thread, so you're relying more of prefetches to bring things into memory
 {x$DEFINE USE_SPOT_FLUSH}
-{$DEFINE USE_OPTIMAL_FLUSH}//doesn't work
+{x$DEFINE USE_OPTIMAL_FLUSH}//doesn't work
 {x$define COMPLEX_STREAM}//too slow
 {x$DEFINE IDLE_FETCH}//deprecated for a real side-fetch thread
 {$DEFINE TIME_CRITICAL}
@@ -87,9 +91,10 @@ interface
 
 {x$DEFINE BAD_USES}
 uses
-  tickcount, writebuilder, ringstats, globaltrap, fileproxy,AnonCommand, globalmultiqueue,
+  tickcount, writebuilder, ringstats, globaltrap, fileproxy,AnonCommand, globalmultiqueue, perfmessage, perfmessageclient,
 {$IF Defined(MSWINDOWS)}
   windows,
+  windowsx,
 {$ENDIF}
   betterobject, multibufferstream, SimpleQueue, sharedobject, typex, classes, sysutils, managedthread, numbers,debug, betterfilestream, collision, systemx, periodicevents, commandprocessor, commands_system, linked_list;
 
@@ -150,8 +155,14 @@ type
 
   TReadCommand = class;//forward
   TWriteCommand = class;//forward
+  TQueueStream = class;//forward
+  TQueueStreamItem = class;//forward
 
   TStreamQueue = class(TSimpleQUeue)
+  private
+    function ItemHasOverlaps(itm: TQueueStreamItem): TQueueStreamItem;
+    procedure PrioritizeOverlapping(itm: TQueueStreamItem);
+
   protected
     potentiallyHasReads: boolean;
 
@@ -162,34 +173,42 @@ type
 {$IFDEF READ_BEFORE_WRITE}
     function GetNextItem: TQueueItem;override;
 {$ENDIF}
-    procedure OptimizeIncoming(incomingitem: TQueueItem);override;
+    procedure OptimizeIncoming(var incomingitem: TQueueItem);override;
     function CombineWrites(var a: TWriteCommand; b: TWriteCommand): boolean;
     procedure OptimizeSingle(var qi: TWriteCommand);
     procedure AfterUrgentCopy;override;
+    procedure ProcessItem; override;
+
+
   public
+    [weak]Stream: TQueueStream;
     procedure Init; override;
 
+
   end;
-  TQueueStream = class;//forward
+
 
   TQueueStreamItem = class(TQueueItem)
   private
     FStream: TQueueStream;
+    FCount: int64;
+    FAddr: int64;
 
   public
     ExecutionTime: ticker;
     property Stream: TQueueStream read FStream write FStream;
     function DebugString: string;override;
     procedure Execute;override;//OUTER EXECUTE!!!
+    property Addr: int64 read FAddr write FAddr;
+    property Count: int64 read FCount write FCount;
+
   end;
 
 
   TWriteCommand = class(TQueueStreamItem)
   private
-    FCount: int64;
     FOriginalPOinter: pbyte;
     FPOinter: pbyte;
-    Faddr: int64;
     procedure SetPointer(const Value: pbyte);inline;
     procedure SetCount(const Value: int64);inline;
     procedure MovePOinterData;inline;
@@ -198,23 +217,17 @@ type
     combined: boolean;
     destructor Destroy;override;
     procedure DoExecute;override;
-    property Addr: int64 read FAddr write SetAddr;
     property Ptr: pbyte read FPOinter write SetPointer;
     procedure GiveExternalPointer(p: pbyte; cnt: ni);
-    property Count: int64 read FCount write SetCount;
     function DebugString: string;override;
   end;
 
   TWriteZeroesCommand = class(TQueueStreamItem)
   private
-    FCount: int64;
     FOriginalPOinter: pbyte;
-    Faddr: int64;
   public
     destructor Destroy;override;
     procedure DoExecute;override;
-    property Addr: int64 read FAddr write FAddr;
-    property Count: int64 read FCount write FCount;
     function DebugString: string;override;
   end;
 
@@ -225,17 +238,13 @@ type
   end;
   TReadCommand = class(TQueueStreamItem)
   private
-    FCount: int64;
     FPOinter: pbyte;
-    FAddr: int64;
     FResult: int64;
     procedure SEtAddr(const Value: int64);inline;
   public
     procedure Init;override;
     procedure DoExecute;override;
-    property Addr: int64 read FAddr write SEtAddr;
     property Ptr: pbyte read FPOinter write FPOinter;
-    property Count: int64 read FCount write FCount;
     property Result: int64 read FResult write Fresult;
     function DebugString: string;override;
   end;
@@ -271,12 +280,16 @@ type
     function GEtSize: int64;virtual;
     procedure SetSize(const Value: int64);virtual;
     procedure ReadInitialSize;virtual;
-
+    procedure RefreshQueueStats;
   public
+    phIO: TPerfHandle;
+    phQueue: TPerfHandle;
     OwnsStream: boolean;
     ops, spikes: int64;
     xatemp: array[0..65535] of byte;
     function estimated_queue_size: ni;inline;
+    procedure InitPerfHandle;
+    procedure FinalizePerfHandle;
 
     procedure Init;override;
     procedure OnQueueEmpty(sender: TObject);
@@ -297,6 +310,7 @@ type
     procedure FinalizeBuffers;
     property EnableQueue: boolean read FEnableQueue write FEnableQueue;
     property Queue: TStreamQueue read FQueue;
+
   end;
 
   TFileStreamClass = class of TFileSTreamWithVirtualConstructors;
@@ -317,6 +331,9 @@ type
     function GetUnderClass: TStreamClass;virtual;
     procedure ConfigureUnderclass;virtual;
     procedure INit;override;
+    destructor Destroy; override;
+
+
     property OpenMode: cardinal read FOpenMode write FOpenMode;
     property Flags: cardinal read FFLags write FFLags;
     property FileNAme: string read FFileName write SetFileName;
@@ -334,6 +351,8 @@ type
   public
     constructor Create(const AFileName: string; Mode: cardinal; Rights:cardinal; Flags: cardinal);reintroduce;overload;virtual;
     constructor Create(const AFileName: string; Mode: cardinal);reintroduce;overload;virtual;
+    destructor Destroy; override;
+
 
     property Position: int64 read FPosition write FPosition;
     function Seek(iPos: int64; origin: TseekOrigin): int64;overload;inline;
@@ -350,10 +369,7 @@ type
   TAdaptiveQueuedStream = class(TQueueStream)
   private
     FPosition: int64;
-
   public
-
-
     destructor Destroy;override;
     procedure AdaptiveRead(p: pbyte; iSize: int64);inline;
     procedure Detach; override;
@@ -369,8 +385,6 @@ type
     procedure GRowFile(iSize: int64);
     constructor Create(const AStream: TStream; bTakeOwnership: boolean = true);reintroduce;virtual;
     procedure queue_onidle(sender: TObject);
-
-
   end;
 
 
@@ -525,13 +539,14 @@ type
 {$ENDIF}
     FFront_SeekPosition: int64;
     FBack_SeekPosition: int64;
+    FDirtyBufferCount: ni;
 
     FSeekPage: int64;
     FReportedSize: int64;
     FSizeCommittedToBuffers: int64;
 
     rsFetchPage, rsFetchApplyMask, rsFlushPageBruteForce, rsIndividualRead: TRingStats;
-    lckOp, lckTemp, lckUnder, lckBack, lckBuffers, lckState: TCLXCriticalSection;
+    lckDirtyCount, lckOp, lckTemp, lckUnder, lckBack, lckBuffers, lckState: TCLXCriticalSection;
 {$IFDEF USE_LINKED_BUFFERS}
     procedure bringtofront(buf: TUnbufferObj);inline;
 {$ELSE}
@@ -539,6 +554,7 @@ type
 {$ENDIF}
     function FindPage(iPage: int64): PUnbuffer;
     procedure FlushPageBruteForce(buf: PUnBuffer; iRecursions: ni=0);
+    procedure PreparePageForFlush(buf: PUnBuffer; iRecursions: ni=0);
     procedure FlushPage(buf: PUnBuffer; iRecursions: ni=0);inline;
     procedure FetchPage(const iPage: int64; const buf: PUnbuffer; const stage: TFetchBufferStage = fbInitial; alt_buf: PByte = nil);//
     procedure SeekPage(const iPage: int64; bForEof: boolean = false);//inline;//
@@ -563,6 +579,9 @@ type
     procedure SetPosition(const Value: int64);
     function GetFlexSeek: int64;
     procedure SetFlexSeek(const Value: int64);//
+    procedure DecDirtyCount;
+    procedure IncDirtyCount;
+    function CountDirtyBuffers_Slow: ni;
   protected
     scratch1, scratch2: array[0..511] of byte;
     writebuilder: TWriteBuilder;
@@ -573,7 +592,11 @@ type
     function FindWriteThroughPage(iPageNumber: int64): PUnbuffer;//
     procedure OptimalFlush;//
     procedure FlushWithoutRead(buf: PUnbuffer);//
+    procedure RefreshDirtyStats;
   public
+    phIO: TPerfHandle;
+    phCache: TPerfhandle;
+    phUnder: TPerfHandle;
     warnings: ni;
     opsIn, OpsPerformed: ni;
     sfthread: TUnbufferedSideFetchThread;
@@ -594,9 +617,12 @@ type
     UseBackSeek: boolean;
     FREcommendedPrefetchAllowance: ni;
     UpStreamHints: PPerformancehints;
+
 //    EnableDirtyDebug: boolean;
     //property FlexSeek: int64 read GetFlexSeek write SetFlexSeek;
     procedure CheckFlush;
+    function GetLowestExpiredPage: PUnbuffer;
+    function GetLowestUnfetchedExpiredPage: PUnbuffer;
     constructor Create(const AFileName: string; Mode: cardinal; Rights: Cardinal; Flags: cardinal);override;
     constructor Create(const AFileName: string; Mode: cardinal);override;
     procedure BeforeDestruction;override;
@@ -695,6 +721,9 @@ function TQueueStream.BeginRead(const addr: int64; const pointer: pbyte;
 var
   rq: TReadCommand;
 begin
+    if not bForget then
+      if phIO.node <> nil then
+        phIO.node.busyR := true;
 //  if not EnableQueue then begin
 //    FUnderStream.Seek(addr,soBeginning);
 //    stream_guaranteeRead(FunderStream, @pointer[0], size);
@@ -712,6 +741,7 @@ begin
     result := rq;
     result.AutoDestroy := bForget;
     FQueue.AddItem(rq);
+    RefreshQueueStats;
 
 //  end;
   FQueue.urgent := true;
@@ -729,6 +759,7 @@ procedure TQueueStream.BeginWrite(const addr: int64; const pointer: pbyte;
 var
   wq: TWriteCommand;
 begin
+  phIO.node.busyW := true;
   queue.maxitemsinqueue := G_UB_queUE_DEPTH;
 //  if addr > FtrackedSize then
 //    raise ECritical.create('cannot write to point beyond end of file without expanding');
@@ -745,6 +776,10 @@ begin
     wq.AutoDestroy := true;
     FQueue.AddItem(wq);
     FTrackedSize := GreaterOf(wq.Addr+wq.count, FTrackedSize);
+    if phIO.node <> nil then begin
+      phIO.node.incw(size);
+      RefreshQueueStats;
+    end;
 
 //  end;
 //  wq.WAitFor;
@@ -760,6 +795,8 @@ begin
 
   if size < 0 then
     exit;
+
+    phIO.node.busyW := true;
 //  if not EnableQueue then begin
 //    FUnderStream.Seek(addr,soBeginning);
 //    Stream_WriteZeros(FUnderstream, size);
@@ -773,6 +810,10 @@ begin
       wzq.Count := size;
       wzq.AutoDestroy := true;
       FQueue.AddItem(wzq);
+      if phIO.node <> nil then begin
+        phIo.node.incw(size);
+        RefreshQueueStats;
+      END;
       FTrackedSize := GreaterOf(wzq.Addr+wzq.count, FTrackedSize);
 {$IFDEF HOLD}      FQueue.Hold := false;{$ENDIF}
     end else begin
@@ -847,6 +888,13 @@ begin
   //
 end;
 
+procedure TQueueStream.FinalizePerfHandle;
+begin
+  PMC.ReleasePerfHandle(phQueue);
+  PMC.ReleasePerfHandle(phIO);
+
+end;
+
 function TQueueStream.GEtSize: int64;
 begin
   result := FTrackedSize
@@ -857,16 +905,26 @@ procedure TQueueStream.Init;
 begin
   inherited;
   FQueue := TPM.NeedThread<TStreamQueue>(self);
+  FQueue.Stream := self;
   FQueue.MaxItemsInQueue := G_UB_QUEUE_DEPTH;
   FQueue.Name := FQueue.classname +' for '+classname;
   Fqueue.loop := true;
-  FQueue.Start;
   FQueue.OnEmpty := self.OnQueueEmpty;
   FQueue.OnNotEmpty := self.OnQueueNotEmpty;
+  FQueue.Start;
 
   EnableQueue := true;
   OwnsStream := true;
 
+end;
+
+procedure TQueueStream.InitPerfHandle;
+begin
+  phIO := PMC.GetPerfHandle;
+  phQueue := PMC.GetPerfHandle;
+  phQueue.desc.above := phIO.node.id;
+  phQueue.Desc.desc := 'Fill';
+  phQueue.node.typ := NT_BUCKETFILL;
 end;
 
 function TQueueStream.IsReady: boolean;
@@ -889,6 +947,14 @@ end;
 procedure TQueueStream.ReadInitialSize;
 begin
   FTrackedSize := FUnderStream.size;
+end;
+
+procedure TQueueStream.RefreshQueueStats;
+begin
+  if phQueue.node = nil then
+    exit;
+  phQueue.node.r := Fqueue.EstimatedSize;
+  phQueue.node.w := FQueue.MaxItemsInQueue;
 end;
 
 procedure TQueueStream.SetSize(const Value: int64);
@@ -962,6 +1028,7 @@ begin
 //    Debug.Log(self, debugstring);
     FStream.UnderStream.Seek(Addr, TSeekOrigin.soBeginning);
     Stream_GuaranteeWrite(FStream.UnderStream, self.Ptr, self.Count{, addr, 65536});
+//    self.FStream.phIO.node.incw(self.count);
 //    Debug.Log(self,'After write size is now '+inttohex(fStream.size,0));
   except
     on E: Exception do begin
@@ -1038,6 +1105,12 @@ begin
 
 end;
 
+destructor TQueuedFileSTream.Destroy;
+begin
+  FinalizePerfHandle;
+  inherited;
+end;
+
 procedure TQueuedFileSTream.Flush;
 begin
   //
@@ -1045,6 +1118,8 @@ end;
 
 function TQueuedFileSTream.GetUnderClass: TStreamClass;
 begin
+  InitPerfHandle;
+
 {$IFDEF USE_UNBUFFERED}
   result := TUnbufferedFileStream;
 {$ELSE}
@@ -1113,6 +1188,8 @@ begin
   FStream.UnderStream.Seek(Addr, soBeginning);
 
   result := STream_GuaranteeRead(FStream.UnderStream, self.Ptr, self.Count);
+  Fstream.phIO.node.incr(result);
+  FStream.RefreshQueueStats;
 
 {$IFDEF DETAILED_DEBUGGING}
 //  Debug.Log(self, 'read '+memorytohex(self.Ptr, lesserof(64,self.Count)));
@@ -1158,22 +1235,42 @@ end;
 
 procedure TAdaptiveQueuedFileStream.AdaptiveWrite(p: Pbyte; iSize: int64);
 begin
+{$IFDEF phIO_IN_ADVANCEDQUEUEDFILESTREAM}
+  var n := phIO.node;
+  if n <> nil then n.busy := true;
+{$ENDIF}
   BeginWrite(POsition, p, iSize);
   Position := Position + iSize;
   PerformanceHints.pendingOps := Self.Queue.EstimatedSize;
+{$IFDEF phIO_IN_ADVANCEDQUEUEDFILESTREAM}
+  if n <> nil then
+    n.incw(iSize);
+{$ENDIF}
+
 end;
 
 procedure TAdaptiveQueuedFileStream.AdaptiveWriteZeroes(addr, iCount: int64);
 begin
+{$IFDEF phIO_IN_ADVANCEDQUEUEDFILESTREAM}
+  var n := phIO.node;
+  if n <> nil then n.busy := true;
+{$ENDIF}
   BeginWriteZeros(addr,icount);
   position := position + icount;
   PerformanceHints.pendingOps := Self.Queue.EstimatedSize;
-
+{$IFDEF phIO_IN_ADVANCEDQUEUEDFILESTREAM}
+  if n <> nil then
+    n.incw(iCount);
+{$ENDIF}
 end;
 
 function TAdaptiveQueuedFileStream.BeginAdaptiveRead(p: pbyte;
   iSize: int64;bDisallowSynchronous: boolean; bForget: boolean = false): TReadCommand;
 begin
+{$IFDEF phIO_IN_ADVANCEDQUEUEDFILESTREAM}
+  var n := phIO.node;
+  if n <> nil then n.busy := true;
+{$ENDIF}
   iSize := lesserof(iSize, size-Position);
   result := BeginRead(position, p, iSize, bDisallowSynchronous, bForget);
   Position := Position + iSize;
@@ -1199,10 +1296,25 @@ end;
 
 
 
+destructor TAdaptiveQueuedFileStream.Destroy;
+begin
+  inherited;
+end;
+
 function TAdaptiveQueuedFileStream.EndAdaptiveRead(qi: TReadCommand): int64;
 begin
+//{$IFDEF phIO_IN_ADVANCEDQUEUEDFILESTREAM}
+  var n := phIO.node;
+  if n <> nil then  n.busyR := true;
+//{$ENDIF}
   qi.WaitFor;
   result := qi.result;
+
+//{$IFDEF phIO_IN_ADVANCEDQUEUEDFILESTREAM}
+//  if n <> nil then
+//    n.incr(qi.result);
+//{$ENDIF}
+
   qi.Free;
   PerformanceHints.pendingOps := Self.Queue.EstimatedSize;
 
@@ -1301,6 +1413,9 @@ var
   aqs: TAdaptiveQueuedStream;
   mode: cardinal;
 begin
+  InitPerfHandle;
+  phIO.desc.desc := 'AQFS';
+
 {$IFDEF COMPLEX_STREAM}
   //TAdaptiveQueuedFileStream->TMultibufferQueueStream->TAdaptiveQueuedStream->TUnbufferedFileStream
   //we need to create two underclasses for thsi configuration;
@@ -1331,16 +1446,24 @@ begin
   ubs:=Tunbufferedfilestream.Create(sfile, mode, 0,0);
   ubs.upperqueue := self.queue;
   ubs.upstreamHints := @self.PerformanceHints;
+  ubs.phIO.desc.left := self.phIO.id;
+  ubs.phIO.desc.desc := 'UBS';
+
   understream := ubs;
   result := ubs;
   configureunderclass;
+
+  FQueue.AOnEmpty := procedure begin
+    ubs.CheckOrStartFlushCommand;
+  end;
 
 {$ENDIF}
 end;
 
 destructor TAdvancedAdaptiveQueuedFileStream.Destroy;
 begin
-  Debug.Log(self,'Destroying with understream '+FUnderstream.classname);
+  if FUnderstream <> nil then
+    Debug.Log(self,'Destroying with understream '+FUnderstream.classname);
   inherited;
 //  FUnderStream.free;
 //  FUnderStream := nil;
@@ -1351,7 +1474,8 @@ procedure TAdvancedAdaptiveQueuedFileStream.Detach;
 begin
   if detached then exit;
 
-  fqUEUE.OnIdle := nil;
+  if assigned(FQueue) then
+    fqUEUE.OnIdle := nil;
 //  FQueue.Stop;
 //  FQueue.WaitForAll;
 //  FQueue.WaitForFinish;
@@ -1370,6 +1494,7 @@ end;
 
 procedure TAdvancedAdaptiveQueuedFileStream.queue_onidle(sender: TObject);
 begin
+
   if FQueue.TryLock then
   try
     {$IFDEF COMPLEX_STREAM}
@@ -1423,6 +1548,7 @@ begin
 
   tm1 := GetHighResTicker;
   Stream_WriteZeros(FStream.UnderStream, self.Count);
+  FStream.phIO.node.incw(self.count);
   tm2 := GetHighResTicker;
   tmDif := GetTimeSince(tm2, tm1);
   debug.log('wrote '+self.count.tostring+' zeroes in '+floatprecision(gettimesince(tm2,tm1)/10000,2)+'ms at a rate of '+commaize(round((self.count/(tmDif/10000000))))+'bytes/sec');
@@ -1442,11 +1568,12 @@ end;
 function TStreamQueue.CombineWrites(var a: TWriteCommand; b: TWriteCommand): boolean;
 VAR
   c: TWriteCommand;
-  e: int64;
-  ca,cb: ni;
-  aa,ab,ac: int64;
-  oa,ob: int64;
-  pa, pb,pc: pbyte;
+  finalSize: int64;
+  countA,countB: ni;
+  addrA,addrB,addrCombined: int64;
+
+  offsetA,offsetB: int64;
+  pbA, pbB,pbC: pbyte;
 //  idx: ni;
 begin
   result := false;
@@ -1468,30 +1595,33 @@ begin
 
 //    idx := FIncomingItems.indexof(a);
 
-    aa := a.addr;
-    ab := b.addr;
-    ca := a.Count;
-    cb := b.count;
+    addrA := a.addr;
+    addrB := b.addr;
+    countA := a.Count;
+    countB := b.count;
     //if a comes first then
-    if aa < ab then begin
+    if addrA < addrB then begin
       //starting position is a
-      ac := aa;
+      addrCombined := addrA;
       //a offset is 0
-      oa := 0;
+      offsetA := 0;
       //b offset is whatever the difference is
-      ob := ab-aa;
+      offsetB := addrB-addrA;
     end else begin
       //starting position is b
-      ac := ab;
+      addrCombined := addrB;
       //a offset is difference
-      oa := aa-ab;
+      offsetA := addrA-addrB;
       //b offset is 0
-      ob := 0;
+      offsetB := 0;
     end;
 
-    e := greaterof(aa+ca, ab+cb)-ac;
+    finalSize := countA+countB;
 
-    if (e > MAX_QUEUE_COMBINE_SIZE) and (e > ca) and (e > cb) then begin
+    if a.AutoDestroy <> b.AutoDestroy then
+      exit;
+
+    if (finalSize > MAX_QUEUE_COMBINE_SIZE) (*and (e > ca) and (e > cb)*) then begin
       exit;
     end;
 
@@ -1501,27 +1631,29 @@ begin
     c.AutoDestroy := a.autodestroy;
     c.Combined := true;
     c.Queue := a.Queue;
-    c.addr :=ac;
+    c.addr := addrCombined;
     //ending count is is the whatever the greater end is minuz the starting offset
-    pc := system.getMemory(e);
+    pbC := system.getMemory(finalSize);
 //    Debug.ConsoleLog('pc='+inttohex(ni(pc),8));
-    c.GiveExternalPointer(pc,e);
+    c.GiveExternalPointer(pbC,finalSize);
 
 //    Debug.ConsoleLog('c=@'+inttohex(ni(pointer(c)),8)+' addr='+inttohex(ni(pointer(c.addr)),8)+' ptr='+inttohex(ni(c.ptr),8)+' count='+inttohex(ni(pointer(c.count)),8));
 
-    pa := a.ptr;
-    pb := b.ptr;
+    pbA := a.ptr;
+    pbB := b.ptr;
 
 //    Debug.ConsoleLog('move1 off='+inttohex(oa,1)+' ca='+inttohex(ca,1));
 //    Debug.ConsoleLog('move2 off='+inttohex(ob,1)+' cb='+inttohex(cb,1));
 
-    movemem32(@pc[oa], pa, ca);
-    movemem32(@pc[ob], pb, cb);
+    movemem32(@pbC[offsetA], pbA, countA);
+    movemem32(@pbC[offsetB], pbB, countB);
 
-    c.Addr := lesserof(aa,ab);
+    c.Addr := addrCombined;
 
   //  FincomingItems[idx] := c;//switch a with c
+    c.Queue := self;
     FIncomingItems.Replace(a,c);
+
     //FincomingItems[aidx] := c;
 
 //    if bidx >= FincomingItems.count then
@@ -1533,6 +1665,8 @@ begin
     FIncomingItems.Remove(b);
 //    FincomingItems.Insert(idx,c);
 
+    a.cancelled := true;
+    b.cancelled := true;
     a.free;
     b.free;
     result := true;
@@ -1543,14 +1677,47 @@ begin
 end;
 
 {$IFDEF READ_BEFORE_WRITE}
+
+function TStreamQueue.ItemHasOverlaps(itm: TQueueStreamItem):TQueueStreamItem;
+begin
+    //walk forward through queue
+    //... stop once we get to our input item
+    //... overlapping reads don't count
+
+  result := nil;
+
+    for var u := 0 to FWorkingItems.count-1 do begin
+      var wi := fWorkingItems[u] as TQueueStreamItem;
+      if wi = itm then exit(nil);
+
+      if wi is TSetSize then begin
+        var x := (itm.Addr+itm.Count);
+        var bThisGood := (TSetSize(wi).NewSize > x)
+                      and (Self.Stream.size > x);
+
+        if not bThisGood then
+            exit(wi)
+      end
+      else
+      if (wi is TWriteCommand) or (wi is TWriteZeroesCommand) then begin
+        var a := wi.Addr;
+        var b := wi.Count;
+        var c := itm.Addr;
+        var d := itm.Count;
+        var bThisGood := ((a+b) <= c) or (a >= (c+d));
+        if not bThisGood then begin
+          exit(wi);
+        end;
+
+      end;
+    end;
+
+
+end;
 function TStreamQueue.GetNextItem: TQueueItem;
 var
-  t: ni;
   itm: TReadCommand;
   wi: TQueueItem;
-  u: ni;
-  bGood, bThisGood: boolean;
-  a,b,c,d: int64;
 begin
   result := nil;
   //inherited;/// <<--- do not call
@@ -1559,7 +1726,6 @@ begin
 
   //read operations get priority,
   //...make a list of read operations
-  bGood := false;
   itm := nil;
   if potentiallyHasReads then begin
   itm := GetRead;
@@ -1568,42 +1734,15 @@ begin
       potentiallyHasReads := false;
     end else begin
     //for each read operation, check that it does not overlap any write operations
-    bGood := true;
-    for u := 0 to FWorkingItems.count-1 do begin
-      wi := fWorkingItems[u];
-      if wi = itm then break;
-
-      if wi is TWriteCommand then begin
-        a := TWriteCommand(wi).Addr;
-        b := TWriteCommand(wi).Count;
-        c := itm.Addr;
-        d := itm.Count;
-        bThisGood := ((a+b) <= c) or (a >= (c+d));
-        if not bThisGood then begin
-          bgood := false;
-          break;
-        end;
-
-      end else
-      if wi is TWriteZeroesCommand then begin
-          a := TWriteZeroesCommand(wi).Addr;
-          b := TWriteZeroesCommand(wi).Count;
-          c := itm.Addr;
-          d := itm.Count;
-          bThisGood := ((a+b) <= c) or (a >= (c+d));
-          if not bThisGood then begin
-            bgood := false;
-            break;
-          end;
-      end;
+{$IFDEF READ_PRIORITY_CODE_2020}
+      self.PrioritizeOverlapping(itm);
+{$ENDIF}
     end;
   end;
-  end;
 
-  if not bGood then
-    result := inherited
-  else
-    result := itm;
+  result := inherited;
+
+
 
 {$IFDEF LOG_ITEMS}
   Debug.Log(self,'got '+result.debugstring);
@@ -1631,7 +1770,7 @@ begin
 
 end;
 
-procedure TStreamQueue.OptimizeIncoming(incomingitem: TQueueItem);
+procedure TStreamQueue.OptimizeIncoming(var incomingitem: TQueueItem);
 var
   t: ni;
   itm: TQueueItem;
@@ -1646,8 +1785,12 @@ begin
 
   itm := incomingitem;
   if itm is TWriteCommand then begin
-    w := itm as TWriteCommand;
+    var oldw := itm as TWriteCommand;
+    w := oldw;
     OptimizeSingle(w);
+    if w <> oldw then
+      incomingItem := w;
+
   end;
 
 end;
@@ -1713,6 +1856,60 @@ begin
 
 end;
 
+
+procedure TStreamQueue.PrioritizeOverlapping(itm: TQueueStreamItem);
+var
+  a: TArray<TQueueStreamItem>;
+  overlap: TQueueStreamItem;
+begin
+  //example [45]=Read   [13]=OWrite  [4]=OWrite    [2]=SetSize
+  //Desired
+  //        [3]=Read [2]=OWrite [1]=OWrite [0]=SetSize
+
+  //mechanism trace
+  //-- find SetSize ... a[0]
+  //-- find Owrite[4] ... a[1]
+  //-- find OWrite[13] ... a[2]
+  //-- find nil ... stop
+
+  // addfirst a[2]
+  // addfirst a[1]
+  // add first a[0]
+  // add itm
+  //
+
+
+
+
+  setlength(a,0);
+  repeat
+    overlap := ItemHasOverlaps(itm);
+    if overlap <> nil then begin
+      setlength(a,length(a)+1);
+      a[high(a)] := overlap;
+      FWorkingItems.Remove(overlap);
+    end;
+  until overlap = nil;
+
+  FWorkingItems.Remove(itm);
+  FWorkingItems.AddFirst(itm);
+  for var t:= high(a) downto 0 do begin
+    FWorkingItems.AddFirst(a[t]);
+  end;
+
+
+
+
+
+
+end;
+
+procedure TStreamQueue.ProcessItem;
+begin
+  inherited;
+  Stream.RefreshQueueStats;
+end;
+
 { TUnbufferedFileStream }
 
 function Tunbuffer.AnyDirty: boolean;
@@ -1763,7 +1960,7 @@ var
   cx: ni;
   cnt: ni;
 begin
-  cx := 512;
+  cx := 512-iClusterOff;
   cnt := 0;
   while cx > 0 do begin
     if not byteisdirty(iClusterOff) then
@@ -1858,10 +2055,47 @@ var
 //  pct: single;
   workingMaxdirtyTime: ni;
 begin
+{$IFDEF LIMIT_FREQUENCY_OF_CHECK_FLUSH}
   if GEtTimeSince(lastuse) < FLUSH_TIME_LIMIT then
     exit;
+{$ENDIF}
   bRepeat := true;
   tm := 0;
+  tm := GetTicker;
+{$IFDEF BULK_READ_BEFORE_FLUSH}
+  while bRepeat do begin
+    bRepeat := false;
+    if TECS(self.lckBuffers) then
+    try
+      for t:= 0 to high(Fbuffers) do begin
+//        buf := @FBuffers[t];//todo 1: use Fbufferorders
+        buf := GetLowestUnfetchedExpiredPage;//  @FBuffers[t];//todo 1: use Fbufferorders
+        bRepeat := buf <> nil;
+        if buf = nil then break;
+        if TECS(buf.lck) then
+        try
+          if (buf.AnyDirty and (gettimesince(buf.Dirtytime) > FLUSH_TIME_LIMIT)) then begin
+            if not buf.ContainsSomeZeroes then
+              PreparePageForFlush(buf);
+
+          end;
+        finally
+          LCS(buf.lck);
+        end;
+
+
+        if GetTimeSince(tm)>FLUSH_TIME_LIMIT then begin
+          bRepeat := false;
+          break;
+        end;
+
+      end;
+    finally
+      LCS(self.lckBuffers);
+    end;
+  end;
+{$ENDIF}
+  bRepeat := true;
   tm := GetTicker;
   while bRepeat do begin
     bRepeat := false;
@@ -1871,20 +2105,26 @@ begin
 //      pct := 1.0-greaterof((pct * 2) -1, 0.0);
 //      workingMaxDirtyTime := greaterof(100,round(10000 * pct));
       for t:= 0 to high(Fbuffers) do begin
-        buf := @FBuffers[t];//todo 1: use Fbufferorders
+        buf := GetLowestExpiredPage;//  @FBuffers[t];//todo 1: use Fbufferorders
+        bRepeat := buf <> nil;
+        if buf = nil then break;
         if TECS(buf.lck) then
         try
-          if (buf.AnyDirty and (gettimesince(buf.Dirtytime) > 100)) or buf.AllDirty then begin
+
+          if (buf.AnyDirty and (gettimesince(buf.Dirtytime) > FLUSH_TIME_LIMIT)) or buf.AllDirty then begin
             if not buf.ContainsSomeZeroes then
               FlushPage(buf);
-            if GetTimeSince(tm)>FLUSH_TIME_LIMIT then begin
-              break;
-            end;
-
           end;
+
         finally
           LCS(buf.lck);
         end;
+
+        if GetTimeSince(tm)>FLUSH_TIME_LIMIT then begin
+          bRepeat := false;
+          break;
+        end;
+
 
       end;
     finally
@@ -1925,6 +2165,7 @@ begin
   end;
 
 end;
+
 
 constructor TUnbufferedFileStream.Create(const AFileName: string;
   Mode: cardinal);
@@ -1994,6 +2235,22 @@ begin
   Debug.Log(s);
 end;
 
+function TUnbufferedFileStream.CountDirtyBuffers_Slow: ni;
+begin
+  result := 0;
+  for var t:= 0 to high(Self.FBuffers) do
+    if FBuffers[t].AnyDirty then inc(result);
+
+end;
+procedure TUnbufferedFileStream.DecDirtyCount;
+begin
+  ecs(lckDirtyCount);
+  dec(FDirtyBuffercount);
+  FDirtyBufferCount := CountDirtyBuffers_SLow;
+  lcs(lckDirtyCount);
+  RefreshDirtyStats;
+end;
+
 procedure TUnbufferedFileStream.DestroyUnbuffers;
 var
   t: ni;
@@ -2040,6 +2297,14 @@ end;
 constructor TUnbufferedFileStream.Create(const AFileName: string; Mode: cardinal; Rights: Cardinal; Flags: cardinal);
 begin
   inherited Create(AfileName, Mode, Rights, Flags{$IFDEF ALLOW_UNBUFFERED_FLAG} or FILE_FLAG_NO_BUFFERING{$ENDIF});
+  phIO := PMC.GetPerfHandle;
+  phUnder := PMC.GetPerfHandle;
+  phUnder.desc.Desc := AfileName;
+  phUnder.desc.left := phIO.id;
+  phCache := PMC.GetPerfHandle;
+  phCache.node.typ := NT_BUCKETFILL;
+  phCache.desc.above := phIO.id;
+  phCache.desc.desc := 'Dirt';
 //  rsWrite0 := TRingStats.create;
 //  rsWrite1 := TRingStats.create;
 //  rsWrite2 := TRingStats.create;
@@ -2061,6 +2326,7 @@ begin
   ICS(lckTemp);
   ICS(lckUnder);
   ICS(lckOp);
+  ICS(lckDirtyCount);
   ICS(lckBack);
   ICS(lckState);
   ICS(lckBuffers);
@@ -2218,6 +2484,7 @@ begin
   DCS(lckUnder);
   DCS(lckstate);
   DCS(lckOp);
+  DCS(lckDirtyCount);
   DCS(lckBuffers);
   DCS(lckTemp);
   DCS(lckBack);
@@ -2241,6 +2508,9 @@ begin
 //  rsFlush.free;
 
   aligned_temp.Unallocate;
+  PMC.ReleasePerfHandle(phIO);
+  PMC.ReleasePerfHandle(phCache);
+  PMC.ReleasePerfHandle(phUnder);
   inherited;
 
 end;
@@ -2342,7 +2612,11 @@ begin
     iCnt := 0;
     while iTogo > 0 do begin
 //      rsIndividualRead.BeginTime;
+      var n := phUnder.node;
+      if n <> nil then  n.busyR := true;
       iJustRead := FileReadPx(@self.aligned_temp,FHandle, p^, iTogo);//ok
+      if n <> nil then
+        n.incr(iJustRead);
 //      rsIndividualRead.EndTime;
 //      if rsIndividualRead.NewBAtch then
 //        rsIndividualRead.OptionDebug('IRTime for '+self.filename);
@@ -2550,18 +2824,13 @@ begin
 //  if buf.PageNumber = 6 then
 //      Debug.Log('page 6');
 {$ifdef USE_SPOT_FLUSH}
-  if buf.AnyDirty then
-    FlushWithoutRead(buf);
+  FlushWithoutRead(buf);
 {$ELSE}
   FlushPageBruteForce(buf, 0);
 {$ENDIF}
 end;
 
 procedure TUnbufferedFileStream.FlushPageBruteForce(buf: PUnBuffer; iRecursions: ni=0);
-{x$DEFINE SUPER}
-{$IFDEF SUPER}
-
-{$ELSE}
 var
   iSeek, iTogo, iAddr, iTotalToWrite, iJustWrote, iWritten: int64;
   b2,b3: PUnbuffer;
@@ -2580,6 +2849,8 @@ begin
 //  if EnableDirtyDebug then begin
 //    Debug.Log('DirtyDebug Page:'+buf.PageNumber.tostring);
 //  end;
+//  Debug.Log(self.filename+ 'flushpage Page:'+buf.PageNumber.tohexstring);
+
   if iRecursions > 9 then
     exit;
   iPAge := -1;
@@ -2624,10 +2895,12 @@ begin
         LCS(lckUnder);
       end;
 
-
-
   //    Debug.ConsoleLog('Done page'+inttostr(buf.pagenumber));
       Cleardirtymask;
+      DecDirtyCount;
+
+//      AnyDirty := false;
+//      AllDirty := false;
 //      rsFlush.EndTime; if rsFlush.NewBAtch then Debug.log('flush='+rsFlush.debugtiming);
     finally
       LCS(lck);
@@ -2745,9 +3018,13 @@ begin
 
               iEnd := FileSeekPx(FHandle, 0, 2);
               if iSeekPos < iEnd then begin
+                var n := phUnder.node;
+                if n <> nil then n.busyR := true;
                 FileSeekPx(FHandle, iSeekPOs {yes this is 512 byte aligned},0);
                 //read the data into scratch1
                 iRead := FileReadPx(@self.aligned_temp,FHandle, scratch1[0], 512);
+                if n <> nil then
+                  n.incr(iREad);
                 if iRead <> 512 then begin
                   Debug.Log('Did not read 512, got '+iRead.toString+' from file. Seek was '+iSeekPos.ToHexString+' when size is '+iEnd.ToHexString);
                 end;
@@ -2806,6 +3083,7 @@ begin
       commit;
 
       buf.ClearDirtyMask;//since everythign is flushed, we're clean now
+      DecDirtyCount;
     finally
       LCS(lck);
     end;
@@ -2828,7 +3106,6 @@ begin
 //  SwapPage(FSeekPage);
 end;
 
-{$ENDIF}
 
 function TUnbufferedFileStream.GetBufferStatusString: string;
 var
@@ -2858,6 +3135,44 @@ begin
     result := FBack_SeekPOsition
   else
     result := FFront_SeekPosition;
+end;
+
+function TUnbufferedFileStream.GetLowestExpiredPage: PUnbuffer;
+var
+  min: PUnBuffer;
+begin
+  min := nil;
+  for var t := 0 to high(FBuffers) do begin
+    var buf: PUnBuffer := @FBuffers[t];
+    if buf^.AnyDirty
+    and (gettimesince(buf^.Dirtytime) > 1000) then begin
+      if (min = nil) or (min^.PageNumber > buf^.PageNumber) then begin
+        min := buf;
+      end;
+
+    end;
+  end;
+  exit(min);
+end;
+
+function TUnbufferedFileStream.GetLowestUnfetchedExpiredPage: PUnbuffer;
+var
+  min: PUnBuffer;
+begin
+  min := nil;
+  for var t := 0 to high(FBuffers) do begin
+    var buf: PUnBuffer := @FBuffers[t];
+    if buf^.AnyDirty
+    and (not buf^.wasfetched)
+    and (not buf^.AllDirty)
+    and (gettimesince(buf^.Dirtytime) > 1000) then begin
+      if (min = nil) or (min^.PageNumber > buf^.PageNumber) then begin
+        min := buf;
+      end;
+
+    end;
+  end;
+  exit(min);
 end;
 
 function TUnbufferedFileStream.GetPosition: int64;
@@ -3035,7 +3350,12 @@ begin
     iTogo := iTotalToWrite;
     writesize := 262144*8;
     while iTogo > 0 do begin
+      var n := phUnder.node;
+      if n <> nil then n.busyW := true;
       iJustWrote := FileWritePx(@self.aligned_temp,FHandle, pb^, lesserof(iTogo, 262144));
+      if n <> nil then
+        n.incw(iJustWrote);
+
 //      iJustWrote := FileWrite(FHandle, pb^, lesserof(iTogo, 262144));
 //      if iJustWrote < 0 then begin
 //        writesize := writesize shr 1;
@@ -3048,6 +3368,10 @@ begin
         inc(iWritten, iJustWrote);
         dec(iTogo, iJustWrote);
         inc(pb, iJustWRote);
+      end else
+      if iJustWrote < 0 then begin
+        var err := GetLastError;
+        raise Ecritical.create('unable to write to '+self.filename +' '+ GetLastErrorMessage(err));
       end;
     end;
   finally
@@ -3075,6 +3399,16 @@ begin
     lcs(lckBuffers);
   end;
 
+end;
+
+procedure TUnbufferedFileStream.IncDirtyCount;
+begin
+  ecs(lckDirtyCount);
+  inc(FDirtyBuffercount);
+  FDirtyBufferCount := CountDirtyBuffers_SLow;
+
+  lcs(lckDirtyCount);
+  RefreshDirtyStats;
 end;
 
 function TUnbufferedFileStream.IndexOfPage(iPage: int64): ni;
@@ -3291,6 +3625,52 @@ begin
 
 end;
 
+procedure TUnbufferedFileStream.PreparePageForFlush(buf: PUnBuffer;
+  iRecursions: ni);
+var
+  iSeek, iTogo, iAddr, iTotalToWrite, iJustWrote, iWritten: int64;
+  b2,b3: PUnbuffer;
+  t: ni;
+  iPage: int64;
+  writesize: ni;
+begin
+  if buf^.pagenumber < 0 then exit;
+
+  if iRecursions > 9 then
+    exit;
+  iPAge := -1;
+  with buf^ do begin
+    ECS(lck);
+    try
+      if not AnyDirty then begin
+        exit;
+      end;
+      if not wasfetched then begin
+        if not AllDirty then begin
+          FetchPageAndApplyMask(buf);
+        end;
+      end;
+    finally
+      LCS(lck);
+    end;
+  end;
+
+  //Flush forward for optimization
+{  if iPage >= 0 then begin
+    b3 := FindPage(iPage+1);
+    if b3 <> nil then begin
+      if b3.AllDirty then begin
+        if TECS(b3.lck) then
+        try
+          FlushPage(b3, iRecursions+1);
+        finally
+          LCS(b3.lck);
+        end;
+      end;
+    end;
+  end;}
+
+end;
 function TUnbufferedFileStream.SYncRead(var Buffer; Count: Integer): Longint;
 var
   iPossible: int64;
@@ -3300,6 +3680,9 @@ var
   was: ni;
   seekpos: int64;
 begin
+{$IFDEF CHECK_FLUSH_OFTEN}
+  CheckOrStartFlushCommand;
+{$ENDIF}
 //  if count = $10000 then
 //    Debug.Log('trap');
   seekpos := FBack_SeekPOsition;
@@ -3404,7 +3787,12 @@ begin
       while x < y do begin
   {$IFDEF USE_LINKED_BUFFERS}
 {$IFDEF PACKED_MASK}////
+        var was := FBufferOrders[0].buf^.AnyDirty;
         FBufferOrders[0].buf^.SetDirty(0, UNBUFFERSIZE);//ok
+        if not was then begin
+          FBufferOrders[0].buf^.FDirtyTime := GetTicker;
+          incdirtycount;
+        end;
 {$ELSE}
         fillmem(@FBufferOrders[0].buf.FDirtyMask[0], sizeof(FBufferOrders[0].buf.FDirtyMask), 0);
 {$ENDIF}
@@ -3412,6 +3800,8 @@ begin
   {$ELSE}
         fillmem(@FBufferOrders[0].FDirtyMask[0], sizeof(FBufferOrders[0].FDirtyMask), 0);
         FBufferOrders[0].FPageIsDirty := true;
+        if not was then
+          inc(DirtyBufferCount);
   {$ENDIF}
 
 
@@ -3666,6 +4056,9 @@ var
   was: ni;
   seekpos: int64;
 begin
+{$IFDEF CHECK_FLUSH_OFTEN}
+    CheckOrStartFlushCommand;
+{$ENDIF}
 //  rsWrite0.BeginTime;
   try
   seekpos := FBack_SeekPOsition;
@@ -3698,6 +4091,7 @@ begin
       movemem32(@buf.data[iOffset],bufin, result);
       if not buf.AnyDirty then begin
         buf.FDirtyTime := Getticker;
+        incDirtyCount;
       end;
     //  if bMoreDebug then begin
     //    Debug.Log('DAta is now : '+memorydebugstring(pbyte(@buf.data[iOffset])+48128, lesserof(count,512)));
@@ -3706,6 +4100,7 @@ begin
 
 
 //      rsWrite1.BeginTime;
+      var wasdirty := buf.AnyDirty;
       if not buf.wasfetched then begin
         if not buf.AllDirty then begin
           buf.SetDirty(iOffset, result);
@@ -3725,6 +4120,7 @@ begin
         FReportedSize := FBack_SeekPosition ;
         if not buf.AnyDirty then begin
           buf.FDirtyTime := Getticker;
+          incDirtycount;
         end;
         buf.Unlock;
         buf := nil;
@@ -3767,6 +4163,9 @@ var
   iJustWritten, iTotalWritten: int64;
   p: pbyte;
 begin
+{$IFDEF CHECK_FLUSH_OFTEN}
+    CheckOrStartFlushCommand;
+{$ENDIF}
   ecs(lckOp);
   try
     if not in_perform_op then
@@ -3838,6 +4237,9 @@ begin
         raise Ecritical.create('wtf');
       FBAck_SeekPOsition := FFront_SeekPOsition;
       result := SyncWrite(buffer, count);
+      if phIO.node <> nil then
+        inc(phIO.node.w, count);
+
       if FBack_SeekPOsition <> result + FFront_SeekPOsition then
         raise ECritical.create('!!!');
       FFront_SeekPOsition := FBAck_SeekPOsition;
@@ -3851,8 +4253,13 @@ begin
 {$ELSE}
   ecs(lckSTate);  //DEADLOCK!
   try
+    var n := phIO.node;
+    if n <> nil then n.busyW := true;
     WriteBehind(FFront_SeekPosition, @byte(Buffer), Count);
     result := count;
+    if n <> nil then
+      n.incw(count);
+
   finally
     lcs(lckState);
   end;
@@ -3863,9 +4270,12 @@ procedure TUnbufferedFileStream.WriteBehind(seekpos: int64; pb: PByte; sz: int64
 {$IFDEF ALLOW_UB_WRITE_BEHIND}
 var
   wb: TUBWriteBehind;
+  originalfilesize: int64;
 begin
   ecs(lckOp);
+  originalfilesize := size;
   try
+    //!! do this up front because it will force a wait later, defeating the purpose of a write-behind
     wb := TUBWriteBehind.create;
     wb.ubs := self;
 //    Debug.Log('Create WB:'+seekpos.tohexstring+' '+memorytohex(@pb[600], lesserof(128, sz-600)));
@@ -3876,7 +4286,7 @@ begin
     ecs(lckState);
     lcs(lckOp);
     FFront_SeekPOsition := seekpos + sz;
-    FReportedSize := greaterof(seekpos+sz, Size);
+    FReportedSize := greaterof(seekpos+sz, originalfilesize);
 //    if seekpos = 0 then
 //      Debug.Log('Trap');
     //PerformAllOps;//XXXX
@@ -3971,7 +4381,12 @@ begin
     movemem32(@buf.data[iOffset],@iTemp, 8);
     movemem32(@buf.data[iOffset+8],@FreportedSize, 8);
 //    Debug.Log('wrote size '+FReportedSize.tohexstring+' to page '+iPage.ToString);
+    var was := buf.AnyDirty;
     buf.SetDirty(iOffset, 16);
+    buf.FDirtytime := getticker;
+    if not was then
+      incdirtycount;
+
     FSizeCommittedToBuffers := FReportedSize;
 
   finally
@@ -3991,7 +4406,12 @@ begin
       ecs(lckState);
 //      Debug.Log('READ '+FFront_SeekPosition.tohexstring);
       FBack_SeekPosition := FFront_SeekPOsition;
+      var n := phIO.node;
+      if n <> nil then
+        n.busyR := true;
       result := SyncRead(buffer, count);
+      if n <> nil then
+        n.incr(result);
       FFront_SeekPOsition := FBAck_SeekPOsition;
 //      Debug.Log('READ OK');
       lcs(lckSTate);
@@ -4043,6 +4463,12 @@ end;
 function TUnbufferedFileStream.RecommendedPrefetchAllowance: ni;
 begin
   result := FRecommendedPrefetchAllowance;
+end;
+
+procedure TUnbufferedFileStream.RefreshDirtyStats;
+begin
+  phCache.node.r := FDirtyBufferCount;
+  phCache.node.w := FbufferOrders.count;
 end;
 
 { TAdaptiveQueuedStream }

@@ -9,8 +9,13 @@ uses
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
   FMX.Objects, guihelpers_fmx;
 
+
 const
+{$IFDEF INTENSE_FANCY}
+  PROJECTILE_COUNT = 200;
+{$ELSE}
   PROJECTILE_COUNT = 100;
+{$ENDIF}
 
 const
   GRAV_POINT_TEST_CONST : TVector4 = (FX: 0; Fy: 0; Fz: 0; Fw: 0);
@@ -92,7 +97,13 @@ begin
   if animstage = asSTop then
     exit;
   bringtofront;
-  UpdatePhysics(interval);
+  var cx := interval;
+  const physics_step = 10;
+  while cx > physics_step do begin
+    UpdatePhysics(physics_step);
+    dec(cx,physics_step);
+  end;
+
   DoDraw;
 end;
 

@@ -1,7 +1,7 @@
 unit DataObjectFactory;
 
 interface
-uses Variants,DataObject, Exceptions, Classes, DataObjectXRef, betterobject, SharedObject, Dataobjectcache, systemx, typex, orderlyinit;
+uses Variants,DataObject, ExceptionsX, Classes, DataObjectXRef, betterobject, SharedObject, Dataobjectcache, systemx, typex, orderlyinit;
 
 type
 

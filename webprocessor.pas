@@ -6,7 +6,7 @@ interface
 uses betterobject, SharedObject, requestinfo, tickcount,beeper,
     better_sockets, helpers.sockets, stringx, sockfix, commandicons,
     IPClientWrapper, httpclient, systemx, typex, commandprocessor,
-    MotherShipWebServer, classes, sysutils, exceptions, windows, webstring, stringx.ansi, webfunctions;
+    MotherShipWebServer, classes, sysutils, ExceptionsX, windows, webstring, stringx.ansi, webfunctions;
 
 const
   SHORT_SOCKET_TIMEOUT =15000;

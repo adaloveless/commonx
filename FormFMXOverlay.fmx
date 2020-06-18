@@ -1,0 +1,67 @@
+object frmFMXOverlay: TfrmFMXOverlay
+  Left = 0
+  Top = 0
+  BorderStyle = None
+  Caption = 'Overlay'
+  ClientHeight = 223
+  ClientWidth = 640
+  Transparency = True
+  FormStyle = StayOnTop
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object Rectangle1: TRectangle
+    Align = Client
+    Fill.Kind = Gradient
+    Fill.Gradient.Points = <
+      item
+        Color = xFF9ABACC
+        Offset = 0.000000000000000000
+      end
+      item
+        Color = xFF4687E2
+        Offset = 1.000000000000000000
+      end>
+    Fill.Gradient.StartPosition.X = 0.500000000000000000
+    Fill.Gradient.StartPosition.Y = 1.000000000000000000
+    Fill.Gradient.StopPosition.X = 0.499999970197677600
+    Fill.Gradient.StopPosition.Y = 0.000000000000000000
+    Size.Width = 640.000000000000000000
+    Size.Height = 223.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Thickness = 8.000000000000000000
+    Stroke.Join = Round
+    Visible = False
+    object lblStatus: TLabel
+      Align = Top
+      StyledSettings = [Family, Style, FontColor]
+      Margins.Left = 24.000000000000000000
+      Margins.Top = 24.000000000000000000
+      Margins.Right = 24.000000000000000000
+      Position.X = 24.000000000000000000
+      Position.Y = 24.000000000000000000
+      Size.Width = 592.000000000000000000
+      Size.Height = 57.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Font.Size = 24.000000000000000000
+      Text = 'lblStatus'
+      Visible = False
+      TabOrder = 0
+    end
+    object ProgressBar: TProgressBar
+      Align = Client
+      Orientation = Horizontal
+      Margins.Left = 32.000000000000000000
+      Margins.Top = 32.000000000000000000
+      Margins.Right = 32.000000000000000000
+      Margins.Bottom = 32.000000000000000000
+      Size.Width = 576.000000000000000000
+      Size.Height = 159.000000000000000000
+      Size.PlatformDefault = False
+      Value = 33.000000000000000000
+      Visible = False
+    end
+  end
+end

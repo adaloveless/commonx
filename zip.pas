@@ -1,5 +1,5 @@
 unit zip;
-
+{$I DelphiDefs.inc}
 interface
 
 uses
@@ -117,7 +117,7 @@ begin
       finally
         cs.free;
       end;
-{$IFDEF IOS}
+{$IFDEF APPLE}
       ms.Seek(int64(0),TSeekOrigin.soBeginning);
 {$ELSE}
       ms.Seek(0,0);

@@ -43,6 +43,7 @@ type
     procedure ResetZone(zonebase, zonelength: int64; bProvisioned: boolean);//
     procedure IncrementZoneRev(revidx: int64);
     procedure IncrementZoneRevForStartingBlock(block: int64);
+    procedure SetPerfNodeParentId(id: ni);
   end;
 
 implementation
@@ -248,6 +249,13 @@ begin
         fs.Size := sizeof(TArcMapEntry)*MAX_ZONES;
     end;
   end;
+end;
+
+procedure TArcMap.SetPerfNodeParentId(id: ni);
+begin
+  if fs <> nil then
+    fs.phIO.desc.left := id;
+
 end;
 
 { TArcMapEntry }

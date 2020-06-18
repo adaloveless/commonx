@@ -3,7 +3,7 @@ unit SoundGUIControls;
 interface
 
 uses
-  soundinterfaces, Classes,StdCtrls,ExtCtrls, Controls, graphics, soundtools, windows, sysutils, betterobject, Generics.Collections.fixed, advancedgraphics, soundtools_easywindows, colorblending;
+  typex, soundinterfaces, Classes,StdCtrls,ExtCtrls, Controls, graphics, soundtools, windows, sysutils, betterobject, Generics.Collections.fixed, advancedgraphics, soundtools_easywindows, colorblending;
 
 const
   AA = 4;
@@ -78,8 +78,8 @@ type
     btnPLay: TButton;
     lblDebug: TLabel;
     RefreshingScrollbar: boolean;
-    FSamples: array of smallint;
 
+    function GetSample_smallint(iSample: int64; ichannel: ni): smallint;
     constructor create(aowner: TComponent); reintroduce;virtual;
     destructor Destroy;override;
     procedure Paint;override;
@@ -110,6 +110,13 @@ type
 
 
     procedure ScrollBarChange(sender: TObject);
+    property Samples_smallint[iSample:int64;iChannel: ni]: smallint read GetSample_smallint;
+
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState;
+      X, Y: Integer); override;
+    procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState;
+      X, Y: Integer); override;
 
   published
     property ViewStart: int64 read FViewStart write SetViewStart;
@@ -120,12 +127,6 @@ type
     property LoopEnd:   int64 read FLoopend write SetLoopEnd;
 
     procedure Box(x1,y1,x2,y2: integer; color: TColor);
-
-    procedure MouseDown(Button: TMouseButton; Shift: TShiftState;
-      X, Y: Integer); override;
-    procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
-    procedure MouseUp(Button: TMouseButton; Shift: TShiftState;
-      X, Y: Integer); override;
 
     function GetSampleOnDisplay(x: real): integer;
 
@@ -147,6 +148,15 @@ type
 
     procedure PlayScrub(iStart: integer; iLength: integer = (44100 div 2));
     procedure PlayLoop(iRepeats: integer = 2);
+
+    //The services I want to offer external users of SoundEditor
+    //--select stuff
+    //--play stuff (with external help only)
+    //--set caret to external timecoder
+    //--play selection
+    //--superimpose a curve?  Maybe? with an inherited class Maybe?
+
+
 
 
   end;
@@ -403,6 +413,12 @@ begin
   result := round((ViewEnd-ViewStart)*(x/width))+ViewStart;
 end;
 
+function TSoundEditor.GetSample_smallint(iSample: int64;
+  ichannel: ni): smallint;
+begin
+  result := random(65535);//pbyte(FSamples) +(iSample*sizeof(smallint))+channels
+end;
+
 procedure TSoundEditor.MarkClick(sender: TObject);
 begin
   if SampleStart = -1 then begin
@@ -529,10 +545,10 @@ begin
   c4 := ColorBlend(bg, clWhite, 0.80);
   for t:=0 to width-1 do begin
     x := GetSampleOnDisplay(t);
-    amp1 := FSamples[GetSampleOnDisplay(t)]/32767;
-    amp2 := FSamples[GetSampleOnDisplay(t+0.25)]/32767;
-    amp3 := FSamples[GetSampleOnDisplay(t+0.50)]/32767;
-    amp4 := FSamples[GetSampleOnDisplay(t+0.75)]/32767;
+    amp1 := Samples_smallint[GetSampleOnDisplay(t),-1]/32767;
+    amp2 := Samples_smallint[GetSampleOnDisplay(t+0.25),-1]/32767;
+    amp3 := Samples_smallint[GetSampleOnDisplay(t+0.50),-1]/32767;
+    amp4 := Samples_smallint[GetSampleOnDisplay(t+0.75),-1]/32767;
     sortreals(amp1,amp2,amp3,amp4);
 
     hlColor := clBlack;
@@ -651,7 +667,7 @@ var
 begin
   FData := Value;
   p2 := pointer(PAnsiChar(FData)+4);
-  FSamples := p2 ;
+  //FSamples := p2;
 
 //  FSamples := @PAnsiChar(PAnsiChar(@PAnsiChar(FData)[0])+SOUND_IDX_DATA)[0];
   FViewEnd := SampleLength;
@@ -843,8 +859,9 @@ var
   iPos2: int64;
   bZeroFound: boolean;
 begin
+  raise Ecritical.create('deprecated');
   //record the initial amp
-  amp := FSamples[iStart];
+//  amp := Samples_smallint[iStart];
   //flip the polarity if negative
   if amp < 0 then begin
     amp := 0-amp;
@@ -870,7 +887,7 @@ begin
         if bLeft xor bRight then break;
       end;
 
-      ampL := FSamples[iPos];
+//      ampL := FSamples[iPos];
       //flip the polarity if original sample was negative
       if bNeg then ampL := 0-ampL;
 
@@ -892,7 +909,7 @@ begin
         iPos := SampleLength-1;
         if bLeft xor bRight then break;
       END;
-      ampR := FSamples[iStart+i];
+//      ampR := FSamples[iStart+i];
       //flip the polarity if original sample was negative
       if bNeg then ampR := 0-ampR;
 
@@ -963,7 +980,8 @@ begin
   if iStart+iLength > SampleLength then
     iLength := SampleLength-iStart;
 
-  Soundtools_easywindows.PlayRawSoundMono(@Fsamples[iStart], iLength, SampleRate);
+  raise ECritical.create('deprecated');
+//  Soundtools_easywindows.PlayRawSoundMono(@Fsamples[iStart], iLength, SampleRate);
 
 end;
 
@@ -984,6 +1002,8 @@ var
     inc(idx);
   end;
 begin
+  raise Ecritical.create('deprecated');
+{
   idx := 0;
 
   //calc length
@@ -1050,7 +1070,7 @@ begin
   PlayRawSoundmono(@temp[0], length(temp)*2, SampleRAte);
 
 
-
+ }
 end;
 
 function TSoundEditor.GetStream: TMemoryStream;
@@ -1064,7 +1084,7 @@ begin
   try
 
     if FData <> nil then begin
-      fSamples := nil;
+      //fSamples := nil;
       FreeMem(FData);
       FData := nil;
       //FSamples := Nil;
@@ -1099,12 +1119,12 @@ end;
 
 procedure TSoundEditor.SaveLoop(sBoogerFile: ansistring);
 begin
-  soundtools.SaveSoundData(sBoogerFile, @FSamples[SampleStart], 2*(SampleEnd-SampleStart+1), 0,SampleEnd-SampleStart+1, LoopStart-SampleStart, LoopEnd-SampleStart);
+//  soundtools.SaveSoundData(sBoogerFile, @FSamples[SampleStart], 2*(SampleEnd-SampleStart+1), 0,SampleEnd-SampleStart+1, LoopStart-SampleStart, LoopEnd-SampleStart);
 end;
 
 procedure TSoundEditor.SaveToFile(sBoogerFile: ansistring);
 begin
-  soundtools.SaveSoundData(sBoogerFile, @FSamples[0], DAtaLength, SampleStart, SampleEnd, LoopStart, LoopEnd);
+//  soundtools.SaveSoundData(sBoogerFile, @FSamples[0], DAtaLength, SampleStart, SampleEnd, LoopStart, LoopEnd);
 
 end;
 

@@ -181,7 +181,7 @@ function  Rpt_SecondsToHhMmStr(iSeconds: integer): string;
 implementation
 
 uses Sysutils, ClientConstants, DataObjectServices, WebConfig,
-  CommonRequests, stringx, Exceptions, ErrorHandler,
+  CommonRequests, stringx, ExceptionsX, ErrorHandler,
   typex, systemx;
 
 

@@ -439,7 +439,7 @@ procedure TfrmBase.HardWork(proc: TProc; guiproc: TProc);
 var
   c: TCommand;
 begin
-  if assigned(guiproc) then
+  if not assigned(guiproc) then
     c := InlineProc(proc)
   else
     c := InlineProcWithGui(proc, guiproc);

@@ -6438,7 +6438,7 @@ implementation
   var str: array[0..LF_FACESIZE - 1] of WideChar;
   begin
     result := SetStatus(GdipGetFamilyName(nativeFamily, @str, language));
-    name := str;
+    name := ansistring(str);
   end;
 
   function TGPFontFamily.Clone: TGPFontFamily;

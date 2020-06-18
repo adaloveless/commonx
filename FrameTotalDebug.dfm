@@ -9,25 +9,17 @@ object framTotalDebug: TframTotalDebug
     Top = 0
     Width = 487
     Height = 318
-    ActivePage = TabSheet2
+    ActivePage = TabSheet3
     Align = alClient
     TabOrder = 0
     object TabSheet2: TTabSheet
       Caption = 'Commands'
       ImageIndex = 1
       OnShow = TabSheet2Show
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
     end
     object TabSheet3: TTabSheet
       Caption = 'Memory'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart1: TChart
         Left = 0
         Top = 0

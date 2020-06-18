@@ -842,8 +842,12 @@ begin
   if not realthread.terminated then begin
     realthread.terminate;
   end;
-  realthread.waitfor;
+
 {$IFDEF WINDOWS}
+  try
+    realthread.waitfor;
+  except
+  end;
   waitforsingleobject(realthread.Handle, 0);
 {$ENDIF}
 

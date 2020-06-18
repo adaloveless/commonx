@@ -30,11 +30,24 @@ type
   TRectHelper = record helper for TRect
     function ToString: string;
     procedure FromString(s: string);
+    function center: TPoint;
   end;
 
   TRectFHelper = record helper for TRectF
+  private
+    function GetX: double;
+    function GetY: double;
+    procedure SetX(const Value: double);
+    procedure SetY(const Value: double);
+  public
     function ToString: string;
     procedure FromString(s: string);
+    function Center: TPointF;
+    function LeftCenter: TPointF;
+    function RightCenter: TPointF;
+
+    property x: double read GetX write SetX;
+    property y: double read GetY write SetY;
   end;
 
   TnativefloatPoint = record
@@ -736,6 +749,12 @@ end;
 
 { TRectHelper }
 
+function TRectHelper.center: TPoint;
+begin
+  result.x := left + (width div 2);
+  result.y := top + (height div 2);
+end;
+
 procedure TRectHelper.FromString(s: string);
 var
   s1,s2: string;
@@ -779,6 +798,12 @@ end;
 
 { TRectFHelper }
 
+function TRectFHelper.Center: TPointF;
+begin
+  result.x := left + (width/2);
+  result.y := top + (height /2);
+end;
+
 procedure TRectFHelper.FromString(s: string);
 var
   s1,s2: string;
@@ -790,6 +815,48 @@ begin
   SplitString(s2, '~', s1,s2);
   self.TopLeft.FromString(s1);
   self.BottomRight.FromString(s2);
+end;
+
+function TRectFHelper.GetX: double;
+begin
+  result := left;
+end;
+
+function TRectFHelper.GetY: double;
+begin
+  result := top;
+end;
+
+function TRectFHelper.LeftCenter: TPointF;
+begin
+  result.x := left;
+  result.y := top + (height /2);
+
+end;
+
+function TRectFHelper.RightCenter: TPointF;
+begin
+  result.x := right;
+
+//  if IsNan(height) then
+//    result.y := 0
+//  else
+  if top < 0.00000001 then
+    top := 0.0;
+    result.y := top + (height /2);
+
+end;
+
+procedure TRectFHelper.SetX(const Value: double);
+begin
+  left := value;
+
+end;
+
+procedure TRectFHelper.SetY(const Value: double);
+begin
+  top := value;
+
 end;
 
 function TRectFHelper.ToString: string;
@@ -899,6 +966,12 @@ begin
 
 
 end;
+
+
+
+initialization
+
+
 
 
 end.

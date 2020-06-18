@@ -12,10 +12,10 @@ uses
 
 const
   dir_sleep = 1;
-  {$IFDEF CLX}
+  {$IFNDEF MSWINDOWS}
   ALL_FILES = '*';
   {$ELSE}
-  ALL_FILES = '*.*';
+  ALL_FILES = '*';
   {$ENDIF}
   {$IFDEF MSWINDOWS}
   FILE_WILDCARD_ANY = '*.*';
@@ -1264,8 +1264,8 @@ var
   s1,s2,s3: string;
 begin
   s1 := slash(Path);
-  if splitstring(s1, '\', s2, s3, true) then begin
-    if splitstring(s2, '\', s2, s3, true) then begin
+  if splitstring(s1, pathseparator, s2, s3, true) then begin
+    if splitstring(s2, pathseparator, s2, s3, true) then begin
       result := slash(s2);
     end else begin
       result := '';

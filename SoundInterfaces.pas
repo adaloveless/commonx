@@ -1380,8 +1380,9 @@ begin
       Length := iSize;
     end;
 //  end;
-
+{$IFNDEF DISABLE_FFTW}
   CreateFFTPlans;
+{$ENDIF}
   allocated := true;
 
 end;

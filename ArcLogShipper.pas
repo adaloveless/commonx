@@ -278,7 +278,7 @@ interface
 //TODO 1: Make sure that on transaction commit, localrev only rolls FORWARD
 
 uses
-  numbers, typex, systemx, stringx, RDTPArchiveClient, LockQueue, managedthread, sysutils, ringfile, virtualdiskconstants, signals, arcmap, debug, tickcount, commandprocessor, simplequeue, ringbuffer, transaction, generics.collections, better_collections, commandicons;
+  perfmessage,perfmessageclient,numbers, typex, systemx, stringx, RDTPArchiveClient, LockQueue, managedthread, sysutils, ringfile, virtualdiskconstants, signals, arcmap, debug, tickcount, commandprocessor, simplequeue, ringbuffer, transaction, generics.collections, better_collections, commandicons;
 
 const
   RESERVE_ID_COUNT = 1000000;
@@ -350,6 +350,7 @@ type
     procedure Activate;
     procedure DestroyClientPool;
   public
+    phIO, phRingR, phRingW, phNet: TPerfHandle;
     FClients: TSharedList<TRDTPArchiveClient>;
     disk: TObject;
 //    arcmap: TArcMap;
@@ -388,6 +389,7 @@ type
     function LogThis(const blockstart, blocklength: int64; const data: Pbyte): boolean;
     function LogThis_OLD(const blockstart, blocklength: int64; const data: Pbyte): boolean;
     function FetchLog(const blockstart, blocklength: int64; const outdata: PByte): boolean;
+    procedure RefreshRingStats;
 
 //    property TargetArchive: string read FTargetArchive write FTargetArchive;
 //    property SourceArchive: string read FSourceArchive write FSourceArchive;
@@ -844,6 +846,22 @@ var
   t: ni;
 begin
   inherited;
+  phIO := PMC.GetPerfhandle;
+  phIO.desc.desc := 'ArcRing';
+  phRingW := PMC.GetPerfhandle;
+  phRingW.node.typ := NT_BUCKETFILL;
+  phRingW.desc.desc := 'WriteBuf';
+  phRingW.desc.above := phIO.id;
+  phRingR := PMC.GetPerfhandle;
+  phRingR.node.typ := NT_BUCKETFILL;
+  phRingR.desc.desc := 'ReadBuf';
+  phRingR.desc.above := phRingW.id;
+
+
+  phNet := PMC.GetPerfHandle;
+  phNet.desc.desc :='TargetArchive';
+  phNet.desc.left := phIO.id;
+
 
   //create a command to handle the refresh
   for t:= low(valbatch) to high(valbatch) do begin
@@ -898,6 +916,10 @@ begin
   DCS(csClient);
   DCS(csQuickClient);
   FClients.free;
+  PMC.ReleasePerfHandle(phRingR);
+  PMC.ReleasePerfHandle(phRingW);
+  PMC.ReleasePerfHandle(phNet);
+  PMC.ReleasePerfHandle(phIO);
 
   inherited;
 end;
@@ -956,7 +978,7 @@ begin
     exit;
   try
     result := false;
-
+    phIO.node.busyR := true;
     if (not ring.WaitForEmptySignal(1))  then
     begin
       Alert('Possible loss of data because logs are not empty.');
@@ -1162,6 +1184,7 @@ var
 begin
 //  arcmap.Lock;
   try
+    phIO.node.busyW := true;
     bSuccess := false;
     result := false;
     tmSTart := GetTicker;
@@ -1295,6 +1318,8 @@ begin
           end;
           ring.GuaranteePutData(pbyte(@h), sizeof(h));
           ring.GuaranteePutData(data, h.bytelength);
+          phIO.node.incw(h.bytelength);
+          RefreshRingStats;
           result := true;
         finally
           ring.unlock;
@@ -1586,6 +1611,12 @@ begin
   end;
 end;
 
+procedure TArcLogShipper.RefreshRingStats;
+begin
+  ring.SyncPerformanceNodes(phRingR.node, phRingW.node);
+
+end;
+
 procedure TArcLogShipper.SaveARcmapChecksum;
 var
   l: TLock;
@@ -1780,12 +1811,12 @@ begin
       lastc := nil;
       try
         while ring.WaitForDataSignal(1) do begin
-
           if not ring.TryLock then begin
             tmLAstDiskBusyTime := getticker;
             exit;
           end;
           try
+            RefreshRingStats;
             if ring.GuaranteeGetData(pbyte(@h), sizeof(h)) = 0 then
               exit;
             if not h.IsCheckValid then
@@ -2156,6 +2187,8 @@ begin
     client.LogThis_Async(archive, fromid, this_logid, startblock, blocklength, data);
     Step := 3;
     success := client.LogThis_Response;
+    shipper.phNet.node.incw(self.blocklength shl BLOCKSHIFT);
+
     Step := 4;
     //LOGTHIS RETURNS FALSE IF LOGID CHANGED!
     if success then
@@ -2372,6 +2405,7 @@ begin
           if FromID = 0 then begin
           {$ENDIF}
             client.Logthis_Async(archive, fromid, this_logid, startblock, 0, nil);
+            shipper.phNET.node.incw(ARC_ZONE_SIZE_IN_BYTES);
             STep := 8;
             success := client.LogThis_Response;
           {$IFDEF DONT_COMMIT_CHECKSUM_PASSES}

@@ -95,7 +95,7 @@ function UniquefileName(sFileName: string): string;
 
 
 var
-  fileCommands: TCommandProcessor;
+  fileCommands: TCommandProcessor = nil;
 
 implementation
 
@@ -342,14 +342,14 @@ begin
 
     r := (200-FLatency)/200;
 
-    MemoryExpense := 1/30;
+    MemoryExpense := 1/64;
 //    Debug.Log('Calc Expense for: '+source+'->'+destination);
 //    Debug.Log('Latency: '+floattostr(Latency),'filecopy');
 //    Debug.Log('Latency factor: '+floattostr(r),'filecopy');
 
 
-    if r < 0.75 then
-      r := 0.75;
+    if r < (1/8) then
+      r := (1/8);
 
     if FileOp = foMove then begin
       if lowercase(ExtractNetworkRoot(source)) = lowercase(ExtractNetworkRoot(destination)) then begin
@@ -367,7 +367,7 @@ begin
 //        if r2 < 32768 then r2 := 32768;
 
         if r2 > 0 then begin
-          r2 := r2 / 32768;
+          r2 := r2 / 2000000;
           if r2 > 1 then r2 := 1;
 
           if r = 0 then
@@ -387,8 +387,10 @@ begin
       end;
 
 //      r := r * 4000;
-      if r > 1 then r := 1;
-      if r < (1) then r := (1);
+      const MIN_EXPENSE = 1/64;
+      const MAX_EXPENSE = 63/64;
+      if r > MAX_EXPENSE then r := MAX_EXPENSE;
+      if r < (MIN_EXPENSE) then r := (MIN_EXPENSE);
 //
 //      Debug.Log('Source: '+GetDrive(Source),'filecopy');
 //      Debug.Log('Destination: '+GetDrive(Destination),'filecopy');
@@ -396,6 +398,7 @@ begin
 
       Resources.SetResourceUsage(ExtractNetworkroot(Source), Resources.GetResourceUsage(ExtractNetworkroot(Source))+(r));
       Resources.SetResourceUsage(ExtractNetworkroot(Destination), Resources.GetResourceUsage(ExtractNetworkroot(Destination))+(r));
+
       AssignStats;
 
 
@@ -574,6 +577,7 @@ procedure oinit;
 begin
   filecommands := TCommandProcessor.create(nil,'File Commands');
 end;
+
 procedure ofinal;
 begin
   if assigned(filecommands) then begin
@@ -601,7 +605,7 @@ begin
 end;
 
 initialization
-  orderlyinit.init.RegisterProcs('commands_file', oinit, ofinal, 'Debug,ManagedThread');
+  orderlyinit.init.RegisterProcs('commands_file', oinit, ofinal, 'Debug,ManagedThread,CommandProcessor');
 
 finalization
 

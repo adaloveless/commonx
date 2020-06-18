@@ -3,7 +3,7 @@ unit IRCServer;
 interface
 
 uses
-  classes, typex, systemx, stringx, idtcpserver,idglobal, betterobject, idcontext, better_collections, debug, sysutils;
+  tickcount, classes, typex, systemx, stringx, idtcpserver,idglobal, betterobject, idcontext, better_collections, debug, sysutils;
 
 type
   TIRCFlags = record
@@ -23,7 +23,8 @@ type
     context: TIdContext;
     gotcaps: boolean;
     flags: TIRCFlags;
-
+    lastseen: ticker;//time last seen, ponged or pinged or other line/command
+    lastping: ticker;//time last ping was sent (pending pong)
     procedure send_generic_msg(id: string; sTrailer: string);overload;
     procedure send_generic_msg(id: string; params: TArray<string>; sTrailer: string);overload;
 
@@ -33,6 +34,10 @@ type
     procedure cmdmsg(sCmd: string; sFrom: string = '');
     procedure ircmsg(sCmd: string; sParams: string = '');
     function FullIdent: string;
+    procedure pinged;
+    procedure Detach; override;
+    constructor Create; override;
+    procedure Disconnect;
   end;
 
   TIRCChannel = class(TSharedObject)
@@ -86,7 +91,7 @@ type
     procedure SendChannels();overload;
     procedure SendChannels(con: TIRCconnection);overload;
     procedure ChannelEmpty(chan: TIRCChannel);
-
+    procedure ExpireDeadConnections;
 
   public
     constructor Create; override;
@@ -147,6 +152,27 @@ begin
 
 end;
 
+procedure TIRCServer.ExpireDeadConnections;
+begin
+  var l := FCons.LockI;
+  for var t := FCons.count-1 downto 0 do begin
+    var c:= FCons[t];
+    if (gettimesince(c.lastseen) > 180000) and (gettimesince(c.lastping) > 10000) then begin
+      c.lastping := getticker;
+      Debug.Log('pinging connection that we have not seen for 3 minutes');
+      c.ircmsg('PING whatever');
+    end;
+
+    if gettimesince(c.lastseen) > 300000 then begin
+      Debug.Log('expiring connection that we have not seen for 5 minutes');
+      c.disconnect;
+      FCons.delete(t);
+      c := nil;
+    end;
+
+  end;
+end;
+
 function TIRCServer.FindChannel(sName: string): TIRCChannel;
 begin
 
@@ -183,10 +209,12 @@ begin
     handle_welcome(con);
   end else
   if cmd = 'PING' then begin
-    if sl.count > 1 then
-      con.send_generic_msg('PONG', [sl[1]],'pong')
-    else
-      con.send_generic_msg('PONG', 'pong');
+    con.pinged;
+    ExpireDeadConnections;
+  end else
+  if cmd = 'PONG' then begin
+    con.pinged;
+    ExpireDeadConnections;
   end else
   if cmd = 'NAMESX' then begin
     con.flags.namesx := true;
@@ -274,9 +302,14 @@ begin
   var slh := parsestringh(sl[1], ',');
   for var t:= 0 to slh.o.count-1 do begin
     var chan := FindChannel(slh.o[t]);
-    if chan <> nil then
+    if chan <> nil then begin
       chan.leave(con);
+      chan.EchoWhoHere(con);
+    end;
   end;
+
+
+
 
 end;
 
@@ -324,9 +357,15 @@ end;
 
 procedure TIRCServer.handle_line(con: TIRCConnection; sLine: string);
 begin
-  Debug.log(sLine);
-  var slh := ParseStringh(sLine, ' ');
-  handle_command(con, sLine, slh.o);
+  idsrv.Contexts.LockList;
+  try
+    con.lastseen := getticker;
+    Debug.log(sLine);
+    var slh := ParseStringh(sLine, ' ');
+    handle_command(con, sLine, slh.o);
+  finally
+    idsrv.contexts.Unlocklist;
+  end;
 end;
 
 procedure TIRCServer.handle_welcome(con: TIRCConnection);
@@ -390,8 +429,12 @@ procedure TIRCServer.SendChannels;
 begin
   var l := FCons.locki;
   for var t := 0 to FCons.count-1 do begin
-    var cl := FCons[t].locki;
-    SendChannels(FCons[t]);
+    if FCons[t].trylock then
+    try
+      SendChannels(FCons[t]);
+    finally
+      FCons[t].unlock;
+    end;
   end;
 
 end;
@@ -426,6 +469,8 @@ begin
       var s := Acontext.Connection.IOHandler.ReadLn();
       if s <> '' then begin
         handle_line(cli, s);
+      end else begin
+        ExpireDeadConnections;
       end;
     end;
 
@@ -491,6 +536,7 @@ begin
 
   sLine := sLine+sTrailer;
 
+  if context <> nil then
   if context.connection <> nil then
     if context.connection.iohandler <> nil then
       context.Connection.IOHandler.WriteLn(sLine);
@@ -507,6 +553,31 @@ begin
       if assigned(context.connection.iohandler) then
         context.connection.iohandler.writeln(sLine);
 
+end;
+
+constructor TIRCConnection.Create;
+begin
+  inherited;
+  lastseen := getticker;
+end;
+
+procedure TIRCConnection.Detach;
+begin
+  if detached then exit;
+
+  Debug.Log('connection is going away.');
+
+
+  inherited;
+
+
+end;
+
+procedure TIRCConnection.Disconnect;
+begin
+  if assigned(context) then
+    if assigned(context.connection) then
+      context.Connection.Disconnect;
 end;
 
 function TIRCConnection.FullIdent: string;
@@ -532,6 +603,15 @@ begin
   var sLine := ':system!system@system '+sPreChan+chan.name+' '+sRaw;
   context.Connection.IOHandler.WriteLn(sLine);
   debug.log('>>ch>>'+sLine);
+end;
+
+procedure TIRCConnection.pinged;
+begin
+//  if sl.count > 1 then
+//      con.send_generic_msg('PONG', [sl[1]],'pong')
+//    else
+  send_generic_msg('PONG', 'pong');
+  lastseen := getticker;
 end;
 
 procedure TIRCConnection.privmsg(sTarget, sMessage, sFrom: string);
@@ -637,12 +717,17 @@ end;
 
 procedure TIRCChannel.msg_everyone_in_channel(confrom: TIRCConnection; sMsg: string; bExcludeSelf: boolean = true);
 begin
+  self.irc.idsrv.Contexts.LockList;
+  try
   var l := users.locki;
   for var t := 0 to users.count-1 do begin
     var con := users[t];
     if (not bExcludeSelf) or (con<>conFrom) then
       con.channel_msg(conFrom, self,sMsg);
 
+  end;
+  finally
+    self.irc.idsrv.Contexts.UnlockList;
   end;
 
 end;

@@ -1,14 +1,16 @@
 unit irc_abstract;
 {$DEFINE JOIN}
+{x$DEFINE IRC_DEAD_DEBUG}
+{x$DEFINE LOG_ALL_INCOMING_LINES}
 
 interface
 uses
-  dirfile,tickcount, commandprocessor, debug, helpers_stream, helpers.sockets, sysutils, classes, stringx, managedthread, betterobject, typex, systemx,
+  dirfile,tickcount, commandprocessor, debug, helpers_stream, helpers.sockets, sysutils, classes, stringx, managedthread, betterobject, typex, systemx, WatchDog,
 {$IFDEF MSWINDOWS}
 //  sockfix,
 //  simplewinsock,
 {$ENDIF}
-  simpletcpconnection,
+  simpletcpconnection, ExceptionsX,
   idtcpclient, idglobal, multibuffermemoryfilestream, commandicons, better_collections;
 
 const
@@ -61,6 +63,7 @@ type
   TIRCMultiUserClient = class;//forward
   TIRCConversation= class;//forward
 
+  TIRCClientState = (irccsNotStarted, irccsStarting, irccsStarted, irccsStopping, irccsStopped);
 
   TXDCCCommand = class(TCommand)
   protected
@@ -103,11 +106,14 @@ type
   TIRCConversationEvent = procedure (sender: TIRCConversation; sFrom, sMessage: string) of object;
 
   TIRCConversation = class(TSharedObject)
+  private
+    FIgnoreExcl: boolean;
   protected
     FOnLineReceived: TIRCConversationEvent;
     FonChatReceived: TIRCConversationEvent;
     FLines: TStringlist;
     FUsers: TStringList;
+    FpmHold: string;
     procedure RawLineReceived(sfrom, sMessage: string);
     procedure ChatReceived(sFrom, sMessage: string);
     function handle_Command(sOriginalLine: string; sWho, sCmd_lowercase: string; params: TStringlist): boolean;//return TRUE if handled
@@ -115,10 +121,13 @@ type
     function default_handle_command_privmsg(sOriginalLine: string; sWho, sCmd_lowercase: string; params: TStringlist): boolean;//return TRUE if handled
     function handle_command_names(sOriginalLine: string; sWho, sCmd_lowercase: string; params: TStringlist): boolean;//return TRUE if handled
   public
+    CommandTrigger: string;
     channel: string;
     irc: TIRCMultiUserClient;
     fOnCommand: TFunc<string,string,TStringList,boolean>;
     procedure PrivMsg(s: string);
+    procedure PM(s: string);
+    procedure PMHold(s: string);
     procedure Part;
 
     function LinesAvailable: string;
@@ -129,6 +138,8 @@ type
     procedure UserJoined(sUser: string);
     procedure UserLeft(sUser: string);
     function GetUsers:IHolder<TStringList>;
+
+    property IgnoreExcl: boolean read FIgnoreExcl write FIgnoreExcl;
 
   end;
 
@@ -145,6 +156,7 @@ type
     FConversations: TSharedList<TIRCConversation>;
     FEndedConversations: TArray<IHolder<TIRCConversation>>;
     FChannels: TStringlist;
+    FState: TIrcClientState;
     function GetConversation(idx: ni): TIRCConversation;
 
   strict protected
@@ -165,6 +177,7 @@ type
     online: boolean;
     nick: string;
     user: string;
+    tmSeen: ticker;
     tmLastXDCCCheck: ticker;
     constructor Create; override;
     procedure Start;
@@ -175,7 +188,7 @@ type
 
     procedure join(sChannel: string);
 
-    procedure IRCExecute(thr: TExternalEventThread);
+    procedure IRCExecuteClientThreadForAllChannels(thr: TExternalEventThread);
     procedure IRCSend(sLine: string);
     procedure IRCUserSend(sLine: string);
     procedure handle_line(sLine: string);
@@ -212,6 +225,8 @@ type
     function GetChannels: IHolder<TStringList>;
     procedure RequestChannels;
     procedure Part(sChannel: string);
+    property State: TIrcClientState read FState write FState;
+    function WaitForState(s: TIrcClientState; iTimeout: ni = 8000): boolean;
   end;
 
 
@@ -250,6 +265,7 @@ begin
     c := stringreplace(c, #$2019,'', [rfReplaceAll]);
     c := stringreplace(c, '"','', [rfReplaceAll]);
     c := stringreplace(c, ' ','', [rfReplaceAll]);
+    result := c;
   end;
 
 end;
@@ -271,6 +287,7 @@ end;
 
 procedure locallog(s: string);
 begin
+  exit;
 {$IFDEF LOG_TO_IRC}
   if not logging then
 {$ENDIF}
@@ -462,7 +479,7 @@ begin
   if cli <> nil then
     exit;
 
-
+  state := irccsStarting;
 
   online := false;
   cli := TSimpleTCPConnection.create;
@@ -501,6 +518,7 @@ begin
   Stop;
   Disconnect;//kills cli
 
+
   xdccs.WaitForAll_DestroyWhileWaiting;
 
   FConversations.Free;
@@ -515,9 +533,13 @@ end;
 
 procedure TIRCMultiUserClient.Disconnect;
 begin
+  State := irccsStopping;
+  if cli = nil then
+    exit;
   cli.Disconnect;
   cli.Free;
   cli := nil;
+  State := irccsStopped;
 end;
 
 procedure TIRCMultiUserClient.EndConversation(conv: IHolder<TIRCConversation>);
@@ -616,25 +638,20 @@ begin
     handle_whohere(originalline, parsed, oobs);
   end;
 
-
-
-
-
-
   if (comparetext(parsed[0], '376')=0)
-  or (comparetext(parsed[0], '422')=0)
+   or (comparetext(parsed[0], '422')=0)
   or (comparetext(parsed[1], '376')=0)
   or (comparetext(parsed[1], '422')=0) then begin
 
   end;
 
   if comparetext(parsed[0],'NOTICE')=0 then begin
+    state := irccsStarted;
     OnConnect;//connected -- maybe join some default channels?!
     online := true;
   end;
 
   if parsed.count < 4 then exit;
-
 
   if (comparetext(parsed[1],'privmsg')=0) then begin
     var target := parsed[2];
@@ -646,7 +663,6 @@ begin
     end;
 
     if handle_conversation_privmsg(from, target, line) then begin
-
 
     end else
     if (comparetext(parsed[2],nick)=0) then begin
@@ -737,8 +753,9 @@ var
   l,r: string;
   oob: string;
 begin
+  WD.Reset;
   sLine := StripString(sLine);
-  locallog(sLine);
+  //locallog(sLine);
   if SplitString(sLine, #01, l,r) then begin
     oob := r;
     splitstring(oob, #01, oob, r);
@@ -829,21 +846,56 @@ begin
 
 end;
 
-procedure TIRCMultiUserClient.IRCExecute(thr: TExternalEventThread);
+procedure TIRCMultiUserClient.IRCExecuteClientThreadForAllChannels(thr: TExternalEventThread);
 begin
   try
   thr.Name := 'TIRCMultiUserClient.IRCExecute';
   Connect;//if not already connected
-  if cli.WaitForData(1000) then begin
-    var sLine := cli.ReadLn;
+{$IFDEF IRC_DEAD_DEBUG}
+  Debug.Log('---->waiting for data<----');
+{$ENDIF}
+  var sLine: string;
+                                //v properly raises exception if connection broken
+  if (cli.WaitForData(8000) and (cli.ReadLn(sLine,8000))) then begin
+    tmSeen := getticker;
+
     if sLine <> '' then begin
 //      locallog(sLine);
-      Handle_Line(sLine);
+{$IFDEF LOG_ALL_INCOMING_LINES}
+        Debug.Log('<<'+sLine);
+{$ENDIF}
+        Handle_Line(sLine);
+{$IFDEF LOG_ALL_INCOMING_LINES}
+        Debug.Log('<<<<'+sLine);
+{$ENDIF}
     end else begin
+      Debug.Log('Got a blank line, disconnected?');
+      Debug.Log('Disconnecting client');
       cli.disconnect;
-      cli.connect;
+      Debug.Log('Reconnecting client');
+      connect;
+      if cli.Connected then begin
+        Debug.Log('Client reconnected');
+      end else begin
+        Debug.Log('Client failed to reconnect');
+        exit;
+      end;
+
+    end;
+  end else begin
+{$IFDEF IRC_DEAD_DEBUG}
+    DebuSg.Log('No data in channels.');
+{$ENDIF}
+    if gettimesince(tmSeen) > 350000 then begin
+      Debug.log('We haven''t seen any data (including pings) in a while');
+      Debug.Log('disconnecting');
+      cli.disconnect;
+      tmSeen := GetTicker-(300000);
+      Connect;
+      exit;
     end;
   end;
+
   if gettimesince(tmLastXDCCcheck) > 2000 then
     CheckXDCCs;
 
@@ -864,8 +916,10 @@ end;
 procedure TIRCMultiUserClient.IRCSend(sLine: string);
 begin
   if (cli <> nil) and (cli.connected) then begin
-    locallog('>>>>'+sLine);
+    locallog('>>'+sLine);
     cli.Sendln(sLine);
+    locallog('>>>>'+sLine);
+
   end;
 
 end;
@@ -890,7 +944,7 @@ begin
   result.o.irc := self;
   result.o.channel := channel;
   FConversations.Add(result.o);
-  if assigned(cli) and cli.connected then
+  if assigned(cli) and cli.connected and self.online then
     join(result.o.channel);
 
 end;
@@ -908,7 +962,20 @@ end;
 
 procedure TIRCMultiUserClient.Part(sChannel: string);
 begin
+  Lock;
+  try
+    var c  := FindConversation(sChannel);
+    if c <> nil then begin
+      FConversations.Remove(c);
+//      c.free;
+    end;
+
+
+  finally
+    Unlock;
+  end;
   IRCSend('PART '+sChannel);
+
 end;
 
 procedure TIRCMultiUserClient.RejoinConversations;
@@ -959,7 +1026,7 @@ begin
     raise ECritical.create('you cannot start IRC without a nick');
 
   thr :=  TPM.Needthread<TExternalEventThread>(nil);
-  thr.OnExecute := self.IRCExecute;
+  thr.OnExecute := self.IRCExecuteClientThreadForAllChannels;
   thr.Loop := true;
   thr.RunHot := true;
   thr.HasWork := true;
@@ -1018,8 +1085,15 @@ begin
   if thr = nil then
     exit;
 
+  if assigned(cli) then
+    cli.Disconnect;
+
   thr.EndStart;
   thr.Stop;
+
+  TPM.NoNeedthread(thr);
+  thr := nil;
+
 
 end;
 
@@ -1048,6 +1122,18 @@ begin
     setlength(unstartedpacks, length(unstartedpacks)-1);
   end;
 
+end;
+
+function TIRCMultiUserClient.WaitForState(s: TIrcClientState;
+  iTimeout: ni): boolean;
+begin
+  var tmStart: ticker := GetTicker;
+  while not (State = s) do begin
+    sleep(100);
+    if gettimesince(tmStart) > iTimeout then
+      exit(false);
+  end;
+  result := true;
 end;
 
 { TXDCCCommand }
@@ -1185,8 +1271,12 @@ end;
 
 procedure TIRCConversation.ChatReceived(sFrom, sMessage: string);
 begin
-  if assigned(FonChatReceived) then
-    FonChatReceived(self, sFrom, sMessage);
+  if assigned(FonChatReceived) then begin
+    var sl := ParseStringH(sMessage, IRCCONT);
+    for var t:= 0 to sl.o.count-1 do begin
+      FonChatReceived(self, sFrom, sl.o[t]);
+    end;
+  end;
 end;
 
 constructor TIRCConversation.Create;
@@ -1194,6 +1284,7 @@ begin
   inherited;
   FLines := TStringList.create;
   FUsers := TStringList.create;
+  CommandTrigger := '!';
 end;
 
 function TIRCConversation.default_handle_Command(sOriginalLine,
@@ -1257,6 +1348,8 @@ function TIRCConversation.handle_command_names(sOriginalLine, sWho,
   sCmd_lowercase: string; params: TStringlist): boolean;
 begin
 
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
 end;
 
 procedure TIRCConversation.RawLineReceived(sfrom, sMessage: string);
@@ -1281,6 +1374,20 @@ begin
         handle_Command(sMessage, who, cmd, h.o);
       end;
     end;
+
+  //is this a command for the channel bot?
+    if not IgnoreExcl then
+    if sMessage[STRZ] = CommandTrigger then begin
+      var h := ParseStringNotInH(sMessage, ' ', '"');
+
+      var cmd := zcopy(lowercase(h.o[0]),1,99999);
+      h.o.delete(0);
+      handle_Command(sMessage, self.irc.nick, cmd, h.o);
+
+    end;
+
+
+
     if assigned(OnLineReceived) then
       OnLineReceived(self, sFrom, sMessage);
   end else begin
@@ -1293,11 +1400,15 @@ end;
 function TIRCConversation.LinesAvailable: string;
 begin
 
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
 end;
 
 function TIRCConversation.ReadLn: string;
 begin
 
+  raise ECritical.create('unimplemented');
+//TODO -cunimplemented: unimplemented block
 end;
 
 
@@ -1324,9 +1435,40 @@ begin
   irc.part(self.channel);
 end;
 
+procedure TIRCConversation.PM(s: string);
+begin
+  Lock;
+  try
+  if FPmHold<>'' then
+    s := FPMHold+s;
+  FPMHold := '';
+  PrivMsg(s);
+  finally
+    unlock;
+  end;
+end;
+
+procedure TIRCConversation.PMHold(s: string);
+begin
+  Lock;
+  try
+  if CountChar(s, ESCIRC) and 1 = 1 then
+    FPMHold := FPmHold+s+ESCIRC
+  else
+    FPmHold := FPmHold+s;
+  finally
+    Unlock;
+  end;
+end;
+
 procedure TIRCConversation.PrivMsg(s: string);
 begin
-  irc.PrivMsg(channel, s);
+  Lock;
+  try
+    irc.PrivMsg(channel, s);
+  finally
+    Unlock;
+  end;
 
 end;
 

@@ -173,6 +173,7 @@ begin
   FClientImmediate.AdvancedSettings2.ConnectToServerConsole := ADmin;
 {$ENDIF}
 
+  Fclientimmediate.AdvancedSettings9.NegotiateSecurityLayer := true;
 
   if FClientImmediate.parent <> nil then begin
     FWidthAtConnect := TargetWidth;
@@ -213,9 +214,11 @@ begin
   FClientImmediate.parent := self;
   FClientImmediate.width := self.width;
   FClientImmediate.height := self.height;
+  FClientimmediate.AdvancedSettings7.EnableCredSspSupport := true;
 //  FClientImmediate.AdvancedSettings2..RedirectDirectX := false;
 //  FClientImmediate.AdvancedSettings8.Compress := 0;
-//  FclientImmediate.AdvancedSettings8.NegotiateSecurityLayer := false;
+//  FClientImmediate.AdvancedSettings9.
+  FclientImmediate.AdvancedSettings8.NegotiateSecurityLayer := true;
 end;
 
 destructor TRemoteDesktopSession.Destroy;

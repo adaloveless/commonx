@@ -12,12 +12,14 @@ type
   end;
   TCommandLine = record
   private
+
     FIgnoreCase: boolean;
     FNamedParams: array of TNameValue;
     FUnNamedParams: array of string;
     procedure AddUnnamed(sValue: string);
     procedure AddNamed(sName, sValue: string);
   public
+    cmd, params: string;
     function GetNamedParamByIdx(idx: ni): TNameValue;
     procedure ParseCommandLine(sCmdLine: string = '');
         property IgnoreCase: boolean read FIgnoreCase write FIgnoreCase;
@@ -125,9 +127,20 @@ begin
 {$IFDEF MSWINDOWS}
   if sCmdLine = '' then
     sCmdLine := CmdLine;
+{$ELSE}
+  for var t:= 0 to ParamCount-1 do begin
+    if t > 0 then
+      sCmdLine := sCmdLine + ' '+paramstr(t)
+    else
+      sCmdline := paramstr(0);
+  end;
 {$ENDIF}
 
   h := ParseStringNotInH(sCmdLine, ' ', '"');
+  if h.o.count = 0 then
+    exit;
+
+  cmd := h.o[0];
 
   for var t:= 1 to h.o.count-1 do begin
     var sParam := h.o[t];
@@ -141,6 +154,13 @@ begin
       AddUnnamed(unquote(trim(sParam)));
     end;
   end;
+
+  h.o.Delete(0);
+
+  params := UnParseString(' ',h.o);
+
+
+
 end;
 
 function TCommandLine.UnnamedCount: ni;

@@ -10,7 +10,7 @@ object frmFMXBase: TfrmFMXBase
   OnActivate = FormActivate
   DesignerMasterStyle = 0
   object tmFormMessages: TTimer
-    Interval = 1
+    Interval = 50
     OnTimer = tmFormMessagesTimer
     Left = 200
     Top = 65520

@@ -168,6 +168,8 @@ function Stream_GuaranteeRead(const s: TStream; const p: PByte; const iSize: nat
 begin
   result := Stream_GuaranteeRead(s, p, iSize, nil, bThrowExceptions);
 end;
+
+
 function Stream_GuaranteeRead(const s: TStream; const p: PByte; const iSize: nativeint; prog: PProgress; const bThrowExceptions: boolean = true): nativeint;overload;
 var
   iLeft, iRead, iJustRead: int64;
@@ -208,9 +210,9 @@ begin
       inc(result, iJustRead);
 
       //extra checking.
-      if ijustread = 0 then begin
+      if ijustread <= 0 then begin
         if bThrowExceptions then
-          raise EStreamGuarantee.create('Unable to guarantee read of '+s.classname+' at position '+inttostr(s.Position)+' after ' +inttostr(nativeint(rptr-ni(p)))+' bytes.  where size='+inttostr(s.Size))
+          raise EStreamGuarantee.create('Unable to guarantee read of '+s.classname+' at position '+inttostr(s.Position)+' after ' +inttostr(nativeint(rptr-ni(p)))+' bytes.  (justread='+ijustread.tostring()+') where size='+inttostr(s.Size))
         else begin
           result := 0;
           exit;

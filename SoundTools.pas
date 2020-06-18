@@ -4371,6 +4371,7 @@ end;
 
 { Tmodosc_SimpleEQ }
 
+
 procedure Tmodosc_SimpleEQ.Init;
 begin
   inherited;
@@ -4382,19 +4383,16 @@ var
   iWindowSize: nativeint;
 begin
   inherited;
-  //to cut the high-end we simply average out the wave over time
-  //the 100% mix resulting sample is the average of the other samples across the average window
-  //1-Determine window size
-//  iWindowSize := CrossOver
+  var sss: TStereoSoundSample;
+  source.o(mt, s, iSampleTime);
+  for var t:=1 to 16 do begin
+    source.o(mt, sss, greaterof(iSampleTime-t,0));
+    s := s + sss;
+  end;
+  s := s * (1/16);
+//  s.Left := sin(iSampletime/50);
+//  s.right := sin(iSampletime/50);
 
-
-  //2-Average samples backwards in time
-  //
-
-  //source.o(mt, rLeft, rRight, iSampleTime);//<<<---- VERY IMPORTANT DUHHHH
-
-//  rLeft := rLEft * LEvel;
-//  rRight := rRight * Level;
 
 
 end;

@@ -249,7 +249,7 @@ var
   s3,s4: string;
   bStop: boolean;
 begin
-{$DEFINE PARSE_STRING_EX_BROKEN}
+{x$DEFINE PARSE_STRING_EX_BROKEN}
 {$IFDEF PARSE_STRING_EX_BROKEN}
   ParseString(sInput, sDelimiter, slOutputLIst);
   exit;

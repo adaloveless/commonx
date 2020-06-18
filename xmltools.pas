@@ -96,6 +96,8 @@ type
     function HasElement(sName: string): boolean;overload;
     function FindElement(sName: string; attributematch: variant): TXMLElement;overload;
     function ReadValue(sValueAddr: string): string;
+    function ReadNode(sValueAddr: string; iDefault: int64): int64;overload;
+    function ReadNode(sValueAddr: string; sDefault: string): string;overload;
     procedure WriteValue(sValueAddr: string; sValue:string);
     function ReadNumberValue(rDEfault: real; sValueAddr: string): real;
     function ReadIntegerValue(iDEfault: integer; sValueAddr: string): integer;
@@ -119,6 +121,7 @@ type
     constructor Create; override;
     destructor Destroy; override;
     procedure LoadFromFile(sFile: string);
+    procedure LoadFromSTring(sXML: string);
     procedure SaveToFile(sFile: string);
     procedure ParseSub(doc: IXMLDOMDocument2; elem: IXMLDOMElement; myElem: TXMLElement);
     procedure Parse; override;
@@ -148,12 +151,16 @@ type
     procedure SaveToFile(sFile: string; bForceDirectory: boolean = false);
   end;
 
+  function ParseXML(sXML: string): IHolder<TXMLDOcument>;
+
   function SuperPOS(sChar: char; iStartAt: integer; sFullString: string; sNotInside: char = #0):integer;
 
   function RemoveOuterTag(sXML: string): string;
 
 var
   GelementCount: integer;
+
+
 
 implementation
 
@@ -206,8 +213,8 @@ label
 var
   i1, i2: integer;
   iEndTag: integer;
-  sTemp: HTTPstring;
-  sEndTag: HTTPstring;
+  sTemp: string;
+  sEndTag: string;
   element: TXMLElement;
   bClosed: boolean;
 begin
@@ -699,6 +706,11 @@ begin
 
 end;
 
+procedure TXMLDocument.LoadFromSTring(sXML: string);
+begin
+  Value := sXML;
+end;
+
 procedure TXMLDocument.Parse;
 var
   doc: IXMLDOMDocument3;
@@ -985,15 +997,15 @@ var
   sAttributeValue: string;
 begin
   result := '';
-  if copy(sValueAddr, 1, 1) = ':' then
-    sValueAddr := copy(sValueAddr, 2, length(sValueAddr));
+  if ocopy(sValueAddr, 1, 1) = ':' then
+    sValueAddr := ocopy(sValueAddr, 2, length(sValueAddr));
   (*if copy(sValueAddr, 1, 1) = '.' then
     sValueAddr := copy(sValueAddr, 2, length(sValueAddr));*)
 
   result := '';
-  i1 := pos(':', sValueAddr);
-  i2 := pos('.', sValueAddr);
-  i3 := pos('[', sValueAddr);
+  i1 := opos(':', sValueAddr);
+  i2 := opos('.', sValueAddr);
+  i3 := opos('[', sValueAddr);
 
   //substitute '[' for '.' for attribute matches
   if (i3<i2) or (i2=0) then begin
@@ -1015,8 +1027,8 @@ begin
 
   //if no ':' or '.' return value
   if (i1 = i2) and (i1 < 1) then begin
-    if copy(sValueAddr, length(sValueAddr),1) = '*' then begin
-      result := inttostr(self.GetElementNameCount(copy(sValueAddr, 1, length(sValueAddr)-1)));
+    if ocopy(sValueAddr, length(sValueAddr),1) = '*' then begin
+      result := inttostr(self.GetElementNameCount(ocopy(sValueAddr, 1, length(sValueAddr)-1)));
     end else begin
       result := '';
       if self.HasElement(sValueAddr) then
@@ -1070,6 +1082,32 @@ begin
   end;
 
 
+
+end;
+
+function TXMLElement.ReadNode(sValueAddr: string; iDefault: int64): int64;
+begin
+  try
+    var s := ReadValue(sValueAddr);
+    result := strtoint64(s);
+  except
+    on E: Exception do begin
+      Debug.Log('Warning: Failed to read node '+sValueAddr+' due to error: '+e.Message);
+      result := iDefault;
+    end;
+  end;
+end;
+
+function TXMLElement.ReadNode(sValueAddr, sDefault: string): string;
+begin
+  try
+    result := ReadValue(sValueAddr);
+  except
+    on E: Exception do begin
+      Debug.Log('Warning: Failed to read node '+sValueAddr+' due to error: '+e.Message);
+      result := sDefault;
+    end;
+  end;
 
 end;
 
@@ -1219,6 +1257,15 @@ begin
   inherited;
   icon := @cmd_icon_xml;
 end;
+
+function ParseXML(sXML: string): IHolder<TXMLDOcument>;
+begin
+  result := THolder<TXMLDocument>.create;
+  result.o := TXMlDocument.create;
+  result.o.LoadFromString(sXML);
+
+end;
+
 
 initialization
   GElementCount := 0;

@@ -8,7 +8,7 @@ interface
 {xDEFINE FREEDICT}
 uses
   betterobject, SharedObject, sysutils, typex, systemx, classes, db, stringx, inifiles,
-  inifile, debug, webstring, exceptions, miscinterfaces, storageEngineTypes, helpers.list;
+  inifile, debug, webstring, ExceptionsX, miscinterfaces, storageEngineTypes, helpers.list;
 
 const
   SE_KEYS = 1;

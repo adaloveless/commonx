@@ -4,7 +4,7 @@ unit DirFile;
 //reusable in other situations.
 
 interface
-uses sysutils, classes, filefind, helpers_stream, numbers,
+uses sysutils, classes, filefind, helpers_stream, numbers, systemx,
 {$IFDEF WINDOWS}
     winapi.windows,
 {$ENDIF}
@@ -15,8 +15,10 @@ TAdvancedFileChecksum = packed record
   bytesum: byte;
   bytexor: byte;
   bytecount:int64;
+  procedure init;
   procedure Calculate(sFile: string);
   class operator equal(a,b: TAdvancedFileChecksum): boolean;
+  class operator notequal(a,b: TAdvancedFileChecksum): boolean;
 end;
 
 TFileInformation = class(Tobject)
@@ -132,7 +134,7 @@ end;
 function TfileInformation.GetName: string;
 //Getter for the name property.
 begin
-  result:=ExtractFileName(fullname);
+  result:=ExtractFileName(fixslashes(fullname));
 end;
 {------------------------------------------------------------------------------}
 procedure TfileInformation.SetName(str: string);
@@ -233,7 +235,7 @@ var
   BeginPos: integer;
   iTemp: integer;
 begin
-  beginPOs:=lastpos('\',fullname)+1;
+  beginPOs:=lastpos(pathseparator,fullname)+1;
   iTemp := lastpos('.',fullname);
   if iTemp < 1 then iTemp := 9999999;
   result:=Copy(fullname,BeginPos, iTemp-beginpos);
@@ -283,7 +285,7 @@ end;
 procedure TfileInformation.SetPath(str: string);
 //Setter for the path property.
 begin
-  if not (Copy(str,length(str),1)='\') then str:=str+'\';
+  if not (Copy(str,length(str),1)=pathseparator) then str:=str+pathseparator;
   fullname:=str+namepart+'.'+extension;
 
 end;
@@ -292,6 +294,7 @@ function Tfileinformation.GetFullName: string;
 //GEtter for the FullName property.
 begin
   result:=FFullName;
+//  Debug.Log(result);
 end;
 {------------------------------------------------------------------------------}
 procedure TfileInformation.setFullName(str:string);
@@ -387,6 +390,10 @@ begin
   bytesum := 0;
   bytexor := 0;
   bytecount := 0;
+  if not fileexists(sFile) then begin
+    bytecount := -1;
+    exit;
+  end;
   fs := TMemoryFileStream.create(sFile, fmOpenRead+fmShareDenyNone);
   try
     fs.seek(0,soBeginning);
@@ -412,6 +419,19 @@ class operator TAdvancedFileChecksum.equal(a,
 begin
   result := (a.bytesum = b.bytesum) and (a.bytexor = b.bytexor) and (a.bytecount = b.bytecount);
 
+end;
+
+procedure TAdvancedFileChecksum.init;
+begin
+  bytexor := 0;
+  bytesum := 0;
+  bytecount := 0;
+end;
+
+class operator TAdvancedFileChecksum.notequal(a,
+  b: TAdvancedFileChecksum): boolean;
+begin
+  result := not (a=b);
 end;
 
 end.

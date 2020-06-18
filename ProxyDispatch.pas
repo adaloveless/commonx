@@ -3,7 +3,7 @@ unit ProxyDispatch;
 
 interface
 
-uses RequestInfo, WebConfig, HTTPCLient, sysutils, webstring, stringx, stringx.ansi, webfunctions, dialogs, Exceptions, filecache, ExtendedProxyDispatch;
+uses RequestInfo, WebConfig, HTTPCLient, sysutils, webstring, stringx, stringx.ansi, webfunctions, dialogs, ExceptionsX, filecache, ExtendedProxyDispatch;
 
 function DispatchProxyRequest(rqInfo: TRequestInfo): boolean;
 

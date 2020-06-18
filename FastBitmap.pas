@@ -2079,14 +2079,16 @@ begin
           result.Canvas.Pixels[x,y] := c and $FFFFFF;
           result.AlphaScanline[y][x] := (c shr 24);
         end else begin
-{$DEFINE SLOW_CANVAS_CALLS}
+{x$DEFINE SLOW_CANVAS_CALLS}
 {$IFDEF SLOW_CANVAS_CALLS}
           const formatIn = 'rgb';
           const formatOut = 'rgb';
           result.Canvas.Pixels[x,y] := colorformat(self.Canvas.Pixels[x,y], formatIn, formatOut);
 //          result.Canvas.Pixels[x,y] := self.Canvas.Pixels[x,y];
 {$ELSE}
-          Winapi.Windows.SetPixel(result.canvas.Handle, X, Y, ColorToRGB(self.Canvas.Pixels[x,y]));
+          const formatIn = 'rgb';
+          const formatOut = 'rgb';
+          Winapi.Windows.SetPixel(result.canvas.Handle, X, Y, colorformat(self.Canvas.Pixels[x,y], formatIn, formatOut));
 {$ENDIF}
         end;
 

@@ -15,7 +15,7 @@ unit Packet;
 {x$INLINE AUTO}
 {$DEFINE VERBOSE_PACKET_LOGGING}
 interface
-uses SysUtils, betterobject, dtnetconst, NetworkBuffer, typex, Classes, stringx, variants, debug, exceptions, systemx, numbers, zip;
+uses SysUtils, betterobject, dtnetconst, NetworkBuffer, typex, Classes, stringx, variants, debug, ExceptionsX, systemx, numbers, zip;
 
 const
   CK : array of byte =

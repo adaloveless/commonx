@@ -86,7 +86,7 @@ due to the termination of this agreement beyond the initial license fee.
 {$R-}//no range checking
 {$IFDEF BBDEBUG}
   {$DEFINE MESSAGES}
-  {$MESSAGE warn 'BB optmization is disabled'}
+  {x$MESSAGE warn 'BB optmization is disabled'}
   {$O-}               //Optimization Setting
   {$D+}               //Force debug information on ... if set to +, your code
                       // will be harder to debug

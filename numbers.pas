@@ -50,7 +50,8 @@ function Clamp(r1, min,max: integer): integer;overload;inline;
 function Order(var i1,i2: int64):boolean;overload;
 function Order(var i1,i2: integer): boolean;overload;
 function Order(var i1,i2: byte): boolean;overload;
-function Order(var i1,i2: nativefloat): boolean;overload;
+function Order(var i1,i2: single): boolean;overload;
+function Order(var i1,i2: double): boolean;overload;
 function Order(var ul,br: TPoint): boolean;overload;
 function Order(var ul,br: TPointF): boolean;overload;
 function Order(var r: TRect): boolean;overload;
@@ -261,7 +262,20 @@ begin
   end;
 end;
 
-function  Order(var i1,i2: nativefloat):boolean;
+function Order(var i1,i2: single):boolean;
+var
+  t: nativefloat;
+begin
+  result := false;
+  if (i1>i2) then begin
+    t := i1;
+    i1 := i2;
+    i2 := t;
+    result := true;
+  end;
+end;
+
+function Order(var i1,i2: double):boolean;
 var
   t: nativefloat;
 begin

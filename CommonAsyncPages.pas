@@ -4,7 +4,7 @@ unit CommonAsyncPages;
 interface
 
 uses
-  managedthread, memoryfilestream, asyncclasses, backgroundthreads, exe, windows, webconfig, systemx, exceptions, variants, webresource,WebString, stringx, stringx.ansi, CommonRequests, WebFunctions, Sysutils, RequestDispatcher, RequestInfo, classes, dataobject, serverinterface, MTDTInterface;
+  managedthread, memoryfilestream, asyncclasses, backgroundthreads, exe, windows, webconfig, systemx, ExceptionsX, variants, webresource,WebString, stringx, stringx.ansi, CommonRequests, WebFunctions, Sysutils, RequestDispatcher, RequestInfo, classes, dataobject, serverinterface, MTDTInterface;
 
 
 procedure AWRQ_AsyncTest(rqInfo: TRequestInfo; thread: TAsyncProcess);

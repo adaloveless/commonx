@@ -256,7 +256,13 @@ begin
 
   if not FTCP.IOHandler.InputBufferIsEmpty then
     exit(true);
-  result := FTCP.Socket.Readable(timeout);
+//  self.Timeout := timeout;
+  result := FTCP.IOHandler.CheckForDataOnSource(timeout);
+//  if result then
+//    Debug.Log('New DAta Available')
+//  else
+//    Debug.Log('No Data');
+//  result := FTCP.IOHandler.Readable(timeout);
 end;
 
 { TSocksHeader }

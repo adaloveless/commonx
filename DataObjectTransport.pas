@@ -51,7 +51,7 @@ implementation
 
 //##############################################################################
 
-uses scktComp, ServerInterface, Exceptions, SimpleWinSock,
+uses scktComp, ServerInterface, ExceptionsX, SimpleWinSock,
   SimpleNamedPipe, DataObjectServices;
 
 

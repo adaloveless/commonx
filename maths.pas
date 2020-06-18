@@ -1,3 +1,4 @@
+
 unit maths;
 
 interface
@@ -19,8 +20,14 @@ function CalculateFit(x,y: array of double; bForceOrigin: boolean = false; numbe
 function CenterIterate(w,h: ni; t: ni): TPoint;
 function CenterIterate2(cx,cy: ni; t: ni): TPoint;
 function CreateCenterIterateMap(w,h: ni): TPointArray;
+function Sin01(x: double): double;
 
 implementation
+
+function Sin01(x: double): double;
+begin
+  result := (sin(x)+1.0)/2;
+end;
 
 function CreateCenterIterateMap(w,h: ni): TPointArray;
 var

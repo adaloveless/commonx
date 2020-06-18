@@ -23,7 +23,7 @@ begin
   result := '';
   ss := GetMD5HashRaw(s);
   for t:= 1 to 16 do begin
-    result := result + inttohex(ord(ss[t]),2);
+    result := result + ansistring(inttohex(ord(ss[t]),2));
   end;
 
 end;
@@ -39,7 +39,7 @@ begin
   try
     hd := h.HashString(s);
     for t:= 0 to 15 do begin
-      result := result + chr(hd[t]);
+      result := result + ansistring(chr(hd[t]));
     end;
   finally
     h.free;
@@ -116,7 +116,7 @@ begin
 //      sleep(1);
 
     sleep(10000);
-    HashCode := Hash.HashValue;       { get the binary hashcode as ansistring value }
+    HashCode := ansistring(Hash.HashValue);       { get the binary hashcode as ansistring value }
                                       { convert hash to hex ansistring in result }
     SetString(result, nil, Length(HashCode) * 2);
     BinToHex(PAnsiChar(HashCode), PAnsiChar(result), Length(HashCode));

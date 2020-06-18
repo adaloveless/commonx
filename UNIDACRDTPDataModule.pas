@@ -10,7 +10,7 @@ interface
 uses
   MySQLUniProvider, uni, SQLServerUniProvider,
   SysUtils, Classes, DBAccess, variants,
-  DB, better_Sockets, typex,inifiles, replaylog, exceptions,
+  DB, better_Sockets, typex,inifiles, replaylog, ExceptionsX,
   sharedobject, abstractrdtpdatamodule, storageenginetypes,
   managedthread, rdtpprocessor, beeper, inifile, systemx,
   namevaluepair, consolelock, betterobject, tickcount;

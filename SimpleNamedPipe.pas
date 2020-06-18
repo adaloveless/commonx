@@ -34,7 +34,7 @@ type
 
 implementation
 
-uses sysutils, exceptions, Windows;
+uses sysutils, ExceptionsX, Windows;
 
 destructor TSimpleNamedPipeConnection.destroy;
 begin

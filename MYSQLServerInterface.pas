@@ -6,7 +6,7 @@ unit MYSQLServerInterface;
 interface
 
 uses SysUtils, DataObject, tickcount,  xml.xmlintf, xml.xmldoc,
-  DataObjectFactory, exceptions, ServerInterfaceInterface, debug,
+  DataObjectFactory, ExceptionsX, ServerInterfaceInterface, debug,
   DataObjectCache, classes, sharedobject, variants, typex;
 
 const

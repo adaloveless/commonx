@@ -647,6 +647,7 @@ begin
   r := ((c shr 0) and 255)/255;
   g := ((c shr 8) and 255)/255;
   b := ((c shr 16) and 255)/255;
+  a := 1.0;
 end;
 
 

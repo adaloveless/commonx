@@ -186,7 +186,7 @@ var
 begin
   h.init;
   h.SetCheck;
-  s := sk.ToString;
+  s := ansistring(sk.ToString);
   setlength(b, HERRO_PAYLOAD_START+length(s));
   movemem32(@b[0], @h, sizeof(h));
 {$IFDEF NEED_FAKE_ANSISTRING}

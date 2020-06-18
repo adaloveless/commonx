@@ -2,7 +2,7 @@ unit WebDispatch;
 
 interface
 
-uses RequestDispatcher, RequestInfo, Exceptions, RequestManager, Dataobjectcachemanager, managedthread, backgroundthreads, Dataobject, variants, graphics, webstring, sysutils, tsc;
+uses RequestDispatcher, RequestInfo, ExceptionsX, RequestManager, Dataobjectcachemanager, managedthread, backgroundthreads, Dataobject, variants, graphics, webstring, sysutils, tsc;
 
 function IgnoreError(s: string): boolean;
 

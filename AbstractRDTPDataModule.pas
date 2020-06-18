@@ -169,7 +169,7 @@ var
 
 implementation
 
-uses DatabaseDictionary, Exceptions, beeper;
+uses DatabaseDictionary, ExceptionsX, beeper;
 
 
 { TAbstractRDTPDataModule }

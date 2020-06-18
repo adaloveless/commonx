@@ -234,6 +234,7 @@ begin
   try
 {$ENDIF}
     try
+//      raise ECritical.Create('fuck you');
       if FSynchronizeExecute then begin
         TThread.Synchronize(self.Thread.realthread, SyncExecute)
       end else
@@ -254,10 +255,16 @@ begin
     except
       on E: Exception do begin
         Err := e;
+        ErrorMessage := e.message;
+        Error := true;
+{$IFNDEF CONSOLE}
         if FSynchronizeFinish then
           TThread.Synchronize(self.Thread.realthread, SyncError)
         else
-          FOnErrorProc(E);
+{$ENDIF}
+          if assigned(FOnErrorProc) then
+            FOnErrorProc(E);
+
       end;
     end;
 {$IFDEF MACOS}
@@ -388,7 +395,8 @@ begin
 
   func2:= procedure (b: boolean)
                 begin
-                  GuiFunc();
+                  if assigned(GuiFunc) then
+                    GuiFunc();
                 end;
 
 

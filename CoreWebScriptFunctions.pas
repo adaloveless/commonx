@@ -25,7 +25,7 @@ const
 implementation
 
 uses  sysutils, webstring, windows, MothershipwebServer,
-  webfunctions, webScriptMTDTInterface, exceptions, webresource, errorresource, stringx, stringx.ansi,
+  webfunctions, webScriptMTDTInterface, ExceptionsX, webresource, errorresource, stringx, stringx.ansi,
   MTDTInterface, VersionInfo, WebConfig, systemx,rights,
   RightsClasses, SystemQueries, DataObjectDefinitions;
 

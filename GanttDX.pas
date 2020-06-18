@@ -18,6 +18,8 @@ type
 
 
   TDXGantt = class(TDX2d)
+  private
+    FOnSelected: TNotifyEvent;
   protected
     FMouseScrollStartXX,
     CurrentHistoryx1,
@@ -30,6 +32,7 @@ type
     procedure DoMouseOver;override;
   public
     data: PGanttData;
+    selectdrag: TRegion;
 
     procedure DoDraw; override;
     procedure ResetView;
@@ -41,7 +44,7 @@ type
     function GetHourFromScreen(screenx: ni; portion: double = 1.0): double;
 
 
-
+    property OnSelected: TNotifyEvent read FOnSelected write FOnSelected;
 
 
   end;
@@ -145,8 +148,10 @@ begin
     endVertexBAtch;
   end;
 
-
-
+  begin
+    if selectdrag.endpoint >= 0 then
+      Rectangle_Fill(selectdrag.startpoint, boundy1, selectdrag.endpoint, boundy2, clWhite, 0.3);
+  end;
 
 //  BeginVertexBatch(D3DPT_LINELIST);
   try
@@ -189,7 +194,7 @@ begin
 
       end;
     end;
-    FlushLine;
+//    FlushLine;
   finally
 //    EndVertexBatch;
   end;
@@ -215,6 +220,7 @@ procedure TDXGantt.DoMouseDown;
 begin
   inherited;
 
+  if MouseButtonChanged(1) then
   if mouse_buttons_down[1] then begin
 //    data.hotstring := trunc(FLastMouseYY);
 //    reg.startpoint := FLastMouseXX;
@@ -232,47 +238,48 @@ begin
 
     Mousehandled := true;
   end;
+
   if mouse_buttons_down[0] then begin
     scrolldrag.startpoint := (mouse_last_pos_for_wheel.x);
     ScrollDrag.endpoint := (mouse_last_pos_for_wheel.x);
     FMouseScrollStartXX := TargetHistoryX1;
     Debug.Log('Start = '+floatprecision(    scrolldrag.startpoint,8));
   end;
-  if mouse_buttons_down[2] then begin
-//    data.hotstring := trunc(FLastMouseYY);
-//    if StringsToShow <=1 then begin
-//      StringsToShow := NUM_STRINGS;
-//      FirstShowingString := 0;
-//      TargetStringStart := 0;
-//      TargetStringEnd := 6;
-//      w := CurrentHistoryX2-CurrentHistoryX1;
-//      c := FLastMouseXX;
-//      TargetHistoryX1 := c-((w/2)*6);
-//      TargetHistoryX2 := c+((w/2)*6);
-//
-//
-//    end else begin
-//      StringsToShow := 1;
-//      FirstShowingString := data.HotString;
-//      TargetStringStart := data.HotString;
-//      TargetStringEnd := data.HotString+1;
-//      w := CurrentHistoryX2-CurrentHistoryX1;
-//      c := FLastMouseXX;
-//      TargetHistoryX1 := c-((w/2)/6);
-//      TargetHistoryX2 := c+((w/2)/6);
-//    end;
+
+  if MouseButtonChanged(1) then
+  if mouse_buttons_down[1] then begin
+    var searchAt  := mouse_last_pos_for_wheel;
+    selectdrag.startpoint := ScreenToGlobalX(searchAt.x);
+    selectdrag.endpoint := selectdrag.startpoint;
+    Debug.Log('Select Start = '+floatprecision(scrolldrag.startpoint,8));
   end;
+
+
+
 
 end;
 
 procedure TDXGantt.DoMouseUp;
 begin
   inherited;
+  if MouseButtonChanged(0) then
   if not mouse_buttons_down[0] then begin
 //    scrolldrag.startpoint := (mouse_last_pos_for_wheel.x);
     ScrollDrag.endpoint := (mouse_last_pos_for_wheel.x);
 
   end;
+
+  if MouseButtonChanged(1) then
+  if not mouse_buttons_down[1] then begin
+//    scrolldrag.startpoint := (mouse_last_pos_for_wheel.x);
+    var searchAt  := mouse_last_pos_for_wheel;
+    selectdrag.endpoint := ScreenToGlobalX(searchAt.x);
+    if assigned(OnSelected) then
+        OnSelected(self);
+  end;
+
+
+
 
 end;
 

@@ -3,7 +3,7 @@ unit ringbuffer;
 interface
 {$DEFINE OPTIMIZED}
 uses
-  sysutils, betterobject, sharedobject, classes, typex, systemx, ios.stringx.iosansi,
+  sysutils, betterobject, sharedobject, classes, typex, systemx, ios.stringx.iosansi, perfmessage,
   {$IFDEF WINDOWS}
    {$IFDEF FPC}
       windows,
@@ -132,6 +132,7 @@ type
     function PutData(const p: PByte; const l: ni): ni;
     function GetData(const p: PByte; const l: ni): ni;
 
+    procedure SyncPerformanceNodes(pWrite, pRead: PPerfNode);
 
   end;
 
@@ -144,7 +145,7 @@ uses
   unittest,tickcount, debug, stringx, signals;
 { TRingBuffer }
 
-function ShovelDataFromRingToRing(r1,r2: TRingBuffer): ni;
+function ShovelDataFromRingToRing(r1,r2: TRingBuffer): ni;//todo 1: allow buffer swap with VAR parameters... although threadsafety???
 var
   a: array [0..2047] of byte;
   iToShovel: ni;
@@ -893,6 +894,14 @@ begin
       end;
     end;
 
+end;
+
+procedure TDoubleRingBuffer.SyncPerformanceNodes(pWrite, pRead: PPerfNode);
+begin
+  pWrite.r := FWriteBuffer.size- FWriteBuffer.spaceavailable;
+  pwrite.w := FWriteBuffer.size;
+  pRead.r := FWriteBuffer.size-FReadBuffer.spaceavailable;
+  pRead.w := FReadBuffer.size;
 end;
 
 function TDoubleRingBuffer.WaitForData(iTimeOut: ni;

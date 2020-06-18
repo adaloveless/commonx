@@ -23,7 +23,7 @@ begin
   result := '';
   ss := GetMD5HashRaw(s);
   for t:= 1 to 16 do begin
-    result := result + inttohex(ord(ss[t]),2);
+    result := result + ansistring(inttohex(ord(ss[t]),2));
   end;
 
 end;

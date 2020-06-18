@@ -190,7 +190,7 @@ type
 
   TZoneBuilder = class(TSharedObject)
   strict private
-    FFs: TLocalfileStream;
+    FFs: IHolder<TLocalfileStream>;
     FSyncedFileStreamID: int64;
     scratch_ram: array[0..ARC_ZONE_SIZE_IN_BYTES-1] of byte;
     scratch_ram2: array[0..ARC_ZONE_SIZE_IN_BYTES-1] of byte;
@@ -220,6 +220,7 @@ type
     function SyncFS(ifileID: int64; bAllowCreate: boolean): TLocalFileSTream;
     function GetZoneStackReport(zidx: int64;logid: int64; fullstack: boolean): string;
     function GetZoneChecksum(zoneidx: int64; pin: TDateTime; out iSum, iXor: int64): boolean;
+    procedure Detach;override;
     destructor Destroy; override;
     constructor Create; override;
     procedure Lock; override;
@@ -235,11 +236,13 @@ type
     Fname: string;
     FConfigPrefix: string;
     FParamsFileName: string;
+
     procedure SEtVatPath(value: string);
     procedure GetName(value: string);
 
   strict protected
     FPAths: TStringlist;
+    hint_pendingRebuilds: boolean;
 {$IFDEF DICT}
     FFiles: TArcFileDictionary;
 {$ENDIF}
@@ -338,7 +341,7 @@ begin
         result := TLocalfileStream.Create(sFile, fmCreate);
       end;
       bSuccess := true;
-      if GetTimeSince(tmStart) > 1500 then begin
+      if not (bSuccess) and (GetTimeSince(tmStart) > 1500) then begin
 //        sleep(100);
         raise ECritical.create('failed to open: '+sFile);
       end;
@@ -533,6 +536,8 @@ function TArchiver.GetZoneChecksum(zoneidx: int64; pin: TDateTime; out iSum,
 var
   builder: TZoneBuilder;
 begin
+  while hint_PendingRebuilds do
+    sleep(10000);
   result := true;
 {$IFDEF USE_ZONE_LOCKS}
   zonelocks.GetLock(inttostr(zoneidx), false);
@@ -606,10 +611,11 @@ begin
     result := builder.GetZoneStackReport(zidx, logid, fullstack);
   finally
     unlock;
-  end;
 {$IFDEF USE_ZONE_LOCKS}
-  zonelocks.ReleaseLock(inttostr(zidx), false);
+    zonelocks.ReleaseLock(inttostr(zidx), false);
 {$ENDIF}
+
+  end;
 
 end;
 
@@ -662,12 +668,14 @@ begin
   iRecordedBlocks := 0;
   iToRecord := blocklength;
   while iToRecord > 0 do begin
+    hint_PendingRebuilds := true;
     iToRecord := blocklength-iRecordedBlocks;
     iJustRecorded := RebuildData(blockAddr, @pData[iRecordedBlocks*BLOCKSIZE], iToRecord, pin, prog);
     inc(iRecordedBlocks, iJustRecorded);
     dec(iToRecord, iJustRecorded);
     inc(blockAddr, iJustRecorded);
   end;
+  hint_pendingRebuilds := false;
 end;
 
 
@@ -688,9 +696,9 @@ end;
 procedure TZoneBuilder.Lock;
 begin
   inherited;
-  Debug.Log(self, 'locked '+sect.RecursionCount.tostring);
-  if sect.recursioncount = 2 then
-    Debug.Log('trap');
+//  Debug.Log(self, 'locked '+sect.RecursionCount.tostring);
+//  if sect.recursioncount = 2 then
+//    Debug.Log('trap');
 
 end;
 
@@ -801,14 +809,14 @@ var
   byte_start, byte_can,block_start, block_can: int64;
 
 begin
-  DEBUG.Log('RebuildData->Lock');
+//  DEBUG.Log('RebuildData->Lock');
   Lock;
-  DEBUG.Log('RebuildData<-Lock');
+//  DEBUG.Log('RebuildData<-Lock');
   try
     zoneidx := blockaddr shr ARC_ZONE_BLOCK_SHIFT;
-    DEBUG.Log('RebuildData->RebuildZone');
+//    DEBUG.Log('RebuildData->RebuildZone');
     RebuildZone(zoneidx, pin,false);
-    DEBUG.Log('RebuildData<-RebuildZone');
+//    DEBUG.Log('RebuildData<-RebuildZone');
 
     //extract the specific part that we want
 
@@ -820,16 +828,16 @@ begin
     result := block_can;
 
 
-    DEBUG.Log('RebuildData->Movemem32');
+//    DEBUG.Log('RebuildData->Movemem32');
     movemem32(pOutdata, @zone[byte_start], byte_can);
-    DEBUG.Log('RebuildData<-movemem32');
+//    DEBUG.Log('RebuildData<-movemem32');
 
 
   finally
 //    SyncFS(-1, false);
-    DEBUG.Log('RebuildData->Unlock');
+//    DEBUG.Log('RebuildData->Unlock');
     Unlock;
-    DEBUG.Log('RebuildData<-Unlock');
+//    DEBUG.Log('RebuildData<-Unlock');
   end;
 
 end;
@@ -912,7 +920,7 @@ var
     end;
 
 begin
-  DEBUG.Log('->RebuildZone');
+//  DEBUG.Log('->RebuildZone');
   if (rebuilt_zone_idx = zoneidx) and (rebuilt_zone_pin = pin) and (rebuilt_zone_full_depth= bFullDepth) then
     exit;
 
@@ -1062,6 +1070,8 @@ begin
 
 
   {$IFDEF LINKDEBUG}      debug.log(self,'Walk Back Link '+inttostr(idx-1)+' ent='+rec.rec.ToSTring);{$ENDIF}
+        if self.FSyncedFileStreamID <> rec.rec.parentfileid then
+          raise ENotSupportedException.Create('parenting to different file id ('+inttohex(rec.rec.parentfileid,1)+') in this zone '+inttohex(FSyncedFileStreamID,1)+' is not supported');
         fs := SyncFS(rec.rec.parentfileid,false);
         if rec.rec.parentaddr < 0 then begin
           debug.Log(self, 'BAD ZONE PARENT! '+inttostr(zoneidx));
@@ -1130,6 +1140,9 @@ begin
   {$IFDEF LINKDEBUG}      debug.log(self,'Walk Forward Link '+inttostr(idx)+' ent='+rec.rec.ToSTring);{$ENDIF}
   {$IFDEF LINKDEBUG}      Debug.Log(self,'work forward***');{$ENDIF}
   {$IFDEF LINKDEBUG}      Debug.Log(self,'['+inttostr(idx)+'] '+rec.DebugStr);{$ENDIF}
+        if self.FSyncedFileStreamID <> rec.fileid then
+          raise ENotSupportedException.Create('switching to different file id ('+inttohex(rec.fileid,1)+') in this zone '+inttohex(FSyncedFileStreamID,1)+' is not supported');
+
         fs := SyncFS(rec.fileid, false);
         fs.Seek(rec.addr+sizeof(rec.rec), soBeginning);
         //read the compressed stream
@@ -1204,7 +1217,7 @@ begin
 //    end;
 //    setlength(zone_stack,0);
     Unlock;
-    DEBUG.Log('<-RebuildZone');
+//    DEBUG.Log('<-RebuildZone');
   end;
 
 
@@ -1217,6 +1230,7 @@ function TArchiver.RebuildData(blockaddr: int64; pOutData: PByte;
 var
   builder: TZoneBuilder;
 begin
+    hint_pendingRebuilds := true;
 {$IFDEF USE_ZONE_LOCKS}
   zonelocks.GetLock(inttostr(blockaddr shr ARC_ZONE_BLOCK_SHIFT), false);
 //  zonelocks.GetLock('diskopt');
@@ -1224,10 +1238,12 @@ begin
   Lock;
 {$ENDIF}
   try
+    hint_pendingRebuilds := true;
     dEBUG.lOG('RebuildData->SyncZone');
     builder := SyncZone(blockaddr shr ARC_ZONE_BLOCK_SHIFT, pin);
     DEBUG.lOG('RebuildData<-SyncZone');
     DEBUG.Log('RebuildData->builder.RebuildData');
+    hint_pendingRebuilds := true;
     result := builder.RebuildData(blockaddr, poutdata, blocklength, pin, prog);
     DEBUG.Log('RebuildData<-builder.RebuildData');
   finally
@@ -1633,15 +1649,18 @@ var
   t: ni;
   sSub, sl,sr: string;
 begin
+//  Debug.Log('SyncFS '+inttohex(iFileid,1));
   //bail if we're already on this file
   if FSyncedFileStreamID = iFileid then begin
-    result := FFS;
+    if FFS = nil then
+      exit(nil);
+    result := FFS.o;
     exit;
   end;
   //free previous file and release lock
   if ffs<> nil then begin
 //    arc.zoneLocks.ReleaseLock('f'+locked_fileid.tostring, false);
-    FFS.Free;
+    //FFS.Free;
     FFS := nil;
   end;
 
@@ -1660,13 +1679,14 @@ begin
     //FIND THE FILE - or choose a new file name
     sFile := arc.FindFileIDInStors(iFileID);
 
-    FFS := guaranteeOpen(sFile);
+    FFS := THolder<TLocalFileStream>.create;
+    FFS.o := guaranteeOpen(sFile);
 
 
     CheckAndMoveZone;
 
 
-    result := FFS;
+    result := FFS.o;
     FSyncedFileStreamID := iFileID;
 
 
@@ -1681,7 +1701,7 @@ end;
 procedure TZoneBuilder.Unlock;
 begin
   inherited;
-  Debug.Log(self, 'unlocked '+sect.RecursionCount.tostring);
+//  Debug.Log(self, 'unlocked '+sect.RecursionCount.tostring);
 
 end;
 
@@ -1731,6 +1751,19 @@ begin
                                                                          // |
                                                                          // |
           zone_builders.Insert(0, has); //<<<<<-------PUT BACK AT THE TOP <<-
+
+          var cnt := 0;
+          for t:= 0 to zone_builders.count-1 do begin
+            if zone_builders[t] <> nil then begin
+              if zone_builders[t].rebuilt_zone_idx = zoneidx then begin
+                inc(cnt);
+              end;
+            end;
+          end;
+          if cnt > 1 then begin
+            Debug.Log('WHOOWHAOWHAOWHAOWHAOWH!  Too many of this zone. ' +inttohex(zoneidx,1));
+          END;
+
 
           //Clean out excess builders (if we can get locks)
           fails := 0;
@@ -2259,18 +2292,19 @@ begin
   if ffs = nil then
     exit;
 
-  if GetFreeSpaceOnPath(extractfilepath(FFs.FileName)) < 1000000000 then begin
+  if GetFreeSpaceOnPath(extractfilepath(FFs.o.FileName)) < 1000000000 then begin
     //YES we should move the zone
     if arc.TryLock(1000) then
     try
       var newpath := arc.ChoosePath;
-      var fileid: int64 := strtoint64('$'+extractfilenamepart(ffs.filename));
+      var fileid: int64 := strtoint64('$'+extractfilenamepart(ffs.o.filename));
       var newfile := slash(newpath)+FileIDtoFileName(fileid);
-      var fs2 := TLocalFileStream.create(newfile, fmCreate);
-      ffs.Seek(0,soBeginning);
-      Stream_GuaranteeCopy(ffs, fs2, ffs.size);
-      var oldfile := ffs.FileName;
-      ffs.Free;
+      var fs2 := Tholder<TLocalFileStream>.create;
+      fs2.o := TLocalFileStream.create(newfile, fmCreate);
+      ffs.o.Seek(0,soBeginning);
+      Stream_GuaranteeCopy(ffs.o, fs2.o, ffs.o.size);
+      var oldfile := ffs.o.FileName;
+//      ffs.Free;
       ffs := nil;
       ffs := fs2;
       try
@@ -2300,7 +2334,7 @@ destructor TZoneBuilder.Destroy;
 begin
 
   SyncFS(-1, false);
-  FFS.Free;
+//  FFS.Free;
 //[x] Cleanup zone builders
 //[ ] RebuildZone - > SyncZone
 //[ ] SyncZone -
@@ -2324,6 +2358,13 @@ begin
   FFS := nil;
 
   inherited;
+end;
+
+procedure TZoneBuilder.Detach;
+begin
+  SyncFS(-1,false);
+  inherited;
+
 end;
 
 function TZoneBuilder.GetZoneChecksum(zoneidx: int64; pin: TDateTime; out iSum,

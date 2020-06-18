@@ -20,8 +20,6 @@ object frmProgress: TfrmProgress
   OnCreate = frmBaseCreate
   OnDblClick = frmBaseDblClick
   OnDestroy = frmBaseDestroy
-  Right = 1109
-  Bottom = 762
   DesignSize = (
     879
     509)
@@ -54,17 +52,6 @@ object frmProgress: TfrmProgress
     BarColor = clMaroon
     Step = 1
     TabOrder = 0
-  end
-  object panBG: TFrameHostPanel
-    Left = 0
-    Top = 168
-    Width = 879
-    Height = 341
-    Align = alBottom
-    Anchors = [akLeft, akTop, akRight, akBottom]
-    Caption = 'panBG'
-    TabOrder = 1
-    Visible = False
   end
   object TimerWatchCommand: TTimer
     Enabled = False

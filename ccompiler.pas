@@ -3,7 +3,7 @@ unit ccompiler;
 
 interface
 
-uses exceptions, debug, contnrs, namevaluepair, sysutils, classes, d2c_project, stringx, stringx.ansi, d2c_pascalcompiler;
+uses ExceptionsX, debug, contnrs, namevaluepair, sysutils, classes, d2c_project, stringx, stringx.ansi, d2c_pascalcompiler;
 
 type
   TStringType = (stNull, stArray);

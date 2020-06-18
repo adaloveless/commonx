@@ -87,10 +87,10 @@ type
     [unsafe] Ftree: TObject;
     //Data : pointer;
     destructor Destroy;override;
-    procedure Isolate;
+    procedure Isolate;inline;
     [result: unsafe] function LastChild: TBtreeItem;
     procedure CorrectBalance;inline;
-    function GetHeight: ni;
+    function GetHeight: ni;inline;
     function NeedsRebalance: boolean;inline;
     property tree: TObject read FTree write SetTree;
   end;
@@ -150,8 +150,7 @@ uses
 { TBTree }
 
 procedure TBTree.DecBalance(var [unsafe] p: TBTreeItem; var balance_changed: boolean; fordelete: boolean);
-var
-  [unsafe]  p1, p2: TBTreeItem;
+
 Begin
   case p.FBalance of
     1:
@@ -168,6 +167,7 @@ Begin
       end;
     -1: (* if (p.Left<>nil) or not dl then *)
       begin // new balancing
+        var [unsafe]  p1, p2: TBTreeItem;
         p1 := p.FLeftNode;
         if (p1.FBalance = -1) or ((p1.FBalance = 0) and fordelete) then
         begin // single ll rotation
@@ -470,8 +470,7 @@ begin
 end;
 
 procedure TBTree.IncBalance(var [unsafe] p: TBTreeItem; var balance_changed: boolean; fordelete: boolean);
-var
- [unsafe] p1, p2: TBTreeItem;
+
 Begin
   case p.FBalance of
     - 1:
@@ -488,6 +487,7 @@ Begin
       end;
     +1:
       begin // new balancing
+        var [unsafe] p1, p2: TBTreeItem;
         p1 := p.FRightNode;
         if (p1.FBalance = +1) or ((p1.FBalance = 0) and fordelete) then
         begin // single rr rotation
